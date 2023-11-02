@@ -36,6 +36,9 @@ module.exports = {
       uniqueCode: {
         type: Sequelize.STRING
       },
+      uniqueCodeCreatedAt: {
+        type: Sequelize.DATE
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

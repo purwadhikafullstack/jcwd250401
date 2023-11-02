@@ -12,8 +12,12 @@ module.exports = {
       name: {
         type: Sequelize.STRING
       },
-      address_id: {
-        type: Sequelize.NUMBER
+      addressId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'Addresses',
+          key: 'id'
+        }
       },
       shipmentStatus: {
         type: Sequelize.STRING
