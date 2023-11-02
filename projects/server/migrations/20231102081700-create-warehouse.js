@@ -15,11 +15,19 @@ module.exports = {
       name: {
         type: Sequelize.STRING
       },
-      warehouseaddress_id: {
-        type: Sequelize.NUMBER
+      warehouseAddressId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'WarehouseAddresses',
+          key: 'id'
+        }
       },
-      admin_id: {
-        type: Sequelize.NUMBER
+      adminId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'Admins',
+          key: 'id'
+        }
       },
       createdAt: {
         allowNull: false,

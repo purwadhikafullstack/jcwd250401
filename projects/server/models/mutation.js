@@ -10,16 +10,18 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+        Mutation.belongsTo(models.Product, { foreignKey: 'productId' });
+        Mutation.belongsTo(models.Warehouse, { foreignKey: 'warehouseId' });
+        Mutation.belongsTo(models.Admin, { foreignKey: 'adminId' });
     }
   }
   Mutation.init({
-    product_id: DataTypes.NUMBER,
-    warehouse_id: DataTypes.NUMBER,
-    mutation_quantity: DataTypes.NUMBER,
-    mutatio_type: DataTypes.STRING,
-    admin_id: DataTypes.NUMBER,
-    stock: DataTypes.NUMBER
+    productId: DataTypes.INTEGER,
+    warehouseId: DataTypes.INTEGER,
+    mutatioQuantity: DataTypes.INTEGER,
+    mutationType: DataTypes.STRING,
+    adminId: DataTypes.INTEGER,
+    stock: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'Mutation',

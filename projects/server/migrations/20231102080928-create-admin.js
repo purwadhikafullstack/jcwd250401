@@ -21,6 +21,9 @@ module.exports = {
       uniqueCode: {
         type: Sequelize.STRING
       },
+      uniqueCodeCreatedAt: {
+        type: Sequelize.DATE
+      },
       isWarehouseAdmin: {
         type: Sequelize.BOOLEAN
       },
