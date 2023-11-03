@@ -9,23 +9,41 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      product_id: {
-        type: Sequelize.NUMBER
+      productId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: {
+            tableName: 'Products',
+          },
+          key: 'id'
+        }
       },
-      warehouse_id: {
-        type: Sequelize.NUMBER
+      warehouseId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: {
+            tableName: 'Warehouses',
+          },
+          key: 'id'
+        }
       },
-      mutation_quantity: {
-        type: Sequelize.NUMBER
+      mutationQuantity: {
+        type: Sequelize.INTEGER
       },
-      mutatio_type: {
-        type: Sequelize.STRING
+      mutationType: {
+        type: Sequelize.ENUM("in","out")
       },
-      admin_id: {
-        type: Sequelize.NUMBER
+      adminId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: {
+            tableName: 'Admins',
+          },
+          key: 'id'
+        }
       },
       stock: {
-        type: Sequelize.NUMBER
+        type: Sequelize.INTEGER
       },
       createdAt: {
         allowNull: false,

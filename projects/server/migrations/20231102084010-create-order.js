@@ -10,22 +10,34 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       totalPrice: {
-        type: Sequelize.NUMBER
+        type: Sequelize.INTEGER
       },
-      paymentProof: {
-        type: Sequelize.BOOLEAN
+      paymentProofImage: {
+        type: Sequelize.STRING
       },
-      user_id: {
-        type: Sequelize.NUMBER
+      userId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'Users',
+          key: 'id'
+        },
       },
-      shipment_id: {
-        type: Sequelize.NUMBER
+      shipmentId: {
+        type: Sequelize.INTEGER, 
+        references: {
+          model: 'Shipments',
+          key: 'id'
+        },
       },
       status: {
         type: Sequelize.STRING
       },
-      warehouse_id: {
-        type: Sequelize.NUMBER
+      warehouseId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'Warehouses',
+          key: 'id'
+        },
       },
       createdAt: {
         allowNull: false,
