@@ -1,9 +1,9 @@
-import { Button } from 'flowbite-react';
+import { Route, Routes } from "react-router-dom";
+import { Homepage } from "./pages/Homepage";
 export default function App() {
   return (
-    <div>
-      <Button color='blue'>Click me</Button>
-    </div>
+    <Routes>
+      <Route path="/" element={<Homepage />} />
+    </Routes>
   );
 }
-
