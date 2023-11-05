@@ -5,13 +5,8 @@ import { Button, Checkbox, Label, Modal } from "flowbite-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
-function LoginModal() {
-  const [openModal, setOpenModal] = useState(false);
+function LoginModal({ isOpen, isClose }) {
   const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
-
-  function onCloseModal() {
-    setOpenModal(false);
-  }
 
   // Function to toggle password visibility
   const togglePasswordVisibility = () => {
@@ -37,9 +32,8 @@ function LoginModal() {
 
   return (
     <>
-      <Button onClick={() => setOpenModal(true)}>Toggle modal Login</Button>
-      <Modal show={openModal} size="lg" onClose={onCloseModal} popup>
-        <Modal.Header />
+      <Modal show={isOpen} size="lg" onClose={isClose} popup>
+        <Modal.Header/>
         <Modal.Body>
           <form onSubmit={formik.handleSubmit}>
             <div className="space-y-4 px-4">
