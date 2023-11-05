@@ -1,4 +1,4 @@
-import { Navigationbar } from "../components/Navbar";
+import Navigationbar from "../components/Navigationbar";
 import { Carousel, Footer } from "flowbite-react";
 import { BsFacebook, BsInstagram, BsTiktok } from "react-icons/bs";
 import img1 from "../assets/image-1.jpg";
@@ -10,10 +10,10 @@ export const Homepage = () => {
   return (
     <div className="min-h-screen font-sagoe">
       <Navigationbar />
-      <div className="h-[95vh] rounded-none">
-        <Carousel indicators={false}>
+      <div className="h-[95vh] w-full">
+        <Carousel indicators={false}  style={{ borderRadius: 0 }} className="rounded-none">
           {imgList.map((img, index) => (
-            <img key={index} src={img} alt={img} />
+            <img key={index} src={img} alt={img} className="rounded-none" />
           ))}
         </Carousel>
       </div>

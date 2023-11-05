@@ -1,6 +1,10 @@
 import { Avatar, Button, Dropdown, Navbar } from "flowbite-react";
-import { BsCart, BsSearch } from "react-icons/bs";
+import { BsCart, BsSearch , BsPersonCircle} from "react-icons/bs";
 import { MdFavoriteBorder } from "react-icons/md";
+// import SignUpModal from './components/SignUpModal';
+// import LoginModal from './components/LoginModal';
+// import VerifyModal from './components/VerifyModal';
+// import CreatePasswordModal from './components/CreatePasswordModal';
 
 export const Navigationbar = () => {
   const userData = [
@@ -12,7 +16,7 @@ export const Navigationbar = () => {
   ];
   const isLogin = false;
   return (
-    <div className="flex items-center md:justify-evenly">
+    <div className="flex items-center justify-between h-20">
       <Navbar
         className="w-[100vw] mx-5"
         theme={{
@@ -21,10 +25,11 @@ export const Navigationbar = () => {
               rounded: "rounded-none",
             },
           },
-        }}>
+        }}
+      >
         <Navbar.Brand href="#">
           {/* <img src="/favicon.svg" className="mr-3 h-6 sm:h-9" alt="Warehouse Logo" /> */}
-          <span className="self-center whitespace-nowrap text-xl md:text-2xl lg:text-3xl xl:text-4xl font-semibold dark:text-white">RAINS</span>
+          <span className="self-center whitespace-nowrap text-xl md:text-2xl lg:text-3xl xl:text-5xl font-segoe font-bold dark:text-white">RAINS</span>
         </Navbar.Brand>
         <div className="flex md:order-2">
           {isLogin ? (
@@ -56,10 +61,11 @@ export const Navigationbar = () => {
               </Button>
             </div>
           )}
-          <div className="flex items-center">
-            <BsSearch className="text-xl mr-3 ml-3 cursor-pointer" />
-            <BsCart className="text-xl mr-3 cursor-pointer" />
-            <MdFavoriteBorder className="text-xl mr-3 cursor-pointer" />
+          <div className="flex items-center gap-8 ml-4">
+            <BsSearch className="text-xl cursor-pointer" />
+            <BsPersonCircle className="text-xl cursor-pointer" />
+            <MdFavoriteBorder className="text-xl cursor-pointer" />
+            <BsCart className="text-xl cursor-pointer" />
             <Navbar.Toggle />
           </div>
         </div>
