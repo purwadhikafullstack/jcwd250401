@@ -6,7 +6,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import SignUpModal from './SignUpModal';
 
-function LoginModal({ isOpen, isClose }) {
+function LoginModal({ isOpen, isClose, openSignUpModal, openForgotPasswordModal }) {
   const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
   const [showSignUpModal, setShowSignUpModal] = useState(false);
 
@@ -14,11 +14,6 @@ function LoginModal({ isOpen, isClose }) {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-
-  const toggleSignUpModal = () => {
-    setShowSignUpModal(true);
-  };
-
 
   const formik = useFormik({
     initialValues: {
@@ -45,7 +40,7 @@ function LoginModal({ isOpen, isClose }) {
           <form onSubmit={formik.handleSubmit}>
             <div className="space-y-4 px-4">
               <div className="space-y-3 mb-4">
-                <h3 className="text-xl font-medium text-gray-900 dark:text-white">Hi, Welcome Back!</h3>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Hi, Welcome Back!</h3>
                 <h4 className="text-sm text-gray-900 dark:text-white">Login with your email address and password</h4>
               </div>
               <div>
@@ -84,7 +79,7 @@ function LoginModal({ isOpen, isClose }) {
                 </Button>
               </div>
               <div>
-                <a href="#" className="text-md font-bold text-black underline dark:text-cyan-500">
+                <a onClick={openForgotPasswordModal} className="text-md font-medium text-black hover:underline hover:cursor-pointer dark:text-cyan-500">
                   Forgot your password?
                 </a>
               </div>
@@ -106,9 +101,9 @@ function LoginModal({ isOpen, isClose }) {
                 </Button>
               </div>
               <div>
-                <span className="text-md font-bold">
+                <span className="text-md font-medium">
                   Don't have an account?{" "}
-                  <a onClick={toggleSignUpModal}className="text-md font-bold text-blue-600">
+                  <a onClick={openSignUpModal} className="text-md font-bold text-blue-600 hover:underline hover:cursor-pointer">
                     Sign Up
                   </a>
                 </span>
@@ -117,7 +112,6 @@ function LoginModal({ isOpen, isClose }) {
           </form>
         </Modal.Body>
       </Modal>
-      {showSignUpModal && <SignUpModal isOpen={showSignUpModal} isClose={toggleSignUpModal} />}
     </>
   );
 }

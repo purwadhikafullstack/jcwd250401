@@ -4,8 +4,12 @@ import SignUpModal from "./SignUpModal";
 import VerifyModal from "./VerifyModal";
 import CreatePasswordModal from "./CreatePasswordModal";
 import ForgotPasswordModal from "./ForgotPasswordModal";
+import { useSelector, useDispatch } from "react-redux";
+import { hideModal } from "../slices/authModalSlices";
 
 function AuthModal() {
+  const isAuthModalVisible = useSelector((state) => state.authModal.isOpen); // Change state property name to "isVisible"
+  const dispatch = useDispatch();
   const [showLoginModal, setShowLoginModal] = useState(true);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
@@ -28,24 +32,36 @@ function AuthModal() {
     setShowVerifyModal(true);
   };
 
-  const CreatePassswordModal = () => {
+  const openCreatePasswordModal = () => {
     setShowLoginModal(false);
     setShowSignUpModal(false);
+    setShowVerifyModal(false);
+    setShowCreatePasswordModal(true);
   };
 
-  const ForgotPasswordModal = () => {
+  const openForgotPasswordModal = () => {
     setShowLoginModal(false);
-    setShowSignUpModal(true);
+    setShowSignUpModal(false);
+    setShowVerifyModal(false);
+    setShowCreatePasswordModal(false);
+    setShowForgotPasswordModal(true);
   };
 
-
-
-
+  const closeModal = () => {
+    dispatch(hideModal()); // Dispatch the hideModal action
+  };
 
   return (
     <>
-      {showLoginModal && <LoginModal isOpen={showLoginModal} isClose={openSignUpModal} openSignUpModal={openSignUpModal} />}
-      {showSignUpModal && <SignUpModal isOpen={showSignUpModal} isClose={openLoginModal} openLoginModal={openLoginModal} />}
+      {isAuthModalVisible && (
+        <>
+          {showLoginModal && <LoginModal isOpen={showLoginModal} isClose={closeModal} openSignUpModal={openSignUpModal} openForgotPasswordModal={openForgotPasswordModal} />}
+          {showSignUpModal && <SignUpModal isOpen={showSignUpModal} isClose={closeModal} openLoginModal={openLoginModal} />}
+          {showVerifyModal && <VerifyModal isOpen={showVerifyModal} isClose={closeModal} />}
+          {showCreatePasswordModal && <CreatePasswordModal isOpen={showCreatePasswordModal} isClose={closeModal} />}
+          {showForgotPasswordModal && <ForgotPasswordModal isOpen={showForgotPasswordModal} isClose={closeModal} />}
+        </>
+      )}
     </>
   );
 }

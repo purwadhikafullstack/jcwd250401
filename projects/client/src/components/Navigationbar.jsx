@@ -3,17 +3,29 @@ import { BsCart, BsSearch, BsPersonCircle } from "react-icons/bs";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { MdFavoriteBorder } from "react-icons/md";
 import rains from "../assets/rains.png";
-import LoginModal from "./LoginModal";
+import AuthModal from "./AuthModal";
+import { useSelector, useDispatch } from "react-redux";
+import { showModal } from "../slices/authModalSlices";
+
+
+
 
 function Navigationbar() {
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false); // State to manage the login modal visibility
+ 
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const categories = ["NEW IN", "MEN", "WOMEN", "BAGS", "ACCESSORIES"];
   const accounts = ["Profile", "Address Book", "My Order", "Change My Password"];
   const accountsDropdown = ["Profile", "Address Book", "My Order", "Change My Password", "Search", "Cart", "Favorites"];
+  const isAuthModalOpen = useSelector((state) => state.authModal.isOpen); // Change state property name to "isVisible"
 
-  const openLoginModal = () => setIsLoginModalOpen(true);
+  const dispatch = useDispatch();
+
+ 
+  const openAuthModal = () => {
+   dispatch(showModal()); // Dispatch the showModal action
+  };
+
   const handleIconClick = () => setDropdownVisible(!dropdownVisible);
   const handleLogout = () => setIsLogin(false);
 
@@ -100,11 +112,11 @@ function Navigationbar() {
           </div>
         </>
       ) : (
-        <a onClick={openLoginModal} className="text-black text-xl font-semibold hover:underline cursor-pointer">
+        <a onClick={openAuthModal} className="text-black text-xl font-semibold hover:underline cursor-pointer">
           Log in
         </a>
       )}
-      {isLoginModalOpen && <LoginModal isOpen={isLoginModalOpen} isClose={() => setIsLoginModalOpen(false)} />}
+      {isAuthModalOpen && <AuthModal/>} 
     </div>
   );
 }
