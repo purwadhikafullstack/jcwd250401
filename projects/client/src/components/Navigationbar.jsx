@@ -57,6 +57,7 @@ function Navigationbar() {
                 </p>
               </div>
             )}
+            
             <MdFavoriteBorder className="text-xl cursor-pointer" />
             <BsCart className="text-xl cursor-pointer" />
           </div>
