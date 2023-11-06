@@ -1,0 +1,9 @@
+DB_USER=
+DB_PASS=
+DB_BASE=
+DB_HOST=
+
+# Create database
+
+SMTP_USER=
+SMTP_PASS=
