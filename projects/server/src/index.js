@@ -21,6 +21,11 @@ app.use(express.json());
 // ===========================
 // NOTE : Add your routes here
 
+const { Product, Order, OrderItem } = require("../models");
+const cartRoutes = require("../routes/cartRoutes");
+
+app.use("/api/cart", cartRoutes);
+
 app.get("/api", (req, res) => {
   res.send(`Hello, this is my API`);
 });
