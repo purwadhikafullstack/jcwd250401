@@ -10,7 +10,7 @@ function Navigationbar() {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const categories = ["NEW IN", "MEN", "WOMEN", "BAGS", "ACCESSORIES"];
-  const accounts = ["Profile", "Address Book", "My Order", "Change My Password", "Log Out"];
+  const accounts = ["Profile", "Address Book", "My Order", "Change My Password"];
   const accountsDropdown = ["Profile", "Address Book", "My Order", "Change My Password", "Search", "Cart", "Favorites"];
 
   const openLoginModal = () => setIsLoginModalOpen(true);
@@ -52,6 +52,9 @@ function Navigationbar() {
                     </a>
                   );
                 })}
+                <p className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" role="menuitem" onClick={handleLogout}>
+                      Log Out
+                    </p>
               </div>
             )}
             <MdFavoriteBorder className="text-xl cursor-pointer" />
