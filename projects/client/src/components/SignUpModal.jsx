@@ -4,12 +4,10 @@ import { Button, Checkbox, Label, Modal } from "flowbite-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
-function SignUpModal() {
+function SignUpModal({ isOpen, isClose }) {
   const [openModal, setOpenModal] = useState(false);
 
-  function onCloseModal() {
-    setOpenModal(false);
-  }
+ 
 
   const formik = useFormik({
     initialValues: {
@@ -28,15 +26,14 @@ function SignUpModal() {
 
   return (
     <>
-      <Button onClick={() => setOpenModal(true)}>Toggle modal SignUp</Button>
-      <Modal show={openModal} size="lg" onClose={onCloseModal} popup>
+      <Modal show={isOpen} size="md" onClose={isClose} popup>
         <Modal.Header />
         <Modal.Body>
           <form onSubmit={formik.handleSubmit}>
             <div className="space-y-4 px-4">
               <div className="space-y-3">
                 <h3 className="text-xl font-medium text-gray-900 dark:text-white">Create an account</h3>
-                <h4 className="text-sm text-gray-900 dark:text-white">You will reveive the verification code to your email address associated with account. Please make sure to check you incoming email rom us.</h4>
+                <h4 className="text-sm text-gray-900 dark:text-white">You will reveive the verification code to your email address associated with account. Please make sure to check you incoming email from us.</h4>
               </div>
               <div>
                 <div className="mb-2 block">

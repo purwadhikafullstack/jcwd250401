@@ -4,14 +4,21 @@ import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons
 import { Button, Checkbox, Label, Modal } from "flowbite-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import SignUpModal from './SignUpModal';
 
 function LoginModal({ isOpen, isClose }) {
   const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
+  const [showSignUpModal, setShowSignUpModal] = useState(false);
 
   // Function to toggle password visibility
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+
+  const toggleSignUpModal = () => {
+    setShowSignUpModal(true);
+  };
+
 
   const formik = useFormik({
     initialValues: {
@@ -32,7 +39,7 @@ function LoginModal({ isOpen, isClose }) {
 
   return (
     <>
-      <Modal show={isOpen} size="lg" onClose={isClose} popup>
+      <Modal show={isOpen} size="md" onClose={isClose} popup>
         <Modal.Header/>
         <Modal.Body>
           <form onSubmit={formik.handleSubmit}>
@@ -62,7 +69,7 @@ function LoginModal({ isOpen, isClose }) {
                     {...formik.getFieldProps("password")}
                   />
                   <span className="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer" onClick={togglePasswordVisibility}>
-                    {showPassword ? <FaEye /> : <FaEyeSlash />}
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </span>
                 </div>
                 {formik.touched.password && formik.errors.password ? <div className="text-red-500">{formik.errors.password}</div> : null}
@@ -72,7 +79,7 @@ function LoginModal({ isOpen, isClose }) {
                 <span className="text-sm text-gray-900 dark:text-white">Remember me</span>
               </div>
               <div>
-                <Button className="w-full bg-[#40403F] hover:bg-red-600" size="lg" type="submit">
+                <Button className="w-full bg-[#40403F] enabled:hover:bg-[#777777]" size="lg" type="submit">
                   Login
                 </Button>
               </div>
@@ -101,7 +108,7 @@ function LoginModal({ isOpen, isClose }) {
               <div>
                 <span className="text-md font-bold">
                   Don't have an account?{" "}
-                  <a href="#" className="text-md font-bold text-blue-600">
+                  <a onClick={toggleSignUpModal}className="text-md font-bold text-blue-600">
                     Sign Up
                   </a>
                 </span>
@@ -110,6 +117,7 @@ function LoginModal({ isOpen, isClose }) {
           </form>
         </Modal.Body>
       </Modal>
+      {showSignUpModal && <SignUpModal isOpen={showSignUpModal} isClose={toggleSignUpModal} />}
     </>
   );
 }
