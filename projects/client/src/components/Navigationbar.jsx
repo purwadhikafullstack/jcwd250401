@@ -53,8 +53,8 @@ function Navigationbar() {
                   );
                 })}
                 <p className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" role="menuitem" onClick={handleLogout}>
-                      Log Out
-                    </p>
+                  Log Out
+                </p>
               </div>
             )}
             <MdFavoriteBorder className="text-xl cursor-pointer" />
