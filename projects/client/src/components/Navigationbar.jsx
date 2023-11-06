@@ -47,7 +47,7 @@ function Navigationbar() {
                 {accounts.map((account, index) => {
                   const joinedAccounts = account.toLowerCase().replace(" ", "-");
                   return (
-                    <a key={index} href={`/${joinedAccounts}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
+                    <a key={index} href={`/account/${joinedAccounts}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
                       {account}
                     </a>
                   );
