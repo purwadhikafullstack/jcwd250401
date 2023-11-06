@@ -5,7 +5,7 @@ const mailer = require("../lib/nodemailer");
 const hbs = require("handlebars");
 const crypto = require("crypto");
 const fs = require("fs"); // Don't forget to import the 'fs' module
-const { User } = require("../../models");
+const { User } = require("../models");
 const path = require("path");
 
 exports.handleRegister = async (req, res) => {
