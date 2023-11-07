@@ -203,7 +203,7 @@ function LoginModal({ isOpen, isClose }) {
               </div>
               <div>
                 <a onClick={forgotButton} className="text-md font-medium text-black hover:underline hover:cursor-pointer dark:text-cyan-500">
-                  Forgot your password?
+                  Forgot your password ?
                 </a>
               </div>
               <div>
@@ -225,7 +225,7 @@ function LoginModal({ isOpen, isClose }) {
               </div>
               <div>
                 <span className="text-md font-medium">
-                  Don't have an account?{" "}
+                  Don't have an account ?{" "}
                   <a onClick={signUpButton} className="text-md font-bold text-blue-600 hover:underline hover:cursor-pointer">
                     Sign Up
                   </a>
