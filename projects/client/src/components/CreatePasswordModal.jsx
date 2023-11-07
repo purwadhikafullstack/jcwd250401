@@ -53,7 +53,7 @@ function CreatePasswordModal({ isOpen, isClose }) {
 
         if (response.data) {
           setTimeout(() => {
-            toast.success("Password has been created!, Directing you to login page...", {
+            toast.success("Password has been created, Directing you to login page...", {
               autoClose: 3000,
               onAutoClose: (t) => {
                 dispatch(showLoginModal());
@@ -87,7 +87,7 @@ function CreatePasswordModal({ isOpen, isClose }) {
         // Add a 1-second delay before closing the modal
         setTimeout(() => {
           setIsSubmitting(false);
-        }, 8000);
+        }, 7000);
       }
     },
   });

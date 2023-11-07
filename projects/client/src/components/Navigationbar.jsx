@@ -1,34 +1,45 @@
 import React, { useState } from "react";
 import { BsCart, BsSearch, BsPersonCircle } from "react-icons/bs";
 import { GiHamburgerMenu } from "react-icons/gi";
+import { HiOutlineArrowRight } from "react-icons/hi";
 import { MdFavoriteBorder } from "react-icons/md";
+import { Button } from "flowbite-react";
 import rains from "../assets/rains.png";
 import AuthModal from "./AuthModal";
 import { useSelector, useDispatch } from "react-redux";
-import { showLoginModal} from "../slices/authModalSlices";
+import { showLoginModal, showSignUpModal } from "../slices/authModalSlices";
 import { logout } from "../slices/accountSlices";
-
-
-
+import { getAuth, signOut } from "firebase/auth"; // Import Firebase authentication functions
 
 function Navigationbar() {
   const isLogin = useSelector((state) => state.account.isLogin);
-
   const [dropdownVisible, setDropdownVisible] = useState(false);
-
   const categories = ["NEW IN", "MEN", "WOMEN", "BAGS", "ACCESSORIES"];
   const accounts = ["Profile", "Address Book", "My Order", "Change My Password"];
   const accountsDropdown = ["Profile", "Address Book", "My Order", "Change My Password", "Search", "Cart", "Favorites"];
   const dispatch = useDispatch();
+  const auth = getAuth(); // Initialize Firebase authentication
 
   const openAuthModal = () => {
-   dispatch(showLoginModal());
+    dispatch(showLoginModal());
   };
 
+  const openSignUpModal = () => {
+    dispatch(showSignUpModal());
+  }
+
   const handleIconClick = () => setDropdownVisible(!dropdownVisible);
+
   const handleLogout = () => {
-    dispatch(logout());
-    setDropdownVisible(false);
+    signOut(auth) // Sign out the user from Firebase
+      .then(() => {
+        setDropdownVisible(false);
+        dispatch(logout()); // Dispatch the Redux logout action
+      })
+      .catch((error) => {
+        // Handle any sign-out errors
+        console.error("Error signing out:", error);
+      });
   };
 
   return (
@@ -71,7 +82,7 @@ function Navigationbar() {
                 </p>
               </div>
             )}
-            
+
             <MdFavoriteBorder className="text-xl cursor-pointer" />
             <BsCart className="text-xl cursor-pointer" />
           </div>
@@ -114,11 +125,18 @@ function Navigationbar() {
           </div>
         </>
       ) : (
-        <a onClick={openAuthModal} className="text-black text-xl font-semibold hover:underline cursor-pointer">
-          Log in
-        </a>
+        <div className="flex justify-center items-center gap-4">
+          <a onClick={openAuthModal} className="text-black text-md font-semibold hover:underline cursor-pointer">
+            Log in
+          </a>
+          <Button pill className="cursor-pointer bg-[#40403F] enabled:hover:bg-[#777777]"
+          onClick={openSignUpModal}>
+            <span className="text-white text-md font-semibold">Sign Up</span>
+            <HiOutlineArrowRight className="ml-2 h-5 w-5" />
+          </Button>
+        </div>
       )}
-     <AuthModal />
+      <AuthModal />
     </div>
   );
 }

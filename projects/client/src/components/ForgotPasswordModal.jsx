@@ -4,7 +4,7 @@ import { Button, Modal } from "flowbite-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
-function ForgotPasswordModal({ isOpen, isClose, openLoginModal }) {
+function ForgotPasswordModal({ isOpen, isClose}) {
 
 
   const formik = useFormik({

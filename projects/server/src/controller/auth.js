@@ -7,11 +7,12 @@ const crypto = require("crypto");
 const fs = require("fs"); // Don't forget to import the 'fs' module
 const { User } = require("../models");
 const path = require("path");
+
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 function generateRandomLetterString(length) {
-  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
+  const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
   const randomBytes = crypto.randomBytes(length);
 
   for (let i = 0; i < length; i++) {
@@ -24,7 +25,7 @@ function generateRandomLetterString(length) {
 
 exports.handleRegister = async (req, res) => {
   const { email } = req.body;
-  
+
   try {
     const existingUser = await User.findOne({
       where: {
@@ -37,7 +38,7 @@ exports.handleRegister = async (req, res) => {
         message: "User already exists",
       });
     }
-    
+
     const verifyCode = generateRandomLetterString(6);
     const username = email.split("@")[0];
     const user = await User.create({
@@ -76,6 +77,43 @@ exports.handleRegister = async (req, res) => {
           user,
         });
       }
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      message: "Internal server error",
+    });
+  }
+};
+
+exports.handleRegisterWithGoogle = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const existingUser = await User.findOne({
+      where: {
+        email: email,
+      },
+    });
+
+    if (existingUser) {
+      return res.status(400).send({
+        message: "User already exists",
+      });
+    }
+
+    const verifyCode = generateRandomLetterString(6);
+    const username = email.split("@")[0];
+    const user = await User.create({
+      email,
+      username,
+      verifyCode,
+      isVerify: true,
+    });
+
+    return res.status(201).send({
+      message: "User created successfully",
+      user,
     });
   } catch (error) {
     console.log(error);
@@ -157,7 +195,6 @@ exports.handleCreatePassword = async (req, res) => {
       const salt = await bcrypt.genSalt(10);
       const hashPassword = await bcrypt.hash(password, salt);
       user.password = hashPassword;
-      
 
       await user.save(); // Await the save operation
 
@@ -178,7 +215,7 @@ exports.handleCreatePassword = async (req, res) => {
     console.error("Error while handling password creation:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
-}
+};
 
 exports.handleLogin = async (req, res) => {
   const { email, password } = req.body;
@@ -214,7 +251,54 @@ exports.handleLogin = async (req, res) => {
       expiresIn: "2h",
     });
 
-    console.log(account);
+    const response = {
+      token,
+      profile: {
+        firstName: account.firstName,
+        lastName: account.lastName,
+        email: account.email,
+        username: account.username,
+        photoProfile: account.photoProfile,
+        isVerify: account.isVerify,
+      },
+    };
+
+    res.status(200).json({
+      ok: true,
+      data: response,
+    });
+  } catch (error) {
+    res.status(401).json({
+      ok: false,
+      message: String(error),
+    });
+  }
+};
+
+exports.handleLoginWithGoogle = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const account = await User.findOne({
+      where: {
+        [Op.or]: {
+          email,
+        },
+      },
+    });
+
+    if (!account) {
+      res.status(401).json({
+        ok: false,
+        message: "Incorrect account, Please register your google first!",
+      });
+      return;
+    }
+
+    const payload = { id: account.id, isVerify: account.isVerify };
+    const token = jwt.sign(payload, JWT_SECRET_KEY, {
+      expiresIn: "2h",
+    });
 
     const response = {
       token,
