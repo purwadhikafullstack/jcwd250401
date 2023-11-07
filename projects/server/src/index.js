@@ -25,8 +25,7 @@ app.use("/public", express.static(__dirname + "/public"));
 // ===========================
 // NOTE : Add your routes here
 
-const { Product, Order, OrderItem } = require("../models");
-const cartRoutes = require("../routes/cartRoutes");
+const cartRoutes = require("./routes/cartRoutes");
 
 app.use("/api/cart", cartRoutes);
 
@@ -51,5 +50,5 @@ app.use((err, req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`application start on port ${PORT}`);
+  console.log(`APP RUNNING at ${PORT} ✅`);
 });
