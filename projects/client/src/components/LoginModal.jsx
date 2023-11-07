@@ -133,7 +133,7 @@ function LoginModal({ isOpen, isClose }) {
               <div>
                 {isSubmitting ? (
                   <Button className="w-full bg-[#40403F] enabled:hover:bg-[#40403F] outline-none" size="lg" isProcessing processingSpinner={<AiOutlineLoading className="h-6 w-6 animate-spin" />}>
-                    Logining...
+                    Logging in...
                   </Button>
                 ) : (
                   <Button className="w-full bg-[#40403F] enabled:hover:bg-[#777777]" size="lg" type="submit" disabled={isSubmitting}>
