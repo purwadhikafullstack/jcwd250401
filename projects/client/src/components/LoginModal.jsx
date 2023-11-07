@@ -12,21 +12,21 @@ import { toast } from "sonner";
 import api from "../api";
 import { AiOutlineLoading } from "react-icons/ai";
 import { login } from "../slices/accountSlices";
-import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { initializeApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: 'YOUR_API_KEY',
-  authDomain: 'YOUR_AUTH_DOMAIN',
-  projectId: 'YOUR_PROJECT_ID',
-  storageBucket: 'YOUR_STORAGE_BUCKET',
-  messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-  appId: 'YOUR_APP_ID',
+  apiKey: "AIzaSyBM35r6DuH1V6QUWcw-J8UkNarOEQ6Sg9w",
+  authDomain: "graceful-splice-404407.firebaseapp.com",
+  projectId: "graceful-splice-404407",
+  storageBucket: "graceful-splice-404407.appspot.com",
+  messagingSenderId: "291727587114",
+  appId: "1:291727587114:web:97b2041a779d26afd61053",
+  measurementId: "G-HENXSNV7D9",
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
-
 
 function LoginModal({ isOpen, isClose }) {
   const dispatch = useDispatch();
@@ -48,20 +48,50 @@ function LoginModal({ isOpen, isClose }) {
     dispatch(hideLoginModal());
   };
 
-  function LoginWithGoogle() {
-    const handleGoogleSignIn = async () => {
-      const provider = new GoogleAuthProvider();
-      try {
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-  
-        // Handle the user object as needed (e.g., save user data to your database).
-        console.log("Google Sign-In Successful:", user);
-      } catch (error) {
-        console.error("Google Sign-In Error:", error);
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const response = await api.post("/auth/google", {
+        email: user.email,
+      });
+
+      if (response.status === 200) {
+        const responseData = response.data;
+        setTimeout(() => {
+          toast.success("Login success !", {
+            autoClose: 1000,
+            onAutoClose: (t) => {
+              dispatch(hideLoginModal());
+              setIsSubmitting(false);
+              dispatch(login(responseData));
+            },
+          });
+        }, 600);
       }
-    };
-  }
+    } catch (error) {
+      if (error.response) {
+        if (error.response.status === 401) {
+          setTimeout(() => {
+            toast.error("Email doesn't exist, please sign up with your google first.", {
+              autoClose: 1000,
+              onAutoClose: (t) => {
+                dispatch(showSignUpModal());
+                dispatch(hideLoginModal());
+              },
+            });
+          }, 2000);
+        } else {
+          // Handle other HTTP errors
+        }
+      } else if (error.request) {
+        // Handle network errors (request was made but no response received)
+      } else {
+        // Handle other non-network, non-HTTP-related errors
+      }
+    }
+  };
 
   const formik = useFormik({
     initialValues: {
@@ -85,7 +115,7 @@ function LoginModal({ isOpen, isClose }) {
         if (response.status === 200) {
           const responseData = response.data;
           setTimeout(() => {
-            toast.success("Login success !", {
+            toast.success("Login success", {
               autoClose: 1000,
               onAutoClose: (t) => {
                 dispatch(hideLoginModal());
@@ -99,7 +129,7 @@ function LoginModal({ isOpen, isClose }) {
         if (error.response) {
           if (error.response.status === 401) {
             setTimeout(() => {
-              toast.error("Email or password incorrect !");
+              toast.error("Email or password incorrect");
               setIsSubmitting(false);
             }, 2000);
           } else {
@@ -114,7 +144,7 @@ function LoginModal({ isOpen, isClose }) {
         // Add a 1-second delay before closing the modal
         setTimeout(() => {
           setIsSubmitting(false);
-        }, 8000);
+        }, 6000);
       }
     },
   });
@@ -184,7 +214,7 @@ function LoginModal({ isOpen, isClose }) {
                 </div>
               </div>
               <div>
-                <Button className="w-full" color="light" size="lg">
+                <Button className="w-full" color="light" size="lg" onClick={handleGoogleSignIn}>
                   <div className="flex items-center justify-center">
                     <div className="mr-2">
                       <FcGoogle style={{ fontSize: "24px" }} />

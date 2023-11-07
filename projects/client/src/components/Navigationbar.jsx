@@ -5,28 +5,37 @@ import { MdFavoriteBorder } from "react-icons/md";
 import rains from "../assets/rains.png";
 import AuthModal from "./AuthModal";
 import { useSelector, useDispatch } from "react-redux";
-import { showLoginModal} from "../slices/authModalSlices";
+import { showLoginModal } from "../slices/authModalSlices";
 import { logout } from "../slices/accountSlices";
+import { getAuth, signOut } from "firebase/auth"; // Import Firebase authentication functions
 
 function Navigationbar() {
   const isLogin = useSelector((state) => state.account.isLogin);
-
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const categories = ["NEW IN", "MEN", "WOMEN", "BAGS", "ACCESSORIES"];
   const accounts = ["Profile", "Address Book", "My Order", "Change My Password"];
   const accountsDropdown = ["Profile", "Address Book", "My Order", "Change My Password", "Search", "Cart", "Favorites"];
   const dispatch = useDispatch();
+  const auth = getAuth(); // Initialize Firebase authentication
 
   const openAuthModal = () => {
-   dispatch(showLoginModal());
+    dispatch(showLoginModal());
   };
 
   const handleIconClick = () => setDropdownVisible(!dropdownVisible);
-  
+
   const handleLogout = () => {
-    dispatch(logout());
-    setDropdownVisible(false);
+    signOut(auth) // Sign out the user from Firebase
+      .then(() => {
+        setDropdownVisible(false);
+        dispatch(logout()); // Dispatch the Redux logout action
+      })
+      .catch((error) => {
+        // Handle any sign-out errors
+        console.error("Error signing out:", error);
+      });
   };
+
 
   return (
     <div className="w-full bg-white h-20 flex items-center justify-around">
