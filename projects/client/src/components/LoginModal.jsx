@@ -151,7 +151,7 @@ function LoginModal({ isOpen, isClose }) {
 
   return (
     <>
-      <Modal show={isOpen} size="md" onClose={isClose} popup>
+      <Modal show={isOpen} size="md" position="center" onClose={isClose} popup >
         <Modal.Header />
         <Modal.Body>
           <form onSubmit={formik.handleSubmit}>
