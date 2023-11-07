@@ -5,29 +5,31 @@ import { MdFavoriteBorder } from "react-icons/md";
 import rains from "../assets/rains.png";
 import AuthModal from "./AuthModal";
 import { useSelector, useDispatch } from "react-redux";
-import { showModal } from "../slices/authModalSlices";
+import { showLoginModal} from "../slices/authModalSlices";
+import { logout } from "../slices/accountSlices";
 
 
 
 
 function Navigationbar() {
- 
+  const isLogin = useSelector((state) => state.account.isLogin);
+
   const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [isLogin, setIsLogin] = useState(true);
+
   const categories = ["NEW IN", "MEN", "WOMEN", "BAGS", "ACCESSORIES"];
   const accounts = ["Profile", "Address Book", "My Order", "Change My Password"];
   const accountsDropdown = ["Profile", "Address Book", "My Order", "Change My Password", "Search", "Cart", "Favorites"];
-  const isAuthModalOpen = useSelector((state) => state.authModal.isOpen); // Change state property name to "isVisible"
-
   const dispatch = useDispatch();
 
- 
   const openAuthModal = () => {
-   dispatch(showModal()); // Dispatch the showModal action
+   dispatch(showLoginModal());
   };
 
   const handleIconClick = () => setDropdownVisible(!dropdownVisible);
-  const handleLogout = () => setIsLogin(false);
+  const handleLogout = () => {
+    dispatch(logout());
+    setDropdownVisible(false);
+  };
 
   return (
     <div className="w-full bg-white h-20 flex items-center justify-around">
@@ -116,7 +118,7 @@ function Navigationbar() {
           Log in
         </a>
       )}
-      {isAuthModalOpen && <AuthModal/>} 
+     <AuthModal />
     </div>
   );
 }

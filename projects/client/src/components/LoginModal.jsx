@@ -4,15 +4,33 @@ import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons
 import { Button, Checkbox, Label, Modal } from "flowbite-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import SignUpModal from './SignUpModal';
+import { useDispatch } from "react-redux";
+import { showSignUpModal } from "../slices/authModalSlices";
+import { showForgotPasswordModal } from "../slices/authModalSlices";
+import { hideLoginModal } from "../slices/authModalSlices";
+import { toast } from "sonner";
+import api from "../api";
+import { AiOutlineLoading } from "react-icons/ai";
+import { login } from "../slices/accountSlices";
 
-function LoginModal({ isOpen, isClose, openSignUpModal, openForgotPasswordModal }) {
+function LoginModal({ isOpen, isClose }) {
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
-  const [showSignUpModal, setShowSignUpModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Function to toggle password visibility
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const signUpButton = () => {
+    dispatch(showSignUpModal());
+    dispatch(hideLoginModal());
+  };
+
+  const forgotButton = () => {
+    dispatch(showForgotPasswordModal());
+    dispatch(hideLoginModal());
   };
 
   const formik = useFormik({
@@ -25,17 +43,56 @@ function LoginModal({ isOpen, isClose, openSignUpModal, openForgotPasswordModal 
       email: Yup.string().email("Invalid email address").required("Email is required"),
       password: Yup.string().required("Password is required"),
     }),
-    onSubmit: (values) => {
-      // Handle your form submission here
-      console.log("Form submitted with values:", values);
-      // You can add your login logic here
+
+    onSubmit: async (values) => {
+      try {
+        setIsSubmitting(true);
+        const response = await api.post("/auth", {
+          email: values.email,
+          password: values.password,
+        });
+
+        if (response.status === 200) {
+          const responseData = response.data;
+          setTimeout(() => {
+            toast.success("Login success !", {
+              autoClose: 1000,
+              onAutoClose: (t) => {
+                dispatch(hideLoginModal());
+                setIsSubmitting(false);
+                dispatch(login(responseData));
+              },
+            });
+          }, 600);
+        }
+      } catch (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            setTimeout(() => {
+              toast.error("Email or password incorrect !");
+              setIsSubmitting(false);
+            }, 2000);
+          } else {
+            // Handle other HTTP errors
+          }
+        } else if (error.request) {
+          // Handle network errors (request was made but no response received)
+        } else {
+          // Handle other non-network, non-HTTP-related errors
+        }
+      } finally {
+        // Add a 1-second delay before closing the modal
+        setTimeout(() => {
+          setIsSubmitting(false);
+        }, 8000);
+      }
     },
   });
 
   return (
     <>
       <Modal show={isOpen} size="md" onClose={isClose} popup>
-        <Modal.Header/>
+        <Modal.Header />
         <Modal.Body>
           <form onSubmit={formik.handleSubmit}>
             <div className="space-y-4 px-4">
@@ -74,12 +131,18 @@ function LoginModal({ isOpen, isClose, openSignUpModal, openForgotPasswordModal 
                 <span className="text-sm text-gray-900 dark:text-white">Remember me</span>
               </div>
               <div>
-                <Button className="w-full bg-[#40403F] enabled:hover:bg-[#777777]" size="lg" type="submit">
-                  Login
-                </Button>
+                {isSubmitting ? (
+                  <Button className="w-full bg-[#40403F] enabled:hover:bg-[#40403F] outline-none" size="lg" isProcessing processingSpinner={<AiOutlineLoading className="h-6 w-6 animate-spin" />}>
+                    Logining...
+                  </Button>
+                ) : (
+                  <Button className="w-full bg-[#40403F] enabled:hover:bg-[#777777]" size="lg" type="submit" disabled={isSubmitting}>
+                    Login
+                  </Button>
+                )}
               </div>
               <div>
-                <a onClick={openForgotPasswordModal} className="text-md font-medium text-black hover:underline hover:cursor-pointer dark:text-cyan-500">
+                <a onClick={forgotButton} className="text-md font-medium text-black hover:underline hover:cursor-pointer dark:text-cyan-500">
                   Forgot your password?
                 </a>
               </div>
@@ -103,7 +166,7 @@ function LoginModal({ isOpen, isClose, openSignUpModal, openForgotPasswordModal 
               <div>
                 <span className="text-md font-medium">
                   Don't have an account?{" "}
-                  <a onClick={openSignUpModal} className="text-md font-bold text-blue-600 hover:underline hover:cursor-pointer">
+                  <a onClick={signUpButton} className="text-md font-bold text-blue-600 hover:underline hover:cursor-pointer">
                     Sign Up
                   </a>
                 </span>

@@ -1,20 +1,55 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const authModalSlices = createSlice({
+const initialState = {
+  loginModalVisible: false,
+  signUpModalVisible: false,
+  verifyModalVisible: false,
+  createPasswordModalVisible: false,
+  forgotPasswordModalVisible: false,
+  email: "",
+};
+
+const authModalSlice = createSlice({
   name: "authModal",
-  initialState: {
-    isOpen: false,
-  },
+  initialState,
   reducers: {
-    showModal: (state) => {
-      state.isOpen = true;
+    showLoginModal: (state) => {
+      state.loginModalVisible = true;
     },
-    hideModal: (state) => {
-      state.isOpen = false;
+    hideLoginModal: (state) => {
+      state.loginModalVisible = false;
+    },
+    showSignUpModal: (state) => {
+      state.signUpModalVisible = true;
+    },
+    hideSignUpModal: (state) => {
+      state.signUpModalVisible = false;
+    },
+    showVerifyModal: (state) => {
+      state.verifyModalVisible = true;
+    },
+    hideVerifyModal: (state) => {
+      state.verifyModalVisible = false;
+    },
+    showCreatePasswordModal: (state) => {
+      state.createPasswordModalVisible = true;
+    },
+    hideCreatePasswordModal: (state) => {
+      state.createPasswordModalVisible = false;
+    },
+    showForgotPasswordModal: (state) => {
+      state.forgotPasswordModalVisible = true;
+    },
+    hideForgotPasswordModal: (state) => {
+      state.forgotPasswordModalVisible = false;
+    },
+    setEmail: (state, action) => {
+      state.email = action.payload;
     },
   },
 });
 
-export const { showModal, hideModal } = authModalSlices.actions;
+export const { showLoginModal, hideLoginModal, showSignUpModal, hideSignUpModal, showVerifyModal, hideVerifyModal, showCreatePasswordModal, hideCreatePasswordModal, showForgotPasswordModal, hideForgotPasswordModal, setEmail } =
+  authModalSlice.actions;
 
-export default authModalSlices.reducer;
+export default authModalSlice.reducer;

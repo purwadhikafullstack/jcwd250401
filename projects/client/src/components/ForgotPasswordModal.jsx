@@ -4,7 +4,7 @@ import { Button, Modal } from "flowbite-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
-function SignUpModal({ isOpen, isClose, openLoginModal }) {
+function ForgotPasswordModal({ isOpen, isClose, openLoginModal }) {
   const [openModal, setOpenModal] = useState(false);
 
   const formik = useFormik({
@@ -45,10 +45,6 @@ function SignUpModal({ isOpen, isClose, openLoginModal }) {
                   Forgot Password
                 </Button>
               </div>
-
-
-
-
             </div>
           </form>
         </Modal.Body>
@@ -57,4 +53,4 @@ function SignUpModal({ isOpen, isClose, openLoginModal }) {
   );
 }
 
-export default SignUpModal;
+export default ForgotPasswordModal;

@@ -1,11 +1,25 @@
 import React, { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
+import { AiOutlineLoading } from "react-icons/ai";
 import { Button, Modal } from "flowbite-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import api from "../api";
+import { toast } from "sonner";
+import { useDispatch } from "react-redux";
+import { showLoginModal } from "../slices/authModalSlices";
+import { hideSignUpModal } from "../slices/authModalSlices";
+import { showVerifyModal } from "../slices/authModalSlices";
+import { setEmail } from "../slices/authModalSlices";
 
-function SignUpModal({ isOpen, isClose, openLoginModal }) {
-  const [openModal, setOpenModal] = useState(false);
+function SignUpModal({ isOpen, isClose, openLoginModal, openVerifyModal }) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const dispatch = useDispatch();
+
+  const loginButton = () => {
+    dispatch(showLoginModal());
+    dispatch(hideSignUpModal());
+  };
 
   const formik = useFormik({
     initialValues: {
@@ -14,25 +28,50 @@ function SignUpModal({ isOpen, isClose, openLoginModal }) {
     validationSchema: Yup.object({
       email: Yup.string().email("Invalid email address").required("Email is required"),
     }),
+
     onSubmit: async (values) => {
       try {
-        // Make a POST request to your backend registration API using the api instance
+        setIsSubmitting(true);
         const response = await api.post("/auth/register", {
           email: values.email,
-          
         });
 
-        
-    
-       
-        
+        if (response.status === 201) {
+          setTimeout(() => {
+            toast.success("Verification code has been send to your email!", {
+              autoClose: 1000,
+              onAutoClose: (t) => {
+                dispatch(showVerifyModal());
+                dispatch(hideSignUpModal());
+                setIsSubmitting(false);
+              },
+            });
+            dispatch(setEmail(response.data.user.email));
+          }, 1000);
+        }
       } catch (error) {
-       
-      
+        if (error.response) {
+          if (error.response.status === 400) {
+            setTimeout(() => {
+              toast.error("Email already exists");
+              setIsSubmitting(false);
+            }, 2000);
+          } else {
+            // Handle other HTTP errors
+          }
+        } else if (error.request) {
+          // Handle network errors (request was made but no response received)
+        } else {
+          // Handle other non-network, non-HTTP-related errors
+        }
+      } finally {
+        // Add a 1-second delay before closing the modal
+        setTimeout(() => {
+          setIsSubmitting(false);
+        }, 6000);
       }
-    }
+    },
   });
-
   return (
     <>
       <Modal show={isOpen} size="md" onClose={isClose} popup>
@@ -53,9 +92,15 @@ function SignUpModal({ isOpen, isClose, openLoginModal }) {
               </div>
 
               <div>
-                <Button className="w-full bg-[#40403F] hover:bg-red-600 enabled:hover:bg-[#777777]" size="lg" type="submit">
-                  Sign Up
-                </Button>
+                {isSubmitting ? (
+                  <Button className="w-full bg-[#40403F] enabled:hover:bg-[#40403F] outline-none" size="lg" isProcessing processingSpinner={<AiOutlineLoading className="h-6 w-6 animate-spin" />}>
+                    Signing Up...
+                  </Button>
+                ) : (
+                  <Button className="w-full bg-[#40403F] enabled:hover:bg-[#777777]" size="lg" type="submit" disabled={isSubmitting}>
+                    Sign Up
+                  </Button>
+                )}
               </div>
 
               <div>
@@ -78,7 +123,7 @@ function SignUpModal({ isOpen, isClose, openLoginModal }) {
               <div>
                 <span className="text-md font-bold">
                   Have an account?{" "}
-                  <a className="text-md font-bold text-blue-600 hover:underline hover:cursor-pointer" onClick={openLoginModal}>
+                  <a className="text-md font-bold text-blue-600 hover:underline hover:cursor-pointer" onClick={loginButton}>
                     Login
                   </a>
                 </span>

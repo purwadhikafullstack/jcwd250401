@@ -1,66 +1,90 @@
-import React, { useState } from "react";
-import LoginModal from "./LoginModal";
-import SignUpModal from "./SignUpModal";
-import VerifyModal from "./VerifyModal";
-import CreatePasswordModal from "./CreatePasswordModal";
-import ForgotPasswordModal from "./ForgotPasswordModal";
-import { useSelector, useDispatch } from "react-redux";
-import { hideModal } from "../slices/authModalSlices";
+import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  showLoginModal,
+  showSignUpModal,
+  showVerifyModal,
+  showCreatePasswordModal,
+  showForgotPasswordModal,
+  hideLoginModal,
+  hideSignUpModal,
+  hideVerifyModal,
+  hideCreatePasswordModal,
+  hideForgotPasswordModal,
+} from '../slices/authModalSlices';
+
+import LoginModal from './LoginModal';
+import SignUpModal from './SignUpModal';
+import VerifyModal from './VerifyModal';
+import CreatePasswordModal from './CreatePasswordModal';
+import ForgotPasswordModal from './ForgotPasswordModal';
+
 
 function AuthModal() {
-  const isAuthModalVisible = useSelector((state) => state.authModal.isOpen); // Change state property name to "isVisible"
   const dispatch = useDispatch();
-  const [showLoginModal, setShowLoginModal] = useState(true);
-  const [showSignUpModal, setShowSignUpModal] = useState(false);
-  const [showVerifyModal, setShowVerifyModal] = useState(false);
-  const [showCreatePasswordModal, setShowCreatePasswordModal] = useState(false);
-  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
+  const loginModalVisible = useSelector((state) => state.authModal.loginModalVisible);
+  const signUpModalVisible = useSelector((state) => state.authModal.signUpModalVisible);
+  const verifyModalVisible = useSelector((state) => state.authModal.verifyModalVisible);
+  const createPasswordModalVisible = useSelector((state) => state.authModal.createPasswordModalVisible);
+  const forgotPasswordModalVisible = useSelector((state) => state.authModal.forgotPasswordModalVisible);
 
   const openLoginModal = () => {
-    setShowLoginModal(true);
-    setShowSignUpModal(false);
+    dispatch(showLoginModal());
+  };
+
+  const closeLoginModal = () => {
+    dispatch(hideLoginModal());
   };
 
   const openSignUpModal = () => {
-    setShowLoginModal(false);
-    setShowSignUpModal(true);
+    dispatch(showSignUpModal());
+  };
+
+  const closeSignUpModal = () => {
+    dispatch(hideSignUpModal());
   };
 
   const openVerifyModal = () => {
-    setShowLoginModal(false);
-    setShowSignUpModal(false);
-    setShowVerifyModal(true);
+    dispatch(showVerifyModal());
+  };
+
+  const closeVerifyModal = () => {
+    dispatch(hideVerifyModal());
   };
 
   const openCreatePasswordModal = () => {
-    setShowLoginModal(false);
-    setShowSignUpModal(false);
-    setShowVerifyModal(false);
-    setShowCreatePasswordModal(true);
+    dispatch(showCreatePasswordModal());
+  };
+
+  const closeCreatePasswordModal = () => {
+    dispatch(hideCreatePasswordModal());
   };
 
   const openForgotPasswordModal = () => {
-    setShowLoginModal(false);
-    setShowSignUpModal(false);
-    setShowVerifyModal(false);
-    setShowCreatePasswordModal(false);
-    setShowForgotPasswordModal(true);
+    dispatch(showForgotPasswordModal());
   };
 
-  const closeModal = () => {
-    dispatch(hideModal()); // Dispatch the hideModal action
+  const closeForgotPasswordModal = () => {
+    dispatch(hideForgotPasswordModal());
   };
 
   return (
     <>
-      {isAuthModalVisible && (
-        <>
-          {showLoginModal && <LoginModal isOpen={showLoginModal} isClose={closeModal} openSignUpModal={openSignUpModal} openForgotPasswordModal={openForgotPasswordModal} />}
-          {showSignUpModal && <SignUpModal isOpen={showSignUpModal} isClose={closeModal} openLoginModal={openLoginModal} />}
-          {showVerifyModal && <VerifyModal isOpen={showVerifyModal} isClose={closeModal} />}
-          {showCreatePasswordModal && <CreatePasswordModal isOpen={showCreatePasswordModal} isClose={closeModal} />}
-          {showForgotPasswordModal && <ForgotPasswordModal isOpen={showForgotPasswordModal} isClose={closeModal} />}
-        </>
+      {/* Render modals based on their visibility state */}
+      {loginModalVisible && (
+        <LoginModal isOpen={loginModalVisible} isClose={closeLoginModal} />
+      )}
+      {signUpModalVisible && (
+        <SignUpModal isOpen={signUpModalVisible} isClose={closeSignUpModal} />
+      )}
+      {verifyModalVisible && (
+        <VerifyModal isOpen={verifyModalVisible} isClose={closeVerifyModal} />
+      )}
+      {createPasswordModalVisible && (
+        <CreatePasswordModal isOpen={createPasswordModalVisible} isClose={closeCreatePasswordModal} />
+      )}
+      {forgotPasswordModalVisible && (
+        <ForgotPasswordModal isOpen={forgotPasswordModalVisible} isClose={closeForgotPasswordModal} />
       )}
     </>
   );
