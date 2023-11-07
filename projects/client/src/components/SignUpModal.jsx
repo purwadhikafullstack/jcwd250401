@@ -11,6 +11,21 @@ import { showLoginModal } from "../slices/authModalSlices";
 import { hideSignUpModal } from "../slices/authModalSlices";
 import { showVerifyModal } from "../slices/authModalSlices";
 import { setEmail } from "../slices/authModalSlices";
+import { initializeApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBM35r6DuH1V6QUWcw-J8UkNarOEQ6Sg9w",
+  authDomain: "graceful-splice-404407.firebaseapp.com",
+  projectId: "graceful-splice-404407",
+  storageBucket: "graceful-splice-404407.appspot.com",
+  messagingSenderId: "291727587114",
+  appId: "1:291727587114:web:97b2041a779d26afd61053",
+  measurementId: "G-HENXSNV7D9",
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
 
 function SignUpModal({ isOpen, isClose, openLoginModal, openVerifyModal }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,6 +34,47 @@ function SignUpModal({ isOpen, isClose, openLoginModal, openVerifyModal }) {
   const loginButton = () => {
     dispatch(showLoginModal());
     dispatch(hideSignUpModal());
+  };
+
+  const handleGoogleSignUp = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const response = await api.post("/auth/registergoogle", {
+        email: user.email,
+      });
+
+      if (response.status === 201) {
+        await signOut(auth);
+        localStorage.clear();
+        setTimeout(() => {
+          toast.success("Sign up with google success, redirecting you to login page", {
+            autoClose: 1000,
+            onAutoClose: (t) => {
+              dispatch(showLoginModal());
+              dispatch(hideSignUpModal());
+            },
+          });
+        }, 1000);
+      }
+    } catch (error) {
+      if (error.response) {
+        if (error.response.status === 400) {
+          setTimeout(() => {
+            toast.error("Email already exists");
+            signOut(auth);
+            localStorage.clear();
+          }, 2000);
+        } else {
+          // Handle other HTTP errors
+        }
+      } else if (error.request) {
+        // Handle network errors (request was made but no response received)
+      } else {
+        // Handle other non-network, non-HTTP-related errors
+      }
+    }
   };
 
   const formik = useFormik({
@@ -68,7 +124,7 @@ function SignUpModal({ isOpen, isClose, openLoginModal, openVerifyModal }) {
         // Add a 1-second delay before closing the modal
         setTimeout(() => {
           setIsSubmitting(false);
-        }, 6000);
+        }, 5000);
       }
     },
   });
@@ -111,7 +167,7 @@ function SignUpModal({ isOpen, isClose, openLoginModal, openVerifyModal }) {
                 </div>
               </div>
               <div>
-                <Button className="w-full" color="light" size="lg">
+                <Button className="w-full" color="light" size="lg" onClick={handleGoogleSignUp}>
                   <div className="flex items-center justify-center">
                     <div className="mr-2">
                       <FcGoogle style={{ fontSize: "24px" }} />

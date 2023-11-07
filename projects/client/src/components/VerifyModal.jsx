@@ -40,7 +40,7 @@ function VerifyModal({isOpen, isClose}) {
     
         if (response.data) {
           setTimeout(() => {
-            toast.success("Account has been verified! ", {
+            toast.success("Account has been verified", {
               autoClose: 3000,
               onAutoClose: (t) => {
                 dispatch(showCreatePasswordModal());
@@ -73,7 +73,7 @@ function VerifyModal({isOpen, isClose}) {
         // Add a 1-second delay before closing the modal
         setTimeout(() => {
           setIsSubmitting(false);
-        }, 8000);
+        }, 6000);
       }
     },
   });
