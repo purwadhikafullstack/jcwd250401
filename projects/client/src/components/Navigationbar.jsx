@@ -8,14 +8,10 @@ import { useSelector, useDispatch } from "react-redux";
 import { showLoginModal} from "../slices/authModalSlices";
 import { logout } from "../slices/accountSlices";
 
-
-
-
 function Navigationbar() {
   const isLogin = useSelector((state) => state.account.isLogin);
 
   const [dropdownVisible, setDropdownVisible] = useState(false);
-
   const categories = ["NEW IN", "MEN", "WOMEN", "BAGS", "ACCESSORIES"];
   const accounts = ["Profile", "Address Book", "My Order", "Change My Password"];
   const accountsDropdown = ["Profile", "Address Book", "My Order", "Change My Password", "Search", "Cart", "Favorites"];
@@ -26,6 +22,7 @@ function Navigationbar() {
   };
 
   const handleIconClick = () => setDropdownVisible(!dropdownVisible);
+  
   const handleLogout = () => {
     dispatch(logout());
     setDropdownVisible(false);
