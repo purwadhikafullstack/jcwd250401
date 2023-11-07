@@ -94,7 +94,7 @@ function SignUpModal({ isOpen, isClose, openLoginModal, openVerifyModal }) {
 
         if (response.status === 201) {
           setTimeout(() => {
-            toast.success("Verification code has been send to your email!", {
+            toast.success("Verification code has been send to your email", {
               autoClose: 1000,
               onAutoClose: (t) => {
                 dispatch(showVerifyModal());

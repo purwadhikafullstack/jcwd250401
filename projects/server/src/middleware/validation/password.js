@@ -3,10 +3,6 @@ const { body, validationResult } = require("express-validator");
 exports.passwordValidationRules = [
   body("password")
     .notEmpty()
-    .isStrongPassword({
-      minSymbols: 1,
-      minNumbers: 1,
-    })
     .isLength({ min: 6, max: 20 })
     .withMessage("Password must be at least 6-20 characters, contain at least one symbol, one number, and one uppercase letter")
     .custom((value, { req }) => {
