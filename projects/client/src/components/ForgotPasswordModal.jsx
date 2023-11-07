@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { FcGoogle } from "react-icons/fc";
+
 import { Button, Modal } from "flowbite-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
 function ForgotPasswordModal({ isOpen, isClose, openLoginModal }) {
-  const [openModal, setOpenModal] = useState(false);
+
 
   const formik = useFormik({
     initialValues: {
@@ -13,11 +13,14 @@ function ForgotPasswordModal({ isOpen, isClose, openLoginModal }) {
     },
     validationSchema: Yup.object({
       email: Yup.string().email("Invalid email address").required("Email is required"),
+
     }),
     onSubmit: (values) => {
       // Handle your form submission here
       console.log("Form submitted with values:", values);
+
       // You can add your signup logic here
+
     },
   });
 
@@ -39,7 +42,6 @@ function ForgotPasswordModal({ isOpen, isClose, openLoginModal }) {
                 <input type="email" id="email" name="email" placeholder="Enter your email" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("email")} />
                 {formik.touched.email && formik.errors.email ? <div className="text-red-500">{formik.errors.email}</div> : null}
               </div>
-
               <div>
                 <Button className="w-full bg-[#40403F] hover:bg-red-600 enabled:hover:bg-[#777777]" size="lg" type="submit">
                   Forgot Password
@@ -53,4 +55,6 @@ function ForgotPasswordModal({ isOpen, isClose, openLoginModal }) {
   );
 }
 
+
 export default ForgotPasswordModal;
+
