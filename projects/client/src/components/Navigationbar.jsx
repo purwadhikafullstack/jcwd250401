@@ -8,13 +8,20 @@ import LoginModal from "./LoginModal";
 function Navigationbar() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false); // State to manage the login modal visibility
   const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [dropdownSubcategory, setDropdownSubcategory] = useState(null); // State to manage the dropdown visibility [Category
   const [isLogin, setIsLogin] = useState(true);
   const categories = ["NEW IN", "MEN", "WOMEN", "BAGS", "ACCESSORIES"];
+  const newIn = ["New Arrivals", "Best Sellers", "Rains Essentials"];
+  // const men = ["Jackets", "Tops", "Bottoms", "Accessories"];
+  // const women = ["Jackets", "Tops", "Bottoms", "Accessories"];
+  // const bags = ["Backpacks", "Totes", "Travel Bags", "Accessories"];
+  const accessories = ["Caps", "Bags", "Accessories"];
   const accounts = ["Profile", "Address Book", "My Order", "Change My Password"];
   const accountsDropdown = ["Profile", "Address Book", "My Order", "Change My Password", "Search", "Cart", "Favorites"];
 
   const openLoginModal = () => setIsLoginModalOpen(true);
   const handleIconClick = () => setDropdownVisible(!dropdownVisible);
+  const handleSubcategoryClick = (subcategory) => setDropdownSubcategory(subcategory);
   const handleLogout = () => setIsLogin(false);
 
   return (
@@ -23,11 +30,31 @@ function Navigationbar() {
         <img src={rains} alt="Logo" className="w-26 h-10" />
         <div className="hidden space-x-4 lg:flex">
           {categories.map((category, index) => {
-            const joinedCategories = categories.map((category) => category.toLowerCase().replace(" ", "-")).join(" ");
+            const joinedCategories = category.toLowerCase().replace(" ", "-");
             return (
-              <a key={index} href={`/${joinedCategories}`} className="text-black text-md font-semibold hover:underline">
-                {category}
-              </a>
+              <>
+                <p key={index} className="text-black text-md font-semibold hover:underline cursor-pointer" onClick={() => handleSubcategoryClick(category)}>
+                  {category}
+                </p>
+                {dropdownSubcategory === category && (
+                  <div className="absolute top-20 w-full right-0 h-48 bg-white ring-1 ring-black ring-opacity-5 z-10">
+                    {category === "NEW IN" && (
+                      <div className="flex flex-row">
+                        <div className="w-[50vw]">
+                          {newIn.map((subcategory, index) => {
+                            const joinedSubcategory = subcategory.toLowerCase().replace(/\s/g, "-");
+                            return (
+                              <a key={index} href={`/${joinedCategories}/${joinedSubcategory}`}>
+                                <p className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm">{subcategory}</p>
+                              </a>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
             );
           })}
         </div>
@@ -45,19 +72,19 @@ function Navigationbar() {
             {dropdownVisible && (
               <div className="absolute top-16 w-48 h-48 bg-white ring-1 ring-black ring-opacity-5 z-10">
                 {accounts.map((account, index) => {
-                  const joinedAccounts = account.toLowerCase().replace(" ", "-");
+                  const joinedAccounts = account.toLowerCase().replace(/\s/g, "-");
                   return (
-                    <a key={index} href={`/account/${joinedAccounts}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
+                    <a key={index} href={`/account/${joinedAccounts}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                       {account}
                     </a>
                   );
                 })}
-                <p className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" role="menuitem" onClick={handleLogout}>
+                <p className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" onClick={handleLogout}>
                   Log Out
                 </p>
               </div>
             )}
-            
+
             <MdFavoriteBorder className="text-xl cursor-pointer" />
             <BsCart className="text-xl cursor-pointer" />
           </div>
@@ -85,7 +112,7 @@ function Navigationbar() {
                     {accountsDropdown.map((account, index) => {
                       const joinedAccounts = account.toLowerCase().replace(" ", "-");
                       return (
-                        <a key={index} href={`/${joinedAccounts}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
+                        <a key={index} href={`/account/${joinedAccounts}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
                           {account}
                         </a>
                       );
