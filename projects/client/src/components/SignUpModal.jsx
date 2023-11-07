@@ -178,7 +178,7 @@ function SignUpModal({ isOpen, isClose, openLoginModal, openVerifyModal }) {
               </div>
               <div>
                 <span className="text-md font-bold">
-                  Have an account?{" "}
+                  Have an account ?{" "}
                   <a className="text-md font-bold text-blue-600 hover:underline hover:cursor-pointer" onClick={loginButton}>
                     Login
                   </a>
