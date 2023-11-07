@@ -12,6 +12,21 @@ import { toast } from "sonner";
 import api from "../api";
 import { AiOutlineLoading } from "react-icons/ai";
 import { login } from "../slices/accountSlices";
+import { initializeApp } from 'firebase/app';
+import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+
+const firebaseConfig = {
+  apiKey: 'YOUR_API_KEY',
+  authDomain: 'YOUR_AUTH_DOMAIN',
+  projectId: 'YOUR_PROJECT_ID',
+  storageBucket: 'YOUR_STORAGE_BUCKET',
+  messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
+  appId: 'YOUR_APP_ID',
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+
 
 function LoginModal({ isOpen, isClose }) {
   const dispatch = useDispatch();
@@ -32,6 +47,21 @@ function LoginModal({ isOpen, isClose }) {
     dispatch(showForgotPasswordModal());
     dispatch(hideLoginModal());
   };
+
+  function LoginWithGoogle() {
+    const handleGoogleSignIn = async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+  
+        // Handle the user object as needed (e.g., save user data to your database).
+        console.log("Google Sign-In Successful:", user);
+      } catch (error) {
+        console.error("Google Sign-In Error:", error);
+      }
+    };
+  }
 
   const formik = useFormik({
     initialValues: {

@@ -7,6 +7,7 @@ const crypto = require("crypto");
 const fs = require("fs"); // Don't forget to import the 'fs' module
 const { User } = require("../models");
 const path = require("path");
+
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 function generateRandomLetterString(length) {
