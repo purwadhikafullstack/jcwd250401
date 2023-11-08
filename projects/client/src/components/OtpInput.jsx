@@ -58,7 +58,7 @@ const OtpInput = ({ numInputs = 6, value, onChange }) => {
           onPaste={handlePaste}
           ref={(ref) => (inputRefs.current[index] = ref)}
           maxLength="1"
-        className="w-10 h-10 text-center border rounded-md shadow-md shadow-gray-400 focus:border-black focus:ring-1 focus:ring-black focus:outline-none"
+        className="w-10 h-10 text-center font-sagoe font-bold border rounded-md shadow-md shadow-gray-400 focus:border-black focus:ring-1 focus:ring-black focus:outline-none transition duration-200 ease-in-out"
         />
       ))}
     </div>

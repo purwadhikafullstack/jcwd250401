@@ -27,9 +27,9 @@ function VerifyModal({ isOpen, isClose }) {
   };
 
   const handleOtpChange = (newOtp) => {
-    const otpString = newOtp.join(''); // Join the array into a string
-    console.log('newOtp:', newOtp);
-    console.log('otpString:', otpString);
+    const otpString = newOtp.join(""); // Join the array into a string
+    console.log("newOtp:", newOtp);
+    console.log("otpString:", otpString);
     formik.setFieldValue("verifyCode", otpString);
   };
 
@@ -70,7 +70,6 @@ function VerifyModal({ isOpen, isClose }) {
     }),
     onSubmit: async (values) => {
       try {
-        
         setIsSubmitting(true);
         const response = await api.get("/auth/verify", {
           params: {
@@ -138,7 +137,6 @@ function VerifyModal({ isOpen, isClose }) {
                   onChange={handleOtpChange}
                 />
               </div>
-
               <div>
                 {isSubmitting ? (
                   <Button className="w-full bg-[#40403F] enabled:hover:bg-[#40403F] outline-none" size="lg" isProcessing processingSpinner={<AiOutlineLoading className="h-6 w-6 animate-spin" />}>
