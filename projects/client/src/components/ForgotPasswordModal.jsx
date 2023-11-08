@@ -3,27 +3,94 @@ import React, { useState } from "react";
 import { Button, Modal } from "flowbite-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import api from "../api";
+import { toast } from "sonner";
+import { hideForgotPasswordModal, setEmail } from "../slices/authModalSlices";
+import { AiOutlineLoading } from "react-icons/ai";
+import { useDispatch } from "react-redux";
+import { showLoginModal } from "../slices/authModalSlices";
+import { showVerifyModal } from "../slices/authModalSlices";
 
-function ForgotPasswordModal({ isOpen, isClose}) {
-
-
+function ForgotPasswordModal({ isOpen, isClose }) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const dispatch = useDispatch();
   const formik = useFormik({
     initialValues: {
       email: "",
     },
     validationSchema: Yup.object({
       email: Yup.string().email("Invalid email address").required("Email is required"),
-
     }),
-    onSubmit: (values) => {
-      // Handle your form submission here
-      console.log("Form submitted with values:", values);
+    onSubmit: async (values) => {
+      try {
+        setIsSubmitting(true);
 
-      // You can add your signup logic here
+        const response = await api.post("/auth/forgotpassword", {
+          email: values.email,
+        });
 
+        if (response.status === 200) {
+          setTimeout(() => {
+            toast.success("Reset password link has been send to your email", {
+              autoClose: 1000,
+              onAutoClose: (t) => {
+                dispatch(hideForgotPasswordModal());
+                setIsSubmitting(false);
+              },
+            });
+          }, 1000);
+        }
+      } catch (error) {
+        if (error.response) {
+          if (error.response.status === 400) {
+            setTimeout(() => {
+              toast.error("Invalid email");
+              setIsSubmitting(false);
+            }, 2000);
+          }
+          if (error.response.status === 403) {
+            setTimeout(() => {
+              setIsSubmitting(false);
+              toast.error("This account has linked with google services, please login with google", {
+                autoClose: 1000,
+                onAutoClose: (t) => {
+                  dispatch(hideForgotPasswordModal());
+                  dispatch(showLoginModal());
+                },
+              });
+            }, 1000);
+            // Handle other HTTP errors
+          }
+          if (error.response.status === 405) {
+            setTimeout(() => {
+              api.post("/auth/register", {
+                email: values.email,
+              });
+              toast.error("This account not verified, sending you verify code to your email", {
+                autoClose: 1000,
+                onAutoClose: (t) => {
+                  dispatch(hideForgotPasswordModal());
+                  dispatch(showVerifyModal());
+                  setEmail(values.email);
+                  setIsSubmitting(false);
+                },
+              });
+            }, 1000);
+            // Handle other HTTP errors
+          }
+        } else if (error.request) {
+          // Handle network errors (request was made but no response received)
+        } else {
+          // Handle other non-network, non-HTTP-related errors
+        }
+      } finally {
+        // Add a 1-second delay before closing the modal
+        setTimeout(() => {
+          setIsSubmitting(false);
+        }, 5000);
+      }
     },
   });
-
   return (
     <>
       <Modal show={isOpen} size="md" onClose={isClose} popup>
@@ -43,9 +110,15 @@ function ForgotPasswordModal({ isOpen, isClose}) {
                 {formik.touched.email && formik.errors.email ? <div className="text-red-500">{formik.errors.email}</div> : null}
               </div>
               <div>
-                <Button className="w-full bg-[#40403F] hover:bg-red-600 enabled:hover:bg-[#777777]" size="lg" type="submit">
-                  Forgot Password
-                </Button>
+                {isSubmitting ? (
+                  <Button className="w-full bg-[#40403F] enabled:hover:bg-[#40403F] outline-none" size="lg" isProcessing processingSpinner={<AiOutlineLoading className="h-6 w-6 animate-spin" />}>
+                    Sending email...
+                  </Button>
+                ) : (
+                  <Button className="w-full bg-[#40403F] enabled:hover:bg-[#777777]" size="lg" type="submit" disabled={isSubmitting}>
+                    Forgot Password
+                  </Button>
+                )}
               </div>
             </div>
           </form>
@@ -55,6 +128,4 @@ function ForgotPasswordModal({ isOpen, isClose}) {
   );
 }
 
-
 export default ForgotPasswordModal;
-
