@@ -18,6 +18,9 @@ authController.handleCreatePassword)
 
 router.post("/", authController.handleLogin);
 router.post("/google", authController.handleLoginWithGoogle)  // login with google;
+router.post("/forgotpassword", authController.handleForgotPassword)
+router.post("/resetpassword", passwordValidator.passwordValidationRules,
+passwordValidator.applyPasswordValidation, authController.handleResetPassword)
 
 
 module.exports = router;
