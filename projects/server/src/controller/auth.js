@@ -61,7 +61,7 @@ exports.handleRegister = async (req, res) => {
     const mailOption = {
       from: process.env.SMTP_USER,
       to: email,
-      subject: "Verify your account",
+      subject: "Registration success, please verify your account.",
       html: emailHTML,
     };
 
