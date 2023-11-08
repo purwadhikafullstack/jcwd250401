@@ -87,7 +87,7 @@ function VerifyModal({isOpen, isClose}) {
         <Modal.Header />
         <Modal.Body>
           <form onSubmit={formik.handleSubmit}>
-            <div className="space-y-4 px-4">
+            <div className="space-y-4 px-4 mb-4">
               <div className="space-y-3">
                 <h3 className="text-xl font-medium text-gray-900 dark:text-white">Verify your account</h3>
                 <h4 className="text-sm text-gray-900 dark:text-white">We've already sent verification code to your email address associated with account. Please make sure to check your email from us.</h4>
