@@ -72,19 +72,19 @@ function AuthModal() {
     <>
       {/* Render modals based on their visibility state */}
       {loginModalVisible && (
-        <LoginModal isOpen={loginModalVisible} isClose={closeLoginModal} />
+        <LoginModal isOpen={openLoginModal} isClose={closeLoginModal} />
       )}
       {signUpModalVisible && (
-        <SignUpModal isOpen={signUpModalVisible} isClose={closeSignUpModal} />
+        <SignUpModal isOpen={openSignUpModal} isClose={closeSignUpModal} />
       )}
       {verifyModalVisible && (
-        <VerifyModal isOpen={verifyModalVisible} isClose={closeVerifyModal} />
+        <VerifyModal isOpen={openVerifyModal} isClose={closeVerifyModal} />
       )}
       {createPasswordModalVisible && (
-        <CreatePasswordModal isOpen={createPasswordModalVisible} isClose={closeCreatePasswordModal} />
+        <CreatePasswordModal isOpen={openCreatePasswordModal} isClose={closeCreatePasswordModal} />
       )}
       {forgotPasswordModalVisible && (
-        <ForgotPasswordModal isOpen={forgotPasswordModalVisible} isClose={closeForgotPasswordModal} />
+        <ForgotPasswordModal isOpen={openForgotPasswordModal} isClose={closeForgotPasswordModal} />
       )}
     </>
   );
