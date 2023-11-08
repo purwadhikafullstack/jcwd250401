@@ -1,6 +1,6 @@
 import React from "react";
 import Navigationbar from "./Navigationbar";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 export const NavPage = ({ pageName }) => {
   const joinnedPageName = pageName.toLowerCase().replace(/\s/g, "-");
@@ -10,7 +10,13 @@ export const NavPage = ({ pageName }) => {
     const selectedList = e.target.value.toLowerCase().replace(/\s/g, "-");
     navigate(`/account/${selectedList}`);
   };
-
+  const location = useLocation();
+  const currentPage = location.pathname
+    .split("/")[2]
+    .replace(/-/g, " ")
+    .split(" ")
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
   return (
     <>
       <div className="h-[30vh] w-full mb-5 sm:mb-0">
@@ -27,7 +33,7 @@ export const NavPage = ({ pageName }) => {
 
             <div className="flex lg:hidden mt-7">
               <h1 className="font-bold text-3xl mr-3">Account</h1>
-              <select className="border border-gray-300 rounded-md px-2 py-1 cursor-pointer" onChange={handleSelectChange}>
+              <select className="border border-gray-300 rounded-md px-2 py-1 cursor-pointer" defaultValue={currentPage} onChange={handleSelectChange}>
                 {listsMenu.map((list, index) => {
                   return (
                     <option key={index} value={list}>

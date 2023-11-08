@@ -2,11 +2,15 @@ const { User } = require("../models");
 const bcrypt = require("bcrypt");
 
 exports.handleUpdateProfile = async (req, res) => {
-  const { id } = req.params;
-  const { username, firstName, lastName, email } = req.body;
+  const { username } = req.params;
+  const { userName, firstName, lastName, email } = req.body;
 
   try {
-    const account = await User.findByPk(id);
+    const account = await User.findOne({
+      where: {
+        username,
+      },
+    });
 
     if (!account) {
       return res.status(404).json({
@@ -16,7 +20,7 @@ exports.handleUpdateProfile = async (req, res) => {
     }
 
     if (username) {
-      account.username = username;
+      account.username = userName;
     }
     if (firstName) {
       account.firstName = firstName;
@@ -50,10 +54,14 @@ exports.handleUpdateProfile = async (req, res) => {
 };
 
 exports.handleGetSingleUser = async (req, res) => {
-  const { id } = req.params;
+  const { username } = req.params;
 
   try {
-    const account = await User.findByPk(id);
+    const account = await User.findOne({
+      where: {
+        username,
+      },
+    });
 
     if (!account) {
       return res.status(404).json({
@@ -77,11 +85,11 @@ exports.handleGetSingleUser = async (req, res) => {
 };
 
 exports.handleUpdatePassword = async (req, res) => {
-  const { id } = req.params;
-  const { password } = req.body;
+  const { username } = req.params;
+  const { password, newPassword } = req.body;
 
   try {
-    const account = await User.findByPk(id);
+    const account = await User.findOne({ where: { username } });
     const salt = await bcrypt.genSalt(10);
 
     if (!account) {
@@ -91,13 +99,20 @@ exports.handleUpdatePassword = async (req, res) => {
       });
     }
 
-    if (password !== undefined && password !== "" && password !== null) {
-      const hash = await bcrypt.hash(password, salt);
+    const isMatch = await bcrypt.compare(password, account.password);
+    if (!isMatch) {
+      return res.status(400).json({
+        ok: false,
+        message: "Current password is incorrect",
+      });
+    }
+
+    if (newPassword !== undefined && newPassword !== "" && newPassword !== null) {
+      const hash = await bcrypt.hash(newPassword, salt);
       account.password = hash;
     }
 
     await account.save();
-
     res.status(200).json({
       ok: true,
       message: "Password updated successfully",

@@ -4,21 +4,94 @@ import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons
 import { Button, Checkbox, Label, Modal } from "flowbite-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import SignUpModal from './SignUpModal';
+import { useDispatch } from "react-redux";
+import { showSignUpModal } from "../slices/authModalSlices";
+import { showForgotPasswordModal } from "../slices/authModalSlices";
+import { hideLoginModal } from "../slices/authModalSlices";
+import { toast } from "sonner";
+import api from "../api";
+import { AiOutlineLoading } from "react-icons/ai";
+import { login } from "../slices/accountSlices";
+import { initializeApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBM35r6DuH1V6QUWcw-J8UkNarOEQ6Sg9w",
+  authDomain: "graceful-splice-404407.firebaseapp.com",
+  projectId: "graceful-splice-404407",
+  storageBucket: "graceful-splice-404407.appspot.com",
+  messagingSenderId: "291727587114",
+  appId: "1:291727587114:web:97b2041a779d26afd61053",
+  measurementId: "G-HENXSNV7D9",
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
 
 function LoginModal({ isOpen, isClose }) {
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
-  const [showSignUpModal, setShowSignUpModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Function to toggle password visibility
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
-  const toggleSignUpModal = () => {
-    setShowSignUpModal(true);
+  const signUpButton = () => {
+    dispatch(showSignUpModal());
+    dispatch(hideLoginModal());
   };
 
+  const forgotButton = () => {
+    dispatch(showForgotPasswordModal());
+    dispatch(hideLoginModal());
+  };
+
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const response = await api.post("/auth/google", {
+        email: user.email,
+      });
+
+      if (response.status === 200) {
+        const responseData = response.data;
+        setTimeout(() => {
+          toast.success("Login success !", {
+            autoClose: 1000,
+            onAutoClose: (t) => {
+              dispatch(hideLoginModal());
+              setIsSubmitting(false);
+              dispatch(login(responseData));
+            },
+          });
+        }, 600);
+      }
+    } catch (error) {
+      if (error.response) {
+        if (error.response.status === 401) {
+          setTimeout(() => {
+            toast.error("Email doesn't exist, please sign up with your google first.", {
+              autoClose: 1000,
+              onAutoClose: (t) => {
+                dispatch(showSignUpModal());
+                dispatch(hideLoginModal());
+              },
+            });
+          }, 2000);
+        } else {
+          // Handle other HTTP errors
+        }
+      } else if (error.request) {
+        // Handle network errors (request was made but no response received)
+      } else {
+        // Handle other non-network, non-HTTP-related errors
+      }
+    }
+  };
 
   const formik = useFormik({
     initialValues: {
@@ -30,22 +103,61 @@ function LoginModal({ isOpen, isClose }) {
       email: Yup.string().email("Invalid email address").required("Email is required"),
       password: Yup.string().required("Password is required"),
     }),
-    onSubmit: (values) => {
-      // Handle your form submission here
-      console.log("Form submitted with values:", values);
-      // You can add your login logic here
+
+    onSubmit: async (values) => {
+      try {
+        setIsSubmitting(true);
+        const response = await api.post("/auth", {
+          email: values.email,
+          password: values.password,
+        });
+
+        if (response.status === 200) {
+          const responseData = response.data;
+          setTimeout(() => {
+            toast.success("Login success", {
+              autoClose: 1000,
+              onAutoClose: (t) => {
+                dispatch(hideLoginModal());
+                setIsSubmitting(false);
+                dispatch(login(responseData));
+              },
+            });
+          }, 600);
+        }
+      } catch (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            setTimeout(() => {
+              toast.error("Email or password incorrect");
+              setIsSubmitting(false);
+            }, 2000);
+          } else {
+            // Handle other HTTP errors
+          }
+        } else if (error.request) {
+          // Handle network errors (request was made but no response received)
+        } else {
+          // Handle other non-network, non-HTTP-related errors
+        }
+      } finally {
+        // Add a 1-second delay before closing the modal
+        setTimeout(() => {
+          setIsSubmitting(false);
+        }, 6000);
+      }
     },
   });
 
   return (
     <>
       <Modal show={isOpen} size="md" onClose={isClose} popup>
-        <Modal.Header/>
+        <Modal.Header />
         <Modal.Body>
           <form onSubmit={formik.handleSubmit}>
             <div className="space-y-4 px-4">
               <div className="space-y-3 mb-4">
-                <h3 className="text-xl font-medium text-gray-900 dark:text-white">Hi, Welcome Back!</h3>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Hi, Welcome Back!</h3>
                 <h4 className="text-sm text-gray-900 dark:text-white">Login with your email address and password</h4>
               </div>
               <div>
@@ -79,13 +191,19 @@ function LoginModal({ isOpen, isClose }) {
                 <span className="text-sm text-gray-900 dark:text-white">Remember me</span>
               </div>
               <div>
-                <Button className="w-full bg-[#40403F] enabled:hover:bg-[#777777]" size="lg" type="submit">
-                  Login
-                </Button>
+                {isSubmitting ? (
+                  <Button className="w-full bg-[#40403F] enabled:hover:bg-[#40403F] outline-none" size="lg" isProcessing processingSpinner={<AiOutlineLoading className="h-6 w-6 animate-spin" />}>
+                    Logging in...
+                  </Button>
+                ) : (
+                  <Button className="w-full bg-[#40403F] enabled:hover:bg-[#777777]" size="lg" type="submit" disabled={isSubmitting}>
+                    Login
+                  </Button>
+                )}
               </div>
               <div>
-                <a href="#" className="text-md font-bold text-black underline dark:text-cyan-500">
-                  Forgot your password?
+                <a onClick={forgotButton} className="text-md font-medium text-black hover:underline hover:cursor-pointer dark:text-cyan-500">
+                  Forgot your password ?
                 </a>
               </div>
               <div>
@@ -96,7 +214,7 @@ function LoginModal({ isOpen, isClose }) {
                 </div>
               </div>
               <div>
-                <Button className="w-full" color="light" size="lg">
+                <Button className="w-full" color="light" size="lg" onClick={handleGoogleSignIn}>
                   <div className="flex items-center justify-center">
                     <div className="mr-2">
                       <FcGoogle style={{ fontSize: "24px" }} />
@@ -106,9 +224,9 @@ function LoginModal({ isOpen, isClose }) {
                 </Button>
               </div>
               <div>
-                <span className="text-md font-bold">
-                  Don't have an account?{" "}
-                  <a onClick={toggleSignUpModal}className="text-md font-bold text-blue-600">
+                <span className="text-md font-medium">
+                  Don't have an account ?{" "}
+                  <a onClick={signUpButton} className="text-md font-bold text-blue-600 hover:underline hover:cursor-pointer">
                     Sign Up
                   </a>
                 </span>
@@ -117,7 +235,6 @@ function LoginModal({ isOpen, isClose }) {
           </form>
         </Modal.Body>
       </Modal>
-      {showSignUpModal && <SignUpModal isOpen={showSignUpModal} isClose={toggleSignUpModal} />}
     </>
   );
 }
