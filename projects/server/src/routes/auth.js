@@ -7,9 +7,12 @@ const passwordValidator = require("../middleware/validation/password");
 router.post("/register", registerValidator.registerValidationRules,
 registerValidator.applyRegisterValidation, authController.handleRegister);
 
+router.post("/sendverify", authController.handleSendVerifyEmail);
+
 router.post("/registergoogle", authController.handleRegisterWithGoogle);
 
 router.get("/verify",  authController.handleVerify);
+
 
 router.post("/password", 
 passwordValidator.passwordValidationRules,

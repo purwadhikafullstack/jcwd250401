@@ -63,10 +63,10 @@ function ForgotPasswordModal({ isOpen, isClose }) {
           }
           if (error.response.status === 405) {
             setTimeout(() => {
-              api.post("/auth/register", {
+              api.post("/auth/sendverify", {
                 email: values.email,
               });
-              toast.error("This account not verified, sending you verify code to your email", {
+              toast.error("This account not verified yet, sending you verify code to your email", {
                 autoClose: 1000,
                 onAutoClose: (t) => {
                   dispatch(hideForgotPasswordModal());
@@ -87,7 +87,7 @@ function ForgotPasswordModal({ isOpen, isClose }) {
         // Add a 1-second delay before closing the modal
         setTimeout(() => {
           setIsSubmitting(false);
-        }, 5000);
+        }, 6000);
       }
     },
   });
@@ -97,7 +97,7 @@ function ForgotPasswordModal({ isOpen, isClose }) {
         <Modal.Header />
         <Modal.Body>
           <form onSubmit={formik.handleSubmit}>
-            <div className="space-y-4 px-4">
+            <div className="space-y-4 px-4 mb-4">
               <div className="space-y-3">
                 <h3 className="text-xl font-medium text-gray-900 dark:text-white">Forgot Password</h3>
                 <h4 className="text-sm text-gray-900 dark:text-white">You will receive a forgot password link to your email address associated with the account. Please make sure to check your incoming email from us.</h4>

@@ -449,5 +449,62 @@ exports.handleResetPassword = async (req, res) => {
 };
 
 
+exports.handleSendVerifyEmail = async (req, res) => {
+  const { email } = req.body;
 
+  try {
+    const user = await User.findOne({
+      where: {
+        email: email,
+      },
+    });
+
+    if (user.isVerify) {
+      return res.status(400).send({
+        message: "This account already verified",
+      });
+    }
+
+    const verifyCode = generateRandomLetterString(6);
+    const username = email.split("@")[0];
+
+    user.verifyCode = verifyCode;
+    await user.save();
+    
+    const templatePath = path.join(__dirname, "../templates/requestverify.html");
+    const templateRaw = fs.readFileSync(templatePath, "utf-8");
+    const templateCompile = hbs.compile(templateRaw);
+    const emailHTML = templateCompile({
+      username: user.username,
+      verifyCode: user.verifyCode,
+    });
+
+    const mailOption = {
+      from: process.env.SMTP_USER,
+      to: email,
+      subject: "Verify your account",
+      html: emailHTML,
+    };
+
+    mailer.sendMail(mailOption, (err, info) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).send({
+          message: "Internal server error",
+        });
+      } else {
+        console.log("Verification email sent: " + info.response);
+        return res.status(201).send({
+          message: "User created successfully",
+          user,
+        });
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      message: "Internal server error",
+    });
+  }
+};
 

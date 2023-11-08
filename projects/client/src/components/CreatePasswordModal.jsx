@@ -98,7 +98,7 @@ function CreatePasswordModal({ isOpen, isClose }) {
         <Modal.Header />
         <Modal.Body>
           <form onSubmit={formik.handleSubmit}>
-            <div className="space-y-4 px-4">
+            <div className="space-y-4 px-4 mb-4">
               <div className="space-y-3">
                 <h3 className="text-xl font-medium text-gray-900 dark:text-white">Create your password</h3>
                 <h4 className="text-sm text-gray-900 dark:text-white">One more step to finalize your account. Create the password.</h4>
