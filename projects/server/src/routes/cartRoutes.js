@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const { addToCart, getCartItemCount } = require('../controller/cartController');
+const { validateToken } = require('../middleware/auth'); // Make sure to require the validateToken middleware
 
 // Route to handle adding items to the cart
-router.post('/', addToCart);
+router.post('/', validateToken, addToCart); // Include validateToken middleware
 
 // Route to get the count of items in the user's cart
-router.get('/items/count', getCartItemCount);
+router.get('/items/count', validateToken, getCartItemCount); // Include validateToken middleware
 
 module.exports = router;

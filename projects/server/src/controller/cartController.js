@@ -1,7 +1,12 @@
 const { Order, OrderItem, Product } = require('../models');
+const jwt = require('jsonwebtoken');
 
 exports.addToCart = async (req, res) => {
-  const { productId, quantity, userId } = req.body; // userId must be provided in the body
+  const { productId, quantity } = req.body;
+
+  const token = req.headers.authorization.split(' ')[1];
+  const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);  
+  const userId = decoded.id;  // Extract user's ID from the token's payload
 
   try {
     // Check if the product exists and if there is enough stock
@@ -24,32 +29,43 @@ exports.addToCart = async (req, res) => {
     // Find the cart item or create a new one if it does not exist
     const [orderItem, itemCreated] = await OrderItem.findOrCreate({
       where: { orderId: order.id, productId },
-      defaults: { quantity }
+      defaults: { quantity, price: product.price }
     });
 
-    // If the item already exists in the cart, increment the quantity
+    // If the item already exists in the cart, update the quantity
     if (!itemCreated) {
       orderItem.quantity += quantity;
       await orderItem.save();
     }
 
-    // Update the stock of the product
-    product.stock -= quantity;
-    await product.save();
+    // Update the order's total price by recalculating it
+    const orderItems = await OrderItem.findAll({
+      where: { orderId: order.id },
+      include: [{ model: Product, attributes: ['price'] }]
+    });
 
-    // Recalculate the total price of the order
-    order.totalPrice += (product.price * quantity); // Assuming price is per unit
+    let totalPrice = 0;
+    orderItems.forEach(item => {
+      totalPrice += item.quantity * item.Product.price;
+    });
+
+    order.totalPrice = totalPrice;
     await order.save();
 
-    res.status(201).json({ message: 'Product added to cart', orderItem });
+    res.status(201).json({
+      message: 'Item added to cart',
+      orderItem
+    });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: 'Internal server error', error });
+    res.status(500).json({
+      message: 'Error adding item to cart',
+      error: error.message
+    });
   }
 };
 
 exports.getCartItemCount = async (req, res) => {
-  const { userId } = req.body; // userId must be provided in the body
+  const { id: userId } = req.user; // Updated to use userId from req.user
 
   try {
     // Find the user's cart order
