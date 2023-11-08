@@ -60,7 +60,7 @@ function LoginModal({ isOpen, isClose }) {
       if (response.status === 200) {
         const responseData = response.data;
         setTimeout(() => {
-          toast.success("Login success !", {
+          toast.success("Login success", {
             autoClose: 1000,
             onAutoClose: (t) => {
               dispatch(hideLoginModal());
