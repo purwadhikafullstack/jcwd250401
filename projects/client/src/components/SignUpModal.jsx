@@ -41,12 +41,13 @@ function SignUpModal({ isOpen, isClose, openLoginModal, openVerifyModal }) {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      const auth = getAuth();
+      
       const response = await api.post("/auth/registergoogle", {
         email: user.email,
       });
 
       if (response.status === 201) {
+        const auth = getAuth();
         await signOut(auth);
         localStorage.clear();
         setTimeout(() => {
