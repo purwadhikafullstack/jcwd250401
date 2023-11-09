@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { BsCart, BsSearch, BsPersonCircle } from "react-icons/bs";
+import React, { useEffect, useState } from "react";
+import { BsCart, BsSearch } from "react-icons/bs";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { HiOutlineArrowRight } from "react-icons/hi";
 import { MdFavoriteBorder } from "react-icons/md";
@@ -10,15 +10,27 @@ import { useSelector, useDispatch } from "react-redux";
 import { showLoginModal, showSignUpModal } from "../slices/authModalSlices";
 import { logout } from "../slices/accountSlices";
 import { getAuth, signOut } from "firebase/auth"; // Import Firebase authentication functions
+import api from "../api";
+import { toast } from "sonner";
 
 function Navigationbar() {
-  const isLogin = useSelector((state) => state.account.isLogin);
+  const isLogin = useSelector((state) => state?.account?.isLogin);
+  const userName = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [dropdownSubcategory, setDropdownSubcategory] = useState(null);
   const categories = ["NEW IN", "MEN", "WOMEN", "BAGS", "ACCESSORIES"];
+  const newIn = ["New Arrivals", "Best Sellers", "Rains Essentials"];
+  const men = ["Jackets", "Tops", "Bottoms", "Accessories"];
+  const women = ["Jackets", "Tops", "Bottoms", "Accessories"];
+  const bags = ["Shop all bags", "New arrivals", "Texel travel series", "Color Story: Grey"];
+  const bagsSubCategory = ["All bags", "Backpacks", "Totes Bags", "Travel Bags", "Laptop Bags", "Crossbody & Bum bags", "Wash bags"];
+  const accessories = ["Caps", "Bags", "Accessories"];
   const accounts = ["Profile", "Address Book", "My Order", "Change My Password"];
   const accountsDropdown = ["Profile", "Address Book", "My Order", "Change My Password", "Search", "Cart", "Favorites"];
   const dispatch = useDispatch();
   const auth = getAuth(); // Initialize Firebase authentication
+  const [userData, setUserData] = useState(null);
+  const photoProfile = userData?.photoProfile;
 
   const openAuthModal = () => {
     dispatch(showLoginModal());
@@ -26,10 +38,11 @@ function Navigationbar() {
 
   const openSignUpModal = () => {
     dispatch(showSignUpModal());
-  }
+  };
 
   const handleIconClick = () => setDropdownVisible(!dropdownVisible);
 
+  const handleSubcategoryClick = (subcategory) => setDropdownSubcategory(subcategory);
   const handleLogout = () => {
     signOut(auth) // Sign out the user from Firebase
       .then(() => {
@@ -42,17 +55,73 @@ function Navigationbar() {
       });
   };
 
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        if (isLogin) {
+          const response = await api.get(`/profile/${userName}`);
+          setUserData(response.data.detail);
+        }
+      } catch (error) {
+        toast.error("Failed to get user data");
+      }
+    };
+    getUserData();
+  }, [userName]);
+
   return (
     <div className="w-full bg-white h-20 flex items-center justify-around">
       <div className="flex items-center gap-16">
         <img src={rains} alt="Logo" className="w-26 h-10" />
         <div className="hidden space-x-4 lg:flex">
           {categories.map((category, index) => {
-            const joinedCategories = categories.map((category) => category.toLowerCase().replace(" ", "-")).join(" ");
+            const joinedCategories = category.toLowerCase().replace(" ", "-");
+
+            const renderSubcategory = (subcategory, index) => {
+              const joinedSubcategory = subcategory.toLowerCase().replace(/\s/g, "-");
+              return (
+                <a key={index} href={`/${joinedCategories}/${joinedSubcategory}`}>
+                  <p className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm">{subcategory}</p>
+                </a>
+              );
+            };
             return (
-              <a key={index} href={`/${joinedCategories}`} className="text-black text-md font-semibold hover:underline">
-                {category}
-              </a>
+              <>
+                <a href={`/${joinedCategories}`} key={index} className="text-black text-md font-semibold hover:underline cursor-pointer" onMouseEnter={() => handleSubcategoryClick(category)}>
+                  {category}
+                </a>
+                {dropdownSubcategory === category && (
+                  <div className="absolute top-20 w-full right-0 h-50 bg-white ring-1 ring-black ring-opacity-5 z-10 flex-wrap" onMouseLeave={() => setDropdownSubcategory(null)}>
+                    <div className="flex flex-row h-full">
+                      <div className="w-[40vw] flex flex-col flex-wrap">
+                        {(() => {
+                          switch (category) {
+                            case "NEW IN":
+                              return newIn.map(renderSubcategory);
+                            case "MEN":
+                              return men.map(renderSubcategory);
+                            case "WOMEN":
+                              return women.map(renderSubcategory);
+                            case "BAGS":
+                              return (
+                                <div className="w-[100%] flex justify-center">
+                                  <div className="w-[80%] flex">
+                                    <div className="mr-[5vw] font-extrabold">{bags.map(renderSubcategory)}</div>
+                                    <div>{bagsSubCategory.map(renderSubcategory)}</div>
+                                  </div>
+                                </div>
+                              );
+                            case "ACCESSORIES":
+                              return accessories.map(renderSubcategory);
+                            default:
+                              return null;
+                          }
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             );
           })}
         </div>
@@ -61,23 +130,18 @@ function Navigationbar() {
         <>
           <div className="hidden gap-8 lg:flex items-center">
             <BsSearch className="text-xl cursor-pointer" />
-            <img
-              src="https://images.unsplash.com/photo-1556294778-037d36802a75?auto=format&fit=crop&q=80&w=1527&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-              alt="Profile"
-              className="w-6 h-6 rounded-full cursor-pointer"
-              onClick={handleIconClick}
-            />
+            <img src={photoProfile ? `http://localhost:8000/public/${photoProfile}` : "https://via.placeholder.com/150"} alt="Profile" className="w-6 h-6 rounded-full cursor-pointer" onClick={handleIconClick} />
             {dropdownVisible && (
               <div className="absolute top-16 w-48 h-48 bg-white ring-1 ring-black ring-opacity-5 z-10">
                 {accounts.map((account, index) => {
-                  const joinedAccounts = account.toLowerCase().replace(" ", "-");
+                  const joinedAccounts = account.toLowerCase().replace(/\s/g, "-");
                   return (
-                    <a key={index} href={`/account/${joinedAccounts}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
+                    <a key={index} href={`/account/${joinedAccounts}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                       {account}
                     </a>
                   );
                 })}
-                <p className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" role="menuitem" onClick={handleLogout}>
+                <p className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" onClick={handleLogout}>
                   Log Out
                 </p>
               </div>
@@ -110,7 +174,7 @@ function Navigationbar() {
                     {accountsDropdown.map((account, index) => {
                       const joinedAccounts = account.toLowerCase().replace(" ", "-");
                       return (
-                        <a key={index} href={`/${joinedAccounts}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
+                        <a key={index} href={`/account/${joinedAccounts}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                           {account}
                         </a>
                       );
