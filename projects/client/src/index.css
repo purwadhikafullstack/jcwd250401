@@ -2,3 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Add the underline effect to links with the .underline-on-hover class */
+.underline-on-hover {
+    text-decoration: none;
+    position: relative;
+    color: black;
+  }
+  
+  .underline-on-hover::before,
+  .underline-on-hover::after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 3px;
+    border-radius: 60px;
+    bottom: 0;
+    background-color: black; /* Adjust the color as needed */
+    transition: all 0.3s;
+  }
+  
+  .underline-on-hover::before {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .underline-on-hover::after {
+    right: 50%;
+    transform: translateX(50%);
+  }
+  
+  .underline-on-hover:hover::before,
+  .underline-on-hover:hover::after {
+    width: 80%;
+  }

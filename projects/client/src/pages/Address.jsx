@@ -7,7 +7,7 @@ import { useSelector } from "react-redux";
 
 export const Address = () => {
   const isLogin = useSelector((state) => state?.account?.isLogin);
-  const listsMenu = ["Profile", "Address Book", "My Order", "Change my password"];
+  const listsMenu = ["Profile", "Address Book", "My Order", "Change Password"];
   const [addressForm, setAddressForm] = useState(false);
   const handleRegisterAddressBtn = () => setAddressForm(!addressForm);
 
@@ -43,10 +43,11 @@ export const Address = () => {
       <div className="flex justify-center">
         <div className="h-[70vh] w-[90vw] lg:w-[76vw] flex flex-row overflow-y-hidden">
           <div className="hidden lg:flex flex-col w-[20vw]">
-            {listsMenu.map((list, index) => {
+          {listsMenu.map((list, index) => {
               const joinedList = list.toLowerCase().replace(/\s/g, "-");
+              const isAddress = list === "Address Book"; // Check if the current item is "Profile"
               return (
-                <Link key={index} to={`/account/${joinedList}`} className="block py-2 text-sm text-gray-700 hover:underline">
+                <Link key={index} to={`/account/${joinedList}`} className={`block py-2 text-sm font-sagoe text-gray-700 hover:underline ${isAddress ? "font-black" : ""}`}>
                   {list}
                 </Link>
               );
