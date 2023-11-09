@@ -12,7 +12,7 @@ import { logout } from "../slices/accountSlices";
 import { getAuth, signOut } from "firebase/auth"; // Import Firebase authentication functions
 import api from "../api";
 import { toast } from "sonner";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 function Navigationbar() {
   const isLogin = useSelector((state) => state?.account?.isLogin);
@@ -76,7 +76,9 @@ function Navigationbar() {
   return (
     <div className="w-full bg-white h-20 flex items-center justify-around font-sagoe">
       <div className="flex items-center gap-16">
-        <img src={rains} alt="Logo" className="w-26 h-10" />
+        <a href="/">
+          <img src={rains} alt="Logo" className="w-26 h-10 hover:cursor-pointer" />
+        </a>
         <div className="hidden space-x-4 lg:flex">
           {categories.map((category, index) => {
             const joinedCategories = category.toLowerCase().replace(" ", "-");
@@ -91,7 +93,7 @@ function Navigationbar() {
             };
             return (
               <>
-                <a href={`/${joinedCategories}`} key={index} className="text-black text-md font-semibold hover:underline cursor-pointer" onMouseEnter={() => handleSubcategoryClick(category)}>
+                <a href={`/${joinedCategories}`} key={index} className="text-md font-semibold cursor-pointer underline-on-hover " onMouseEnter={() => handleSubcategoryClick(category)}>
                   {category}
                 </a>
                 {dropdownSubcategory === category && (
@@ -120,9 +122,6 @@ function Navigationbar() {
                           }
                         })()}
                       </div>
-                      
-                     
-                     
                     </div>
                   </div>
                 )}

@@ -14,7 +14,6 @@ export const Homepage = () => {
   const imgListDesktop = [img4, img5, img6, img7];
   return (
     <div className="min-h-screen font-sagoe">
-      <Navigationbar />
       <div className="h-[95vh] w-full lg:hidden">
         <Carousel indicators={false} style={{ borderRadius: 0 }} className="enabled:rounded-none">
           {imgListMobile.map((img, index) => (

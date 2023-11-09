@@ -6,9 +6,15 @@ import { Profile } from "./pages/Profile";
 import { Address } from "./pages/Address";
 import { ChangePassword } from "./pages/ChangePassword";
 import { NotFound } from "./pages/NotFound";
+import Navigationbar from "./components/Navigationbar";
+
 export default function App() {
   return (
-    <>
+    <div>
+      <div className="shadow-md">
+        <Navigationbar />
+      </div>
+
       <Routes>
         <Route path="/" element={<Homepage />} />
         <Route path="/reset-password" element={<ResetPassword />} />
@@ -17,6 +23,6 @@ export default function App() {
         <Route path="/account/change-my-password" element={<ChangePassword />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-    </>
+    </div>
   );
 }

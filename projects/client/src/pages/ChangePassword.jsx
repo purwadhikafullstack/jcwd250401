@@ -12,7 +12,7 @@ import ForgotPasswordModal from "../components/ForgotPasswordModal";
 export const ChangePassword = () => {
   const isLogin = useSelector((state) => state?.account?.isLogin);
   const username = useSelector((state) => state?.account?.profile?.data?.profile?.username);
-  const listsMenu = ["Profile", "Address Book", "My Order", "Change my password"];
+  const listsMenu = ["Profile", "Address Book", "My Order", "Change Password"];
   const [showPassword, setShowPassword] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [userData, setUserData] = useState(null);
@@ -80,16 +80,16 @@ export const ChangePassword = () => {
       <div className="flex justify-center">
         <div className="min-h-[70vh] lg:h-[70vh] w-[90vw] lg:w-[76vw] flex flex-row overflow-y-auto lg:overflow-y-hidden">
           <div className="hidden lg:flex flex-col w-[20vw]">
-            {listsMenu.map((list, index) => {
-              const joinedList = list.toLowerCase().replace(/\s/g, "-");
-              return (
-                <Link key={index} to={`/account/${joinedList}`} className="block py-2 text-sm text-gray-700 hover:underline">
-                  {list}
-                </Link>
-              );
-            })}
+                {listsMenu.map((list, index) => {
+                  const joinedList = list.toLowerCase().replace(/\s/g, "-");
+                  const isChangePassword = list === "Change Password"; // Check if the current item is "Profile"
+                  return (
+                    <Link key={index} to={`/account/${joinedList}`} className={`block py-2 text-sm font-sagoe text-gray-700 hover:underline ${isChangePassword ? "font-black" : ""}`}>
+                      {list}
+                    </Link>
+                  );
+                })}
           </div>
-
           <div className="w-[90vw] lg:w-[53vw] min-h-[70vh] flex flex-col px-0 lg:px-5 rounded-lg shadow-md">
             {isLogin && !userRegistByGoogle ? (
               <form onSubmit={formik.handleSubmit}>
