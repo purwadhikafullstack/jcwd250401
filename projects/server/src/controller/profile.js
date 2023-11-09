@@ -31,7 +31,7 @@ exports.handleUpdateProfile = async (req, res) => {
         });
       }
 
-      account.userName = userName;
+      account.username = userName;
     }
     if (firstName) {
       account.firstName = firstName;
@@ -50,11 +50,23 @@ exports.handleUpdateProfile = async (req, res) => {
     }
 
     await account.save();
+
+    const response = {
+      profile: {
+        firstName: account.firstName,
+        lastName: account.lastName,
+        email: account.email,
+        username: account.username,
+        photoProfile: account.photoProfile,
+      },
+    };
+
     res.status(200).json({
       ok: true,
       message: "Profile updated successfully",
-      detail: account,
+      data: response,
     });
+    
   } catch (error) {
     return res.status(500).json({
       ok: false,

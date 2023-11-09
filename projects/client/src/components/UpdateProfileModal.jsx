@@ -5,12 +5,16 @@ import { useDropzone } from "react-dropzone";
 import api from "../api";
 import * as yup from "yup";
 import { toast } from "sonner";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { updateProfile } from "../slices/accountSlices";
+import {FiUpload } from "react-icons/fi";
 
 export const UpdateProfileModal = ({ isOpen, onClose, isLogin }) => {
   const username = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const [selectedImage, setSelectedImage] = useState(null);
   const [preview, setPreview] = useState(null);
+
+  const dispatch = useDispatch();
 
   const createObjectURL = (file) => {
     if (file) {
@@ -20,8 +24,8 @@ export const UpdateProfileModal = ({ isOpen, onClose, isLogin }) => {
   };
 
   const { getRootProps, getInputProps } = useDropzone({
-    accept: "image/jpeg, image/png",
-    maxSize: 1000000,
+    accept: "image/jpeg, image/png, image/jpg",
+    maxSize: 2000000,
     onDrop: (acceptedFiles) => {
       formik.setFieldValue("photoProfile", acceptedFiles[0]);
       setSelectedImage(acceptedFiles[0].name);
@@ -40,17 +44,23 @@ export const UpdateProfileModal = ({ isOpen, onClose, isLogin }) => {
     },
     validationSchema: yup.object({
       userName: yup.string().required("Username is required"),
-      firstName: yup.string().required("First name is required"),
-      lastName: yup.string().required("Last name is required"),
+      firstName: yup.string().optional(),
+      lastName: yup.string().optional(),
       email: yup.string().email("Invalid email address").required("Email is required"),
     }),
     onSubmit: async (values) => {
       try {
         const data = new FormData();
         data.append("userName", values.userName);
-        data.append("firstName", values.firstName);
-        data.append("lastName", values.lastName);
         data.append("email", values.email);
+
+        if (values.firstName) {
+          data.append("firstName", values.firstName);
+        }
+
+        if (values.lastName) {
+          data.append("lastName", values.lastName);
+        }
 
         if (values.photoProfile) {
           data.append("photoProfile", values.photoProfile);
@@ -68,8 +78,9 @@ export const UpdateProfileModal = ({ isOpen, onClose, isLogin }) => {
             onAutoClose: (t) => {
               setSelectedImage(null);
               setPreview(null);
+              console.log(response);
+              dispatch(updateProfile(response.data));
               onClose();
-              window.location.reload();
             },
           });
         } else {
@@ -111,13 +122,21 @@ export const UpdateProfileModal = ({ isOpen, onClose, isLogin }) => {
         const response = await api.get(`/profile/${username}`);
         const profile = response.data.detail;
 
-        formik.setValues({
+        const values = {
           userName: profile.username,
-          firstName: profile.firstName,
-          lastName: profile.lastName,
           email: profile.email,
           photoProfile: profile.photoProfile,
-        });
+        };
+
+        if (profile.firstName !== null) {
+          values.firstName = profile.firstName;
+        }
+
+        if (profile.lastName !== null) {
+          values.lastName = profile.lastName;
+        }
+
+        formik.setValues(values);
       } catch (error) {
         if (error?.response?.status === 401) {
           toast.error("You are not authorized to access this page. Please login first.", {
@@ -132,10 +151,15 @@ export const UpdateProfileModal = ({ isOpen, onClose, isLogin }) => {
     };
     getProfileDetail();
   }, []);
+
   return (
     <>
       <Modal show={isOpen} size="md" onClose={onClose} popup>
-        <Modal.Header>Update Profile</Modal.Header>
+        <Modal.Header>
+          <div className="p-4">
+            <h3>Update Profile</h3>
+          </div>
+        </Modal.Header>
         <Modal.Body>
           <form onSubmit={formik.handleSubmit}>
             <div className="space-y-4 px-4">
@@ -148,14 +172,14 @@ export const UpdateProfileModal = ({ isOpen, onClose, isLogin }) => {
               </div>
               <div>
                 <div className="mb-2 block">
-                  <h4 className="text-sm text-gray-900 dark:text-white">First Name</h4>
+                  <h4 className="text-sm text-gray-900 dark:text-white">First name</h4>
                 </div>
                 <input type="text" id="firstName" name="firstName" placeholder="Enter your first name" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("firstName")} />
                 {formik.touched.firstName && formik.errors.firstName ? <div className="text-red-500">{formik.errors.firstName}</div> : null}
               </div>
               <div>
                 <div className="mb-2 block">
-                  <h4 className="text-sm text-gray-900 dark:text-white">Last Name</h4>
+                  <h4 className="text-sm text-gray-900 dark:text-white">Last name</h4>
                 </div>
                 <input type="text" id="lastName" name="lastName" placeholder="Enter your last name" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("lastName")} />
                 {formik.touched.lastName && formik.errors.lastName ? <div className="text-red-500">{formik.errors.lastName}</div> : null}
@@ -168,19 +192,23 @@ export const UpdateProfileModal = ({ isOpen, onClose, isLogin }) => {
                 {formik.touched.email && formik.errors.email ? <div className="text-red-500">{formik.errors.email}</div> : null}
               </div>
 
-              <div className="mb-2 block">
-                <div {...getRootProps()} style={{ border: "2px dashed #cccccc", borderRadius: "4px", width: "100%", padding: "20px", cursor: "pointer" }}>
+              <div className="my-4 block">
+                <div {...getRootProps()} className="border-solid border-2 border-gray-300 shadow-lg rounded-lg w-full p-4 hover:outline hover:outline-2 hover:outline-gray-600">
                   <input {...getInputProps()} name="photoProfile" />
                   <div>
                     {preview && (
                       <div className="flex justify-center">
-                        <img src={preview} alt={selectedImage} w={"30%"} h={"30%"} />
+                        <img src={preview} alt={selectedImage} className="h-[60%] w-[60%] rounded-lg shadow-lg"/>
                       </div>
                     )}
                   </div>
-                  {preview ? null : <p>Drag 'n' drop an image here, or click to select an image</p>}
+                  {preview ? null : 
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <FiUpload color="gray" alt="upload" className="w-10 h-10 mx-auto" />
+                    <span> JPG/JPEG or PNG max 2MB</span>
+                    </div>}
                 </div>
-                <p>Selected File: {selectedImage}</p>
+                <p className="mt-2">Selected File: <b>{selectedImage}</b></p>
                 {formik.touched.photoProfile && formik.errors.photoProfile ? <div className="text-red-500">{formik.errors.photoProfile}</div> : null}
               </div>
 
