@@ -9,7 +9,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../slices/accountSlices";
 import {FiUpload } from "react-icons/fi";
 
-export const UpdateProfileModal = ({ isOpen, onClose, isLogin }) => {
+export const UpdateProfileModal = ({ isOpen, onClose }) => {
   const username = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const [selectedImage, setSelectedImage] = useState(null);
   const [preview, setPreview] = useState(null);
