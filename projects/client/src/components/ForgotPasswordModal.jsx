@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { Button, Modal } from "flowbite-react";
+import { Button } from "flowbite-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import api from "../api";
@@ -10,6 +10,7 @@ import { AiOutlineLoading } from "react-icons/ai";
 import { useDispatch } from "react-redux";
 import { showLoginModal } from "../slices/authModalSlices";
 import { showVerifyModal } from "../slices/authModalSlices";
+import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from "@chakra-ui/react";
 
 function ForgotPasswordModal({ isOpen, isClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,10 +64,10 @@ function ForgotPasswordModal({ isOpen, isClose }) {
           }
           if (error.response.status === 405) {
             setTimeout(() => {
-              api.post("/auth/register", {
+              api.post("/auth/sendverify", {
                 email: values.email,
               });
-              toast.error("This account not verified, sending you verify code to your email", {
+              toast.error("This account not verified yet, sending you verify code to your email", {
                 autoClose: 1000,
                 onAutoClose: (t) => {
                   dispatch(hideForgotPasswordModal());
@@ -87,42 +88,47 @@ function ForgotPasswordModal({ isOpen, isClose }) {
         // Add a 1-second delay before closing the modal
         setTimeout(() => {
           setIsSubmitting(false);
-        }, 5000);
+        }, 6000);
       }
     },
   });
   return (
     <>
-      <Modal show={isOpen} size="md" onClose={isClose} popup>
-        <Modal.Header />
-        <Modal.Body>
-          <form onSubmit={formik.handleSubmit}>
-            <div className="space-y-4 px-4">
-              <div className="space-y-3">
-                <h3 className="text-xl font-medium text-gray-900 dark:text-white">Forgot Password</h3>
-                <h4 className="text-sm text-gray-900 dark:text-white">You will receive a forgot password link to your email address associated with the account. Please make sure to check your incoming email from us.</h4>
-              </div>
-              <div>
-                <div className="mb-2 block">
-                  <h4 className="text-sm text-gray-900 dark:text-white">Email</h4>
+      <Modal closeOnOverlayClick={false} isOpen={isOpen} size="md" onClose={isClose} isCentered>
+        <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(2px)" />
+        <ModalContent>
+          <ModalHeader />
+          <ModalCloseButton />
+          <ModalBody>
+            <form onSubmit={formik.handleSubmit}>
+              <div className="space-y-4 px-4 mb-4">
+                <div className="space-y-3">
+                  <h3 className="text-xl font-medium text-gray-900 dark:text-white">Forgot Password</h3>
+                  <h4 className="text-sm text-gray-900 dark:text-white">You will receive a forgot password link to your email address associated with the account. Please make sure to check your incoming email from us.</h4>
                 </div>
-                <input type="email" id="email" name="email" placeholder="Enter your email" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("email")} />
-                {formik.touched.email && formik.errors.email ? <div className="text-red-500">{formik.errors.email}</div> : null}
+                <div>
+                  <div className="mb-2 block">
+                    <h4 className="text-sm text-gray-900 dark:text-white">Email</h4>
+                  </div>
+                  <input type="email" id="email" name="email" placeholder="Enter your email" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("email")} />
+                  {formik.touched.email && formik.errors.email ? <div className="text-red-500">{formik.errors.email}</div> : null}
+                </div>
+                <div>
+                  {isSubmitting ? (
+                    <Button className="w-full bg-[#40403F] enabled:hover:bg-[#40403F] outline-none" size="lg" isProcessing processingSpinner={<AiOutlineLoading className="h-6 w-6 animate-spin" />}>
+                      Sending email...
+                    </Button>
+                  ) : (
+                    <Button className="w-full bg-[#40403F] enabled:hover:bg-[#777777]" size="lg" type="submit" disabled={isSubmitting}>
+                      Forgot Password
+                    </Button>
+                  )}
+                </div>
               </div>
-              <div>
-                {isSubmitting ? (
-                  <Button className="w-full bg-[#40403F] enabled:hover:bg-[#40403F] outline-none" size="lg" isProcessing processingSpinner={<AiOutlineLoading className="h-6 w-6 animate-spin" />}>
-                    Sending email...
-                  </Button>
-                ) : (
-                  <Button className="w-full bg-[#40403F] enabled:hover:bg-[#777777]" size="lg" type="submit" disabled={isSubmitting}>
-                    Forgot Password
-                  </Button>
-                )}
-              </div>
-            </div>
-          </form>
-        </Modal.Body>
+            </form>
+            <ModalFooter />
+          </ModalBody>
+        </ModalContent>
       </Modal>
     </>
   );
