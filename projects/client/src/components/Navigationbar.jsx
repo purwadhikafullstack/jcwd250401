@@ -12,6 +12,7 @@ import { logout } from "../slices/accountSlices";
 import { getAuth, signOut } from "firebase/auth"; // Import Firebase authentication functions
 import api from "../api";
 import { toast } from "sonner";
+import { useNavigate } from 'react-router-dom';
 
 function Navigationbar() {
   const isLogin = useSelector((state) => state?.account?.isLogin);
@@ -31,6 +32,7 @@ function Navigationbar() {
   const auth = getAuth(); // Initialize Firebase authentication
   const [userData, setUserData] = useState(null);
   const photoProfile = userData?.photoProfile;
+  const navigate = useNavigate();
 
   const openAuthModal = () => {
     dispatch(showLoginModal());
@@ -44,8 +46,10 @@ function Navigationbar() {
 
   const handleSubcategoryClick = (subcategory) => setDropdownSubcategory(subcategory);
   const handleLogout = () => {
+    navigate("/");
     signOut(auth) // Sign out the user from Firebase
       .then(() => {
+        dispatch(showLoginModal());
         setDropdownVisible(false);
         dispatch(logout()); // Dispatch the Redux logout action
       })

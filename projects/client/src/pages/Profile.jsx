@@ -61,7 +61,7 @@ export const Profile = () => {
                 </div>
                 <div className="p-3 flex flex-col items-center sm:items-start sm:flex-row w-[90%] ml-4 mt-4">
                   <div className="w-[80%] sm:w-[50%] min-h-[50vh] shadow-md flex flex-col justify-center rounded-lg mb-5 border">
-                    <img src={photoProfile ? `http://localhost:8000/public/${photoProfile}` : "https://via.placeholder.com/150"} alt={photoProfile} className="w-[90%] sm:w[60%] h-[70%] sm:h-[60%] mx-auto pt-2" />
+                    <img src={photoProfile ? `http://localhost:8000/public/${photoProfile}` : "https://via.placeholder.com/150"} alt={photoProfile} className="w-[250px] sm:w[60%] h-[250px] sm:h-[60%] mx-auto pt-2" />
                 
                   </div>
 

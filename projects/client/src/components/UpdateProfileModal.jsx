@@ -1,18 +1,21 @@
-import { Modal } from "flowbite-react";
 import { useFormik } from "formik";
 import { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
+import { Button } from "flowbite-react";
 import api from "../api";
 import * as yup from "yup";
 import { toast } from "sonner";
 import { useSelector, useDispatch } from "react-redux";
 import { updateProfile } from "../slices/accountSlices";
-import {FiUpload } from "react-icons/fi";
+import { FiUpload } from "react-icons/fi";
+import { AiOutlineLoading } from "react-icons/ai";
+import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from "@chakra-ui/react";
 
 export const UpdateProfileModal = ({ isOpen, onClose, isLogin }) => {
   const username = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const [selectedImage, setSelectedImage] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -49,6 +52,7 @@ export const UpdateProfileModal = ({ isOpen, onClose, isLogin }) => {
       email: yup.string().email("Invalid email address").required("Email is required"),
     }),
     onSubmit: async (values) => {
+      setIsSubmitting(true);
       try {
         const data = new FormData();
         data.append("userName", values.userName);
@@ -73,16 +77,19 @@ export const UpdateProfileModal = ({ isOpen, onClose, isLogin }) => {
         });
 
         if (response.data.ok) {
-          toast.success("Update profile success", {
-            autoClose: 2500,
-            onAutoClose: (t) => {
-              setSelectedImage(null);
-              setPreview(null);
-              console.log(response);
-              dispatch(updateProfile(response.data));
-              onClose();
-            },
-          });
+          setTimeout(() => {
+            toast.success("Update profile success", {
+              autoClose: 2000,
+              onAutoClose: (t) => {
+                setSelectedImage(null);
+                setPreview(null);
+                setIsSubmitting(false);
+                console.log(response);
+                dispatch(updateProfile(response.data));
+                onClose();
+              },
+            });
+          }, 2000);
         } else {
           toast.error("Please provide valid data", {
             duration: 2500,
@@ -112,6 +119,11 @@ export const UpdateProfileModal = ({ isOpen, onClose, isLogin }) => {
             description: "An error occurred while updating your profile. Please try again later.",
           });
         }
+      } finally {
+      
+        setTimeout(() => {
+          setIsSubmitting(false);
+        }, 8000);
       }
     },
   });
@@ -154,75 +166,93 @@ export const UpdateProfileModal = ({ isOpen, onClose, isLogin }) => {
 
   return (
     <>
-      <Modal show={isOpen} size="md" onClose={onClose} popup>
-        <Modal.Header>
-          <div className="p-4">
-            <h3>Update Profile</h3>
-          </div>
-        </Modal.Header>
-        <Modal.Body>
-          <form onSubmit={formik.handleSubmit}>
-            <div className="space-y-4 px-4">
-              <div>
-                <div className="mb-2 block">
-                  <h4 className="text-sm text-gray-900 dark:text-white">Username</h4>
+      <Modal closeOnOverlayClick={false} isOpen={isOpen} size="md" onClose={onClose} scrollBehavior="inside"  isCentered>
+        <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(2px)" />
+        <ModalContent>
+          <ModalHeader>
+            <div className="px-2 mt-2">
+              <h3>Update Profile</h3>
+            </div>
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <form onSubmit={formik.handleSubmit}>
+              <div className="space-y-4 px-4">
+                <div>
+                  <div className="mb-2 block">
+                    <h4 className="text-sm text-gray-900 dark:text-white">Username</h4>
+                  </div>
+                  <input type="text" id="userName" name="userName" placeholder="Enter your username" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("userName")} />
+                  {formik.touched.userName && formik.errors.userName ? <div className="text-red-500">{formik.errors.userName}</div> : null}
                 </div>
-                <input type="text" id="userName" name="userName" placeholder="Enter your username" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("userName")} />
-                {formik.touched.userName && formik.errors.userName ? <div className="text-red-500">{formik.errors.userName}</div> : null}
-              </div>
-              <div>
-                <div className="mb-2 block">
-                  <h4 className="text-sm text-gray-900 dark:text-white">First name</h4>
+                <div>
+                  <div className="mb-2 block">
+                    <h4 className="text-sm text-gray-900 dark:text-white">First name</h4>
+                  </div>
+                  <input
+                    type="text"
+                    id="firstName"
+                    name="firstName"
+                    placeholder="Enter your first name"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500"
+                    {...formik.getFieldProps("firstName")}
+                  />
+                  {formik.touched.firstName && formik.errors.firstName ? <div className="text-red-500">{formik.errors.firstName}</div> : null}
                 </div>
-                <input type="text" id="firstName" name="firstName" placeholder="Enter your first name" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("firstName")} />
-                {formik.touched.firstName && formik.errors.firstName ? <div className="text-red-500">{formik.errors.firstName}</div> : null}
-              </div>
-              <div>
-                <div className="mb-2 block">
-                  <h4 className="text-sm text-gray-900 dark:text-white">Last name</h4>
+                <div>
+                  <div className="mb-2 block">
+                    <h4 className="text-sm text-gray-900 dark:text-white">Last name</h4>
+                  </div>
+                  <input type="text" id="lastName" name="lastName" placeholder="Enter your last name" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("lastName")} />
+                  {formik.touched.lastName && formik.errors.lastName ? <div className="text-red-500">{formik.errors.lastName}</div> : null}
                 </div>
-                <input type="text" id="lastName" name="lastName" placeholder="Enter your last name" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("lastName")} />
-                {formik.touched.lastName && formik.errors.lastName ? <div className="text-red-500">{formik.errors.lastName}</div> : null}
-              </div>
-              <div>
-                <div className="mb-2 block">
-                  <h4 className="text-sm text-gray-900 dark:text-white">Email</h4>
+                <div>
+                  <div className="mb-2 block">
+                    <h4 className="text-sm text-gray-900 dark:text-white">Email</h4>
+                  </div>
+                  <input type="email" id="email" name="email" placeholder="Enter your email" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("email")} />
+                  {formik.touched.email && formik.errors.email ? <div className="text-red-500">{formik.errors.email}</div> : null}
                 </div>
-                <input type="email" id="email" name="email" placeholder="Enter your email" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("email")} />
-                {formik.touched.email && formik.errors.email ? <div className="text-red-500">{formik.errors.email}</div> : null}
-              </div>
 
-              <div className="my-4 block">
-                <div {...getRootProps()} className="border-solid border-2 border-gray-300 shadow-lg rounded-lg w-full p-4 hover:outline hover:outline-2 hover:outline-gray-600">
-                  <input {...getInputProps()} name="photoProfile" />
-                  <div>
-                    {preview && (
-                      <div className="flex justify-center">
-                        <img src={preview} alt={selectedImage} className="h-[60%] w-[60%] rounded-lg shadow-lg"/>
+                <div className="my-4 block">
+                  <div {...getRootProps()} className="border-solid border-2 border-gray-300 shadow-lg rounded-lg w-full p-4 hover:outline hover:outline-2 hover:outline-gray-600">
+                    <input {...getInputProps()} name="photoProfile" />
+                    <div>
+                      {preview && (
+                        <div className="flex justify-center">
+                          <img src={preview} alt={selectedImage} className="h-[80%] w-[80%] rounded-lg shadow-lg" />
+                        </div>
+                      )}
+                    </div>
+                    {preview ? null : (
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <FiUpload color="gray" alt="upload" className="w-10 h-10 mx-auto" />
+                        <span> JPG/JPEG or PNG max 2MB</span>
                       </div>
                     )}
                   </div>
-                  {preview ? null : 
-                  <div className="flex flex-col items-center justify-center gap-2">
-                    <FiUpload color="gray" alt="upload" className="w-10 h-10 mx-auto" />
-                    <span> JPG/JPEG or PNG max 2MB</span>
-                    </div>}
+                  <p className="mt-2">
+                    Selected File: <b>{selectedImage}</b>
+                  </p>
+                  {formik.touched.photoProfile && formik.errors.photoProfile ? <div className="text-red-500">{formik.errors.photoProfile}</div> : null}
                 </div>
-                <p className="mt-2">Selected File: <b>{selectedImage}</b></p>
-                {formik.touched.photoProfile && formik.errors.photoProfile ? <div className="text-red-500">{formik.errors.photoProfile}</div> : null}
-              </div>
 
-              <div className="flex justify-between">
-                <button className="w-[40%] h-[5vh] rounded-md text-white bg-black hover:bg-gray-600" onClick={onClose}>
-                  Cancel
-                </button>
-                <button className="w-[40%] h-[5vh] rounded-md text-white bg-black hover:bg-gray-600" type="submit">
-                  Update
-                </button>
+                <div>
+                  {isSubmitting ? (
+                    <Button className="w-full bg-[#40403F] enabled:hover:bg-[#40403F] outline-none" size="md" isProcessing processingSpinner={<AiOutlineLoading className="h-6 w-6 animate-spin" />}>
+                      Updating...
+                    </Button>
+                  ) : (
+                    <Button className="w-full bg-[#40403F] enabled:hover:bg-[#777777]" size="md" type="submit" disabled={isSubmitting}>
+                      Update
+                    </Button>
+                  )}
+                </div>
               </div>
-            </div>
-          </form>
-        </Modal.Body>
+            </form>
+            <ModalFooter />
+          </ModalBody>
+        </ModalContent>
       </Modal>
     </>
   );
