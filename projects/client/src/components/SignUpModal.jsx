@@ -27,7 +27,7 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 
-function SignUpModal({ isOpen, isClose, openLoginModal, openVerifyModal }) {
+function SignUpModal({ isOpen, isClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const dispatch = useDispatch();
 
@@ -41,7 +41,7 @@ function SignUpModal({ isOpen, isClose, openLoginModal, openVerifyModal }) {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      
+
       const response = await api.post("/auth/registergoogle", {
         email: user.email,
       });

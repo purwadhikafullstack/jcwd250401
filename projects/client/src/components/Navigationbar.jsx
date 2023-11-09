@@ -189,13 +189,14 @@ function Navigationbar() {
           </div>
         </>
       ) : (
-        <div className="flex justify-center items-center gap-4">
+        <div className="flex items-center gap-4">
           <a onClick={openAuthModal} className="text-black text-md font-semibold hover:underline cursor-pointer">
             Log in
           </a>
-          <Button pill className="cursor-pointer bg-[#40403F] enabled:hover:bg-[#777777]" onClick={openSignUpModal}>
+          <Button pill className="cursor-pointer bg-[#40403F] enabled:hover:bg-gray-400 transition duration-500 ease-in-out"
+          onClick={openSignUpModal}>
             <span className="text-white text-md font-semibold">Sign Up</span>
-            <HiOutlineArrowRight className="ml-2 h-5 w-5" />
+            <HiOutlineArrowRight className="ml-2 h-5 w-5 hover:block" />
           </Button>
         </div>
       )}
