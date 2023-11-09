@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BsCart, BsSearch } from "react-icons/bs";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { HiOutlineArrowRight } from "react-icons/hi";
@@ -14,7 +14,7 @@ import api from "../api";
 import { toast } from "sonner";
 
 function Navigationbar() {
-  const isLogin = useSelector((state) => state.account.isLogin);
+  const isLogin = useSelector((state) => state?.account?.isLogin);
   const userName = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [dropdownSubcategory, setDropdownSubcategory] = useState(null);
@@ -31,7 +31,6 @@ function Navigationbar() {
   const auth = getAuth(); // Initialize Firebase authentication
   const [userData, setUserData] = useState(null);
   const photoProfile = userData?.photoProfile;
-  const dropdownRef = useRef(null);
 
   const openAuthModal = () => {
     dispatch(showLoginModal());
@@ -70,18 +69,6 @@ function Navigationbar() {
     getUserData();
   }, [userName]);
 
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if(dropdownRef.current && !dropdownRef.current.contains(e.target)){
-        setDropdownSubcategory(null)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [])
-
   return (
     <div className="w-full bg-white h-20 flex items-center justify-around">
       <div className="flex items-center gap-16">
@@ -100,11 +87,11 @@ function Navigationbar() {
             };
             return (
               <>
-                <p key={index} className="text-black text-md font-semibold hover:underline cursor-pointer" onClick={() => handleSubcategoryClick(category)}>
+                <a href={`/${joinedCategories}`} key={index} className="text-black text-md font-semibold hover:underline cursor-pointer" onMouseEnter={() => handleSubcategoryClick(category)}>
                   {category}
-                </p>
+                </a>
                 {dropdownSubcategory === category && (
-                  <div className="absolute top-20 w-full right-0 h-50 bg-white ring-1 ring-black ring-opacity-5 z-10 flex-wrap" ref={dropdownRef}>
+                  <div className="absolute top-20 w-full right-0 h-50 bg-white ring-1 ring-black ring-opacity-5 z-10 flex-wrap" onMouseLeave={() => setDropdownSubcategory(null)}>
                     <div className="flex flex-row h-full">
                       <div className="w-[40vw] flex flex-col flex-wrap">
                         {(() => {
@@ -118,7 +105,7 @@ function Navigationbar() {
                             case "BAGS":
                               return (
                                 <div className="w-[100%] flex justify-center">
-                                  <div className="w-[80%vw] flex">
+                                  <div className="w-[80%] flex">
                                     <div className="mr-[5vw] font-extrabold">{bags.map(renderSubcategory)}</div>
                                     <div>{bagsSubCategory.map(renderSubcategory)}</div>
                                   </div>

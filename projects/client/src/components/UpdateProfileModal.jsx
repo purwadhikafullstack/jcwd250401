@@ -80,14 +80,27 @@ export const UpdateProfileModal = ({ isOpen, onClose, isLogin }) => {
         }
       } catch (error) {
         console.error(error);
-        toast.error("Update profile failed", {
-          duration: 2500,
-          description: "An error occurred while updating your profile. Please try again later.",
-          onAutoClose: (t) => {
-            setSelectedImage(null);
-            setPreview(null);
-          },
-        });
+
+        if (error?.response?.status === 400) {
+          toast.error("Please provide valid data", {
+            duration: 2500,
+            description: "Check your data again, username might be taken.",
+          });
+        } else if (error?.response?.status === 404) {
+          toast.error("Update profile failed", {
+            duration: 2500,
+            description: "User not found.",
+            onAutoClose: (t) => {
+              setSelectedImage(null);
+              setPreview(null);
+            },
+          });
+        } else {
+          toast.error("Update profile failed", {
+            duration: 2500,
+            description: "An error occurred while updating your profile. Please try again later.",
+          });
+        }
       }
     },
   });
@@ -106,7 +119,7 @@ export const UpdateProfileModal = ({ isOpen, onClose, isLogin }) => {
           photoProfile: profile.photoProfile,
         });
       } catch (error) {
-        if (error?.response?.status === 403) {
+        if (error?.response?.status === 401) {
           toast.error("You are not authorized to access this page. Please login first.", {
             duration: 1500,
           });

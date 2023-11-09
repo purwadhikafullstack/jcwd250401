@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { NavPage } from "../components/NavPage";
 import { useFormik } from "formik";
 import * as yup from "yup";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import api from "../api";
@@ -15,9 +15,11 @@ export const ChangePassword = () => {
   const listsMenu = ["Profile", "Address Book", "My Order", "Change my password"];
   const [showPassword, setShowPassword] = useState(false);
   const [openModal, setOpenModal] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const userRegistByGoogle = userData?.registBy === "google" ? true : false;
 
   const handleShowPassword = () => setShowPassword(!showPassword);
-  const handleModalOpen = () => setOpenModal(true)
+  const handleModalOpen = () => setOpenModal(true);
 
   const formik = useFormik({
     initialValues: {
@@ -52,14 +54,26 @@ export const ChangePassword = () => {
           formik.resetForm();
         }
       } catch (error) {
-        if(error.response && error.response.status === 400){
-          toast.error("Current password is incorrect")
+        if (error.response && error.response.status === 400) {
+          toast.error("Current password is incorrect");
         } else {
-          toast.error("Change password failed")
+          toast.error("Change password failed");
         }
       }
     },
   });
+
+  useEffect(() => {
+    const getUsersProfile = async () => {
+      try {
+        const response = await api.get(`/profile/${username}`);
+        setUserData(response.data.detail);
+      } catch (error) {
+        toast.error("Failed to get user data");
+      }
+    };
+    getUsersProfile();
+  }, []);
   return (
     <>
       <NavPage pageName={"Change my Password"} />
@@ -77,7 +91,7 @@ export const ChangePassword = () => {
           </div>
 
           <div className="w-[90vw] lg:w-[53vw] min-h-[70vh] flex flex-col px-0 lg:px-5 rounded-lg shadow-md">
-            {isLogin ? (
+            {isLogin && !userRegistByGoogle ? (
               <form onSubmit={formik.handleSubmit}>
                 <h1 className="text-2xl font-bold mt-4">Change My password</h1>
 
@@ -154,7 +168,7 @@ export const ChangePassword = () => {
               </form>
             ) : (
               <div className="flex flex-col items-center justify-center w-full h-full">
-                <p className="text-lg text-gray-500">You are not logged in</p>
+                {isLogin ? <p className="text-lg text-gray-500 text-center">Password cannot be updated for accounts registered through Google.</p> : <p className="text-lg text-gray-500">You are not logged in.</p>}
               </div>
             )}
           </div>

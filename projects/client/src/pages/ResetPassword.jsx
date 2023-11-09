@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons
 import { Button, Checkbox, Label, Modal } from "flowbite-react";
@@ -8,20 +8,36 @@ import { useDispatch, useSelector } from "react-redux";
 import { AiOutlineLoading } from "react-icons/ai";
 import { toast } from "sonner";
 import api from "../api";
-import { hideCreatePasswordModal } from "../slices/authModalSlices";
-import { showLoginModal } from "../slices/authModalSlices";
-import { setEmail } from "../slices/authModalSlices";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { showForgotPasswordModal, showLoginModal } from "../slices/authModalSlices";
+import image from "../assets/image-4.jpg";
+import imagemobile from "../assets/image-1.jpg";
 
-
-function CreatePasswordModal({ isOpen, isClose }) {
+function ResetPassword() {
+  const [searchParams] = useSearchParams();
+  const [isOpen, setIsOpen] = useState(true);
   const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
   const [isSubmitting, setIsSubmitting] = useState(false);
   const email = useSelector((state) => state.authModal.email);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const code = searchParams.get("code");
+    if (code) {
+      console.log("Code from query params:", code);
+    } else {
+      console.log("Code not found in query params");
+    }
+  }, [searchParams]);
 
   // Function to toggle password visibility
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const isClose = () => {
+    navigate("/");
   };
 
   const formik = useFormik({
@@ -46,21 +62,20 @@ function CreatePasswordModal({ isOpen, isClose }) {
       try {
         setIsSubmitting(true);
 
-        const response = await api.post("/auth/password", {
-          email: email,
+        const response = await api.post("/auth/resetpassword", {
+          uniqueCode: searchParams.get("code"),
           password: values.password,
         });
 
         if (response.data) {
           setTimeout(() => {
-            toast.success("Password has been created, Directing you to login page...", {
+            toast.success("New password has been created, Directing you to login page...", {
               autoClose: 3000,
               onAutoClose: (t) => {
+                navigate("/");
                 dispatch(showLoginModal());
-                dispatch(hideCreatePasswordModal());
               },
             });
-            dispatch(setEmail(""));
           }, 3000);
         }
       } catch (error) {
@@ -72,9 +87,15 @@ function CreatePasswordModal({ isOpen, isClose }) {
             }, 2000);
           } else if (error.response.status === 400) {
             setTimeout(() => {
-              toast.error("Invalid email!");
-              setIsSubmitting(false);
-            }, 2000);
+              toast.error("Reset password code already expired, please request a new one", {
+                autoClose: 1000,
+                onAutoClose: (t) => {
+                  setIsOpen(false);
+                  navigate("/");
+                  dispatch(showForgotPasswordModal());
+                },
+              });
+            }, 1000);
           } else {
           }
         } else if (error.request) {
@@ -82,8 +103,7 @@ function CreatePasswordModal({ isOpen, isClose }) {
         } else {
           // Handle other non-network, non-HTTP-related errors
         }
-      } 
-      finally {
+      } finally {
         // Add a 1-second delay before closing the modal
         setTimeout(() => {
           setIsSubmitting(false);
@@ -94,25 +114,43 @@ function CreatePasswordModal({ isOpen, isClose }) {
 
   return (
     <>
+      <div
+        style={{
+          backgroundImage: `url(${image})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          minHeight: "100vh",
+        }}
+        className="hidden lg:block"
+        ></div>
+        <div
+        style={{
+          backgroundImage: `url(${imagemobile})`,
+          backgroundSize: "cover",
+          minHeight: "100vh",
+        }}
+        className="block lg:hidden"
+        ></div>
+
       <Modal show={isOpen} onClose={isClose} size="md" popup>
         <Modal.Header />
         <Modal.Body>
           <form onSubmit={formik.handleSubmit}>
-            <div className="space-y-4 px-4 mb-4">
+            <div className="space-y-4 px-4 mb-6">
               <div className="space-y-3">
-                <h3 className="text-xl font-medium text-gray-900 dark:text-white">Create your password</h3>
-                <h4 className="text-sm text-gray-900 dark:text-white">One more step to finalize your account. Create the password.</h4>
+                <h3 className="text-xl font-medium text-gray-900 dark:text-white">Reset your password</h3>
+                <h4 className="text-sm text-gray-900 dark:text-white">We heard you forgotting your password, don't worry, let's create new one.</h4>
               </div>
               <div>
                 <div className="mb-2 block">
-                  <h4 className="text-sm text-gray-900 dark:text-white">Password</h4>
+                  <h4 className="text-sm text-gray-900 dark:text-white">New password</h4>
                 </div>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
                     id="password"
                     name="password"
-                    placeholder="Enter your password"
+                    placeholder="Enter your new password"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm"
                     {...formik.getFieldProps("password")}
                   />
@@ -131,7 +169,7 @@ function CreatePasswordModal({ isOpen, isClose }) {
                     type={showPassword ? "text" : "password"}
                     id="confirmPassword"
                     name="confirmPassword"
-                    placeholder="Enter your password"
+                    placeholder="Confirm your new password"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm"
                     {...formik.getFieldProps("confirmPassword")}
                   />
@@ -148,7 +186,7 @@ function CreatePasswordModal({ isOpen, isClose }) {
                     Creating Password...
                   </Button>
                 ) : (
-                  <Button className="w-full bg-[#40403F] enabled:hover:bg-[#777777]" size="lg" type="submit" >
+                  <Button className="w-full bg-[#40403F] enabled:hover:bg-[#777777]" size="lg" type="submit">
                     Create Password
                   </Button>
                 )}
@@ -161,4 +199,4 @@ function CreatePasswordModal({ isOpen, isClose }) {
   );
 }
 
-export default CreatePasswordModal;
+export default ResetPassword;

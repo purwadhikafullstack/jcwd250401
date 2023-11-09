@@ -206,7 +206,7 @@ export const Address = () => {
             </>
           ) : (
             <div className="flex flex-col items-center justify-center w-full h-full">
-              <p className="text-lg text-gray-500">You are not logged in</p>
+              <p className="text-lg text-gray-500">You are not logged in.</p>
             </div>
           )}
         </div>

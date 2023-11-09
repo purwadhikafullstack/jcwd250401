@@ -19,8 +19,19 @@ exports.handleUpdateProfile = async (req, res) => {
       });
     }
 
-    if (username) {
-      account.username = userName;
+    if (userName) {
+      const existingUser = await User.findOne({ where: { userName } });
+
+      if (existingUser && existingUser.username !== account.username) {
+        // This checks if the username of the existing user is different from the username 
+        // of the current user (the one trying to update their username)
+        return res.status(400).json({
+          ok: false,
+          msg: "Username already exists",
+        });
+      }
+
+      account.userName = userName;
     }
     if (firstName) {
       account.firstName = firstName;
@@ -96,6 +107,13 @@ exports.handleUpdatePassword = async (req, res) => {
       return res.status(404).json({
         ok: false,
         message: "Account not found",
+      });
+    }
+
+    if (account.registBy === "google") {
+      return res.status(400).json({
+        ok: false,
+        message: "You can't change password because you are registered with google",
       });
     }
 

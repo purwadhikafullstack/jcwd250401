@@ -46,6 +46,7 @@ exports.handleRegister = async (req, res) => {
       username,
       verifyCode,
       isVerify: false,
+      registBy: "email",
     });
 
     const templatePath = path.join(__dirname, "../templates/register.html");
@@ -60,7 +61,7 @@ exports.handleRegister = async (req, res) => {
     const mailOption = {
       from: process.env.SMTP_USER,
       to: email,
-      subject: "Verify your account",
+      subject: "Registration success, please verify your account.",
       html: emailHTML,
     };
 
@@ -109,6 +110,7 @@ exports.handleRegisterWithGoogle = async (req, res) => {
       username,
       verifyCode,
       isVerify: true,
+      registBy: "google",
     });
 
     return res.status(201).send({
@@ -323,3 +325,186 @@ exports.handleLoginWithGoogle = async (req, res) => {
     });
   }
 };
+
+exports.handleForgotPassword = async (req, res) => {
+  try {
+    
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        ok: false,
+        error: "Email is required",
+      });
+    }
+
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "User not found",
+      });
+    }
+
+    if(user.isVerify === false) {
+      return res.status(405).json({
+        message: "Please verify your account first",
+      });
+    }
+
+    if(user.registBy === "google") {
+      return res.status(403).json({
+        message: "This email bound with google services, please login with google",
+      });
+    }
+
+    const uniqueCode = crypto.randomBytes(20).toString("hex");
+    user.uniqueCode = uniqueCode;
+    user.uniqueCodeCreatedAt = new Date();
+    await user.save();
+
+    const templatePath = path.join(__dirname, "../templates/forgot-password.html");
+    const templateRaw = fs.readFileSync(templatePath, "utf-8");
+    const templateCompile = hbs.compile(templateRaw);
+    const emailHTML = templateCompile({
+      username: user.username,
+      link: `http://localhost:3000/reset-password?code=${uniqueCode}`,
+    });
+
+    const mailOption = {
+      from: process.env.SMTP_USER,
+      to: email,
+      subject: "Reset your password",
+      html: emailHTML,
+    };
+
+    mailer.sendMail(mailOption, (err, info) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).send({
+          message: "Internal server error",
+        });
+      } else {
+        return res.status(200).send({
+          ok: true,
+          message: "Forgot password request sent successfully",
+          user,
+        });
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      message: "Internal server error",
+    });
+  }
+};
+
+exports.handleResetPassword = async (req, res) => {
+  try {
+    const { uniqueCode, password } = req.body;
+
+    if (!uniqueCode || !password) {
+      return res.status(400).json({
+        message: "All fields are required",
+      });
+    }
+
+    const user = await User.findOne({ where: { uniqueCode } });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "Invalid link",
+      });
+    }
+
+    // Check if the code has expired (e.g., within the last hour)
+    const currentTimestamp = Date.now(); // Get the current timestamp in milliseconds
+    const codeCreationTimestamp = user.uniqueCodeCreatedAt.getTime(); // Assuming uniqueCodeCreatedAt is a Date object
+
+    const codeValidityDuration = 60 * 60 * 1000; // 1 hour in milliseconds
+    if (currentTimestamp - codeCreationTimestamp > codeValidityDuration) {
+      return res.status(400).json({
+        message: "Reset code has expired, please request again",
+      });
+    }
+
+    // Code is still valid; proceed to reset the password
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt);
+
+    user.password = hashPassword;
+    user.uniqueCode = null;
+    await user.save();
+
+    res.status(200).json({
+      message: "Password updated",
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+
+exports.handleSendVerifyEmail = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({
+      where: {
+        email: email,
+      },
+    });
+
+    if (user.isVerify) {
+      return res.status(400).send({
+        message: "This account already verified",
+      });
+    }
+
+    const verifyCode = generateRandomLetterString(6);
+    const username = email.split("@")[0];
+
+    user.verifyCode = verifyCode;
+    await user.save();
+    
+    const templatePath = path.join(__dirname, "../templates/requestverify.html");
+    const templateRaw = fs.readFileSync(templatePath, "utf-8");
+    const templateCompile = hbs.compile(templateRaw);
+    const emailHTML = templateCompile({
+      username: user.username,
+      verifyCode: user.verifyCode,
+    });
+
+    const mailOption = {
+      from: process.env.SMTP_USER,
+      to: email,
+      subject: "Verify your account",
+      html: emailHTML,
+    };
+
+    mailer.sendMail(mailOption, (err, info) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).send({
+          message: "Internal server error",
+        });
+      } else {
+        console.log("Verification email sent: " + info.response);
+        return res.status(201).send({
+          message: "User created successfully",
+          user,
+        });
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      message: "Internal server error",
+    });
+  }
+};
+

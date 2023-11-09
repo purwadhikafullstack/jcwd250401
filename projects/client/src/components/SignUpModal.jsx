@@ -41,11 +41,13 @@ function SignUpModal({ isOpen, isClose, openLoginModal, openVerifyModal }) {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
+      
       const response = await api.post("/auth/registergoogle", {
         email: user.email,
       });
 
       if (response.status === 201) {
+        const auth = getAuth();
         await signOut(auth);
         localStorage.clear();
         setTimeout(() => {
@@ -94,7 +96,7 @@ function SignUpModal({ isOpen, isClose, openLoginModal, openVerifyModal }) {
 
         if (response.status === 201) {
           setTimeout(() => {
-            toast.success("Verification code has been send to your email!", {
+            toast.success("Verification code has been send to your email", {
               autoClose: 1000,
               onAutoClose: (t) => {
                 dispatch(showVerifyModal());
@@ -177,9 +179,9 @@ function SignUpModal({ isOpen, isClose, openLoginModal, openVerifyModal }) {
                 </Button>
               </div>
               <div>
-                <span className="text-md font-bold">
+                <span className="text-md font-medium text-[#777777]">
                   Have an account ?{" "}
-                  <a className="text-md font-bold text-blue-600 hover:underline hover:cursor-pointer" onClick={loginButton}>
+                  <a className="text-md font-bold text-gray-900 hover:underline hover:cursor-pointer" onClick={loginButton}>
                     Login
                   </a>
                 </span>

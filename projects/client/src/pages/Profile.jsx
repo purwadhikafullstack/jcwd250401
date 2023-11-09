@@ -23,13 +23,16 @@ export const Profile = () => {
         if (isLogin) {
           const response = await api.get(`/profile/${userName}`);
           setUserData(response.data.detail);
+        } else {
+          toast.error("You are not logged in");
         }
       } catch (error) {
         toast.error("Failed to get user data");
+        console.error(String(error));
       }
     };
     getUserData();
-  }, []);
+  }, [userName]);
   const handleEdit = () => setOpenModal(true);
   return (
     <>
@@ -88,7 +91,7 @@ export const Profile = () => {
               </>
             ) : (
               <div className="flex flex-col items-center justify-center w-full h-full">
-                <p className="text-lg text-gray-500">You are not logged in</p>
+                <p className="text-lg text-gray-500">You are not logged in.</p>
               </div>
             )}
           </div>
