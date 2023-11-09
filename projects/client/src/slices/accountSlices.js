@@ -33,11 +33,11 @@ const accountSlices = createSlice({
       state.showUnauthorizedModal = false;
       state.redirectTo = "";
     },
-    updatePhotoProfile(state, action) {
-      state.userPhotoProfile = action.payload;
+    updateProfile(state, action) {
+      state.profile = action.payload;
     },
   },
 });
 
-export const { login, logout, showUnauthorizedModal, hideUnauthorizeModal, updatePhotoProfile } = accountSlices.actions;
+export const { login, logout, showUnauthorizedModal, hideUnauthorizeModal, updateProfile } = accountSlices.actions;
 export default accountSlices.reducer;
