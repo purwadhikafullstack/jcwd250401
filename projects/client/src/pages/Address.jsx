@@ -1,14 +1,19 @@
 import { Link } from "react-router-dom";
 import { NavPage } from "../components/NavPage";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { useSelector } from "react-redux";
+import api from "../api";
+import { toast } from "sonner";
 
 export const Address = () => {
   const isLogin = useSelector((state) => state?.account?.isLogin);
   const listsMenu = ["Profile", "Address Book", "My Order", "Change my password"];
   const [addressForm, setAddressForm] = useState(false);
+  const [addressLists, setAddressLists] = useState([]);
+  const [cityLists, setCityLists] = useState([]);
+
   const handleRegisterAddressBtn = () => setAddressForm(!addressForm);
 
   const formik = useFormik({
@@ -37,6 +42,28 @@ export const Address = () => {
       // handleRegisterAddressBtn()
     },
   });
+
+  useEffect(() => {
+    const getAddressLists = async () => {
+      try {
+        const response = await api.get("/address/province");
+        setAddressLists(response.data.detail);
+      } catch (error) {
+        toast.error("Get address lists failed");
+      }
+    };
+
+    const getCityLists = async () => {
+      try {
+        const response = await api.get("/address/city");
+        setCityLists(response.data.detail)
+      } catch (error) {
+        toast.error("Get city lists failed");
+      }
+    };
+    getAddressLists();
+    getCityLists();
+  }, []);
   return (
     <>
       <NavPage pageName={"Address Book"} />
