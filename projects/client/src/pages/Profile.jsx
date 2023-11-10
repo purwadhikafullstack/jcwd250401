@@ -40,7 +40,7 @@ export const Profile = () => {
     <>
       <NavPage pageName={"Profile"} />
       <div className="flex justify-center font-sagoe">
-        <div className="min-h-[70vh] lg:h-[70vh] w-[90vw] lg:w-[76vw] flex flex-row overflow-y-auto lg:overflow-y-hidden">
+        <div className="min-h-[70vh] lg:h-[72vh] w-[90vw] lg:w-[76vw] flex flex-row overflow-y-auto lg:overflow-y-hidden">
           <div className="hidden lg:flex flex-col w-[20vw]">
             {listsMenu.map((list, index) => {
               const joinedList = list.toLowerCase().replace(/\s/g, "-");
@@ -53,7 +53,7 @@ export const Profile = () => {
             })}
           </div>
 
-          <div className="w-full lg:w-[53vw] h-15 overflow-y-hidden shadow-md">
+          <div className="w-full lg:w-[53vw] lg:h-[70vh] overflow-y-hidden shadow-md">
             {isLogin ? (
               <>
                 <div className="flex justify-between bg-gray-100 p-3">

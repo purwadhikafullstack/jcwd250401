@@ -14,12 +14,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'productId',
         as: 'product'
       });
-      
     }
   }
   ProductImage.init({
     productId: DataTypes.INTEGER,
-    imageUrl: DataTypes.INTEGER
+    imageUrl: DataTypes.STRING,
   }, {
     sequelize,
     modelName: 'ProductImage',

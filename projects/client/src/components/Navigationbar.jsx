@@ -75,7 +75,7 @@ function Navigationbar() {
   }, [userName]);
 
   return (
-    <div className="w-full bg-white h-20 flex items-center justify-around font-sagoe">
+    <div className="w-full bg-white h-20 flex items-center justify-around font-sagoe ">
       <div className="flex items-center gap-16">
         <Link to="/">
           <img src={rains} alt="Logo" className="w-26 h-10 hover:cursor-pointer" />
@@ -137,7 +137,7 @@ function Navigationbar() {
             <BsSearch className="text-xl cursor-pointer" />
             <img src={photoProfile ? `http://localhost:8000/public/${photoProfile}` : "https://via.placeholder.com/150"} alt="Profile" className="w-6 h-6 rounded-full cursor-pointer" onClick={handleIconClick} />
             {dropdownVisible && (
-              <div className="absolute top-16 w-48 h-48 bg-white ring-1 ring-black ring-opacity-5 z-10">
+              <div className="absolute top-16 w-48 h-48 bg-white ring-1 ring-black ring-opacity-5 z-10" onMouseLeave={() => setDropdownVisible(false)}>
                 {accounts.map((account, index) => {
                   const joinedAccounts = account.toLowerCase().replace(/\s/g, "-");
                   return (
