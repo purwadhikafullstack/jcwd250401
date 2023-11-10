@@ -29,16 +29,19 @@ export default function App() {
   return (
     <div>
       {showNavigationbar && (
-        <div className="shadow-md">
+        <div className="shadow-md fixed top-0 left-0 right-0 z-50">
           <Navigationbar />
         </div>
       )}
-      <Routes>
-        {routesConfig.map((route, index) => (
-          <Route key={index} path={route.path} element={route.component} />
-        ))}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <div className={showNavigationbar ? 'mt-20' : ''}>
+        {/* Add some top margin to create space for the fixed navigation bar */}
+        <Routes>
+          {routesConfig.map((route, index) => (
+            <Route key={index} path={route.path} element={route.component} />
+          ))}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </div>
     </div>
   );
 }
