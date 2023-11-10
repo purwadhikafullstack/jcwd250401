@@ -1,7 +1,7 @@
 import Sidebar from "../components/Sidebar";
 import Navigationadmin from "../components/Navigationadmin";
 
-function Dashboard() {
+function Product() {
   return (
     <div className="flex flex-row justify-start">
       <Sidebar />
@@ -12,4 +12,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard;
+export default Product;
