@@ -6,15 +6,21 @@ import { Address } from "./pages/Address";
 import { ChangePassword } from "./pages/ChangePassword";
 import { NotFound } from "./pages/NotFound";
 import Navigationbar from "./components/Navigationbar";
+import Dashboard from "./pages/Dashboard";
 
 
 
 const routesConfig = [
+
+  // USER ROUTES
   { path: "/", component: <Homepage />, showNavigationbar: true },
   { path: "/reset-password", component: <ResetPassword />, showNavigationbar: false },
   { path: "/account/profile", component: <Profile />, showNavigationbar: true },
   { path: "/account/address-book", component: <Address />, showNavigationbar: true },
   { path: "/account/change-password", component: <ChangePassword />, showNavigationbar: true },
+
+  // ADMIN ROUTES
+  { path: "/dashboard/products", component: <Dashboard />, showNavigationbar: false},
   // Add more route configurations as needed
 ];
 
@@ -29,16 +35,19 @@ export default function App() {
   return (
     <div>
       {showNavigationbar && (
-        <div className="shadow-md">
+        <div className="shadow-md fixed top-0 left-0 right-0 z-50">
           <Navigationbar />
         </div>
       )}
-      <Routes>
-        {routesConfig.map((route, index) => (
-          <Route key={index} path={route.path} element={route.component} />
-        ))}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <div className={showNavigationbar ? 'mt-20' : ''}>
+        {/* Add some top margin to create space for the fixed navigation bar */}
+        <Routes>
+          {routesConfig.map((route, index) => (
+            <Route key={index} path={route.path} element={route.component} />
+          ))}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </div>
     </div>
   );
 }
