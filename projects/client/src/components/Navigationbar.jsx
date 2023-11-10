@@ -12,7 +12,8 @@ import { logout } from "../slices/accountSlices";
 import { getAuth, signOut } from "firebase/auth"; // Import Firebase authentication functions
 import api from "../api";
 import { toast } from "sonner";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 function Navigationbar() {
   const isLogin = useSelector((state) => state?.account?.isLogin);
@@ -76,7 +77,9 @@ function Navigationbar() {
   return (
     <div className="w-full bg-white h-20 flex items-center justify-around font-sagoe">
       <div className="flex items-center gap-16">
-        <img src={rains} alt="Logo" className="w-26 h-10" />
+        <Link to="/">
+          <img src={rains} alt="Logo" className="w-26 h-10 hover:cursor-pointer" />
+        </Link>
         <div className="hidden space-x-4 lg:flex">
           {categories.map((category, index) => {
             const joinedCategories = category.toLowerCase().replace(" ", "-");
@@ -84,16 +87,16 @@ function Navigationbar() {
             const renderSubcategory = (subcategory, index) => {
               const joinedSubcategory = subcategory.toLowerCase().replace(/\s/g, "-");
               return (
-                <a key={index} href={`/${joinedCategories}/${joinedSubcategory}`}>
+                <Link key={index} to={`/${joinedCategories}/${joinedSubcategory}`}>
                   <p className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm">{subcategory}</p>
-                </a>
+                </Link>
               );
             };
             return (
               <>
-                <a href={`/${joinedCategories}`} key={index} className="text-black text-md font-semibold hover:underline cursor-pointer" onMouseEnter={() => handleSubcategoryClick(category)}>
+                <Link to={`/${joinedCategories}`} key={index} className="text-md font-semibold cursor-pointer underline-on-hover " onMouseEnter={() => handleSubcategoryClick(category)}>
                   {category}
-                </a>
+                </Link>
                 {dropdownSubcategory === category && (
                   <div className="absolute top-20 w-full right-0 h-50 bg-white ring-1 ring-black ring-opacity-5 z-10 flex-wrap" onMouseLeave={() => setDropdownSubcategory(null)}>
                     <div className="flex flex-row h-full px-44">
@@ -120,9 +123,6 @@ function Navigationbar() {
                           }
                         })()}
                       </div>
-                      
-                     
-                     
                     </div>
                   </div>
                 )}
@@ -141,9 +141,9 @@ function Navigationbar() {
                 {accounts.map((account, index) => {
                   const joinedAccounts = account.toLowerCase().replace(/\s/g, "-");
                   return (
-                    <a key={index} href={`/account/${joinedAccounts}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <Link key={index} to={`/account/${joinedAccounts}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                       {account}
-                    </a>
+                    </Link>
                   );
                 })}
                 <p className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" onClick={handleLogout}>
@@ -168,9 +168,9 @@ function Navigationbar() {
                     {categories.map((category, index) => {
                       const joinedCategories = category.toLowerCase().replace(" ", "-");
                       return (
-                        <a key={index} href={`/${joinedCategories}`}>
+                        <Link key={index} to={`/${joinedCategories}`}>
                           <p className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm">{category}</p>
-                        </a>
+                        </Link>
                       );
                     })}
                   </div>
@@ -179,9 +179,9 @@ function Navigationbar() {
                     {accountsDropdown.map((account, index) => {
                       const joinedAccounts = account.toLowerCase().replace(" ", "-");
                       return (
-                        <a key={index} href={`/account/${joinedAccounts}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <Link key={index} to={`/account/${joinedAccounts}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                           {account}
-                        </a>
+                        </Link>
                       );
                     })}
                     <p className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" role="menuitem" onClick={handleLogout}>

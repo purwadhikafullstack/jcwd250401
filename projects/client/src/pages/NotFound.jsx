@@ -5,8 +5,7 @@ import Navigationbar from "../components/Navigationbar";
 export const NotFound = () => {
   return (
     <>
-      <Navigationbar />
-      <div className="w-full h-[85vh] flex items-center justify-center">
+      <div className="w-full h-screen flex items-center justify-center">
         <div className="flex justify-center items-center flex-col h-[90%] w-[90%]">
           <img src={notFoundImg} alt="not-found" className="w-[50vw] lg:w-[30vw] mb-5" />
           <div className="flex flex-col justify-center items-center p-2">
