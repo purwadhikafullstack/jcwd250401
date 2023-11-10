@@ -20,7 +20,7 @@ export default function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/account/profile" element={<Profile />} />
         <Route path="/account/address-book" element={<Address />} />
-        <Route path="/account/change-my-password" element={<ChangePassword />} />
+        <Route path="/account/change-password" element={<ChangePassword />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>
