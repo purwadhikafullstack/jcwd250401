@@ -16,12 +16,8 @@ module.exports = {
           key: 'id'
         }
       },
-      imageId: {
-        type: Sequelize.INTEGER,
-        references: {
-          model: 'Images',
-          key: 'id'
-        }
+      imageUrl: {
+        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,
