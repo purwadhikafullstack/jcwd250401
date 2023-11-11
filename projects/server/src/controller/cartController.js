@@ -64,62 +64,109 @@ exports.addToCart = async (req, res) => {
   }
 };
 
-exports.getCartItems = async (req, res) => {
+exports.updateCartItemQuantity = async (req, res) => {
+  const { productId } = req.params;
+  const { newQuantity } = req.body;
+
+  if (newQuantity < 1) {
+    return res.status(400).json({ message: 'Quantity must be at least 1' });
+  }
+
   const token = req.headers.authorization.split(' ')[1];
   const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-  const userId = decoded.id; // Extract user's ID from the token's payload
+  const userId = decoded.id;
 
   try {
-    // Find the user's cart order
     const order = await Order.findOne({
       where: { userId, status: 'In Cart' }
     });
-
     if (!order) {
       return res.status(404).json({ message: 'Cart not found' });
     }
 
-    // Retrieve all cart items for the order, including product details
-    const cartItems = await OrderItem.findAll({
+    const orderItem = await OrderItem.findOne({
+      where: { orderId: order.id, productId }
+    });
+    if (!orderItem) {
+      return res.status(404).json({ message: 'Product not in cart' });
+    }
+
+    // Update the quantity
+    orderItem.quantity = newQuantity;
+    await orderItem.save();
+
+    // Recalculate total price
+    const orderItems = await OrderItem.findAll({
       where: { orderId: order.id },
-      include: [{ model: Product }] // Include the Product details
+      include: [{ model: Product, attributes: ['price'] }]
     });
 
-    // Respond with the cart items
+    let totalPrice = 0;
+    orderItems.forEach(item => {
+      totalPrice += item.quantity * item.Product.price;
+    });
+
+    order.totalPrice = totalPrice;
+    await order.save();
+
     res.status(200).json({
-      message: 'Cart items retrieved successfully',
-      cartItems
+      message: 'Cart item quantity updated',
+      orderItem
     });
   } catch (error) {
-    // Handle any errors that occur during the process
     res.status(500).json({
-      message: 'Error retrieving cart items',
+      message: 'Error updating cart item quantity',
       error: error.message
     });
   }
 };
 
-exports.getCartItemCount = async (req, res) => {
-  const { id: userId } = req.user; // Updated to use userId from req.user
+exports.deleteCartItem = async (req, res) => {
+  const { productId } = req.params;
+
+  const token = req.headers.authorization.split(' ')[1];
+  const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+  const userId = decoded.id;
 
   try {
-    // Find the user's cart order
     const order = await Order.findOne({
       where: { userId, status: 'In Cart' }
     });
-
     if (!order) {
-      return res.json({ count: 0 });
+      return res.status(404).json({ message: 'Cart not found' });
     }
 
-    // Sum the quantities of all items in the cart
-    const items = await OrderItem.findAll({
-      where: { orderId: order.id }
+    const orderItem = await OrderItem.findOne({
+      where: { orderId: order.id, productId }
     });
-    const count = items.reduce((acc, item) => acc + item.quantity, 0);
+    if (!orderItem) {
+      return res.status(404).json({ message: 'Product not in cart' });
+    }
 
-    res.json({ count });
+    // Delete the item from the cart
+    await orderItem.destroy();
+
+    // Recalculate total price
+    const orderItems = await OrderItem.findAll({
+      where: { orderId: order.id },
+      include: [{ model: Product, attributes: ['price'] }]
+    });
+
+    let totalPrice = 0;
+    orderItems.forEach(item => {
+      totalPrice += item.quantity * item.Product.price;
+    });
+
+    order.totalPrice = totalPrice;
+    await order.save();
+
+    res.status(200).json({
+      message: 'Product removed from cart'
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Internal server error', error });
+    res.status(500).json({
+      message: 'Error removing product from cart',
+      error: error.message
+    });
   }
 };
