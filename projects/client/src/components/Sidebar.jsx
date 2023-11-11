@@ -91,7 +91,7 @@ const Sidebar = () => {
   const currentPage = segments[segments.length - 1];
 
   return (
-    <div className="w-[20vw] bg-black h-screen">
+    <div className="w-[16vw] bg-black h-screen">
       <div className="flex justify-center flex-col">
         <div className="flex justify-center mt-6 mb-10">
           <img src={rains} alt="logo" className="w-[40%] invert"></img>

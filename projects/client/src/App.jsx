@@ -8,6 +8,7 @@ import { NotFound } from "./pages/NotFound";
 import Navigationbar from "./components/Navigationbar";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
+import AdminLoginPage from "./pages/AdminLoginPage";
 
 
 
@@ -21,6 +22,7 @@ const routesConfig = [
   { path: "/account/change-password", component: <ChangePassword />, showNavigationbar: true },
 
   // ADMIN ROUTES
+  { path: "/adminlogin", component: <AdminLoginPage />, showNavigationbar: false},
   { path: "/dashboard", component: <Dashboard />, showNavigationbar: false},
   { path: "/dashboard/products", component: <Products/>, showNavigationbar: false},
   // Add more route configurations as needed

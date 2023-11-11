@@ -5,7 +5,7 @@ const mailer = require("../lib/nodemailer");
 const hbs = require("handlebars");
 const crypto = require("crypto");
 const fs = require("fs"); // Don't forget to import the 'fs' module
-const { User } = require("../models");
+const { User, Admin } = require("../models");
 const path = require("path");
 
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
@@ -328,7 +328,6 @@ exports.handleLoginWithGoogle = async (req, res) => {
 
 exports.handleForgotPassword = async (req, res) => {
   try {
-    
     const { email } = req.body;
 
     if (!email) {
@@ -346,13 +345,13 @@ exports.handleForgotPassword = async (req, res) => {
       });
     }
 
-    if(user.isVerify === false) {
+    if (user.isVerify === false) {
       return res.status(405).json({
         message: "Please verify your account first",
       });
     }
 
-    if(user.registBy === "google") {
+    if (user.registBy === "google") {
       return res.status(403).json({
         message: "This email bound with google services, please login with google",
       });
@@ -440,14 +439,12 @@ exports.handleResetPassword = async (req, res) => {
     res.status(200).json({
       message: "Password updated",
     });
-
   } catch (error) {
     res.status(500).json({
       message: error.message,
     });
   }
 };
-
 
 exports.handleSendVerifyEmail = async (req, res) => {
   const { email } = req.body;
@@ -470,7 +467,7 @@ exports.handleSendVerifyEmail = async (req, res) => {
 
     user.verifyCode = verifyCode;
     await user.save();
-    
+
     const templatePath = path.join(__dirname, "../templates/requestverify.html");
     const templateRaw = fs.readFileSync(templatePath, "utf-8");
     const templateCompile = hbs.compile(templateRaw);
@@ -508,3 +505,99 @@ exports.handleSendVerifyEmail = async (req, res) => {
   }
 };
 
+exports.handleAdminRegister = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+   existingAdmin = await Admin.findOne({
+    where: {
+      email,
+    },
+  });
+
+  if (existingAdmin) {
+    return res.status(400).send({
+      message: "Admin already exists",
+    });
+  
+  }
+  const salt = await bcrypt.genSalt(10);
+  const hashPassword = await bcrypt.hash(password, salt);
+  const admin = await Admin.create({
+    email,
+    password: hashPassword,
+    isWarehouseAdmin: false,
+  });
+
+  const response = {
+    email: admin.email,
+    isWarehouseAdmin: admin.isWarehouseAdmin,
+  };
+  
+  return res.status(201).send({
+    message: "Admin created successfully",
+    ok: true,
+    data: response,
+  })
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      message: "Internal server error",
+    });
+  }
+};
+
+exports.handleAdminLogin = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const account = await Admin.findOne({
+      where: {
+        [Op.or]: {
+          email,
+          password,
+        },
+      },
+    });
+
+    if (!account) {
+      res.status(401).json({
+        ok: false,
+        message: "Incorrect email or password",
+      });
+      return;
+    }
+
+    const isValid = await bcrypt.compare(password, account.password);
+    if (!isValid) {
+      res.status(401).json({
+        ok: false,
+        message: "Incorrect email or password",
+      });
+      return;
+    }
+    const payload = { id: account.id };
+    const token = jwt.sign(payload, JWT_SECRET_KEY, {
+      expiresIn: "2h",
+    });
+
+    const response = {
+      token,
+      profile: {
+        email: account.email,
+        isWarehouseAdmin: account.isWarehouseAdmin,
+      },
+    };
+
+    res.status(200).json({
+      ok: true,
+      data: response,
+    });
+  } catch (error) {
+    res.status(401).json({
+      ok: false,
+      message: String(error),
+    });
+  }
+};

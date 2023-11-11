@@ -51,7 +51,7 @@ function Navigationadmin() {
   const formattedCurrentPage = currentPage.charAt(0).toUpperCase() + currentPage.slice(1);
 
   return (
-    <div className="flex justify-between items-center px-4 py-4 h-20 w-full shadow-md">
+    <div className="flex justify-between items-center px-4 py-4 h-20 w-full">
       <div className="text-2xl font-bold font-sagoe ml-4">{formattedCurrentPage}</div>
       <div className="hidden gap-4 lg:flex items-center mr-6">
         <PiMagnifyingGlass className="text-2xl cursor-pointer" />
