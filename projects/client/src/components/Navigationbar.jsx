@@ -70,7 +70,7 @@ function Navigationbar() {
   }, [userName]);
 
   return (
-    <div className="w-full bg-white h-20 flex items-center justify-around">
+    <div className="w-full bg-white h-20 flex items-center justify-around font-sagoe">
       <div className="flex items-center gap-16">
         <img src={rains} alt="Logo" className="w-26 h-10" />
         <div className="hidden space-x-4 lg:flex">
@@ -92,8 +92,8 @@ function Navigationbar() {
                 </a>
                 {dropdownSubcategory === category && (
                   <div className="absolute top-20 w-full right-0 h-50 bg-white ring-1 ring-black ring-opacity-5 z-10 flex-wrap" onMouseLeave={() => setDropdownSubcategory(null)}>
-                    <div className="flex flex-row h-full">
-                      <div className="w-[40vw] flex flex-col flex-wrap">
+                    <div className="flex flex-row h-full px-44">
+                      <div className="flex flex-col flex-wrap">
                         {(() => {
                           switch (category) {
                             case "NEW IN":
@@ -104,11 +104,9 @@ function Navigationbar() {
                               return women.map(renderSubcategory);
                             case "BAGS":
                               return (
-                                <div className="w-[100%] flex justify-center">
-                                  <div className="w-[80%] flex">
-                                    <div className="mr-[5vw] font-extrabold">{bags.map(renderSubcategory)}</div>
-                                    <div>{bagsSubCategory.map(renderSubcategory)}</div>
-                                  </div>
+                                <div className="flex justify-center">
+                                  <div className="mr-[4vw] font-bold font-sagoe">{bags.map(renderSubcategory)}</div>
+                                  <div>{bagsSubCategory.map(renderSubcategory)}</div>
                                 </div>
                               );
                             case "ACCESSORIES":
@@ -118,6 +116,9 @@ function Navigationbar() {
                           }
                         })()}
                       </div>
+                      
+                     
+                     
                     </div>
                   </div>
                 )}
@@ -193,8 +194,7 @@ function Navigationbar() {
           <a onClick={openAuthModal} className="text-black text-md font-semibold hover:underline cursor-pointer">
             Log in
           </a>
-          <Button pill className="cursor-pointer bg-[#40403F] enabled:hover:bg-gray-400 transition duration-500 ease-in-out"
-          onClick={openSignUpModal}>
+          <Button pill className="cursor-pointer bg-[#40403F] enabled:hover:bg-gray-400 transition duration-500 ease-in-out" onClick={openSignUpModal}>
             <span className="text-white text-md font-semibold">Sign Up</span>
             <HiOutlineArrowRight className="ml-2 h-5 w-5 hover:block" />
           </Button>
