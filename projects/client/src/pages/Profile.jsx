@@ -9,7 +9,7 @@ import api from "../api";
 export const Profile = () => {
   const [openModal, setOpenModal] = useState(false);
   const [userData, setUserData] = useState(null);
-  const listsMenu = ["Profile", "Address Book", "My Order", "Change my password"];
+  const listsMenu = ["Profile", "Address Book", "My Order", "Change Password"];
   const isLogin = useSelector((state) => state?.account?.isLogin);
   const userName = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const lastName = useSelector((state) => state?.account?.profile?.data?.profile?.lastName);
@@ -35,22 +35,25 @@ export const Profile = () => {
   }, [userName, lastName, firstName, photoProfile, email]);
 
   const handleEdit = () => setOpenModal(true);
+
   return (
     <>
       <NavPage pageName={"Profile"} />
       <div className="flex justify-center font-sagoe">
-        <div className="min-h-[70vh] lg:h-[70vh] w-[90vw] lg:w-[76vw] flex flex-row overflow-y-auto lg:overflow-y-hidden">
+        <div className="min-h-[70vh] lg:h-[72vh] w-[90vw] lg:w-[76vw] flex flex-row overflow-y-auto lg:overflow-y-hidden">
           <div className="hidden lg:flex flex-col w-[20vw]">
             {listsMenu.map((list, index) => {
               const joinedList = list.toLowerCase().replace(/\s/g, "-");
+              const isProfile = list === "Profile"; // Check if the current item is "Profile"
               return (
-                <Link key={index} to={`/account/${joinedList}`} className="block py-2 text-sm font-medium font-sagoe text-gray-700 hover:underline">
+                <Link key={index} to={`/account/${joinedList}`} className={`block py-2 text-sm font-sagoe text-gray-700 hover:underline ${isProfile ? "font-black" : ""}`}>
                   {list}
                 </Link>
               );
             })}
           </div>
-          <div className="w-full lg:w-[53vw] h-15 overflow-y-hidden shadow-md">
+
+          <div className="w-full lg:w-[53vw] lg:h-[70vh] overflow-y-hidden shadow-md">
             {isLogin ? (
               <>
                 <div className="flex justify-between bg-gray-100 p-3">
@@ -61,10 +64,8 @@ export const Profile = () => {
                 </div>
                 <div className="p-3 flex flex-col items-center sm:items-start sm:flex-row w-[90%] ml-4 mt-4">
                   <div className="w-[80%] sm:w-[50%] min-h-[50vh] shadow-md flex flex-col justify-center rounded-lg mb-5 border">
-                    <img src={photoProfile ? `http://localhost:8000/public/${photoProfile}` : "https://via.placeholder.com/150"} alt={photoProfile} className="w-[90%] sm:w[60%] h-[70%] sm:h-[60%] mx-auto pt-2" />
-                
+                    <img src={photoProfile ? `http://localhost:8000/public/${photoProfile}` : "https://via.placeholder.com/150"} alt={photoProfile} className="w-[250px] sm:w[60%] h-[250px] sm:h-[60%] mx-auto pt-2" />
                   </div>
-
                   <div className="ml-0 sm:ml-[2vw]">
                     <div className="flex gap-8 mb-3">
                       <p className="text-sm text-gray-500 min-w-[20vw] sm:min-w-[5vw]">Username</p>

@@ -6,11 +6,8 @@ import * as yup from "yup";
 import { updateAddress } from "../slices/addressSlices";
 import { useDispatch } from "react-redux";
 import { AiFillCheckCircle } from "react-icons/ai";
-import { useEffect, useState } from "react";
 
 export const EditAddressModal = ({ isOpen, onClose, addressData, userId, cityLists, provinceLists }) => {
-  console.log(addressData);
-  const [isLoading, setIsLoading] = useState(true);
   const dispatch = useDispatch();
   const formik = useFormik({
     initialValues: {
@@ -68,170 +65,166 @@ export const EditAddressModal = ({ isOpen, onClose, addressData, userId, cityLis
     },
   });
 
-  useEffect(() => {
-    if (isLoading) {
-      setIsLoading(false);
-    }
-  }, [addressData]);
-
   return (
     <>
       <Modal show={isOpen} onClose={onClose}>
         <Modal.Header>Edit Address</Modal.Header>
         <Modal.Body>
           <div className="h-[70vh] px-3 overflow-y-auto">
-            {isLoading ? (
-              <div className="flex justify-center items-center h-full">
-                <div className="rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900">loading</div>
+            <form onSubmit={formik.handleSubmit}>
+              <div className="flex flex-row items-center mt-5 w-full">
+                <label htmlFor="firstName" className="text-md text-gray-600 w-[35%] font-semibold cursor-pointer">
+                  First Name <span className="text-red-500">*</span>
+                </label>
+
+                <div className="w-[55%] sm:w-[65%]">
+                  <input
+                    type="text"
+                    id="firstName"
+                    name="firstName"
+                    placeholder="Enter your first name"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500"
+                    {...formik.getFieldProps("firstName")}
+                  />
+                  {formik.touched.firstName && formik.errors.firstName ? <div className="text-red-500">{formik.errors.firstName}</div> : null}
+                </div>
               </div>
-            ) : (
-              <form onSubmit={formik.handleSubmit}>
-                <div className="flex flex-row items-center mt-5 w-full">
-                  <label htmlFor="firstName" className="text-md text-gray-600 w-[35%] font-semibold cursor-pointer">
-                    First Name <span className="text-red-500">*</span>
-                  </label>
 
-                  <div className="w-[55%] sm:w-[65%]">
-                    <input
-                      type="text"
-                      id="firstName"
-                      name="firstName"
-                      placeholder="Enter your first name"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500"
-                      {...formik.getFieldProps("firstName")}
-                    />
-                    {formik.touched.firstName && formik.errors.firstName ? <div className="text-red-500">{formik.errors.firstName}</div> : null}
-                  </div>
+              <div className="flex flex-row items-center mt-5">
+                <label htmlFor="lastName" className="text-md text-gray-600 w-[35%] font-semibold cursor-pointer">
+                  Last Name <span className="text-red-500">*</span>
+                </label>
+
+                <div className="w-[55%] sm:w-[65%]">
+                  <input type="text" id="lastName" name="lastName" placeholder="Enter your last name" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("lastName")} />
+                  {formik.touched.lastName && formik.errors.lastName ? <div className="text-red-500">{formik.errors.lastName}</div> : null}
                 </div>
+              </div>
 
-                <div className="flex flex-row items-center mt-5">
-                  <label htmlFor="lastName" className="text-md text-gray-600 w-[35%] font-semibold cursor-pointer">
-                    Last Name <span className="text-red-500">*</span>
-                  </label>
+              <div className="flex flex-row items-center mt-5">
+                <label htmlFor="street" className="text-md text-gray-600 w-[35%] font-semibold cursor-pointer">
+                  Street / Address Detail <span className="text-red-500">*</span>
+                </label>
 
-                  <div className="w-[55%] sm:w-[65%]">
-                    <input type="text" id="lastName" name="lastName" placeholder="Enter your last name" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("lastName")} />
-                    {formik.touched.lastName && formik.errors.lastName ? <div className="text-red-500">{formik.errors.lastName}</div> : null}
-                  </div>
+                <div className="w-[55%] sm:w-[65%]">
+                  <input
+                    type="text"
+                    id="street"
+                    name="street"
+                    placeholder="Enter your street or address detail"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500"
+                    {...formik.getFieldProps("street")}
+                  />
+                  {formik.touched.street && formik.errors.street ? <div className="text-red-500">{formik.errors.street}</div> : null}
                 </div>
+              </div>
 
-                <div className="flex flex-row items-center mt-5">
-                  <label htmlFor="street" className="text-md text-gray-600 w-[35%] font-semibold cursor-pointer">
-                    Street / Address Detail <span className="text-red-500">*</span>
-                  </label>
+              <div className="flex flex-row items-center mt-5">
+                <label htmlFor="province" className="text-md text-gray-600 w-[35%] font-semibold">
+                  Province <span className="text-red-500">*</span>
+                </label>
 
-                  <div className="w-[55%] sm:w-[65%]">
-                    <input
-                      type="text"
-                      id="street"
-                      name="street"
-                      placeholder="Enter your street or address detail"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500"
-                      {...formik.getFieldProps("street")}
-                    />
-                    {formik.touched.street && formik.errors.street ? <div className="text-red-500">{formik.errors.street}</div> : null}
-                  </div>
+                <div className="w-[55%] sm:w-[65%]">
+                  <select name="province" id="province" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500 cursor-pointer" {...formik.getFieldProps("province")}>
+                    <option value={formik.values.province}>{formik.values.province}</option>
+                    {provinceLists.map((province, index) => {
+                      if (province.province !== formik.values.province) {
+                        return (
+                          <option key={index} value={province.province}>
+                            {province.province}
+                          </option>
+                        );
+                      }
+                      return null;
+                    })}
+                  </select>
+                  {formik.touched.province && formik.errors.province ? <div className="text-red-500">{formik.errors.province}</div> : null}
                 </div>
+              </div>
 
-                <div className="flex flex-row items-center mt-5">
-                  <label htmlFor="province" className="text-md text-gray-600 w-[35%] font-semibold">
-                    Province <span className="text-red-500">*</span>
-                  </label>
+              <div className="flex flex-row items-center mt-5">
+                <label htmlFor="city" className="text-md text-gray-600 w-[35%] font-semibold">
+                  City <span className="text-red-500">*</span>
+                </label>
 
-                  <div className="w-[55%] sm:w-[65%]">
-                    <select
-                      name="province"
-                      id="province"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500 cursor-pointer"
-                      {...formik.getFieldProps("province")}>
-                      {provinceLists.map((province, index) => (
-                        <option key={index} value={province.province}>
-                          {province.province}
-                        </option>
-                      ))}
-                    </select>
-                    {formik.touched.province && formik.errors.province ? <div className="text-red-500">{formik.errors.province}</div> : null}
-                  </div>
+                <div className="w-[55%] sm:w-[65%]">
+                  <select name="city" id="city" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500 cursor-pointer" {...formik.getFieldProps("city")}>
+                    <option value={formik.values.city}>{formik.values.city}</option>
+                    {cityLists.map((city, index) => {
+                      if (city.city !== formik.values.city) {
+                        return (
+                          <option key={index} value={city.city_name}>
+                            {city.city_name}
+                          </option>
+                        );
+                      }
+                      return null;
+                    })}
+                  </select>
+                  {formik.touched.city && formik.errors.city ? <div className="text-red-500">{formik.errors.city}</div> : null}
                 </div>
+              </div>
 
-                <div className="flex flex-row items-center mt-5">
-                  <label htmlFor="city" className="text-md text-gray-600 w-[35%] font-semibold">
-                    City <span className="text-red-500">*</span>
-                  </label>
+              <div className="flex flex-row items-center mt-5">
+                <label htmlFor="district" className="text-md text-gray-600 w-[35%] font-semibold cursor-pointer">
+                  District <span className="text-red-500">*</span>
+                </label>
 
-                  <div className="w-[55%] sm:w-[65%]">
-                    <select name="city" id="city" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500 cursor-pointer" {...formik.getFieldProps("city")}>
-                      {cityLists.map((city, index) => (
-                        <option key={index} value={city.city_name}>
-                          {city.city_name}
-                        </option>
-                      ))}
-                    </select>
-                    {formik.touched.city && formik.errors.city ? <div className="text-red-500">{formik.errors.city}</div> : null}
-                  </div>
+                <div className="w-[55%] sm:w-[65%]">
+                  <input type="text" id="district" name="district" placeholder="Enter your district" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("district")} />
+                  {formik.touched.district && formik.errors.district ? <div className="text-red-500">{formik.errors.district}</div> : null}
                 </div>
+              </div>
 
-                <div className="flex flex-row items-center mt-5">
-                  <label htmlFor="district" className="text-md text-gray-600 w-[35%] font-semibold cursor-pointer">
-                    District <span className="text-red-500">*</span>
-                  </label>
+              <div className="flex flex-row items-center mt-5">
+                <label htmlFor="subDistrict" className="text-md text-gray-600 w-[35%] font-semibold cursor-pointer">
+                  Sub District <span className="text-red-500">*</span>
+                </label>
 
-                  <div className="w-[55%] sm:w-[65%]">
-                    <input type="text" id="district" name="district" placeholder="Enter your district" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("district")} />
-                    {formik.touched.district && formik.errors.district ? <div className="text-red-500">{formik.errors.district}</div> : null}
-                  </div>
+                <div className="w-[55%] sm:w-[65%]">
+                  <input
+                    type="text"
+                    id="subDistrict"
+                    name="subDistrict"
+                    placeholder="Enter your Sub District"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500"
+                    {...formik.getFieldProps("subDistrict")}
+                  />
+                  {formik.touched.subDistrict && formik.errors.subDistrict ? <div className="text-red-500">{formik.errors.subDistrict}</div> : null}
                 </div>
+              </div>
 
-                <div className="flex flex-row items-center mt-5">
-                  <label htmlFor="subDistrict" className="text-md text-gray-600 w-[35%] font-semibold cursor-pointer">
-                    Sub District <span className="text-red-500">*</span>
-                  </label>
+              <div className="flex flex-row items-center mt-5">
+                <label htmlFor="phoneNumber" className="text-md text-gray-600 w-[35%] font-semibold cursor-pointer">
+                  Phone Number <span className="text-red-500">*</span>
+                </label>
 
-                  <div className="w-[55%] sm:w-[65%]">
-                    <input
-                      type="text"
-                      id="subDistrict"
-                      name="subDistrict"
-                      placeholder="Enter your Sub District"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500"
-                      {...formik.getFieldProps("subDistrict")}
-                    />
-                    {formik.touched.subDistrict && formik.errors.subDistrict ? <div className="text-red-500">{formik.errors.subDistrict}</div> : null}
-                  </div>
+                <div className="w-[55%] sm:w-[65%]">
+                  <input
+                    type="number"
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    placeholder="Enter your phone number"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500"
+                    {...formik.getFieldProps("phoneNumber")}
+                  />
+                  {formik.touched.phoneNumber && formik.errors.phoneNumber ? <div className="text-red-500">{formik.errors.phoneNumber}</div> : null}
                 </div>
+              </div>
 
-                <div className="flex flex-row items-center mt-5">
-                  <label htmlFor="phoneNumber" className="text-md text-gray-600 w-[35%] font-semibold cursor-pointer">
-                    Phone Number <span className="text-red-500">*</span>
-                  </label>
+              <div className="flex flex-row items-center mt-5">
+                <label htmlFor="setAsDefault" className="text-md text-gray-600 w-[35%] font-semibold cursor-pointer">
+                  Set as default address
+                </label>
+                {formik.values.setAsDefault ? <AiFillCheckCircle className="text-green-500 text-2xl" /> : <input type="checkbox" id="setAsDefault" name="setAsDefault" className="w-6 h-6" {...formik.getFieldProps("setAsDefault")} />}
+              </div>
 
-                  <div className="w-[55%] sm:w-[65%]">
-                    <input
-                      type="number"
-                      id="phoneNumber"
-                      name="phoneNumber"
-                      placeholder="Enter your phone number"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500"
-                      {...formik.getFieldProps("phoneNumber")}
-                    />
-                    {formik.touched.phoneNumber && formik.errors.phoneNumber ? <div className="text-red-500">{formik.errors.phoneNumber}</div> : null}
-                  </div>
-                </div>
-
-                <div className="flex flex-row items-center mt-5">
-                  <label htmlFor="setAsDefault" className="text-md text-gray-600 w-[35%] font-semibold cursor-pointer">
-                    Set as default address
-                  </label>
-                  {formik.values.setAsDefault ? <AiFillCheckCircle className="text-green-500 text-2xl" /> : <input type="checkbox" id="setAsDefault" name="setAsDefault" className="w-6 h-6" {...formik.getFieldProps("setAsDefault")} />}
-                </div>
-
-                <div className="flex flex-row items-center mt-5">
-                  <button type="submit" className="w-[25%] sm:w-[35%] h-[7vh] border bg-[#40403F] hover:bg-[#555554] text-white rounded-md font-semibold mb-3">
-                    Save
-                  </button>
-                </div>
-              </form>
-            )}
+              <div className="flex flex-row items-center mt-5">
+                <button type="submit" className="w-[25%] sm:w-[35%] h-[7vh] border bg-[#40403F] hover:bg-[#555554] text-white rounded-md font-semibold mb-3">
+                  Save
+                </button>
+              </div>
+            </form>
           </div>
         </Modal.Body>
       </Modal>

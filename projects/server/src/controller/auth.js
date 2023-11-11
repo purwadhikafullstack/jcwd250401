@@ -372,7 +372,7 @@ exports.handleForgotPassword = async (req, res) => {
     });
 
     const mailOption = {
-      from: process.env.SMTP_USER,
+      from: "RAINS Support Team",
       to: email,
       subject: "Reset your password",
       html: emailHTML,

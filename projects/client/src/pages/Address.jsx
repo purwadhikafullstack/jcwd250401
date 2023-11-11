@@ -15,7 +15,7 @@ import { BsFillPinAngleFill } from "react-icons/bs";
 export const Address = () => {
   const isLogin = useSelector((state) => state?.account?.isLogin);
   const username = useSelector((state) => state?.account?.profile?.data?.profile?.username);
-  const listsMenu = ["Profile", "Address Book", "My Order", "Change my password"];
+  const listsMenu = ["Profile", "Address Book", "My Order", "Change Password"];
   const [addressForm, setAddressForm] = useState(false);
   const [provinceLists, setProvinceLists] = useState([]);
   const [cityLists, setCityLists] = useState([]);
@@ -140,10 +140,11 @@ export const Address = () => {
       <div className="flex justify-center">
         <div className="h-[70vh] w-[90vw] lg:w-[76vw] flex flex-row overflow-y-hidden">
           <div className="hidden lg:flex flex-col w-[20vw]">
-            {listsMenu.map((list, index) => {
+          {listsMenu.map((list, index) => {
               const joinedList = list.toLowerCase().replace(/\s/g, "-");
+              const isAddress = list === "Address Book"; // Check if the current item is "Profile"
               return (
-                <Link key={index} to={`/account/${joinedList}`} className="block py-2 text-sm text-gray-700 hover:underline">
+                <Link key={index} to={`/account/${joinedList}`} className={`block py-2 text-sm font-sagoe text-gray-700 hover:underline ${isAddress ? "font-black" : ""}`}>
                   {list}
                 </Link>
               );
@@ -380,14 +381,7 @@ export const Address = () => {
                             {formik.touched.phoneNumber && formik.errors.phoneNumber ? <div className="text-red-500">{formik.errors.phoneNumber}</div> : null}
                           </div>
                         </div>
-
-                        <div className="flex flex-row items-center mt-5">
-                          <label htmlFor="setAsDefault" className="text-md text-gray-600 w-[35%] font-semibold cursor-pointer">
-                            Set as default address
-                          </label>
-                          <input type="checkbox" name="setAsDefault" className="w-[5%] h-[5vh] px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" />
-                        </div>
-
+                        
                         <div className="flex flex-row items-center mt-5">
                           <button type="submit" className="w-[25%] sm:w-[35%] h-[7vh] border bg-[#40403F] hover:bg-[#555554] text-white rounded-md font-semibold mb-3">
                             Register

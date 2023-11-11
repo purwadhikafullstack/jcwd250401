@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FcGoogle } from "react-icons/fc";
-import { Button, Modal } from "flowbite-react";
+import { Button } from "flowbite-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import api from "../api";
@@ -13,6 +13,7 @@ import { useSelector } from "react-redux";
 import { hideVerifyModal } from "../slices/authModalSlices";
 import { showCreatePasswordModal } from "../slices/authModalSlices";
 import OtpInput from "./OtpInput";
+import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from "@chakra-ui/react";
 
 function VerifyModal({ isOpen, isClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -112,58 +113,63 @@ function VerifyModal({ isOpen, isClose }) {
         // Add a 1-second delay before closing the modal
         setTimeout(() => {
           setIsSubmitting(false);
-        }, 6000);
+        }, 8000);
       }
     },
   });
 
   return (
-    <Modal show={isOpen} onClose={isClose} size="md" popup>
-      <Modal.Header />
-      <Modal.Body>
-        <form onSubmit={formik.handleSubmit}>
-          <div className="space-y-4 px-4">
-            <div className="space-y-3">
-              <h3 className="text-xl font-medium text-gray-900 dark:text-white">Verify your account</h3>
-              <h4 className="text-sm text-gray-900 dark:text-white">We've already sent a verification code to your email address associated with your account. Please make sure to check your email from us.</h4>
-            </div>
-            <div>
-              <div className="mb-2 block">
-                <h4 className="text-sm text-gray-900 dark:text-white text-center">Verification code</h4>
-              </div>
-              <div className="flex items-center justify-center mt-4 mb-6">
-                <OtpInput
-                  value={formik.values.verifyCode} // Pass the OTP value as a prop
-                  onChange={handleOtpChange}
-                />
+    <Modal closeOnOverlayClick={false} isOpen={isOpen} size="md" onClose={isClose} isCentered>
+      <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(2px)" />
+      <ModalContent>
+        <ModalHeader />
+        <ModalCloseButton />
+        <ModalBody>
+          <form onSubmit={formik.handleSubmit}>
+            <div className="space-y-4 px-4">
+              <div className="space-y-3">
+                <h3 className="text-xl font-medium text-gray-900 dark:text-white">Verify your account</h3>
+                <h4 className="text-sm text-gray-900 dark:text-white">We've already sent a verification code to your email address associated with your account. Please make sure to check your email from us.</h4>
               </div>
               <div>
-                {isSubmitting ? (
-                  <Button className="w-full bg-[#40403F] enabled:hover:bg-[#40403F] outline-none" size="lg" isProcessing processingSpinner={<AiOutlineLoading className="h-6 w-6 animate-spin" />}>
-                    Verifying...
-                  </Button>
-                ) : (
-                  <Button className="w-full bg-[#40403F] enabled:hover:bg-[#777777]" size="lg" type="submit" disabled={isSubmitting}>
-                    Verify
-                  </Button>
-                )}
-              </div>
-              <div className="flex items-center justify-center gap-4 mt-4">
-                <span className="text-sm font-medium text-[#777777]">
-                  Didn't get the code ? {""}
-                  {resendCooldown === 0 ? ( // Show "Resend" when the cooldown is 0
-                    <a className="text-sm font-bold text-gray-900 hover:underline hover:cursor-pointer" onClick={handleResend}>
-                      Resend
-                    </a>
+                <div className="mb-2 block">
+                  <h4 className="text-sm text-gray-900 dark:text-white text-center">Verification code</h4>
+                </div>
+                <div className="flex items-center justify-center mt-4 mb-6">
+                  <OtpInput
+                    value={formik.values.verifyCode} // Pass the OTP value as a prop
+                    onChange={handleOtpChange}
+                  />
+                </div>
+                <div>
+                  {isSubmitting ? (
+                    <Button className="w-full bg-[#40403F] enabled:hover:bg-[#40403F] outline-none" size="lg" isProcessing processingSpinner={<AiOutlineLoading className="h-6 w-6 animate-spin" />}>
+                      Verifying...
+                    </Button>
                   ) : (
-                    `${resendCooldown}s`
+                    <Button className="w-full bg-[#40403F] enabled:hover:bg-[#777777]" size="lg" type="submit" disabled={isSubmitting}>
+                      Verify
+                    </Button>
                   )}
-                </span>
+                </div>
+                <div className="flex items-center justify-center gap-4 mt-4">
+                  <span className="text-sm font-medium text-[#777777]">
+                    Didn't get the code ? {""}
+                    {resendCooldown === 0 ? ( // Show "Resend" when the cooldown is 0
+                      <a className="text-sm font-bold text-gray-900 hover:underline hover:cursor-pointer" onClick={handleResend}>
+                        Resend
+                      </a>
+                    ) : (
+                      `${resendCooldown}s`
+                    )}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        </form>
-      </Modal.Body>
+          </form>
+          <ModalFooter />
+        </ModalBody>
+      </ModalContent>
     </Modal>
   );
 }
