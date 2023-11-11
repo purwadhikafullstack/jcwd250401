@@ -171,7 +171,9 @@ function Navigationbar() {
             )}
 
             <MdFavoriteBorder className="text-xl cursor-pointer" />
-            <BsCart className="text-xl cursor-pointer" />
+            <BsCart className="text-xl cursor-pointer" 
+              onClick={() => navigate("/account/cart")}
+            />
           </div>
 
           {/* Mobile */}
