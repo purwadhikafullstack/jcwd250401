@@ -48,7 +48,6 @@ export const EditAddressModal = ({ isOpen, onClose, addressData, userId, cityLis
         if (response.data.ok) {
           toast.success("Update address success");
           dispatch(updateAddress(response.data.detail));
-          console.log(response.data.detail);
           formik.resetForm();
           onClose();
         }

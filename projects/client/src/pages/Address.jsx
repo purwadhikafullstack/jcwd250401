@@ -89,9 +89,13 @@ export const Address = () => {
         }
       } catch (error) {
         if (error.response && error.response.status === 400) {
-          toast.error("Register address failed");
+          toast.error("Register address failed", {
+            description: error.response.data.message,
+          });
         } else if (error.response && error.response.status === 500) {
-          toast.error("Server error");
+          toast.error("Server error", {
+            description: error.response.data.message,
+          });
           console.error(error);
         }
       }
