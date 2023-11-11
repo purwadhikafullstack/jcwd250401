@@ -1,6 +1,5 @@
 import React from "react";
 import notFoundImg from "../assets/not-found.png";
-import Navigationbar from "../components/Navigationbar";
 
 export const NotFound = () => {
   return (
