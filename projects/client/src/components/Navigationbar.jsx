@@ -9,7 +9,7 @@ import AuthModal from "./AuthModal";
 import { useSelector, useDispatch } from "react-redux";
 import { showLoginModal, showSignUpModal } from "../slices/authModalSlices";
 import { logout } from "../slices/accountSlices";
-import { getAuth, signOut } from "firebase/auth"; // Import Firebase authentication functions
+import { getAuth, signOut } from "firebase/auth";
 import api from "../api";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -20,6 +20,7 @@ function Navigationbar() {
   const userName = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [dropdownSubcategory, setDropdownSubcategory] = useState(null);
+  const [isDropdownTransitioning, setIsDropdownTransitioning] = useState(false);
   const categories = ["NEW IN", "MEN", "WOMEN", "BAGS", "ACCESSORIES"];
   const newIn = ["New Arrivals", "Best Sellers", "Rains Essentials"];
   const men = ["Jackets", "Tops", "Bottoms", "Accessories"];
@@ -30,7 +31,7 @@ function Navigationbar() {
   const accounts = ["Profile", "Address Book", "My Order", "Change My Password"];
   const accountsDropdown = ["Profile", "Address Book", "My Order", "Change My Password", "Search", "Cart", "Favorites"];
   const dispatch = useDispatch();
-  const auth = getAuth(); // Initialize Firebase authentication
+  const auth = getAuth();
   const [userData, setUserData] = useState(null);
   const photoProfile = userData?.photoProfile;
   const navigate = useNavigate();
@@ -45,17 +46,20 @@ function Navigationbar() {
 
   const handleIconClick = () => setDropdownVisible(!dropdownVisible);
 
-  const handleSubcategoryClick = (subcategory) => setDropdownSubcategory(subcategory);
+  const handleSubcategoryClick = (subcategory) => {
+    setIsDropdownTransitioning(true);
+    setDropdownSubcategory(subcategory);
+  };
+
   const handleLogout = () => {
     navigate("/");
-    signOut(auth) // Sign out the user from Firebase
+    signOut(auth)
       .then(() => {
         dispatch(showLoginModal());
         setDropdownVisible(false);
-        dispatch(logout()); // Dispatch the Redux logout action
+        dispatch(logout());
       })
       .catch((error) => {
-        // Handle any sign-out errors
         console.error("Error signing out:", error);
       });
   };
@@ -73,6 +77,16 @@ function Navigationbar() {
     };
     getUserData();
   }, [userName]);
+
+  useEffect(() => {
+    const resetTransition = () => {
+      setIsDropdownTransitioning(false);
+    };
+
+    const timeoutId = setTimeout(resetTransition, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [dropdownSubcategory]);
 
   return (
     <div className="w-full bg-white h-20 flex items-center justify-around font-sagoe ">
@@ -92,13 +106,17 @@ function Navigationbar() {
                 </Link>
               );
             };
+
             return (
               <>
                 <Link to={`/${joinedCategories}`} key={index} className="text-md font-semibold cursor-pointer underline-on-hover " onMouseEnter={() => handleSubcategoryClick(category)}>
                   {category}
                 </Link>
                 {dropdownSubcategory === category && (
-                  <div className="absolute top-20 w-full right-0 h-50 bg-white ring-1 ring-black ring-opacity-5 z-10 flex-wrap" onMouseLeave={() => setDropdownSubcategory(null)}>
+                  <div
+                    className={`absolute top-20 w-full right-0 h-50 bg-white ring-1 ring-black ring-opacity-5 z-10 flex-wrap transition-dropdown ${isDropdownTransitioning ? "dropdown-hidden" : "dropdown-visible"}`}
+                    onMouseLeave={() => setDropdownSubcategory(null)}
+                  >
                     <div className="flex flex-row h-full px-44">
                       <div className="flex flex-col flex-wrap">
                         {(() => {
@@ -137,7 +155,7 @@ function Navigationbar() {
             <BsSearch className="text-xl cursor-pointer" />
             <img src={photoProfile ? `http://localhost:8000/public/${photoProfile}` : "https://via.placeholder.com/150"} alt="Profile" className="w-6 h-6 rounded-full cursor-pointer" onClick={handleIconClick} />
             {dropdownVisible && (
-              <div className="absolute top-16 w-48 h-48 bg-white ring-1 ring-black ring-opacity-5 z-10" onMouseLeave={() => setDropdownVisible(false)}>
+              <div className={`absolute top-16 w-48 h-48 bg-white ring-1 ring-black ring-opacity-5 z-10 ${isDropdownTransitioning ? "dropdown-hidden" : "dropdown-visible"}`} onMouseLeave={() => setDropdownVisible(false)}>
                 {accounts.map((account, index) => {
                   const joinedAccounts = account.toLowerCase().replace(/\s/g, "-");
                   return (
@@ -161,7 +179,7 @@ function Navigationbar() {
             {/* Category sm */}
             <GiHamburgerMenu className="text-xl cursor-pointer flex lg:hidden" onClick={handleIconClick} />
             {dropdownVisible && (
-              <div className="absolute top-20 w-full h-70 bg-white ring-1 ring-black ring-opacity-5 right-0 lg:hidden">
+              <div className={`absolute top-20 w-full h-70 bg-white ring-1 ring-black ring-opacity-5 right-0 lg:hidden ${isDropdownTransitioning ? "dropdown-hidden" : "dropdown-visible"}`}>
                 {/* Categories sm */}
                 <div className="flex flex-row">
                   <div className="w-[50vw]">
