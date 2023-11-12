@@ -75,14 +75,12 @@ exports.handleAddNewAddress = async (req, res) => {
   const { userId } = req.params;
   let { firstName, lastName, street, province, city, district, subDistrict, phoneNumber, setAsDefault } = req.body;
 
-  firstName = firstName.toLowerCase();
-  lastName = lastName.toLowerCase();
-  street = street.toLowerCase();
-  province = province.toLowerCase();
-  city = city.toLowerCase();
-  district = district.toLowerCase();
-  subDistrict = subDistrict.toLowerCase();
-  setAsDefault = false
+  firstName = firstName
+  lastName = lastName
+  street = street.toString();
+  province = province
+  city = city
+  setAsDefault = false;
 
   try {
     const user = await User.findOne({ where: { id: userId } });
@@ -130,9 +128,9 @@ exports.handleAddNewAddress = async (req, res) => {
         phoneNumber,
       });
 
-        if (setAsDefault) {
-          await Address.update({ setAsDefault: false }, { where: { userId, id: { [Op.ne]: saveAddAddress.id } } });
-        }
+      if (setAsDefault) {
+        await Address.update({ setAsDefault: false }, { where: { userId, id: { [Op.ne]: saveAddAddress.id } } });
+      }
 
       res.status(201).json({
         ok: true,
@@ -245,14 +243,25 @@ exports.handleUpdateAddress = async (req, res) => {
       });
     }
 
-    address.firstName = firstName.toLowerCase();
-    address.lastName = lastName.toLowerCase();
-    address.street = street.toLowerCase();
-    address.province = province.toLowerCase();
-    address.city = city.toLowerCase();
-    address.district = district.toLowerCase();
-    address.subDistrict = subDistrict.toLowerCase();
+    const location = `${province}, ${city}`;
+    const apiKey = process.env.OPENCAGE_APIKEY;
+
+    const openCageResponse = await axios.get(`https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(location)}&key=${apiKey}`);
+    const { results } = openCageResponse.data;
+
+    const longitude = results[0].geometry.lng;
+    const latitude = results[0].geometry.lat;
+
+    address.firstName = firstName
+    address.lastName = lastName
+    address.street = street.toString();
+    address.province = province
+    address.city = city
+    address.district = district;
+    address.subDistrict = subDistrict;
     address.phoneNumber = phoneNumber;
+    address.longitude = longitude;
+    address.latitude = latitude;
     address.setAsDefault = setAsDefault;
 
     await Address.update({ setAsDefault: false }, { where: { userId } });

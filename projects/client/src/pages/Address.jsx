@@ -25,7 +25,10 @@ export const Address = () => {
   const [confirmModal, setConfirmModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
+  const [selectedProvince, setSelectedProvince] = useState("");
+  const [selectedCityByProvince, setSelectedCityByProvince] = useState([]);
   const defaultAddress = userAddressLists.find((address) => address.setAsDefault);
+  const provinceIdToName = provinceLists.filter((province) => province.province_id === selectedProvince)[0]?.province;
   const dispatch = useDispatch();
 
   const userId = userData?.id;
@@ -44,7 +47,30 @@ export const Address = () => {
   const handleCloseEditModal = () => {
     setSelectedAddress(null);
     setEditModal(false);
-  }
+  };
+
+  const handleProvinceChange = (e) => {
+    const selectedValue = e.target.value;
+    setSelectedProvince(selectedValue);
+    formik.setFieldValue("province", selectedValue);
+
+    setSelectedCityByProvince(cityLists.filter((city) => city.province_id === selectedValue));
+  };
+
+  const handleCityChange = (e) => {
+    const selectedValue = e.target.value;
+    formik.setFieldValue("city", selectedValue);
+
+    const selectedCityDetails = cityLists.find((city) => city.city_name === selectedValue);
+
+    if (selectedCityDetails) {
+      const correspondingProvince = provinceLists.find((province) => province.province_id === selectedCityDetails.province_id);
+      if (correspondingProvince) {
+        setSelectedProvince(correspondingProvince.province_id);
+        formik.setFieldValue("province", correspondingProvince.province_id);
+      }
+    }
+  };
 
   const formik = useFormik({
     initialValues: {
@@ -74,7 +100,7 @@ export const Address = () => {
           street: values.street,
           firstName: values.firstName,
           lastName: values.lastName,
-          province: values.province,
+          province: provinceIdToName,
           city: values.city,
           district: values.district,
           subDistrict: values.subDistrict,
@@ -144,7 +170,7 @@ export const Address = () => {
       <div className="flex justify-center">
         <div className="h-[70vh] w-[90vw] lg:w-[76vw] flex flex-row overflow-y-hidden">
           <div className="hidden lg:flex flex-col w-[20vw]">
-          {listsMenu.map((list, index) => {
+            {listsMenu.map((list, index) => {
               const joinedList = list.toLowerCase().replace(/\s/g, "-");
               const isAddress = list === "Address Book"; // Check if the current item is "Profile"
               return (
@@ -304,9 +330,21 @@ export const Address = () => {
                           </label>
 
                           <div className="w-[55%] sm:w-[65%]">
-                            <select name="province" id="province" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500 cursor-pointer" {...formik.getFieldProps("province")}>
+                            <select
+                              name="province"
+                              id="province"
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500 cursor-pointer"
+                              {...formik.getFieldProps("province")}
+                              onChange={handleProvinceChange}>
+                              {selectedProvince ? (
+                                <option value={selectedProvince}>{provinceIdToName}</option>
+                              ) : (
+                                <option value="" disabled>
+                                  Select a Province
+                                </option>
+                              )}
                               {provinceLists.map((province, index) => (
-                                <option key={index} value={province.province}>
+                                <option key={index} value={province.province_id}>
                                   {province.province}
                                 </option>
                               ))}
@@ -321,12 +359,21 @@ export const Address = () => {
                           </label>
 
                           <div className="w-[55%] sm:w-[65%]">
-                            <select name="city" id="city" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500 cursor-pointer" {...formik.getFieldProps("city")}>
-                              {cityLists.map((city, index) => (
-                                <option key={index} value={city.city_name}>
-                                  {city.city_name}
-                                </option>
-                              ))}
+                            <select name="city" id="city" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500 cursor-pointer" {...formik.getFieldProps("city")} onChange={handleCityChange}>
+                              <option value="" disabled>
+                                Select a City
+                              </option>
+                              {selectedCityByProvince.length === 0
+                                ? cityLists.map((city, index) => (
+                                    <option key={index} value={city.city_name}>
+                                      {city.city_name}
+                                    </option>
+                                  ))
+                                : selectedCityByProvince?.map((city, index) => (
+                                    <option key={index} value={city.city_name}>
+                                      {city.city_name}
+                                    </option>
+                                  ))}
                             </select>
                             {formik.touched.city && formik.errors.city ? <div className="text-red-500">{formik.errors.city}</div> : null}
                           </div>
@@ -385,7 +432,7 @@ export const Address = () => {
                             {formik.touched.phoneNumber && formik.errors.phoneNumber ? <div className="text-red-500">{formik.errors.phoneNumber}</div> : null}
                           </div>
                         </div>
-                        
+
                         <div className="flex flex-row items-center mt-5">
                           <button type="submit" className="w-[25%] sm:w-[35%] h-[7vh] border bg-[#40403F] hover:bg-[#555554] text-white rounded-md font-semibold mb-3">
                             Register
