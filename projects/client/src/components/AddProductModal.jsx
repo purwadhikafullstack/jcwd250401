@@ -134,7 +134,7 @@ function AddProductModal({ isOpen, isClose }) {
                     <h4 className="text-sm font-bold text-gray-900 dark:text-white">Product Image</h4>
                     <h4 className="text-xs font-light text-gray-900 dark:text-white">Add at least 3 photos of the product to showcase its unique qualities and grab the attention of your followers.</h4>
                   </div>
-                  <div className="flex w-full space-x-4">
+                  <div className="flex w-full space-x-5">
                     {[0, 1, 2, 3, 4].map((index) => (
                       <div key={index} className="w-[139px] h-[139px] relative">
                         <div {...getRootProps()} className={`w-full h-full border-dashed border-2 border-gray-300 rounded-md flex shadow-md items-center justify-center bg-transparent ${isDragActive ? "bg-gray-100" : ""}`}>

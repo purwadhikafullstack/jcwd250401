@@ -78,7 +78,7 @@ function AddCategoryModal({ isOpen, isClose }) {
           <ModalCloseButton />
           <ModalBody>
             <form onSubmit={formik.handleSubmit}>
-              <div className="space-y-4 px-4 mb-8">
+              <div className="space-y-4 px-4 mb-6">
                 <div className="space-y-1">
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Add Category</h3>
                   <h4 className="text-sm font-light text-gray-900 dark:text-white">Add a new category to your products</h4>
