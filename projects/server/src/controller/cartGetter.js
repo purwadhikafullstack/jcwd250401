@@ -1,4 +1,4 @@
-const { Order, OrderItem, Product } = require('../models');
+const { Order, OrderItem, Product, Mutation } = require('../models'); // Import Mutation model
 const jwt = require('jsonwebtoken');
 
 exports.getCartItems = async (req, res) => {
@@ -19,10 +19,21 @@ exports.getCartItems = async (req, res) => {
     // Retrieve all cart items for the order, including product details
     const cartItems = await OrderItem.findAll({
       where: { orderId: order.id },
-      include: [{ model: Product }] // Include the Product details
+      include: [{ model: Product }]
     });
 
-    // Respond with the cart items
+    // Fetch the current stock for each product in the cart
+    for (let item of cartItems) {
+      const stockData = await Mutation.findOne({
+        where: { productId: item.productId },
+        attributes: ['stock'],
+        order: [['createdAt', 'DESC']]
+      });
+
+      item.dataValues.stock = stockData ? stockData.stock : 'Stock information not available';
+    }
+
+    // Respond with the cart items and their stock information
     res.status(200).json({
       message: 'Cart items retrieved successfully',
       cartItems

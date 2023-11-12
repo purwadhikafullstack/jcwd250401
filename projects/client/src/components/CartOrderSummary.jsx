@@ -50,7 +50,7 @@ export const CartOrderSummary = () => {
       <Button
         color="white"
         bg="black"
-        _hover={{ bg: 'rgba(0, 0, 0, 0.9)' }}
+        _hover={{ bg: 'black' }}
         size="lg"
         fontSize="md"
         rightIcon={<FaArrowRight />}

@@ -1,34 +1,36 @@
-import { CloseButton, Flex, Link, Select, useColorModeValue } from '@chakra-ui/react'
-import { PriceTag } from './PriceTag'
-import { CartProductMeta } from './CartProductMeta'
-const QuantitySelect = (props) => {
-  return (
-    <Select
-      maxW="64px"
-      aria-label="Select quantity"
-      focusBorderColor={useColorModeValue('blue.500', 'blue.200')}
-      {...props}
-    >
-      <option value="1">1</option>
-      <option value="2">2</option>
-      <option value="3">3</option>
-      <option value="4">4</option>
-    </Select>
-  )
-}
+import { Flex, Link, Button, Select } from '@chakra-ui/react';
+import { CartProductMeta } from './CartProductMeta';
+import { useState, useEffect } from 'react';
 
 export const CartItem = (props) => {
   const {
-    isGiftWrapping,
     name,
     description,
-    quantity,
     imageUrl,
-    currency,
     price,
-    onChangeQuantity,
-    onClickDelete,
-  } = props
+    currency,
+    sku,
+    color,
+    size,
+    stock,
+    quantity,
+    onQuantityChange,
+    onDelete
+  } = props;
+
+  // Local state to manage the selected quantity
+  const [selectedQuantity, setSelectedQuantity] = useState(quantity);
+
+  useEffect(() => {
+    setSelectedQuantity(quantity);
+  }, [quantity]);  
+
+  const handleQuantityChange = (e) => {
+    const newQuantity = e.target.value;
+    setSelectedQuantity(newQuantity);
+    onQuantityChange(sku, newQuantity); // Assuming SKU is used as a unique identifier
+  };
+
   return (
     <Flex
       direction={{
@@ -37,13 +39,26 @@ export const CartItem = (props) => {
       }}
       justify="space-between"
       align="center"
+      position="relative"
     >
       <CartProductMeta
         name={name}
         description={description}
         image={imageUrl}
-        isGiftWrapping={isGiftWrapping}
+        price={price}
+        currency={currency}
+        sku={sku}
+        color={color}
+        size={size}
+        stock={stock} // This should be the stock of the item
+        quantity={selectedQuantity} // This should be the selected quantity
+        onQuantityChange={handleQuantityChange}
       />
+
+      {/* Delete Button */}
+      <Button position="absolute" top="0" right="0" size="sm" onClick={onDelete}>
+        Delete
+      </Button>
 
       {/* Desktop */}
       <Flex
@@ -54,14 +69,7 @@ export const CartItem = (props) => {
           md: 'flex',
         }}
       >
-        <QuantitySelect
-          value={quantity}
-          onChange={(e) => {
-            onChangeQuantity?.(+e.currentTarget.value)
-          }}
-        />
-        <PriceTag price={price} currency={currency} />
-        <CloseButton aria-label={`Delete ${name} from cart`} onClick={onClickDelete} />
+        {/* Other desktop elements if needed */}
       </Flex>
 
       {/* Mobile */}
@@ -75,17 +83,10 @@ export const CartItem = (props) => {
           md: 'none',
         }}
       >
-        <Link fontSize="sm" textDecor="underline">
+        <Link fontSize="sm" textDecor="underline" onClick={onDelete}>
           Delete
         </Link>
-        <QuantitySelect
-          value={quantity}
-          onChange={(e) => {
-            onChangeQuantity?.(+e.currentTarget.value)
-          }}
-        />
-        <PriceTag price={price} currency={currency} />
       </Flex>
     </Flex>
-  )
-}
+  );
+};
