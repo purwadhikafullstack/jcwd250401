@@ -83,11 +83,11 @@ function AddCategoryModal({ isOpen, isClose }) {
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Add Category</h3>
                   <h4 className="text-sm font-light text-gray-900 dark:text-white">Add a new category to your products</h4>
                 </div>
-                <div className="flex gap-24 justify-between items-center">
+                <div className="flex gap-18 justify-between items-center">
                   <div className="w-[20vw]">
                     <h4 className="text-sm font-bold text-gray-900 dark:text-white">Category Name</h4>
                   </div>
-                  <div className="w-[55vw]">
+                  <div className="w-full">
                     <input
                       type="text"
                       id="categoryName"
@@ -100,11 +100,11 @@ function AddCategoryModal({ isOpen, isClose }) {
                   </div>
                 </div>
 
-                <div className="flex gap-24 justify-between items-center">
+                <div className="flex gap-18 justify-between items-center">
                   <div className="w-[20vw]">
                     <h4 className="text-sm font-bold text-gray-900 dark:text-white">Main Category</h4>
                   </div>
-                  <div className="w-[55vw]">
+                  <div className="w-full">
                     <select id="mainCategory" name="mainCategory" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("mainCategory")}>
                       <option value="" disabled>
                         Select main category
@@ -121,11 +121,11 @@ function AddCategoryModal({ isOpen, isClose }) {
 
                 {/* Conditionally render the Gender select based on the selected Main Category */}
                 {formik.values.mainCategory === "Bags" || formik.values.mainCategory === "Accessories" ? null : (
-                  <div className="flex gap-24 justify-between items-center">
+                  <div className="flex gap-18 justify-between items-center">
                     <div className="w-[20vw]">
                       <h4 className="text-sm font-bold text-gray-900 dark:text-white">Gender</h4>
                     </div>
-                    <div className="w-[55vw]">
+                    <div className="w-full">
                       <select id="gender" name="gender" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("gender")}>
                         <option value="" disabled>
                           Select product gender
