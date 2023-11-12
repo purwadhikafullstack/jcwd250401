@@ -10,9 +10,9 @@ export const NotFound = () => {
           <div className="flex flex-col justify-center items-center p-2">
             <p className="text-2xl">Page not found</p>
             <p className="text-xl text-center">The page you are looking for does not exist.</p>
-            <a href="/" className="text-xl text-blue-500 hover:underline">
-              Go back to homepage
-            </a>
+            <button className="bg-slate-900 hover:bg-slate-700 text-white p-2 rounded-md mt-5" onClick={() => window.location.replace("/")}>
+              Back to Home
+            </button>
           </div>
         </div>
       </div>

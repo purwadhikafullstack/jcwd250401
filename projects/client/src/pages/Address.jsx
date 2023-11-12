@@ -10,7 +10,8 @@ import { AddAddressModal } from "../components/AddAddressModal";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { EditAddressModal } from "../components/EditAddressModal";
 import { addAddress } from "../slices/addressSlices";
-import { BsFillPinAngleFill } from "react-icons/bs";
+import { BsFillPinAngleFill, BsFillTrash3Fill } from "react-icons/bs";
+import { SetDefaultAddressModal } from "../components/SetDefaultAddressModal";
 
 export const Address = () => {
   const isLogin = useSelector((state) => state?.account?.isLogin);
@@ -24,6 +25,7 @@ export const Address = () => {
   const [openModal, setOpenModal] = useState(false);
   const [confirmModal, setConfirmModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
+  const [defaultAddressModal, setDefaultAddressModal] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [selectedProvince, setSelectedProvince] = useState("");
   const [selectedCityByProvince, setSelectedCityByProvince] = useState([]);
@@ -47,6 +49,11 @@ export const Address = () => {
   const handleCloseEditModal = () => {
     setSelectedAddress(null);
     setEditModal(false);
+  };
+
+  const handleDefaultAddressModal = (address) => {
+    setSelectedAddress(address);
+    setDefaultAddressModal(!defaultAddressModal);
   };
 
   const handleProvinceChange = (e) => {
@@ -213,12 +220,12 @@ export const Address = () => {
                             }, ${defaultAddress.phoneNumber}`}</p>
                           </div>
                         </div>
-                        <div className="flex justify-between mt-2">
-                          <div className="flex gap-2">
-                            <button className="w-[20vw] md:w-[10vw] h-[5vh] border border-gray-300 hover:bg-gray-100 rounded-md font-semibold" onClick={() => handleEditModal(defaultAddress)}>
-                              Edit
+                        <div className="flex justify-between items-center mt-2">
+                          <div className="flex items-center gap-2">
+                            <button className="w-[25vw]  md:w-[15vw] lg:w-[12vw] h-[5vh] border border-gray-300 hover:bg-gray-100 rounded-md font-semibold" onClick={() => handleEditModal(defaultAddress)}>
+                              Edit Address
                             </button>
-                            <button className="w-[20vw] md:w-[10vw] h-[5vh] border border-gray-300 hover:bg-gray-100 rounded-md font-semibold" onClick={() => handleConfirmModal(defaultAddress)}>
+                            <button className="w-[25vw]  md:w-[15vw] lg:w-[12vw] h-[5vh] border border-gray-300 hover:bg-gray-100 rounded-md font-semibold" onClick={() => handleConfirmModal(defaultAddress)}>
                               Delete
                             </button>
                           </div>
@@ -233,8 +240,8 @@ export const Address = () => {
                       .map((address, index) => (
                         <div key={index}>
                           <div className="flex flex-col rounded-lg p-5 mb-5 shadow-md">
-                            <div className="flex flex-col justify-between">
-                              <div className="flex flex-row">
+                            <div className="flex flex-col lg:flex-row justify-between">
+                              <div className="flex flex-row mr-2">
                                 <div className="w-[30%]">
                                   <p className="text-md text-gray-600">{`${address.firstName.charAt(0).toUpperCase()}${address.firstName.slice(1)} ${address.lastName.charAt(0).toUpperCase()}${address.lastName.slice(1)}`}</p>
                                 </div>
@@ -245,13 +252,16 @@ export const Address = () => {
                                   }`}</p>
                                 </div>
                               </div>
-                              <div className="flex gap-2 mt-2">
-                                <button className="w-[20vw] md:w-[10vw] h-[5vh] border border-gray-300 hover:bg-gray-100 rounded-md font-semibold" onClick={() => handleEditModal(address)}>
-                                  Edit
-                                </button>
-                                <button className="w-[20vw] md:w-[10vw] h-[5vh] border border-gray-300 hover:bg-gray-100 rounded-md font-semibold" onClick={() => handleConfirmModal(address)}>
-                                  Delete
-                                </button>
+                              <div className="flex lg:flex-col items-center justify-between w-[100%] gap-2 mt-2">
+                                <div className="flex lg:flex-col gap-2">
+                                  <button className="w-[25vw] md:w-[15vw] lg:w-[12vw] h-[5vh] border border-gray-300 hover:bg-gray-100 rounded-md font-semibold" onClick={() => handleEditModal(address)}>
+                                    Edit Address
+                                  </button>
+                                  <button className="w-[25vw] md:w-[15vw] lg:w-[12vw] h-[5vh] border border-gray-300 hover:bg-gray-100 rounded-md font-semibold" onClick={() => handleDefaultAddressModal(address)}>
+                                    Set As Default
+                                  </button>
+                                </div>
+                                <BsFillTrash3Fill className="text-xl text-gray-500 lg:self-end lg:mt-2 cursor-pointer" onClick={() => handleConfirmModal(address)} />
                               </div>
                             </div>
                           </div>
@@ -259,6 +269,7 @@ export const Address = () => {
                       ))}
                     <ConfirmModal isOpen={confirmModal} onClose={() => setConfirmModal(!confirmModal)} addressData={selectedAddress} userId={userId} />
                     {selectedAddress && <EditAddressModal isOpen={editModal} onClose={handleCloseEditModal} addressData={selectedAddress} userId={userId} cityLists={cityLists} provinceLists={provinceLists} />}
+                    {selectedAddress && <SetDefaultAddressModal isOpen={defaultAddressModal} onClose={() => setDefaultAddressModal(false)} addressData={selectedAddress} userId={userId} />}
                   </div>
                 </div>
               ) : (

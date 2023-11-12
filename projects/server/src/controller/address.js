@@ -259,7 +259,7 @@ exports.handleUpdateAddress = async (req, res) => {
     address.city = city
     address.district = district;
     address.subDistrict = subDistrict;
-    address.phoneNumber = phoneNumber;
+    address.phoneNumber = 0 + phoneNumber;
     address.longitude = longitude;
     address.latitude = latitude;
     address.setAsDefault = setAsDefault;
