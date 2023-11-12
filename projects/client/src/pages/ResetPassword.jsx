@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { FcGoogle } from "react-icons/fc";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons
 import { Button } from "flowbite-react";
 import { useFormik } from "formik";

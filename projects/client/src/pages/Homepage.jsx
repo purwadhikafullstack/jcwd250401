@@ -1,4 +1,3 @@
-import Navigationbar from "../components/Navigationbar";
 import { Carousel, Footer } from "flowbite-react";
 import { BsFacebook, BsInstagram, BsTiktok } from "react-icons/bs";
 import img1 from "../assets/image-1.jpg";

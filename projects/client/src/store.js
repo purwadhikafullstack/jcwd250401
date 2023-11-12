@@ -3,6 +3,7 @@ import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // Use local storage for persistence
 import authModalReducer from "./slices/authModalSlices";
 import accountReducer from "./slices/accountSlices";
+import addressReducer from "./slices/addressSlices";
 
 const persistConfig = {
   key: "root", // The key to use for storing data in local storage
@@ -14,7 +15,7 @@ const persistedRootReducer = persistReducer(
   combineReducers({
     authModal: authModalReducer,
     account: accountReducer,
-    // Add any other reducers here
+    address: addressReducer,
   })
 );
 

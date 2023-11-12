@@ -25,11 +25,14 @@ module.exports = {
       province: {
         type: Sequelize.STRING,
       },
-      longtitude: {
+      longitude: {
         type: Sequelize.STRING,
       },
       latitude: {
         type: Sequelize.STRING,
+      },
+      phoneNumber: {
+        type: Sequelize.INTEGER,
       },
       createdAt: {
         allowNull: false,
