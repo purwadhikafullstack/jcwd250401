@@ -26,14 +26,11 @@ function Navigationadmin() {
   const isLogin = true;
   const photoProfile = false;
   const dispatch = useDispatch();
-  const auth = getAuth(); // Initialize Firebase authentication
 
   const handleIconClick = () => setDropdownVisible(!dropdownVisible);
   const handleLogout = () => {
-    navigate("/");
-    signOut(auth) // Sign out the user from Firebase
+    navigate("/adminlogin")
       .then(() => {
-        dispatch(showLoginModal());
         setDropdownVisible(false);
         dispatch(logout()); // Dispatch the Redux logout action
       })

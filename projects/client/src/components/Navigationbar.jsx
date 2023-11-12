@@ -83,7 +83,7 @@ function Navigationbar() {
       setIsDropdownTransitioning(false);
     };
 
-    const timeoutId = setTimeout(resetTransition, 100);
+    const timeoutId = setTimeout(resetTransition, 200);
 
     return () => clearTimeout(timeoutId);
   }, [dropdownSubcategory]);

@@ -3,21 +3,36 @@ import Navigationadmin from "../components/Navigationadmin";
 import { Button } from "flowbite-react";
 import { Input, InputGroup, InputLeftElement } from "@chakra-ui/react";
 import { PiMagnifyingGlass } from "react-icons/pi";
+import { useState } from "react";
+import AddProductModal from "../components/AddProductModal";
+import AddCategoryModal from "../components/AddCategoryModal";
+
 
 function Product() {
+
+const [openProductModal, setOpenProductModal] = useState(false);
+const [openCategoryModal, setOpenCategoryModal] = useState(false);
+
+const openAddProductModal = () => setOpenProductModal(true);
+const closeAddProductModal = () => setOpenProductModal(false);
+
+const openAddCategoryModal = () => setOpenCategoryModal(true);
+const closeAddCategoryModal = () => setOpenCategoryModal(false);
+
+
   return (
     <div className="flex flex-row justify-between">
       <Sidebar />
       <div className="w-[84vw] bg-[#f0f0f0] overflow-hidden flex flex-col">
-        <div className="shadow-md fixed top-0 left-[16vw] right-0 bg-white">
+        <div className="shadow-md fixed top-0 left-[16vw] right-0 z-50 bg-white">
           <Navigationadmin />
         </div>
         <div className="flex flex-col mt-16 p-8 ">
           <div className="flex justify-end items-center gap-2">
-            <Button color="light" size="medium" className="p-2 w-52 shadow-md">
+            <Button color="light" size="medium" className="p-2 w-52 shadow-md" onClick={openAddCategoryModal}>
               Add Categories
             </Button>
-            <Button color="dark" size="medium" className="p-2 w-52 shadow-md">
+            <Button color="dark" size="medium" className="p-2 w-52 shadow-md" onClick={openAddProductModal}>
               Add Products
             </Button>
           </div>
@@ -48,6 +63,8 @@ function Product() {
           </div>
         </div>
       </div>
+     <AddProductModal isOpen={openProductModal} isClose={closeAddProductModal} />
+     <AddCategoryModal isOpen={openCategoryModal} isClose={closeAddCategoryModal} />
     </div>
   );
 }
