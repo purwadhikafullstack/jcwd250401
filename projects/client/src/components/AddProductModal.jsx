@@ -79,11 +79,11 @@ function AddProductModal({ isOpen, isClose }) {
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Add Product</h3>
                   <h4 className="text-sm font-light text-gray-900 dark:text-white">Add a new product to your store</h4>
                 </div>
-                <div className="flex gap-24 justify-between items-center">
+                <div className="flex gap-20 justify-between items-center">
                   <div className="w-[20vw]">
                     <h4 className="text-sm font-bold text-gray-900 dark:text-white">Product Name</h4>
                   </div>
-                  <div className="w-[55vw]">
+                  <div className="w-full">
                     <input
                       type="productName"
                       id="productName"
@@ -95,11 +95,11 @@ function AddProductModal({ isOpen, isClose }) {
                     {formik.touched.productName && formik.errors.productName ? <div className="text-red-500">{formik.errors.productName}</div> : null}
                   </div>
                 </div>
-                <div className="flex gap-24 justify-between items-center">
+                <div className="flex gap-20 justify-between items-center">
                   <div className="w-[20vw]">
                     <h4 className="text-sm font-bold text-gray-900 dark:text-white">Product Category</h4>
                   </div>
-                  <div className="w-[55vw]">
+                  <div className="w-full">
                   <input
                     type="productCategory"
                     id="productCategory"
@@ -111,12 +111,12 @@ function AddProductModal({ isOpen, isClose }) {
                   {formik.touched.productCategory && formik.errors.productCategory ? <div className="text-red-500">{formik.errors.productCategory}</div> : null}
                   </div>
                 </div>
-                <div className="flex gap-24 justify-between ">
+                <div className="flex gap-20 justify-between ">
                   <div className="w-[20vw] space-y-1">
                     <h4 className="text-sm font-bold text-gray-900 dark:text-white">Product Description</h4>
                     <h4 className="text-xs font-light text-gray-900 dark:text-white">Make sure the product description contains a detailed explanation regarding your product so that buyers can easily understand and find your product.</h4>
                   </div>
-                  <div className="w-[55vw]">
+                  <div className="w-full">
 
                   <textarea
                     type="productDescription"
@@ -129,12 +129,12 @@ function AddProductModal({ isOpen, isClose }) {
                   {formik.touched.productDescription && formik.errors.productDescription ? <div className="text-red-500">{formik.errors.productDescription}</div> : null}
                     </div>
                 </div>
-                <div className="flex gap-24 justify-between">
+                <div className="flex gap-20 justify-between">
                   <div className="w-[20vw] flex flex-col space-y-2">
                     <h4 className="text-sm font-bold text-gray-900 dark:text-white">Product Image</h4>
                     <h4 className="text-xs font-light text-gray-900 dark:text-white">Add at least 3 photos of the product to showcase its unique qualities and grab the attention of your followers.</h4>
                   </div>
-                  <div className="flex w-[51vw] space-x-4">
+                  <div className="flex w-full space-x-4">
                     {[0, 1, 2, 3, 4].map((index) => (
                       <div key={index} className="w-[139px] h-[139px] relative">
                         <div {...getRootProps()} className={`w-full h-full border-dashed border-2 border-gray-300 rounded-md flex shadow-md items-center justify-center bg-transparent ${isDragActive ? "bg-gray-100" : ""}`}>
