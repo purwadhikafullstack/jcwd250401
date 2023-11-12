@@ -89,7 +89,7 @@ function AddProductModal({ isOpen, isClose }) {
                       id="productName"
                       name="productName"
                       placeholder="Enter product name"
-                      className="w-[51vw] px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500"
                       {...formik.getFieldProps("productName")}
                     />
                     {formik.touched.productName && formik.errors.productName ? <div className="text-red-500">{formik.errors.productName}</div> : null}
@@ -105,7 +105,7 @@ function AddProductModal({ isOpen, isClose }) {
                     id="productCategory"
                     name="productCategory"
                     placeholder="Select product category"
-                    className="w-[51vw] px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500"
                     {...formik.getFieldProps("productCategory")}
                   />
                   {formik.touched.productCategory && formik.errors.productCategory ? <div className="text-red-500">{formik.errors.productCategory}</div> : null}
@@ -123,7 +123,7 @@ function AddProductModal({ isOpen, isClose }) {
                     id="productDescription"
                     name="productDescription"
                     placeholder="Describe the product"
-                    className="w-[51vw] h-36 px-4 py-2 border border-gray-300 rounded-lg shadow-sm resize-none focus:border-gray-500"
+                    className="w-full h-36 px-4 py-2 border border-gray-300 rounded-lg shadow-sm resize-none focus:border-gray-500"
                     {...formik.getFieldProps("productDescription")}
                     />
                   {formik.touched.productDescription && formik.errors.productDescription ? <div className="text-red-500">{formik.errors.productDescription}</div> : null}

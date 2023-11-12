@@ -5,14 +5,19 @@ import { Input, InputGroup, InputLeftElement } from "@chakra-ui/react";
 import { PiMagnifyingGlass } from "react-icons/pi";
 import { useState } from "react";
 import AddProductModal from "../components/AddProductModal";
+import AddCategoryModal from "../components/AddCategoryModal";
 
 
 function Product() {
 
 const [openProductModal, setOpenProductModal] = useState(false);
+const [openCategoryModal, setOpenCategoryModal] = useState(false);
 
 const openAddProductModal = () => setOpenProductModal(true);
 const closeAddProductModal = () => setOpenProductModal(false);
+
+const openAddCategoryModal = () => setOpenCategoryModal(true);
+const closeAddCategoryModal = () => setOpenCategoryModal(false);
 
 
   return (
@@ -24,7 +29,7 @@ const closeAddProductModal = () => setOpenProductModal(false);
         </div>
         <div className="flex flex-col mt-16 p-8 ">
           <div className="flex justify-end items-center gap-2">
-            <Button color="light" size="medium" className="p-2 w-52 shadow-md">
+            <Button color="light" size="medium" className="p-2 w-52 shadow-md" onClick={openAddCategoryModal}>
               Add Categories
             </Button>
             <Button color="dark" size="medium" className="p-2 w-52 shadow-md" onClick={openAddProductModal}>
@@ -59,6 +64,7 @@ const closeAddProductModal = () => setOpenProductModal(false);
         </div>
       </div>
      <AddProductModal isOpen={openProductModal} isClose={closeAddProductModal} />
+     <AddCategoryModal isOpen={openCategoryModal} isClose={closeAddCategoryModal} />
     </div>
   );
 }
