@@ -20,12 +20,16 @@ function AddProductModal({ isOpen, isClose }) {
   const formik = useFormik({
     initialValues: {
       productName: "",
-      productCategory: "",
+      productGender: "",
+      productMainCategory: "",
+      productSubCategory: "",
       productDescription: "",
     },
     validationSchema: Yup.object({
       productName: Yup.string().required("Please enter your product name"),
-      productCategory: Yup.string().required("Please enter your product category"),
+      productGender: Yup.string().required("Please enter your product gender"),
+      productMainCategory: Yup.string().required("Please enter your product main category"),
+      productSubCategory: Yup.string().required("Please enter your product sub category"),
       productDescription: Yup.string().required("Please enter your description"),
     }),
     onSubmit: async (values) => {
@@ -65,6 +69,28 @@ function AddProductModal({ isOpen, isClose }) {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
+  const genders = [
+    { label: "Men", value: "men" },
+    { label: "Women", value: "women" },
+    { label: "Unisex", value: "unisex" },
+    // ... more genders
+  ];
+
+  const mainCategories = [
+    { label: "Clothing", value: "clothing" },
+    { label: "Footwear", value: "footwear" },
+    { label: "Bags", value: "bags" },
+    { label: "Accessories", value: "accessories" },
+    // ... more main categories
+  ];
+
+  const subCategories = [
+    { label: "Shirts", value: "shirts" },
+    { label: "Pants", value: "pants" },
+    { label: "Dresses", value: "dresses" },
+    { label: "Skirts", value: "skirts" },
+    // ... more subcategories
+  ];
   return (
     <>
       <Modal closeOnOverlayClick={false} isOpen={isOpen} size="6xl" onClose={isClose} isCentered>
@@ -99,16 +125,89 @@ function AddProductModal({ isOpen, isClose }) {
                   <div className="w-[20vw]">
                     <h4 className="text-sm font-bold text-gray-900 dark:text-white">Product Category</h4>
                   </div>
-                  <div className="w-full">
-                  <input
-                    type="productCategory"
-                    id="productCategory"
-                    name="productCategory"
-                    placeholder="Select product category"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500"
-                    {...formik.getFieldProps("productCategory")}
-                  />
-                  {formik.touched.productCategory && formik.errors.productCategory ? <div className="text-red-500">{formik.errors.productCategory}</div> : null}
+                  <div className="flex w-full gap-1">
+                    {formik.values.productMainCategory !== "bags" && formik.values.productMainCategory !== "accessories" ? (
+                      <>
+                        <div className="flex flex-col w-full">
+                          <div>
+                            <select id="productMainCategory" name="productMainCategory" className="w-full px-4 py-2 border border-gray-300 rounded-l-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("productMainCategory")}>
+                              <option value="" disabled className="text-gray-400">
+                                Select main category
+                              </option>
+                              {mainCategories.map((category) => (
+                                <option key={category.value} value={category.value}>
+                                  {category.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          {formik.touched.productMainCategory && formik.errors.productMainCategory ? <div className="text-red-500 text-xs text-center">{formik.errors.productMainCategory}</div> : null}
+                        </div>
+                        <div className="flex w-full flex-col">
+                          <div>
+                            <select id="productSubCategory" name="productSubCategory" className="w-full px-4 py-2 border border-gray-300 shadow-sm focus:border-gray-500" {...formik.getFieldProps("productSubCategory")}>
+                              <option value="" disabled className="text-gray-400">
+                                Select sub category
+                              </option>
+                              {subCategories.map((category) => (
+                                <option key={category.value} value={category.value}>
+                                  {category.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          {formik.touched.productSubCategory && formik.errors.productSubCategory ? <div className="text-red-500 text-xs text-center">{formik.errors.productSubCategory}</div> : null}
+                        </div>
+                        <div className="flex w-full flex-col">
+                          <div>
+                            <select id="productGender" name="productGender" className="w-full px-4 py-2 border border-gray-300 rounded-r-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("productGender")}>
+                              <option value="" disabled className="text-gray-400">
+                                Select gender
+                              </option>
+                              {genders.map((category) => (
+                                <option key={category.value} value={category.value}>
+                                  {category.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          {formik.touched.productGender && formik.errors.productGender ? <div className="text-red-500 text-xs text-center">{formik.errors.productGender}</div> : null}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex flex-col w-full">
+                          <div>
+                            <select id="productMainCategory" name="productMainCategory" className="w-full px-4 py-2 border border-gray-300 rounded-l-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("productMainCategory")}>
+                              <option value="" disabled className="text-gray-400">
+                                Select main category
+                              </option>
+                              {mainCategories.map((category) => (
+                                <option key={category.value} value={category.value}>
+                                  {category.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          {formik.touched.productMainCategory && formik.errors.productMainCategory ? <div className="text-red-500 text-xs text-center">{formik.errors.productMainCategory}</div> : null}
+                        </div>
+                        <div className="flex w-full flex-col">
+                          <div>
+                            <select id="productSubCategory" name="productSubCategory" className="w-full px-4 py-2 border border-gray-300 shadow-sm focus:border-gray-500" {...formik.getFieldProps("productSubCategory")}>
+                              <option value="" disabled className="text-gray-400">
+                                Select sub category
+                              </option>
+                              {subCategories.map((category) => (
+                                <option key={category.value} value={category.value}>
+                                  {category.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          {formik.touched.productSubCategory && formik.errors.productSubCategory ? <div className="text-red-500 text-xs text-center">{formik.errors.productSubCategory}</div> : null}
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="flex gap-20 justify-between ">
@@ -117,17 +216,16 @@ function AddProductModal({ isOpen, isClose }) {
                     <h4 className="text-xs font-light text-gray-900 dark:text-white">Make sure the product description contains a detailed explanation regarding your product so that buyers can easily understand and find your product.</h4>
                   </div>
                   <div className="w-full">
-
-                  <textarea
-                    type="productDescription"
-                    id="productDescription"
-                    name="productDescription"
-                    placeholder="Describe the product"
-                    className="w-full h-36 px-4 py-2 border border-gray-300 rounded-lg shadow-sm resize-none focus:border-gray-500"
-                    {...formik.getFieldProps("productDescription")}
+                    <textarea
+                      type="productDescription"
+                      id="productDescription"
+                      name="productDescription"
+                      placeholder="Describe the product"
+                      className="w-full h-36 px-4 py-2 border border-gray-300 rounded-lg shadow-sm resize-none focus:border-gray-500"
+                      {...formik.getFieldProps("productDescription")}
                     />
-                  {formik.touched.productDescription && formik.errors.productDescription ? <div className="text-red-500">{formik.errors.productDescription}</div> : null}
-                    </div>
+                    {formik.touched.productDescription && formik.errors.productDescription ? <div className="text-red-500">{formik.errors.productDescription}</div> : null}
+                  </div>
                 </div>
                 <div className="flex gap-20 justify-between">
                   <div className="w-[20vw] flex flex-col space-y-2">
@@ -135,7 +233,7 @@ function AddProductModal({ isOpen, isClose }) {
                     <h4 className="text-xs font-light text-gray-900 dark:text-white">Add at least 3 photos of the product to showcase its unique qualities and grab the attention of your followers.</h4>
                   </div>
                   <div className="flex w-full space-x-5">
-                    {[0, 1, 2, 3, 4].map((index) => (
+                    {[0, 2, 3, 4, 5].map((index) => (
                       <div key={index} className="w-[139px] h-[139px] relative">
                         <div {...getRootProps()} className={`w-full h-full border-dashed border-2 border-gray-300 rounded-md flex shadow-md items-center justify-center bg-transparent ${isDragActive ? "bg-gray-100" : ""}`}>
                           <input {...getInputProps()} />
