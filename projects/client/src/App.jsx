@@ -9,8 +9,7 @@ import Navigationbar from "./components/Navigationbar";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
 import AdminLoginPage from "./pages/AdminLoginPage";
-
-
+import { CartPage } from "./pages/CartPage";
 
 const routesConfig = [
 
@@ -20,6 +19,7 @@ const routesConfig = [
   { path: "/account/profile", component: <Profile />, showNavigationbar: true },
   { path: "/account/address-book", component: <Address />, showNavigationbar: true },
   { path: "/account/change-password", component: <ChangePassword />, showNavigationbar: true },
+  { path: "/account/cart", component: <CartPage />, showNavigationbar: true },
 
   // ADMIN ROUTES
   { path: "/adminlogin", component: <AdminLoginPage />, showNavigationbar: false},

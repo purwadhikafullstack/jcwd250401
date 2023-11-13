@@ -22,6 +22,19 @@ app.use("/address", addressRouter)
 
 app.use("/public", express.static(__dirname + "/public"));
 
+//#region API ROUTES
+
+// ===========================
+// NOTE : Add your routes here
+
+const cartRoutes = require("./routes/cartRoutes");
+
+app.use("/api/cart", cartRoutes);
+
+app.get("/api", (req, res) => {
+  res.send(`Hello, this is my API`);
+});
+
 app.use((req, res) => {
   console.log(`404: ${req.url}`);
   res.status(404).json({
@@ -39,5 +52,5 @@ app.use((err, req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`application start on port ${PORT}`);
+  console.log(`APP RUNNING at ${PORT} ✅`);
 });
