@@ -15,6 +15,7 @@ import { PiImage, PiImageThin } from "react-icons/pi";
 
 function AddProductModal({ isOpen, isClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [previewImages, setPreviewImages] = useState([]);
   const dispatch = useDispatch();
 
   const formik = useFormik({
@@ -65,8 +66,31 @@ function AddProductModal({ isOpen, isClose }) {
   const onDrop = (acceptedFiles) => {
     // Handle the dropped files here
     console.log(acceptedFiles);
+  
+    // Update the preview images state with the selected files
+    const newPreviewImages = acceptedFiles.map((file, index) => ({
+      ...file,
+      preview: URL.createObjectURL(file),
+      index: index, // Assign an index based on the order of the dropped files
+    }));
+  
+    // Update the existing preview images or replace the main photo if it exists
+    setPreviewImages((prevImages) => {
+      const updatedImages = [...prevImages];
+      const mainPhotoIndex = updatedImages.findIndex((img) => img.index === 0);
+  
+      if (mainPhotoIndex !== -1) {
+        // Replace existing main photo
+        updatedImages[mainPhotoIndex] = newPreviewImages[0];
+      } else {
+        // Add new images if they don't exist
+        updatedImages.push(...newPreviewImages);
+      }
+  
+      return updatedImages;
+    });
   };
-
+  
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   const genders = [
@@ -114,23 +138,24 @@ function AddProductModal({ isOpen, isClose }) {
                       type="productName"
                       id="productName"
                       name="productName"
-                      placeholder="Enter product name"
+                      placeholder="Enter product name..."
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500"
                       {...formik.getFieldProps("productName")}
                     />
                     {formik.touched.productName && formik.errors.productName ? <div className="text-red-500">{formik.errors.productName}</div> : null}
                   </div>
                 </div>
-                <div className="flex gap-20 justify-between items-center">
+                <div className="flex gap-20 justify-between">
                   <div className="w-[20vw]">
                     <h4 className="text-sm font-bold text-gray-900 dark:text-white">Product Category</h4>
+                    <h4 className="text-xs font-light text-gray-900 dark:text-white">Select product main categories, sub categories, and gender if needed.</h4>
                   </div>
-                  <div className="flex w-full gap-1">
+                  <div className="flex w-full ">
                     {formik.values.productMainCategory !== "bags" && formik.values.productMainCategory !== "accessories" ? (
                       <>
                         <div className="flex flex-col w-full">
                           <div>
-                            <select id="productMainCategory" name="productMainCategory" className="w-full px-4 py-2 border border-gray-300 rounded-l-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("productMainCategory")}>
+                            <select id="productMainCategory" name="productMainCategory" className="w-full px-4 py-2 border border-gray-300 outline-none focus:ring-transparent rounded-l-lg shadow-sm focus:border-gray-500"  {...formik.getFieldProps("productMainCategory")}>
                               <option value="" disabled className="text-gray-400">
                                 Select main category
                               </option>
@@ -145,7 +170,7 @@ function AddProductModal({ isOpen, isClose }) {
                         </div>
                         <div className="flex w-full flex-col">
                           <div>
-                            <select id="productSubCategory" name="productSubCategory" className="w-full px-4 py-2 border border-gray-300 shadow-sm focus:border-gray-500" {...formik.getFieldProps("productSubCategory")}>
+                            <select id="productSubCategory" name="productSubCategory" className="w-full px-4 py-2 border border-gray-300 shadow-sm focus:ring-transparent focus:border-gray-500" {...formik.getFieldProps("productSubCategory")}>
                               <option value="" disabled className="text-gray-400">
                                 Select sub category
                               </option>
@@ -160,7 +185,7 @@ function AddProductModal({ isOpen, isClose }) {
                         </div>
                         <div className="flex w-full flex-col">
                           <div>
-                            <select id="productGender" name="productGender" className="w-full px-4 py-2 border border-gray-300 rounded-r-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("productGender")}>
+                            <select id="productGender" name="productGender" className="w-full px-4 py-2 border border-gray-300 rounded-r-lg shadow-sm focus:ring-transparent focus:border-gray-500" {...formik.getFieldProps("productGender")}>
                               <option value="" disabled className="text-gray-400">
                                 Select gender
                               </option>
@@ -178,7 +203,7 @@ function AddProductModal({ isOpen, isClose }) {
                       <>
                         <div className="flex flex-col w-full">
                           <div>
-                            <select id="productMainCategory" name="productMainCategory" className="w-full px-4 py-2 border border-gray-300 rounded-l-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("productMainCategory")}>
+                            <select id="productMainCategory" name="productMainCategory" className="w-full px-4 py-2 border border-gray-300 rounded-l-lg shadow-sm focus:ring-transparent focus:border-gray-500" {...formik.getFieldProps("productMainCategory")}>
                               <option value="" disabled className="text-gray-400">
                                 Select main category
                               </option>
@@ -193,7 +218,7 @@ function AddProductModal({ isOpen, isClose }) {
                         </div>
                         <div className="flex w-full flex-col">
                           <div>
-                            <select id="productSubCategory" name="productSubCategory" className="w-full px-4 py-2 border border-gray-300 shadow-sm focus:border-gray-500" {...formik.getFieldProps("productSubCategory")}>
+                            <select id="productSubCategory" name="productSubCategory" className="w-full px-4 py-2 border border-gray-300 shadow-sm rounded-r-lg focus:ring-transparent focus:ring-gray-500" {...formik.getFieldProps("productSubCategory")}>
                               <option value="" disabled className="text-gray-400">
                                 Select sub category
                               </option>
@@ -220,7 +245,7 @@ function AddProductModal({ isOpen, isClose }) {
                       type="productDescription"
                       id="productDescription"
                       name="productDescription"
-                      placeholder="Describe the product"
+                      placeholder="Describe the product..."
                       className="w-full h-36 px-4 py-2 border border-gray-300 rounded-lg shadow-sm resize-none focus:border-gray-500"
                       {...formik.getFieldProps("productDescription")}
                     />
@@ -233,26 +258,36 @@ function AddProductModal({ isOpen, isClose }) {
                     <h4 className="text-xs font-light text-gray-900 dark:text-white">Add at least 3 photos of the product to showcase its unique qualities and grab the attention of your followers.</h4>
                   </div>
                   <div className="flex w-full space-x-5">
-                    {[0, 2, 3, 4, 5].map((index) => (
-                      <div key={index} className="w-[139px] h-[139px] relative">
-                        <div {...getRootProps()} className={`w-full h-full border-dashed border-2 border-gray-300 rounded-md flex shadow-md items-center justify-center bg-transparent ${isDragActive ? "bg-gray-100" : ""}`}>
-                          <input {...getInputProps()} />
-                          <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            {index === 0 ? (
-                              <>
-                                <PiImageThin className="text-gray-400" size={38} />
-                                <p className="text-gray-400">Main Photo</p>
-                              </>
-                            ) : (
-                              <>
-                                <PiImageThin className="text-gray-400" size={38} />
-                                <p className="text-gray-400">Photo {index}</p>
-                              </>
-                            )}
+                    {[0, 1, 2, 3, 4].map((index) => {
+                      const previewImage = previewImages.find((img) => img.index === index);
+
+                      return (
+                        <div key={index} className="w-[139px] h-[139px] relative">
+                          <div {...getRootProps()} className={`w-full h-full border-dashed border-2 border-gray-300 rounded-md flex shadow-md items-center justify-center bg-transparent ${isDragActive ? "bg-gray-100" : ""}`}>
+                            <input {...getInputProps()} />
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                              {previewImage ? (
+                                <img src={previewImage.preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover rounded-md shadow-md" />
+                              ) : (
+                                <>
+                                  {index === 0 ? (
+                                    <>
+                                      <PiImageThin className="text-gray-400" size={38} />
+                                      <p className="text-gray-400">Main Photo</p>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <PiImageThin className="text-gray-400" size={38} />
+                                      <p className="text-gray-400">Photo {index + 1}</p>
+                                    </>
+                                  )}
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
