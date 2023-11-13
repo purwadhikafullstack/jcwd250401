@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { NavPage } from "../components/NavPage";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
+import { showLoginModal } from "../slices/authModalSlices";
 
 export const Order = () => {
   const isLogin = useSelector((state) => state?.account?.isLogin);
@@ -9,6 +10,8 @@ export const Order = () => {
   const orderStatus = ["All", "Waiting for Payment", "On Process", "On Delivery", "Delivered", "Cancelled"];
   const [selectedStatus, setSelectedStatus] = useState("All");
   //   const [orderList, setOrderList] = useState([]);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const dummyOrderList = [
     {
       id: 1,
@@ -61,6 +64,13 @@ export const Order = () => {
       image: "https://via.placeholder.com/350x150",
     },
   ];
+
+  if (!isLogin) {
+    setTimeout(() => {
+      navigate("/");
+      dispatch(showLoginModal());
+    }, 2000);
+  }
   const handleStatusChange = (status) => {
     setSelectedStatus(status);
   };
@@ -106,7 +116,9 @@ export const Order = () => {
                     <div key={index} className="border border-gray-200 rounded-md p-2 my-2">
                       <div className="flex justify-between h-[5vh]">
                         <p>{order.status}</p>
-                        <p>{order.orderDate}, {order.orderTime}</p>
+                        <p>
+                          {order.orderDate}, {order.orderTime}
+                        </p>
                       </div>
 
                       <div className="flex justify-between">
@@ -117,7 +129,9 @@ export const Order = () => {
                               <p className="font-bold">{order.itemName}</p>
                               <p>Quantity: {order.itemQuantity}</p>
                             </div>
-                            <p><span className="font-bold">Total:</span> Rp{order.itemPrice}</p>
+                            <p>
+                              <span className="font-bold">Total:</span> Rp{order.itemPrice}
+                            </p>
                           </div>
                         </div>
                       </div>

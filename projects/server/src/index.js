@@ -13,12 +13,14 @@ app.use(express.static(path.join(__dirname, "backend", "public")));
 
 const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
-const addressRouter = require("./routes/address")
+const addressRouter = require("./routes/address");
+const categoryRouter = require("./routes/category");
 
 //Routing
 app.use("/auth", authRouter);
 app.use("/profile", profileRouter);
-app.use("/address", addressRouter)
+app.use("/address", addressRouter);
+app.use("/category", categoryRouter);
 
 app.use("/public", express.static(__dirname + "/public"));
 

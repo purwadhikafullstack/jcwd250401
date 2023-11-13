@@ -1,13 +1,14 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { NavPage } from "../components/NavPage";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { useEffect, useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import api from "../api";
 import { toast } from "sonner";
 import ForgotPasswordModal from "../components/ForgotPasswordModal";
+import { showLoginModal } from "../slices/authModalSlices";
 
 export const ChangePassword = () => {
   const isLogin = useSelector((state) => state?.account?.isLogin);
@@ -17,9 +18,18 @@ export const ChangePassword = () => {
   const [openModal, setOpenModal] = useState(false);
   const [userData, setUserData] = useState(null);
   const userRegistByGoogle = userData?.registBy === "google" ? true : false;
+  const navigate = useNavigate();
+  const dispatch = useDispatch()
 
   const handleShowPassword = () => setShowPassword(!showPassword);
   const handleModalOpen = () => setOpenModal(true);
+
+  if(!isLogin) {
+    setTimeout(() => {
+      navigate("/")
+      dispatch(showLoginModal());
+    }, 2000)
+  }
 
   const formik = useFormik({
     initialValues: {

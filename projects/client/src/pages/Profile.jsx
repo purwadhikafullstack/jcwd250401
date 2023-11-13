@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { NavPage } from "../components/NavPage";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { UpdateProfileModal } from "../components/UpdateProfileModal";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import api from "../api";
+import { showLoginModal } from "../slices/authModalSlices";
 
 export const Profile = () => {
   const [openModal, setOpenModal] = useState(false);
@@ -16,6 +17,8 @@ export const Profile = () => {
   const firstName = useSelector((state) => state?.account?.profile?.data?.profile?.firstName);
   const photoProfile = useSelector((state) => state?.account?.profile?.data?.profile?.photoProfile);
   const email = useSelector((state) => state?.account?.profile?.data?.profile?.email);
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
 
   useEffect(() => {
     const getUserData = async () => {
@@ -25,6 +28,10 @@ export const Profile = () => {
           setUserData(response.data.detail);
         } else {
           toast.error("You are not logged in");
+          setTimeout(() => {
+            navigate("/")
+            dispatch(showLoginModal());
+          }, 2000)
         }
       } catch (error) {
         toast.error("Failed to get user data");

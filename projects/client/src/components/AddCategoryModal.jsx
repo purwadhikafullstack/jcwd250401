@@ -4,27 +4,44 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import api from "../api";
 import { toast } from "sonner";
-import { hideForgotPasswordModal, setEmail } from "../slices/authModalSlices";
 import { AiOutlineLoading } from "react-icons/ai";
-import { useDispatch } from "react-redux";
 import { showLoginModal } from "../slices/authModalSlices";
 import { showVerifyModal } from "../slices/authModalSlices";
-import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Text } from "@chakra-ui/react";
-import { useDropzone } from "react-dropzone";
-import { PiImage, PiImageThin } from "react-icons/pi";
+import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton } from "@chakra-ui/react";
 
 function AddCategoryModal({ isOpen, isClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const dispatch = useDispatch();
+  const mainCategories = [
+    {
+      name: "Jackets",
+      id: 1,
+    },
+    {
+      name: "Tops",
+      id: 2,
+    },
+    {
+      name: "Bottoms",
+      id: 3,
+    },
+    {
+      name: "Bags",
+      id: null,
+    },
+    {
+      name: "Accessories",
+      id: null,
+    },
+  ];
 
   const formik = useFormik({
     initialValues: {
-      categoryName: "",
+      name: "",
       mainCategory: "",
       gender: "",
     },
     validationSchema: Yup.object({
-      categoryName: Yup.string().required("Please enter your category name"),
+      name: Yup.string().required("Please enter your category name"),
       mainCategory: Yup.string().required("Please select the main category"),
       gender: Yup.string().required("Please select a gender"),
     }),
@@ -32,19 +49,20 @@ function AddCategoryModal({ isOpen, isClose }) {
       try {
         setIsSubmitting(true);
 
-        // Modify the API call according to your needs
-        const response = await api.post("/api/addCategory", {
-          categoryName: values.categoryName,
-          mainCategory: values.mainCategory,
-          gender: values.gender,
+        if (formik.values.mainCategory === "Bags" || formik.values.mainCategory === "Accessories") {
+          formik.values.mainCategory = null;
+        }
+
+        const response = await api.post("/category", {
+          name: values.name,
+          parentCategoryId: values.mainCategory,
         });
 
-        if (response.status === 200) {
+        if (response.status === 201) {
           setTimeout(() => {
             toast.success("Category added successfully", {
               autoClose: 1000,
               onAutoClose: (t) => {
-                // Adjust the dispatch accordingly
                 isClose();
                 setIsSubmitting(false);
               },
@@ -52,22 +70,21 @@ function AddCategoryModal({ isOpen, isClose }) {
           }, 1000);
         }
       } catch (error) {
-        // Handle different error scenarios based on the HTTP status code
+        if (error.response.status === 500) {
+          toast.error(error.response.data.message, {
+            description: error.response.data.detail,
+          });
+        } else if (error.response.status === 400) {
+          toast.error(error.response.data.message, {
+            description: error.response.data.detail,
+          });
+        }
       } finally {
-        // Reset form and set submitting to false
         formik.resetForm();
         setIsSubmitting(false);
       }
     },
   });
-
-  // React Dropzone Configuration
-  const onDrop = (acceptedFiles) => {
-    // Handle the dropped files here
-    console.log(acceptedFiles);
-  };
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   return (
     <>
@@ -88,15 +105,8 @@ function AddCategoryModal({ isOpen, isClose }) {
                     <h4 className="text-sm font-bold text-gray-900 dark:text-white">Category Name</h4>
                   </div>
                   <div className="w-full">
-                    <input
-                      type="text"
-                      id="categoryName"
-                      name="categoryName"
-                      placeholder="Enter category name"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500"
-                      {...formik.getFieldProps("categoryName")}
-                    />
-                    {formik.touched.categoryName && formik.errors.categoryName ? <div className="text-red-500">{formik.errors.categoryName}</div> : null}
+                    <input type="text" id="name" name="name" placeholder="Enter category name" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("name")} />
+                    {formik.touched.name && formik.errors.name ? <div className="text-red-500">{formik.errors.name}</div> : null}
                   </div>
                 </div>
 
@@ -109,11 +119,11 @@ function AddCategoryModal({ isOpen, isClose }) {
                       <option value="" disabled>
                         Select main category
                       </option>
-                      <option value="Jackets">Jackets</option>
-                      <option value="Tops">Tops</option>
-                      <option value="Bottom">Bottom</option>
-                      <option value="Bags">Bags</option>
-                      <option value="Accessories">Accessories</option>
+                      {mainCategories.map((category, index) => (
+                        <option key={index} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
                     </select>
                     {formik.touched.mainCategory && formik.errors.mainCategory ? <div className="text-red-500">{formik.errors.mainCategory}</div> : null}
                   </div>
@@ -132,7 +142,6 @@ function AddCategoryModal({ isOpen, isClose }) {
                         </option>
                         <option value="Men">Men</option>
                         <option value="Women">Women</option>
-                        <option value="Unisex">Unisex</option>
                       </select>
                       {formik.touched.gender && formik.errors.gender ? <div className="text-red-500">{formik.errors.gender}</div> : null}
                     </div>
