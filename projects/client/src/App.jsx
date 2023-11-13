@@ -11,6 +11,7 @@ import Products from "./pages/Products";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import { PaymentProof } from "./pages/PaymentProof";
 import { Order } from "./pages/Order";
+import { CartPage } from "./pages/CartPage";
 
 const routesConfig = [
   // USER ROUTES
@@ -21,6 +22,7 @@ const routesConfig = [
   { path: "/account/address-book", component: <Address />, showNavigationbar: true },
   { path: "/account/change-password", component: <ChangePassword />, showNavigationbar: true },
   { path: "/payment-confirmation", component: <PaymentProof />, showNavigationbar: true },
+  { path: "/account/cart", component: <CartPage />, showNavigationbar: true },
 
   // ADMIN ROUTES
   { path: "/adminlogin", component: <AdminLoginPage />, showNavigationbar: false },
