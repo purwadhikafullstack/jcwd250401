@@ -9,29 +9,30 @@ import Navigationbar from "./components/Navigationbar";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
 import AdminLoginPage from "./pages/AdminLoginPage";
-
-
+import { PaymentProof } from "./pages/PaymentProof";
+import { Order } from "./pages/Order";
 
 const routesConfig = [
-
   // USER ROUTES
   { path: "/", component: <Homepage />, showNavigationbar: true },
   { path: "/reset-password", component: <ResetPassword />, showNavigationbar: false },
   { path: "/account/profile", component: <Profile />, showNavigationbar: true },
+  { path: "/account/my-order", component: <Order />, showNavigationbar: true },
   { path: "/account/address-book", component: <Address />, showNavigationbar: true },
   { path: "/account/change-password", component: <ChangePassword />, showNavigationbar: true },
+  { path: "/payment-confirmation", component: <PaymentProof />, showNavigationbar: true },
 
   // ADMIN ROUTES
-  { path: "/adminlogin", component: <AdminLoginPage />, showNavigationbar: false},
-  { path: "/dashboard", component: <Dashboard />, showNavigationbar: false},
-  { path: "/dashboard/products", component: <Products/>, showNavigationbar: false},
+  { path: "/adminlogin", component: <AdminLoginPage />, showNavigationbar: false },
+  { path: "/dashboard", component: <Dashboard />, showNavigationbar: false },
+  { path: "/dashboard/products", component: <Products />, showNavigationbar: false },
   // Add more route configurations as needed
 ];
 
 export default function App() {
   const location = useLocation();
 
-  const currentRoute = routesConfig.find(route => route.path === location.pathname);
+  const currentRoute = routesConfig.find((route) => route.path === location.pathname);
 
   // Show Navigationbar only if the current route exists and showNavigationbar is true
   const showNavigationbar = currentRoute ? currentRoute.showNavigationbar : false;
@@ -43,7 +44,7 @@ export default function App() {
           <Navigationbar />
         </div>
       )}
-      <div className={showNavigationbar ? 'mt-20' : ''}>
+      <div className={showNavigationbar ? "mt-20" : ""}>
         {/* Add some top margin to create space for the fixed navigation bar */}
         <Routes>
           {routesConfig.map((route, index) => (
