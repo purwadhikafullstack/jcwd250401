@@ -14,7 +14,7 @@ router.get('/items/count', validateToken, getCartItemCount); // Include validate
 router.get('/items', validateToken, getCartItems); // Include validateToken middleware
 
 // Route to update the quantity of a cart item
-router.post('/items/:productId', validateToken, updateCartItemQuantity);
+router.patch('/items/:productId', validateToken, updateCartItemQuantity);
 
 // Route to delete a product from the cart
 router.delete('/items/:productId', validateToken, deleteCartItem);

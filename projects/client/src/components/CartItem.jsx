@@ -1,6 +1,6 @@
-import { Flex, Link, Button, Select } from '@chakra-ui/react';
+import { Flex, Link, Button, useBreakpointValue, Box, Spacer } from '@chakra-ui/react';
 import { CartProductMeta } from './CartProductMeta';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export const CartItem = (props) => {
   const {
@@ -13,80 +13,44 @@ export const CartItem = (props) => {
     color,
     size,
     stock,
-    quantity,
+    quantity: initialQuantity,
     onQuantityChange,
     onDelete
   } = props;
 
   // Local state to manage the selected quantity
-  const [selectedQuantity, setSelectedQuantity] = useState(quantity);
+  const [quantity, setQuantity] = useState(initialQuantity);
 
-  useEffect(() => {
-    setSelectedQuantity(quantity);
-  }, [quantity]);  
-
-  const handleQuantityChange = (e) => {
-    const newQuantity = e.target.value;
-    setSelectedQuantity(newQuantity);
-    onQuantityChange(sku, newQuantity); // Assuming SKU is used as a unique identifier
+  // Handle quantity changes
+  const handleQuantityChange = (newQuantity) => {
+    setQuantity(newQuantity);
+    if (onQuantityChange) {
+      onQuantityChange(newQuantity);
+    }
   };
 
-  return (
-    <Flex
-      direction={{
-        base: 'column',
-        md: 'row',
-      }}
-      justify="space-between"
-      align="center"
-      position="relative"
-    >
-      <CartProductMeta
-        name={name}
-        description={description}
-        image={imageUrl}
-        price={price}
-        currency={currency}
-        sku={sku}
-        color={color}
-        size={size}
-        stock={stock} // This should be the stock of the item
-        quantity={selectedQuantity} // This should be the selected quantity
-        onQuantityChange={handleQuantityChange}
-      />
+  // Responsive layout adjustments
+  const flexDirection = useBreakpointValue({ base: 'column', md: 'row' });
 
-      {/* Delete Button */}
-      <Button position="absolute" top="0" right="0" size="sm" onClick={onDelete}>
+  return (
+    <Box borderWidth="1px" borderRadius="lg" p="4" position="relative">
+      <Button colorScheme="red" onClick={onDelete} position="absolute" top="2" right="2">
         Delete
       </Button>
-
-      {/* Desktop */}
-      <Flex
-        width="full"
-        justify="space-between"
-        display={{
-          base: 'none',
-          md: 'flex',
-        }}
-      >
-        {/* Other desktop elements if needed */}
+      <Flex direction={flexDirection}>
+        <CartProductMeta
+          image={imageUrl}
+          name={name}
+          sku={sku}
+          color={color}
+          size={size}
+          price={price}
+          quantity={quantity}
+          stock={stock}
+          onQuantityChange={handleQuantityChange}
+        />
+        <Spacer />
       </Flex>
-
-      {/* Mobile */}
-      <Flex
-        mt="4"
-        align="center"
-        width="full"
-        justify="space-between"
-        display={{
-          base: 'flex',
-          md: 'none',
-        }}
-      >
-        <Link fontSize="sm" textDecor="underline" onClick={onDelete}>
-          Delete
-        </Link>
-      </Flex>
-    </Flex>
+    </Box>
   );
 };

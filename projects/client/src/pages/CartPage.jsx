@@ -42,7 +42,7 @@ export const CartPage = () => {
   const handleQuantityChange = async (productId, newQuantity) => {
     try {
       // Make API call to update quantity
-      await api.post(`/api/cart/items/${productId}`, { newQuantity });
+      await api.patch(`/api/cart/items/${productId}`, { newQuantity });
   
       // Update local state
       setCartItems(currentItems => currentItems.map(item => {

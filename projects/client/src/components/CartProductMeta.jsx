@@ -4,7 +4,8 @@ import {
   Image,
   Text,
   useColorModeValue as mode,
-  Select
+  Button,
+  Box
 } from '@chakra-ui/react';
 import { PriceTag } from './PriceTag';
 
@@ -21,6 +22,19 @@ export const CartProductMeta = (props) => {
     onQuantityChange
   } = props;
 
+  // Counter control for quantity
+  const incrementQuantity = () => {
+    if (quantity < stock) {
+      onQuantityChange(quantity + 1);
+    }
+  };
+
+  const decrementQuantity = () => {
+    if (quantity > 1) {
+      onQuantityChange(quantity - 1);
+    }
+  };
+
   return (
     <HStack spacing="5" width="full" alignItems="start">
       <Image
@@ -30,24 +44,18 @@ export const CartProductMeta = (props) => {
         fit="cover"
         src={image}
         alt={name}
-        draggable="false"
-        loading="lazy"
       />
       <VStack alignItems="start" spacing="1">
-        <Text fontWeight="medium">{name}</Text>
+        <Text fontWeight="bold" fontSize="lg">{name}</Text>
         <Text color={mode('gray.600', 'gray.400')} fontSize="sm">SKU: {sku}</Text>
         <Text color={mode('gray.600', 'gray.400')} fontSize="sm">Color: {color}</Text>
         <Text color={mode('gray.600', 'gray.400')} fontSize="sm">Size: {size}</Text>
         <PriceTag price={price} currency="IDR" />
-        <Text color={mode('gray.600', 'gray.400')} fontSize="sm">Quantity:</Text>
-        {/* Quantity Dropdown */}
-        <Select value={quantity} onChange={(e) => onQuantityChange(sku, e.target.value)} width="auto">
-          {[...Array(stock).keys()].map(num => (
-            <option key={num + 1} value={num + 1}>
-              {num + 1}
-            </option>
-          ))}
-        </Select>
+        <HStack>
+          <Button onClick={decrementQuantity}>-</Button>
+          <Box as="span" px="2">{quantity}</Box>
+          <Button onClick={incrementQuantity}>+</Button>
+        </HStack>
       </VStack>
     </HStack>
   );
