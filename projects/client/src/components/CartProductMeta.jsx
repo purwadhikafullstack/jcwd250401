@@ -5,9 +5,10 @@ import {
   Text,
   useColorModeValue as mode,
   Button,
-  Box
+  Input
 } from '@chakra-ui/react';
 import { PriceTag } from './PriceTag';
+import { useState, useEffect } from 'react';
 
 export const CartProductMeta = (props) => {
   const {
@@ -17,21 +18,35 @@ export const CartProductMeta = (props) => {
     color,
     size,
     price,
-    quantity,
+    quantity: initialQuantity,
     stock,
     onQuantityChange
   } = props;
 
-  // Counter control for quantity
+  const [quantity, setQuantity] = useState(initialQuantity);
+
+  // Update local state when initialQuantity changes
+  useEffect(() => {
+    setQuantity(initialQuantity);
+  }, [initialQuantity]);
+
   const incrementQuantity = () => {
-    if (quantity < stock) {
-      onQuantityChange(quantity + 1);
-    }
+    const newQuantity = quantity < stock ? quantity + 1 : quantity;
+    setQuantity(newQuantity);
+    onQuantityChange(newQuantity);
   };
 
   const decrementQuantity = () => {
-    if (quantity > 1) {
-      onQuantityChange(quantity - 1);
+    const newQuantity = quantity > 1 ? quantity - 1 : quantity;
+    setQuantity(newQuantity);
+    onQuantityChange(newQuantity);
+  };
+
+  const handleInputChange = (event) => {
+    const value = parseInt(event.target.value, 10);
+    if (!isNaN(value) && value >= 0 && value <= stock) {
+      setQuantity(value);
+      onQuantityChange(value);
     }
   };
 
@@ -53,7 +68,13 @@ export const CartProductMeta = (props) => {
         <PriceTag price={price} currency="IDR" />
         <HStack>
           <Button onClick={decrementQuantity}>-</Button>
-          <Box as="span" px="2">{quantity}</Box>
+          <Input 
+            type="number" 
+            value={quantity} 
+            onChange={handleInputChange} 
+            width="50px"
+            textAlign="center" 
+          />
           <Button onClick={incrementQuantity}>+</Button>
         </HStack>
       </VStack>

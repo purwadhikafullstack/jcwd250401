@@ -2,13 +2,13 @@ import {
   Button,
   Flex,
   Heading,
-  Link,
   Stack,
   Text,
   useColorModeValue as mode,
 } from '@chakra-ui/react'
 import { FaArrowRight } from 'react-icons/fa'
 import { formatPrice } from './PriceTag'
+
 const OrderSummaryItem = (props) => {
   const { label, value, children } = props
   return (
@@ -21,29 +21,26 @@ const OrderSummaryItem = (props) => {
   )
 }
 
-export const CartOrderSummary = () => {
+export const CartOrderSummary = ({ cartItems }) => {
+  // Check if cartItems is defined and is an array
+  const subtotal = Array.isArray(cartItems) ? cartItems.reduce((total, item) => {
+    return total + (item.quantity * item.Product.price);
+  }, 0) : 0;
+  const tax = subtotal * 0.10; // 10% tax
+  const total = subtotal + tax; // Total is subtotal plus tax
   return (
     <Stack spacing="8" borderWidth="1px" rounded="lg" padding="8" width="full">
       <Heading size="md">Order Summary</Heading>
 
       <Stack spacing="6">
-        <OrderSummaryItem label="Subtotal" value={formatPrice(597)} />
-        <OrderSummaryItem label="Shipping + Tax">
-          <Link href="#" textDecor="underline">
-            Calculate shipping
-          </Link>
-        </OrderSummaryItem>
-        <OrderSummaryItem label="Coupon Code">
-          <Link href="#" textDecor="underline">
-            Add coupon code
-          </Link>
-        </OrderSummaryItem>
+        <OrderSummaryItem label="Item(s) Subtotal" value={formatPrice(subtotal)} />
+        <OrderSummaryItem label="Tax" value={formatPrice(tax)} />
         <Flex justify="space-between">
           <Text fontSize="lg" fontWeight="semibold">
-            Total
+            Subtotal
           </Text>
           <Text fontSize="xl" fontWeight="extrabold">
-            {formatPrice(597)}
+            {formatPrice(total)}
           </Text>
         </Flex>
       </Stack>

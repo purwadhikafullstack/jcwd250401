@@ -2,10 +2,7 @@ import {
   Box,
   Flex,
   Heading,
-  HStack,
-  Link,
   Stack,
-  useColorModeValue as mode,
 } from '@chakra-ui/react'
 import { CartItem } from '../components/CartItem'
 import { CartOrderSummary } from '../components/CartOrderSummary'
@@ -122,11 +119,7 @@ export const CartPage = () => {
       </Stack>
 
       <Flex direction="column" align="center" flex="1">
-        <CartOrderSummary />
-        <HStack mt="6" fontWeight="semibold">
-          <p>or</p>
-          <Link color={mode('blue.500', 'blue.200')}>Continue shopping</Link>
-        </HStack>
+        <CartOrderSummary cartItems={cartItems} />
       </Flex>
     </Stack>
   </Box>
