@@ -168,7 +168,7 @@ function AddProductModal({ isOpen, isClose }) {
                             <select
                               id="productMainCategory"
                               name="productMainCategory"
-                              className="w-full px-4 py-2 border-2 border-gray-300 outline-none focus:ring-transparent lg:rounded-l-lg lg:rounded-none rounded-lg shadow-md shadow-gray-200 focus:ring-transparent focus:border-gray-500"
+                              className="w-full px-4 py-2 border-2 border-gray-300 outline-none  lg:rounded-l-lg lg:rounded-none rounded-lg shadow-md shadow-gray-200 focus:ring-transparent focus:border-gray-500"
                               {...formik.getFieldProps("productMainCategory")}
                             >
                               <option value="" disabled className="text-gray-400">
@@ -188,7 +188,7 @@ function AddProductModal({ isOpen, isClose }) {
                             <select
                               id="productSubCategory"
                               name="productSubCategory"
-                              className="w-full px-4 py-2 border-2 border-gray-300 shadow-md shadow-gray-200 focus:ring-transparent lg:rounded-none rounded-lg focus:ring-transparent focus:border-gray-500"
+                              className="w-full px-4 py-2 border-2 border-gray-300 shadow-md shadow-gray-200  lg:rounded-none rounded-lg focus:ring-transparent focus:border-gray-500"
                               {...formik.getFieldProps("productSubCategory")}
                             >
                               <option value="" disabled className="text-gray-400">
@@ -208,7 +208,7 @@ function AddProductModal({ isOpen, isClose }) {
                             <select
                               id="productGender"
                               name="productGender"
-                              className="w-full px-4 py-2 border-2 border-gray-300 lg:rounded-r-lg lg:rounded-none rounded-lg shadow-md shadow-gray-200 focus:ring-transparent focus:ring-transparent focus:border-gray-500"
+                              className="w-full px-4 py-2 border-2 border-gray-300 lg:rounded-r-lg lg:rounded-none rounded-lg shadow-md shadow-gray-20 focus:ring-transparent focus:border-gray-500"
                               {...formik.getFieldProps("productGender")}
                             >
                               <option value="" disabled className="text-gray-400">
@@ -231,7 +231,7 @@ function AddProductModal({ isOpen, isClose }) {
                             <select
                               id="productMainCategory"
                               name="productMainCategory"
-                              className="w-full px-4 py-2 border-2 border-gray-300 outline-none focus:ring-transparent lg:rounded-l-lg lg:rounded-none rounded-lg  shadow-md shadow-gray-200 focus:ring-transparent focus:border-gray-500"
+                              className="w-full px-4 py-2 border-2 border-gray-300 outline-none lg:rounded-l-lg lg:rounded-none rounded-lg  shadow-md shadow-gray-200 focus:ring-transparent focus:border-gray-500"
                               {...formik.getFieldProps("productMainCategory")}
                             >
                               <option value="" disabled className="text-gray-400">
@@ -251,7 +251,7 @@ function AddProductModal({ isOpen, isClose }) {
                             <select
                               id="productSubCategory"
                               name="productSubCategory"
-                              className="w-full px-4 py-2 border-2 border-gray-300 shadow-md shadow-gray-200 focus:ring-transparent lg:rounded-none lg:rounded-r-lg rounded-lg focus:ring-transparent focus:border-gray-500"
+                              className="w-full px-4 py-2 border-2 border-gray-300 shadow-md shadow-gray-200 lg:rounded-none lg:rounded-r-lg rounded-lg focus:ring-transparent focus:border-gray-500"
                               {...formik.getFieldProps("productSubCategory")}
                             >
                               <option value="" disabled className="text-gray-400">
