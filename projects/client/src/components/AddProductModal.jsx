@@ -126,18 +126,19 @@ function AddProductModal({ isOpen, isClose }) {
   ];
   return (
     <>
-      <Modal closeOnOverlayClick={false} isOpen={isOpen} size={{ sm: "2xl", lg: "6xl" }} scrollBehavior="outside" onClose={isClose} isCentered>
+      <Modal closeOnOverlayClick={false} isOpen={isOpen} size={{ lg: "6xl" }} scrollBehavior="inside" onClose={isClose} isCentered>
         <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(1px)" />
         <ModalContent>
-          <ModalHeader />
-          <ModalCloseButton />
-          <ModalBody>
-            <form onSubmit={formik.handleSubmit}>
-              <div className="space-y-4 px-4 mb-8">
-                <div className="space-y-1">
+          <ModalHeader py={0}>
+          <div className="px-4 lg:mt-7 mt-10 lg:mb-0 mb-4">
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Add Product</h3>
                   <h4 className="text-sm font-light text-gray-900 dark:text-white">Add a new product to your store</h4>
                 </div>
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <form onSubmit={formik.handleSubmit}>
+              <div className="space-y-4 px-4 mb-6">
                 <div className="lg:flex sm:flex lg:flex-row lg:space-x-20 sm:space-y-4 lg:justify-between lg:items-center sm:flex-col">
                   <div className="lg:w-[20vw] sm:w-full">
                     <h4 className="text-sm font-bold text-gray-900 dark:text-white">Product Name</h4>
@@ -148,16 +149,16 @@ function AddProductModal({ isOpen, isClose }) {
                       id="productName"
                       name="productName"
                       placeholder="Enter product name..."
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500"
+                      className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg shadow-md shadow-gray-200 focus:ring-transparent focus:border-gray-500"
                       {...formik.getFieldProps("productName")}
                     />
                     {formik.touched.productName && formik.errors.productName ? <div className="text-red-500">{formik.errors.productName}</div> : null}
                   </div>
                 </div>
-                <div className="lg:flex lg:flex-row flex flex-col lg:space-x-20 space-y-2 lg:space-y-0 justify-between">
+                <div className="lg:flex lg:flex-row flex flex-col lg:space-x-20 space-y-2 lg:space-y-0 justify-between items-center">
                   <div className="lg:w-[20vw] w-full">
                     <h4 className="text-sm font-bold text-gray-900 dark:text-white">Product Category</h4>
-                    <h4 className="text-xs font-light text-gray-900 dark:text-white">Select product main categories, sub categories, and gender if needed.</h4>
+                    <h4 className="text-xs font-light text-gray-900 dark:text-white">Select product main category, sub category, and gender if needed.</h4>
                   </div>
                   <div className="flex lg:flex-row space-y-2 lg:space-y-0 flex-col w-full ">
                     {formik.values.productMainCategory !== "bags" && formik.values.productMainCategory !== "accessories" ? (
@@ -167,7 +168,7 @@ function AddProductModal({ isOpen, isClose }) {
                             <select
                               id="productMainCategory"
                               name="productMainCategory"
-                              className="w-full px-4 py-2 border border-gray-300 outline-none focus:ring-transparent lg:rounded-l-lg lg:rounded-none rounded-lg shadow-sm focus:border-gray-500"
+                              className="w-full px-4 py-2 border-2 border-gray-300 outline-none focus:ring-transparent lg:rounded-l-lg lg:rounded-none rounded-lg shadow-md shadow-gray-200 focus:ring-transparent focus:border-gray-500"
                               {...formik.getFieldProps("productMainCategory")}
                             >
                               <option value="" disabled className="text-gray-400">
@@ -187,7 +188,7 @@ function AddProductModal({ isOpen, isClose }) {
                             <select
                               id="productSubCategory"
                               name="productSubCategory"
-                              className="w-full px-4 py-2 border border-gray-300 shadow-sm lg:rounded-none rounded-lg focus:ring-transparent focus:border-gray-500"
+                              className="w-full px-4 py-2 border-2 border-gray-300 shadow-md shadow-gray-200 focus:ring-transparent lg:rounded-none rounded-lg focus:ring-transparent focus:border-gray-500"
                               {...formik.getFieldProps("productSubCategory")}
                             >
                               <option value="" disabled className="text-gray-400">
@@ -202,12 +203,12 @@ function AddProductModal({ isOpen, isClose }) {
                           </div>
                           {formik.touched.productSubCategory && formik.errors.productSubCategory ? <div className="text-red-500 text-xs text-center">{formik.errors.productSubCategory}</div> : null}
                         </div>
-                        <div className="flex w-full flex-col space-y-4 lg:flex-row lg:space-y-0">
+                        <div className="flex w-full flex-col">
                           <div>
                             <select
                               id="productGender"
                               name="productGender"
-                              className="w-full px-4 py-2 border border-gray-300 lg:rounded-r-lg lg:rounded-none rounded-lg shadow-sm focus:ring-transparent focus:border-gray-500"
+                              className="w-full px-4 py-2 border-2 border-gray-300 lg:rounded-r-lg lg:rounded-none rounded-lg shadow-md shadow-gray-200 focus:ring-transparent focus:ring-transparent focus:border-gray-500"
                               {...formik.getFieldProps("productGender")}
                             >
                               <option value="" disabled className="text-gray-400">
@@ -230,7 +231,7 @@ function AddProductModal({ isOpen, isClose }) {
                             <select
                               id="productMainCategory"
                               name="productMainCategory"
-                              className="w-full px-4 py-2 border border-gray-300 outline-none focus:ring-transparent lg:rounded-l-lg lg:rounded-none rounded-lg  shadow-sm focus:border-gray-500"
+                              className="w-full px-4 py-2 border-2 border-gray-300 outline-none focus:ring-transparent lg:rounded-l-lg lg:rounded-none rounded-lg  shadow-md shadow-gray-200 focus:ring-transparent focus:border-gray-500"
                               {...formik.getFieldProps("productMainCategory")}
                             >
                               <option value="" disabled className="text-gray-400">
@@ -250,7 +251,7 @@ function AddProductModal({ isOpen, isClose }) {
                             <select
                               id="productSubCategory"
                               name="productSubCategory"
-                              className="w-full px-4 py-2 border border-gray-300 shadow-sm lg:rounded-none lg:rounded-r-lg rounded-lg focus:ring-transparent focus:border-gray-500"
+                              className="w-full px-4 py-2 border-2 border-gray-300 shadow-md shadow-gray-200 focus:ring-transparent lg:rounded-none lg:rounded-r-lg rounded-lg focus:ring-transparent focus:border-gray-500"
                               {...formik.getFieldProps("productSubCategory")}
                             >
                               <option value="" disabled className="text-gray-400">
@@ -280,7 +281,7 @@ function AddProductModal({ isOpen, isClose }) {
                       id="productDescription"
                       name="productDescription"
                       placeholder="Describe the product..."
-                      className="w-full h-36 px-4 py-2 border border-gray-300 rounded-lg shadow-sm resize-none focus:border-gray-500"
+                      className="w-full h-36 px-4 py-2 border-2 border-gray-300 rounded-lg shadow-md shadow-gray-200 focus:ring-transparent resize-none focus:border-gray-500"
                       {...formik.getFieldProps("productDescription")}
                     />
                     {formik.touched.productDescription && formik.errors.productDescription ? <div className="text-red-500">{formik.errors.productDescription}</div> : null}
@@ -296,10 +297,10 @@ function AddProductModal({ isOpen, isClose }) {
                     {[0, 1, 2, 3, 4].map((index) => {
                       const previewImage = previewImages.find((img) => img.index === index);
                       return (
-                        <div key={index} className="lg:w-[139px] lg:h-[139px] w-[200px] h-[200px] relative">
+                        <div key={index} className="lg:w-[139px] lg:h-[139px] w-[80%] h-[250px] relative">
                           <div
                             onClick={() => handleClick(index)}
-                            className={`w-full h-full border-dashed border-2 border-gray-300 rounded-md flex shadow-md items-center justify-center bg-transparent ${activeIndex === index ? "bg-gray-100" : ""}`}
+                            className={`w-full h-full border-dashed border-2 border-gray-300 rounded-md flex shadow-md shadow-gray-200 focus:ring-transparent items-center justify-center bg-transparent ${activeIndex === index ? "bg-gray-100" : ""}`}
                           >
                             <div className="absolute inset-0 flex flex-col items-center justify-center">
                               {previewImage ? (
@@ -329,11 +330,11 @@ function AddProductModal({ isOpen, isClose }) {
 
                 <div>
                   {isSubmitting ? (
-                    <Button className="w-full shadow-md bg-[#40403F] enabled:hover:bg-[#40403F] outline-none" size="lg" isProcessing processingSpinner={<AiOutlineLoading className="h-6 w-6 animate-spin" />}>
+                    <Button className="w-full shadow-md shadow-gray-200 focus:ring-transparent bg-[#40403F] enabled:hover:bg-[#40403F] outline-none" size="lg" isProcessing processingSpinner={<AiOutlineLoading className="h-6 w-6 animate-spin" />}>
                       Adding Product...
                     </Button>
                   ) : (
-                    <Button className="w-full shadow-md bg-[#40403F] enabled:hover:bg-[#777777]" size="lg" type="submit" disabled={isSubmitting}>
+                    <Button className="w-full shadow-md shadow-gray-200 focus:ring-transparent bg-[#40403F] enabled:hover:bg-[#777777]" size="lg" type="submit" disabled={isSubmitting}>
                       Add Product
                     </Button>
                   )}
