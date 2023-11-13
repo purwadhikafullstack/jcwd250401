@@ -38,10 +38,10 @@ const closeAddCategoryModal = () => setOpenCategoryModal(false);
           </div>
           <div className="flex items-center p-4 mt-4 bg-white rounded-lg shadow-md">
             <div className="flex gap-14 mx-4">
-              <span className="text-sm font-bold text-gray-900 dark:text-white">All Products</span>
-              <span className="text-sm font-bold text-gray-900 dark:text-white">Out of stock</span>
-              <span className="text-sm font-bold text-gray-900 dark:text-white">Category</span>
-              <span className="text-sm font-bold text-gray-900 dark:text-white">Archive</span>
+              <span className="text-sm font-bold text-gray-900 dark:text-white cursor-pointer hover:text-gray-700">All Products</span>
+              <span className="text-sm font-bold text-gray-900 dark:text-white cursor-pointer hover:text-gray-700">Out of stock</span>
+              <span className="text-sm font-bold text-gray-900 dark:text-white cursor-pointer hover:text-gray-700">Category</span>
+              <span className="text-sm font-bold text-gray-900 dark:text-white cursor-pointer hover:text-gray-700">Archive</span>
             </div>
           </div>
           <div className="flex items-center mt-4">

@@ -28,8 +28,8 @@ function Navigationbar() {
   const bags = ["Shop all bags", "New arrivals", "Texel travel series", "Color Story: Grey"];
   const bagsSubCategory = ["All bags", "Backpacks", "Totes Bags", "Travel Bags", "Laptop Bags", "Crossbody & Bum bags", "Wash bags"];
   const accessories = ["Caps", "Bags", "Accessories"];
-  const accounts = ["Profile", "Address Book", "My Order", "Change My Password"];
-  const accountsDropdown = ["Profile", "Address Book", "My Order", "Change My Password", "Search", "Cart", "Favorites"];
+  const accounts = ["Profile", "Address Book", "My Order", "Change Password"];
+  const accountsDropdown = ["Profile", "Address Book", "My Order", "Change Password", "Search", "Cart", "Favorites"];
   const dispatch = useDispatch();
   const auth = getAuth();
   const [userData, setUserData] = useState(null);

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { NavPage } from "../components/NavPage";
 import { useEffect, useState } from "react";
 import { useFormik } from "formik";
@@ -12,6 +12,7 @@ import { EditAddressModal } from "../components/EditAddressModal";
 import { addAddress } from "../slices/addressSlices";
 import { BsFillPinAngleFill, BsFillTrash3Fill } from "react-icons/bs";
 import { SetDefaultAddressModal } from "../components/SetDefaultAddressModal";
+import { showLoginModal } from "../slices/authModalSlices";
 
 export const Address = () => {
   const isLogin = useSelector((state) => state?.account?.isLogin);
@@ -32,6 +33,7 @@ export const Address = () => {
   const defaultAddress = userAddressLists.find((address) => address.setAsDefault);
   const provinceIdToName = provinceLists.filter((province) => province.province_id === selectedProvince)[0]?.province;
   const dispatch = useDispatch();
+  const navigate = useNavigate()
 
   const userId = userData?.id;
   const addressLists = useSelector((state) => state?.address?.addressLists);
@@ -136,39 +138,47 @@ export const Address = () => {
   });
 
   useEffect(() => {
-    const getProvinceLists = async () => {
-      try {
-        const response = await api.get("/address/province");
-        setProvinceLists(response.data.detail);
-      } catch (error) {
-        toast.error("Get address lists failed");
-      }
-    };
+    if (isLogin) {
+      const getProvinceLists = async () => {
+        try {
+          const response = await api.get("/address/province");
+          setProvinceLists(response.data.detail);
+        } catch (error) {
+          toast.error("Get address lists failed");
+        }
+      };
 
-    const getCityLists = async () => {
-      try {
-        const response = await api.get("/address/city");
-        setCityLists(response.data.detail);
-      } catch (error) {
-        toast.error("Get city lists failed");
-      }
-    };
+      const getCityLists = async () => {
+        try {
+          const response = await api.get("/address/city");
+          setCityLists(response.data.detail);
+        } catch (error) {
+          toast.error("Get city lists failed");
+        }
+      };
 
-    const getUsersProfile = async () => {
-      try {
-        const response = await api.get(`/profile/${username}`);
-        setUserData(response.data.detail);
+      const getUsersProfile = async () => {
+        try {
+          const response = await api.get(`/profile/${username}`);
+          setUserData(response.data.detail);
 
-        const responseLists = await api.get(`/address/${response.data.detail.id}`);
-        setUserAddressLists(responseLists.data.detail);
-      } catch (error) {
-        toast.error("Failed to get user data");
-      }
-    };
+          const responseLists = await api.get(`/address/${response.data.detail.id}`);
+          setUserAddressLists(responseLists.data.detail);
+        } catch (error) {
+          toast.error("Failed to get user data");
+        }
+      };
 
-    getUsersProfile();
-    getProvinceLists();
-    getCityLists();
+      getUsersProfile();
+      getProvinceLists();
+      getCityLists();
+    } else {
+      toast.error("You are not logged in");
+      setTimeout(() => {
+        navigate("/")
+        dispatch(showLoginModal());
+      }, 2000)
+    }
   }, [addressLists]);
 
   return (
