@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Button } from "flowbite-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -16,6 +16,7 @@ import { PiImage, PiImageThin } from "react-icons/pi";
 function AddProductModal({ isOpen, isClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewImages, setPreviewImages] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(null);
   const dispatch = useDispatch();
 
   const formik = useFormik({
@@ -63,35 +64,43 @@ function AddProductModal({ isOpen, isClose }) {
   });
 
   // React Dropzone Configuration
+  const fileInputRef = useRef(null);
+
   const onDrop = (acceptedFiles) => {
-    // Handle the dropped files here
-    console.log(acceptedFiles);
-  
-    // Update the preview images state with the selected files
-    const newPreviewImages = acceptedFiles.map((file, index) => ({
-      ...file,
-      preview: URL.createObjectURL(file),
-      index: index, // Assign an index based on the order of the dropped files
-    }));
-  
-    // Update the existing preview images or replace the main photo if it exists
-    setPreviewImages((prevImages) => {
-      const updatedImages = [...prevImages];
-      const mainPhotoIndex = updatedImages.findIndex((img) => img.index === 0);
-  
-      if (mainPhotoIndex !== -1) {
-        // Replace existing main photo
-        updatedImages[mainPhotoIndex] = newPreviewImages[0];
-      } else {
-        // Add new images if they don't exist
-        updatedImages.push(...newPreviewImages);
-      }
-  
-      return updatedImages;
-    });
+    if (activeIndex !== null) {
+      // Update the preview images state with the selected files
+      const newPreviewImage = {
+        ...acceptedFiles[0],
+        preview: URL.createObjectURL(acceptedFiles[0]),
+        index: activeIndex,
+      };
+
+      // Update the existing preview images or replace the main photo if it exists
+      setPreviewImages((prevImages) => {
+        const updatedImages = [...prevImages];
+        const currentImageIndex = updatedImages.findIndex((img) => img.index === activeIndex);
+
+        if (currentImageIndex !== -1) {
+          // Replace existing photo for the clicked index
+          updatedImages[currentImageIndex] = newPreviewImage;
+        } else {
+          // Add new image if it doesn't exist
+          updatedImages.push(newPreviewImage);
+        }
+
+        return updatedImages;
+      });
+
+      // Reset the activeIndex after updating the preview image
+      setActiveIndex(null);
+    }
   };
-  
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+
+  const handleClick = (index) => {
+    setActiveIndex(index);
+    // Trigger the file input click
+    fileInputRef.current.click();
+  };
 
   const genders = [
     { label: "Men", value: "men" },
@@ -117,7 +126,7 @@ function AddProductModal({ isOpen, isClose }) {
   ];
   return (
     <>
-      <Modal closeOnOverlayClick={false} isOpen={isOpen} size="6xl" onClose={isClose} isCentered>
+      <Modal closeOnOverlayClick={false} isOpen={isOpen} size={{ sm: "2xl", lg: "6xl" }} scrollBehavior="outside" onClose={isClose} isCentered>
         <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(1px)" />
         <ModalContent>
           <ModalHeader />
@@ -129,8 +138,8 @@ function AddProductModal({ isOpen, isClose }) {
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Add Product</h3>
                   <h4 className="text-sm font-light text-gray-900 dark:text-white">Add a new product to your store</h4>
                 </div>
-                <div className="flex gap-20 justify-between items-center">
-                  <div className="w-[20vw]">
+                <div className="lg:flex sm:flex lg:flex-row lg:space-x-20 sm:space-y-4 lg:justify-between lg:items-center sm:flex-col">
+                  <div className="lg:w-[20vw] sm:w-full">
                     <h4 className="text-sm font-bold text-gray-900 dark:text-white">Product Name</h4>
                   </div>
                   <div className="w-full">
@@ -145,17 +154,22 @@ function AddProductModal({ isOpen, isClose }) {
                     {formik.touched.productName && formik.errors.productName ? <div className="text-red-500">{formik.errors.productName}</div> : null}
                   </div>
                 </div>
-                <div className="flex gap-20 justify-between">
-                  <div className="w-[20vw]">
+                <div className="lg:flex lg:flex-row flex flex-col lg:space-x-20 space-y-2 lg:space-y-0 justify-between">
+                  <div className="lg:w-[20vw] w-full">
                     <h4 className="text-sm font-bold text-gray-900 dark:text-white">Product Category</h4>
                     <h4 className="text-xs font-light text-gray-900 dark:text-white">Select product main categories, sub categories, and gender if needed.</h4>
                   </div>
-                  <div className="flex w-full ">
+                  <div className="flex lg:flex-row space-y-2 lg:space-y-0 flex-col w-full ">
                     {formik.values.productMainCategory !== "bags" && formik.values.productMainCategory !== "accessories" ? (
                       <>
                         <div className="flex flex-col w-full">
                           <div>
-                            <select id="productMainCategory" name="productMainCategory" className="w-full px-4 py-2 border border-gray-300 outline-none focus:ring-transparent rounded-l-lg shadow-sm focus:border-gray-500"  {...formik.getFieldProps("productMainCategory")}>
+                            <select
+                              id="productMainCategory"
+                              name="productMainCategory"
+                              className="w-full px-4 py-2 border border-gray-300 outline-none focus:ring-transparent lg:rounded-l-lg lg:rounded-none rounded-lg shadow-sm focus:border-gray-500"
+                              {...formik.getFieldProps("productMainCategory")}
+                            >
                               <option value="" disabled className="text-gray-400">
                                 Select main category
                               </option>
@@ -170,7 +184,12 @@ function AddProductModal({ isOpen, isClose }) {
                         </div>
                         <div className="flex w-full flex-col">
                           <div>
-                            <select id="productSubCategory" name="productSubCategory" className="w-full px-4 py-2 border border-gray-300 shadow-sm focus:ring-transparent focus:border-gray-500" {...formik.getFieldProps("productSubCategory")}>
+                            <select
+                              id="productSubCategory"
+                              name="productSubCategory"
+                              className="w-full px-4 py-2 border border-gray-300 shadow-sm lg:rounded-none rounded-lg focus:ring-transparent focus:border-gray-500"
+                              {...formik.getFieldProps("productSubCategory")}
+                            >
                               <option value="" disabled className="text-gray-400">
                                 Select sub category
                               </option>
@@ -183,9 +202,14 @@ function AddProductModal({ isOpen, isClose }) {
                           </div>
                           {formik.touched.productSubCategory && formik.errors.productSubCategory ? <div className="text-red-500 text-xs text-center">{formik.errors.productSubCategory}</div> : null}
                         </div>
-                        <div className="flex w-full flex-col">
+                        <div className="flex w-full flex-col space-y-4 lg:flex-row lg:space-y-0">
                           <div>
-                            <select id="productGender" name="productGender" className="w-full px-4 py-2 border border-gray-300 rounded-r-lg shadow-sm focus:ring-transparent focus:border-gray-500" {...formik.getFieldProps("productGender")}>
+                            <select
+                              id="productGender"
+                              name="productGender"
+                              className="w-full px-4 py-2 border border-gray-300 lg:rounded-r-lg lg:rounded-none rounded-lg shadow-sm focus:ring-transparent focus:border-gray-500"
+                              {...formik.getFieldProps("productGender")}
+                            >
                               <option value="" disabled className="text-gray-400">
                                 Select gender
                               </option>
@@ -203,7 +227,12 @@ function AddProductModal({ isOpen, isClose }) {
                       <>
                         <div className="flex flex-col w-full">
                           <div>
-                            <select id="productMainCategory" name="productMainCategory" className="w-full px-4 py-2 border border-gray-300 rounded-l-lg shadow-sm focus:ring-transparent focus:border-gray-500" {...formik.getFieldProps("productMainCategory")}>
+                            <select
+                              id="productMainCategory"
+                              name="productMainCategory"
+                              className="w-full px-4 py-2 border border-gray-300 outline-none focus:ring-transparent lg:rounded-l-lg lg:rounded-none rounded-lg  shadow-sm focus:border-gray-500"
+                              {...formik.getFieldProps("productMainCategory")}
+                            >
                               <option value="" disabled className="text-gray-400">
                                 Select main category
                               </option>
@@ -218,7 +247,12 @@ function AddProductModal({ isOpen, isClose }) {
                         </div>
                         <div className="flex w-full flex-col">
                           <div>
-                            <select id="productSubCategory" name="productSubCategory" className="w-full px-4 py-2 border border-gray-300 shadow-sm rounded-r-lg focus:ring-transparent focus:ring-gray-500" {...formik.getFieldProps("productSubCategory")}>
+                            <select
+                              id="productSubCategory"
+                              name="productSubCategory"
+                              className="w-full px-4 py-2 border border-gray-300 shadow-sm lg:rounded-none lg:rounded-r-lg rounded-lg focus:ring-transparent focus:border-gray-500"
+                              {...formik.getFieldProps("productSubCategory")}
+                            >
                               <option value="" disabled className="text-gray-400">
                                 Select sub category
                               </option>
@@ -235,8 +269,8 @@ function AddProductModal({ isOpen, isClose }) {
                     )}
                   </div>
                 </div>
-                <div className="flex gap-20 justify-between ">
-                  <div className="w-[20vw] space-y-1">
+                <div className="lg:flex lg:flex-row flex flex-col lg:space-x-20 lg:space-y-0 space-y-4 justify-between ">
+                  <div className="lg:w-[20vw] w-full space-y-1">
                     <h4 className="text-sm font-bold text-gray-900 dark:text-white">Product Description</h4>
                     <h4 className="text-xs font-light text-gray-900 dark:text-white">Make sure the product description contains a detailed explanation regarding your product so that buyers can easily understand and find your product.</h4>
                   </div>
@@ -252,22 +286,24 @@ function AddProductModal({ isOpen, isClose }) {
                     {formik.touched.productDescription && formik.errors.productDescription ? <div className="text-red-500">{formik.errors.productDescription}</div> : null}
                   </div>
                 </div>
-                <div className="flex gap-20 justify-between">
-                  <div className="w-[20vw] flex flex-col space-y-2">
+                <div className="lg:flex flex lg:flex-row flex-col lg:space-x-20 lg:space-y-0 space-y-4 justify-between">
+                  <div className="w-full flex-col space-y-2">
                     <h4 className="text-sm font-bold text-gray-900 dark:text-white">Product Image</h4>
                     <h4 className="text-xs font-light text-gray-900 dark:text-white">Add at least 3 photos of the product to showcase its unique qualities and grab the attention of your followers.</h4>
                   </div>
-                  <div className="flex w-full space-x-5">
+                  <input type="file" accept="image/*" style={{ display: "none" }} ref={fileInputRef} onChange={(e) => onDrop([e.target.files[0]])} />
+                  <div className="lg:flex flex lg:flex-row flex-col  lg:justify-center lg:items-center justify-center items-center lg:space-x-5 space-y-4 lg:space-y-0">
                     {[0, 1, 2, 3, 4].map((index) => {
                       const previewImage = previewImages.find((img) => img.index === index);
-
                       return (
-                        <div key={index} className="w-[139px] h-[139px] relative">
-                          <div {...getRootProps()} className={`w-full h-full border-dashed border-2 border-gray-300 rounded-md flex shadow-md items-center justify-center bg-transparent ${isDragActive ? "bg-gray-100" : ""}`}>
-                            <input {...getInputProps()} />
+                        <div key={index} className="lg:w-[139px] lg:h-[139px] w-[200px] h-[200px] relative">
+                          <div
+                            onClick={() => handleClick(index)}
+                            className={`w-full h-full border-dashed border-2 border-gray-300 rounded-md flex shadow-md items-center justify-center bg-transparent ${activeIndex === index ? "bg-gray-100" : ""}`}
+                          >
                             <div className="absolute inset-0 flex flex-col items-center justify-center">
                               {previewImage ? (
-                                <img src={previewImage.preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover rounded-md shadow-md" />
+                                <img src={previewImage.preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover rounded-md shadow-lg" />
                               ) : (
                                 <>
                                   {index === 0 ? (
