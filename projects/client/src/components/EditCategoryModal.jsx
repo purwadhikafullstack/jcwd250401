@@ -13,9 +13,9 @@ export const EditCategoryModal = ({ isOpen, onClose, data }) => {
   };
 
   const handleGenderChange = (e) => {
-    const selectedValue = e.target.value
-    formik.setFieldValue("gender", selectedValue)
-  }
+    const selectedValue = e.target.value;
+    formik.setFieldValue("gender", selectedValue);
+  };
 
   const formik = useFormik({
     initialValues: {
@@ -59,14 +59,13 @@ export const EditCategoryModal = ({ isOpen, onClose, data }) => {
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
-        <ModalOverlay bg="none" backdropFilter="blur(1px)" />
+        <ModalOverlay bg="none" backdropFilter="auto" backdropBlur="2px" />
         <ModalContent>
           <form onSubmit={formik.handleSubmit}>
             <ModalHeader>Edit Category</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
               <div className="flex flex-col gap-4">
-                
                 <div className="flex flex-col gap-2">
                   <label htmlFor="name">Category Name</label>
                   <input type="text" name="name" id="name" className="border border-black rounded-md p-2" placeholder="Category Name" {...formik.getFieldProps("name")} />
@@ -76,7 +75,7 @@ export const EditCategoryModal = ({ isOpen, onClose, data }) => {
                 <div className="flex flex-col gap-2">
                   <label htmlFor="parentCategoryId">Main Category</label>
                   <select name="parentCategoryId" id="parentCategoryId" className="border border-black rounded-md p-2" {...formik.getFieldProps("parentCategoryId")} onChange={handleCategoryChange}>
-                    <option value="">{formik.values.mainCategory}</option>
+                    <option value="">Select a main category</option>
                     {mainCategories.map((category, index) => (
                       <option key={index} value={category}>
                         {category}
@@ -87,15 +86,17 @@ export const EditCategoryModal = ({ isOpen, onClose, data }) => {
                 </div>
 
                 {/* Conditionally render the Gender select based on the selected Main Category */}
-                {formik.values.mainCategory === "Bags" || formik.values.mainCategory === "Accessories" ? null : (
-                  <div className="flex gap-18 justify-between items-center">
+                {formik.values.mainCategory === "Bags" || formik.values.mainCategory === "Accessories" ? (
+                  <div className="flex gap-18 h-[10vh] justify-between items-center"></div>
+                ) : (
+                  <div className="flex gap-18 h-[10vh] justify-between items-center">
                     <div className="w-[20vw]">
                       <h4 className="text-sm font-bold text-gray-900 dark:text-white">Gender</h4>
                     </div>
                     <div className="w-full">
                       <select id="gender" name="gender" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("gender")} onChange={handleGenderChange}>
-                        <option value="" disabled>
-                          {formik.values.gender}
+                        <option value="">
+                          select Gender
                         </option>
                         <option value="Men">Men</option>
                         <option value="Women">Women</option>
