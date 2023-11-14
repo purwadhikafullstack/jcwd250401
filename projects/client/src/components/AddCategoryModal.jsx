@@ -23,7 +23,7 @@ function AddCategoryModal({ isOpen, isClose }) {
       mainCategory: Yup.string().required("Please select the main category"),
       gender: Yup.string().when("mainCategory", {
         is: (mainCategory) => !(mainCategory === "Bags" || mainCategory === "Accessories"),
-        then: Yup.string().required("Please select a gender"),
+        then: (gender) => Yup.string().required("Please select a gender"),
       }),
     }),
 
@@ -64,7 +64,6 @@ function AddCategoryModal({ isOpen, isClose }) {
           });
         }
       } finally {
-        
         setIsSubmitting(false);
       }
     },
