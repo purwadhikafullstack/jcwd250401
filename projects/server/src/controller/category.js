@@ -2,7 +2,7 @@ const { validationResult } = require("express-validator");
 const { Category } = require("../models");
 
 exports.createCategory = async (req, res) => {
-  let { name, parentCategoryId } = req.body;
+  let { name, mainCategory, gender } = req.body;
   const errors = validationResult(req);
 
   try {
@@ -14,23 +14,47 @@ exports.createCategory = async (req, res) => {
       });
     }
 
-    const findCategory = await Category.findOne({ where: { name } });
-    if (findCategory) {
-      return res.status(400).json({
-        ok: false,
-        message: "Category already exists",
-        detail: findCategory,
-      });
-    } else {
-      name = name.charAt(0).toUpperCase() + name.slice(1);
-      const newCategory = await Category.create({ name, parentCategoryId });
-
-      return res.status(201).json({
-        ok: true,
-        message: "Category created successfully",
-        detail: newCategory,
-      });
+    let parentCategoryId;
+    switch (true) {
+      case mainCategory === "Jackets" && gender === "Men":
+        parentCategoryId = 3;
+        break;
+      case mainCategory === "Tops" && gender === "Men":
+        parentCategoryId = 4;
+        break;
+      case mainCategory === "Bottom" && gender === "Men":
+        parentCategoryId = 5;
+        break;
+      case mainCategory === "Jackets" && gender === "Women":
+        parentCategoryId = 6;
+        break;
+      case mainCategory === "Tops" && gender === "Women":
+        parentCategoryId = 7;
+        break;
+      case mainCategory === "Bottom" && gender === "Women":
+        parentCategoryId = 8;
+        break;
+      case mainCategory === "Bags":
+      case mainCategory === "Accessories":
+        parentCategoryId = null;
+        break;
+      default:
+        return res.status(400).json({
+          ok: false,
+          message: "Invalid combination of mainCategory and gender",
+        });
     }
+
+    const newCategory = await Category.create({
+      name: name.charAt(0).toUpperCase() + name.slice(1),
+      parentCategoryId,
+    });
+
+    return res.status(201).json({
+      ok: true,
+      message: "Category created successfully",
+      detail: newCategory,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -42,7 +66,7 @@ exports.createCategory = async (req, res) => {
 
 exports.editCategory = async (req, res) => {
   const { id } = req.params;
-  let { name } = req.body;
+  let { name, mainCategory, gender } = req.body;
   const errors = validationResult(req);
 
   try {
@@ -62,8 +86,40 @@ exports.editCategory = async (req, res) => {
       });
     }
 
+    let parentCategoryId;
+    switch (true) {
+      case mainCategory === "Jackets" && gender === "Men":
+        parentCategoryId = 3;
+        break;
+      case mainCategory === "Tops" && gender === "Men":
+        parentCategoryId = 4;
+        break;
+      case mainCategory === "Bottom" && gender === "Men":
+        parentCategoryId = 5;
+        break;
+      case mainCategory === "Jackets" && gender === "Women":
+        parentCategoryId = 6;
+        break;
+      case mainCategory === "Tops" && gender === "Women":
+        parentCategoryId = 7;
+        break;
+      case mainCategory === "Bottom" && gender === "Women":
+        parentCategoryId = 8;
+        break;
+      case mainCategory === "Bags":
+      case mainCategory === "Accessories":
+        parentCategoryId = null;
+        break;
+      default:
+        return res.status(400).json({
+          ok: false,
+          message: "Invalid combination of mainCategory and gender",
+        });
+    }
+
     name = name.charAt(0).toUpperCase() + name.slice(1);
     category.name = name;
+    category.parentCategoryId = parentCategoryId;
     await category.save();
 
     return res.status(200).json({
