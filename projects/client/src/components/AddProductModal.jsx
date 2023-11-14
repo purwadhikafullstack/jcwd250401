@@ -43,6 +43,7 @@ function AddProductModal({ isOpen, isClose }) {
       productSubCategory: "",
       productDescription: "",
       productPrice: "",
+      productImages: [],
     },
     validationSchema: Yup.object({
       productName: Yup.string().required("Please enter your product name"),
@@ -76,23 +77,27 @@ function AddProductModal({ isOpen, isClose }) {
           },
         });
 
-        if (response.status === 200) {
+        if (response.status === 201) {
           setTimeout(() => {
-            toast.success("Reset password link has been sent to your email", {
+            setIsSubmitting(false);
+            toast.success("Successfully added new product", {
               autoClose: 1000,
               onAutoClose: (t) => {
-                dispatch(hideForgotPasswordModal());
-                setIsSubmitting(false);
+                formik.resetForm();
+                setDropzoneImages([]);
+                setPreviewImages([]);
+                setFormattedValue("");
+                isClose();
               },
             });
-          }, 1000);
+          }, 3000);
         }
       } catch (error) {
         // Handle different error scenarios based on the HTTP status code
       } finally {
-        // Reset form and set submitting to false
-        formik.resetForm();
-        setIsSubmitting(false);
+        setTimeout(() => {
+          setIsSubmitting(false);
+        }, 8000);
       }
     },
   });
@@ -100,10 +105,9 @@ function AddProductModal({ isOpen, isClose }) {
   useEffect(() => {
     const fetchSubCategories = async () => {
       try {
-        const response = await api.get("/category/subcategories", {
+        const response = await api.get("/category/sub-categories", {
           params: {
             mainCategory: formik.values.productMainCategory,
-            gender: formik.values.productGender,
           },
         });
 
@@ -120,34 +124,35 @@ function AddProductModal({ isOpen, isClose }) {
     };
 
     fetchSubCategories();
-  }, [formik.values.productMainCategory, formik.values.productGender]);
+  }, [formik.values.productMainCategory]);
 
   // React Dropzone Configuration
+
+  useEffect(() => {
+    // Update component or perform actions after state changes
+    console.log("State updated:", dropzoneImages);
+  }, [dropzoneImages]);
+
   const fileInputRef = useRef(null);
 
   const onDrop = (acceptedFiles) => {
     if (activeIndex !== null) {
       const file = acceptedFiles[0];
 
-      // Check if any files were dropped and meet the criteria
       if (file) {
-        // Check file type
         if (!["image/jpeg", "image/jpg", "image/png"].includes(file.type)) {
-          // Handle incorrect file type (show a message or reject the file)
           console.error("Invalid file type. Please upload a JPEG or PNG file.");
           return;
         }
 
-        // Check file size (2MB limit)
         const maxSizeInBytes = 2 * 1024 * 1024; // 2MB
         if (file.size > maxSizeInBytes) {
-          // Handle oversized file (show a message or reject the file)
           console.error("File size exceeds the 2MB limit.");
           return;
         }
 
         const newPreviewImage = {
-          ...file,
+          file,
           preview: URL.createObjectURL(file),
           index: activeIndex,
         };
@@ -158,22 +163,23 @@ function AddProductModal({ isOpen, isClose }) {
           const currentImageIndex = updatedImages.findIndex((img) => img.index === activeIndex);
 
           if (currentImageIndex !== -1) {
-            // Replace existing photo for the clicked index
             updatedImages[currentImageIndex] = newPreviewImage;
           } else {
-            // Add new image if it doesn't exist
             updatedImages.push(newPreviewImage);
           }
+
+          // Update the productImages array in formik values
+          formik.setFieldValue(
+            "productImages",
+            updatedImages.map((img) => img.file)
+          );
 
           return updatedImages;
         });
 
-        // Set the Formik form field value
-        formik.setFieldValue("productImages", dropzoneImages);
         // Reset the activeIndex after updating the preview image
         setActiveIndex(null);
       } else {
-        // Handle case where no valid files were dropped
         console.error("Invalid file dropped.");
       }
     }
@@ -181,21 +187,20 @@ function AddProductModal({ isOpen, isClose }) {
 
   const handleClick = (index) => {
     setActiveIndex(index);
-    // Trigger the file input click
     fileInputRef.current.click();
   };
 
   const genders = [
-    { label: "Men", value: "men" },
-    { label: "Women", value: "women" },
+    { label: "Men", value: "Men" },
+    { label: "Women", value: "Women" },
   ];
 
   const mainCategories = [
-    { label: "Jackets", value: "jackets" },
-    { label: "Tops", value: "tops" },
-    { label: "Bottom", value: "bottom" },
-    { label: "Bags", value: "bags" },
-    { label: "Accessories", value: "accessories" },
+    { label: "Jackets", value: "Jackets" },
+    { label: "Tops", value: "Tops" },
+    { label: "Bottom", value: "Bottom" },
+    { label: "Bags", value: "Bags" },
+    { label: "Accessories", value: "Accessories" },
     // ... more main categories
   ];
 
@@ -289,45 +294,21 @@ function AddProductModal({ isOpen, isClose }) {
                             </div>
                           ) : null}
                         </div>
-                          <div className="flex w-full flex-col">
-                            <div>
-                              <select
-                                id="productGender"
-                                name="productGender"
-                                className="w-full px-4 py-2 border-2 border-gray-300 lg:rounded-none rounded-lg shadow-md shadow-gray-20 focus:ring-transparent focus:border-gray-500"
-                                {...formik.getFieldProps("productGender")}
-                              >
-                                <option value="" disabled className="text-gray-400">
-                                  Select gender
-                                </option>
-                                {genders.map((category) => (
-                                  <option key={category.value} value={category.value}>
-                                    {category.label}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                            {formik.touched.productGender && formik.errors.productGender ? (
-                              <div className="ml-2 text-xs flex items-center gap-1 text-red-500">
-                                <PiWarningCircleBold />
-                                {formik.errors.productGender}
-                              </div>
-                            ) : null}
-                          </div>
+
                         <div className="flex w-full flex-col">
                           <div>
                             <select
                               id="productSubCategory"
                               name="productSubCategory"
-                              className="w-full px-4 py-2 border-2 border-gray-300 shadow-md shadow-gray-200  lg:rounded-r-lg lg:rounded-none rounded-lg focus:ring-transparent focus:border-gray-500"
+                              className="w-full px-4 py-2 border-2 border-gray-300 shadow-md shadow-gray-200  lg:rounded-none rounded-lg focus:ring-transparent focus:border-gray-500"
                               {...formik.getFieldProps("productSubCategory")}
                             >
                               <option value="" disabled className="text-gray-400">
                                 Select sub category
                               </option>
-                              {subCategories.map((category) => (
-                                <option key={category.value} value={category.value}>
-                                  {category.label}
+                              {subCategories.map((subcategory) => (
+                                <option key={subcategory.id} value={subcategory.name}>
+                                  {subcategory.name}
                                 </option>
                               ))}
                             </select>
@@ -336,6 +317,31 @@ function AddProductModal({ isOpen, isClose }) {
                             <div className="ml-2 text-xs flex items-center gap-1 text-red-500">
                               <PiWarningCircleBold />
                               {formik.errors.productSubCategory}
+                            </div>
+                          ) : null}
+                        </div>
+                        <div className="flex w-full flex-col">
+                          <div>
+                            <select
+                              id="productGender"
+                              name="productGender"
+                              className="w-full px-4 py-2 border-2 border-gray-300 lg:rounded-r-lg lg:rounded-none rounded-lg shadow-md shadow-gray-20 focus:ring-transparent focus:border-gray-500"
+                              {...formik.getFieldProps("productGender")}
+                            >
+                              <option value="" disabled className="text-gray-400">
+                                Select gender
+                              </option>
+                              {genders.map((category) => (
+                                <option key={category.value} value={category.value}>
+                                  {category.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          {formik.touched.productGender && formik.errors.productGender ? (
+                            <div className="ml-2 text-xs flex items-center gap-1 text-red-500">
+                              <PiWarningCircleBold />
+                              {formik.errors.productGender}
                             </div>
                           ) : null}
                         </div>
@@ -426,7 +432,8 @@ function AddProductModal({ isOpen, isClose }) {
                   <input type="file" accept="image/*" style={{ display: "none" }} ref={fileInputRef} onChange={(e) => onDrop([e.target.files[0]])} />
                   <div className="lg:flex flex lg:flex-row flex-col lg:justify-center lg:items-center justify-center items-center lg:space-x-5 space-y-4 lg:space-y-0">
                     {[0, 1, 2, 3, 4].map((index) => {
-                      const previewImage = previewImages.find((img) => img.index === index);
+                      const previewImage = dropzoneImages.find((img) => img.index === index);
+
                       return (
                         <div key={index} className="lg:w-[139px] lg:h-[139px] w-[80%] h-[250px] relative">
                           <div
