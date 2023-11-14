@@ -21,8 +21,8 @@ function Navigationadmin() {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const navigate = useNavigate();
   const location = useLocation(); // Get the current location
-  const accounts = ["Profile", "Address Book", "My Order", "Change My Password"];
-  const accountsDropdown = ["Profile", "Address Book", "My Order", "Change My Password", "Search", "Cart", "Favorites"];
+  const accounts = ["Profile", "Address Book", "My Order", "Change Password"];
+  const accountsDropdown = ["Profile", "Address Book", "My Order", "Change Password", "Search", "Cart", "Favorites"];
   const isLogin = true;
   const photoProfile = false;
   const dispatch = useDispatch();
