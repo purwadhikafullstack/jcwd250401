@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button } from "flowbite-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -20,6 +20,7 @@ function AddProductModal({ isOpen, isClose }) {
   const dispatch = useDispatch();
   const [formattedValue, setFormattedValue] = useState("");
   const [dropzoneImages, setDropzoneImages] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
 
   const handleInputChange = (event) => {
     const rawValue = event.target.value.replace(/[^\d]/g, ""); // Remove non-numeric characters
@@ -95,6 +96,31 @@ function AddProductModal({ isOpen, isClose }) {
       }
     },
   });
+
+  useEffect(() => {
+    const fetchSubCategories = async () => {
+      try {
+        const response = await api.get("/category/subcategories", {
+          params: {
+            mainCategory: formik.values.productMainCategory,
+            gender: formik.values.productGender,
+          },
+        });
+
+        if (response.data.ok) {
+          setSubCategories(response.data.detail);
+        } else {
+          toast.error(response.data.message, {
+            description: response.data.detail,
+          });
+        }
+      } catch (error) {
+        // Handle different error scenarios based on the HTTP status code
+      }
+    };
+
+    fetchSubCategories();
+  }, [formik.values.productMainCategory, formik.values.productGender]);
 
   // React Dropzone Configuration
   const fileInputRef = useRef(null);
@@ -173,13 +199,6 @@ function AddProductModal({ isOpen, isClose }) {
     // ... more main categories
   ];
 
-  const subCategories = [
-    { label: "Shirts", value: "shirts" },
-    { label: "Pants", value: "pants" },
-    { label: "Dresses", value: "dresses" },
-    { label: "Skirts", value: "skirts" },
-    // ... more subcategories
-  ];
   return (
     <>
       <Modal closeOnOverlayClick={false} isOpen={isOpen} size={{ lg: "6xl" }} scrollBehavior="inside" onClose={isClose} isCentered>
@@ -270,12 +289,37 @@ function AddProductModal({ isOpen, isClose }) {
                             </div>
                           ) : null}
                         </div>
+                          <div className="flex w-full flex-col">
+                            <div>
+                              <select
+                                id="productGender"
+                                name="productGender"
+                                className="w-full px-4 py-2 border-2 border-gray-300 lg:rounded-none rounded-lg shadow-md shadow-gray-20 focus:ring-transparent focus:border-gray-500"
+                                {...formik.getFieldProps("productGender")}
+                              >
+                                <option value="" disabled className="text-gray-400">
+                                  Select gender
+                                </option>
+                                {genders.map((category) => (
+                                  <option key={category.value} value={category.value}>
+                                    {category.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            {formik.touched.productGender && formik.errors.productGender ? (
+                              <div className="ml-2 text-xs flex items-center gap-1 text-red-500">
+                                <PiWarningCircleBold />
+                                {formik.errors.productGender}
+                              </div>
+                            ) : null}
+                          </div>
                         <div className="flex w-full flex-col">
                           <div>
                             <select
                               id="productSubCategory"
                               name="productSubCategory"
-                              className="w-full px-4 py-2 border-2 border-gray-300 shadow-md shadow-gray-200  lg:rounded-none rounded-lg focus:ring-transparent focus:border-gray-500"
+                              className="w-full px-4 py-2 border-2 border-gray-300 shadow-md shadow-gray-200  lg:rounded-r-lg lg:rounded-none rounded-lg focus:ring-transparent focus:border-gray-500"
                               {...formik.getFieldProps("productSubCategory")}
                             >
                               <option value="" disabled className="text-gray-400">
@@ -292,31 +336,6 @@ function AddProductModal({ isOpen, isClose }) {
                             <div className="ml-2 text-xs flex items-center gap-1 text-red-500">
                               <PiWarningCircleBold />
                               {formik.errors.productSubCategory}
-                            </div>
-                          ) : null}
-                        </div>
-                        <div className="flex w-full flex-col">
-                          <div>
-                            <select
-                              id="productGender"
-                              name="productGender"
-                              className="w-full px-4 py-2 border-2 border-gray-300 lg:rounded-r-lg lg:rounded-none rounded-lg shadow-md shadow-gray-20 focus:ring-transparent focus:border-gray-500"
-                              {...formik.getFieldProps("productGender")}
-                            >
-                              <option value="" disabled className="text-gray-400">
-                                Select gender
-                              </option>
-                              {genders.map((category) => (
-                                <option key={category.value} value={category.value}>
-                                  {category.label}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          {formik.touched.productGender && formik.errors.productGender ? (
-                            <div className="ml-2 text-xs flex items-center gap-1 text-red-500">
-                              <PiWarningCircleBold />
-                              {formik.errors.productGender}
                             </div>
                           ) : null}
                         </div>

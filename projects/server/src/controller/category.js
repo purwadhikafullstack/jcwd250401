@@ -35,7 +35,7 @@ exports.createCategory = async (req, res) => {
         parentCategoryId = 8;
         break;
       case mainCategory === "Bags":
-        parentCategoryId = 9
+        parentCategoryId = 9;
         break;
       case mainCategory === "Accessories":
         parentCategoryId = 10;
@@ -46,7 +46,6 @@ exports.createCategory = async (req, res) => {
           message: "Invalid combination of mainCategory and gender",
         });
     }
-
 
     const category = await Category.findOne({
       where: {
@@ -62,7 +61,6 @@ exports.createCategory = async (req, res) => {
       });
     }
 
-    
     const newCategory = await Category.create({
       name: name.charAt(0).toUpperCase() + name.slice(1),
       parentCategoryId,
@@ -211,3 +209,72 @@ exports.getCategories = async (req, res) => {
     });
   }
 };
+
+const getCategoryGender = async (categoryId, Category) => {
+  const category = await Category.findByPk(categoryId);
+
+  if (!category) {
+    return null; // Category not found
+  }
+
+  // If the current category has a parent, recurse to its parent
+  if (category.parentCategoryId) {
+    return getCategoryGender(category.parentCategoryId, Category);
+  }
+
+  return category.name; // The top-level category name represents gender
+};
+
+exports.getCategorySubcategories = async (req, res) => {
+  try {
+    const { mainCategory } = req.query;
+
+    if (!mainCategory) {
+      return res.status(400).json({
+        ok: false,
+        message: "Main category is a required parameter.",
+      });
+    }
+
+    // Find the main category ID
+    const mainCategoryInstance = await Category.findOne({
+      where: { name: mainCategory, parentCategoryId: null },
+    });
+
+    if (!mainCategoryInstance) {
+      return res.status(404).json({
+        ok: false,
+        message: "Main category not found.",
+      });
+    }
+
+    // Infer gender from the hierarchy
+    const gender = await getCategoryGender(mainCategoryInstance.id, Category);
+
+    // Find subcategories of the main category
+    const subcategories = await Category.findAll({
+      where: { parentCategoryId: mainCategoryInstance.id },
+    });
+
+    if (subcategories.length === 0) {
+      return res.status(200).json({
+        ok: true,
+        message: "No subcategories found for the specified main category.",
+      });
+    }
+
+    return res.status(200).json({
+      ok: true,
+      message: "Subcategories retrieved successfully",
+      detail: { subcategories, gender },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+      detail: String(error),
+    });
+  }
+};
+
