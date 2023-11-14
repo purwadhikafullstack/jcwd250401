@@ -21,20 +21,19 @@ function AddCategoryModal({ isOpen, isClose }) {
     validationSchema: Yup.object({
       name: Yup.string().required("Please enter your category name"),
       mainCategory: Yup.string().required("Please select the main category"),
-      gender: Yup.string().required("Please select a gender"),
+      gender: Yup.string().when("mainCategory", {
+        is: (mainCategory) => !(mainCategory === "Bags" || mainCategory === "Accessories"),
+        then: Yup.string().required("Please select a gender"),
+      }),
     }),
     onSubmit: async (values) => {
       try {
         setIsSubmitting(true);
 
-        if (formik.values.mainCategory === "Bags" || formik.values.mainCategory === "Accessories") {
-          formik.values.mainCategory = null;
-        }
-
         const response = await api.post("/category", {
           name: values.name,
           mainCategory: values.mainCategory,
-          gender: values.gender
+          gender: values.gender,
         });
 
         if (response.status === 201) {

@@ -5,12 +5,19 @@ import { toast } from "sonner";
 import api from "../api";
 
 export const EditCategoryModal = ({ isOpen, onClose, data }) => {
+    console.log(data);
   const mainCategories = ["Jackets", "Tops", "Bottom", "Bags", "Accessories"];
 
   const handleCategoryChange = (e) => {
     const selectedValue = e.target.value;
     formik.setFieldValue("mainCategory", selectedValue);
   };
+
+  const handleGenderChange = (e) => {
+    const selectedValue = e.target.value
+    formik.setFieldValue("gender", selectedValue)
+  }
+
   const formik = useFormik({
     initialValues: {
       name: data?.name,
@@ -19,7 +26,8 @@ export const EditCategoryModal = ({ isOpen, onClose, data }) => {
     },
     validationSchema: yup.object({
       name: yup.string().required("Please enter your category name"),
-      parentCategoryId: yup.string().required("Please select the main category"),
+      mainCategory: yup.string().required("Please select the main category"),
+      gender: yup.string().required("Please select a gender"),
     }),
     onSubmit: async (values) => {
       try {
@@ -59,15 +67,17 @@ export const EditCategoryModal = ({ isOpen, onClose, data }) => {
             <ModalCloseButton />
             <ModalBody>
               <div className="flex flex-col gap-4">
+                
                 <div className="flex flex-col gap-2">
                   <label htmlFor="name">Category Name</label>
                   <input type="text" name="name" id="name" className="border border-black rounded-md p-2" placeholder="Category Name" {...formik.getFieldProps("name")} />
                   {formik.errors.name && formik.touched.name && <p className="text-red-500">{formik.errors.name}</p>}
                 </div>
+
                 <div className="flex flex-col gap-2">
                   <label htmlFor="parentCategoryId">Main Category</label>
                   <select name="parentCategoryId" id="parentCategoryId" className="border border-black rounded-md p-2" {...formik.getFieldProps("parentCategoryId")} onChange={handleCategoryChange}>
-                    <option value="">Select a main category</option>
+                    <option value="">{formik.values.mainCategory}</option>
                     {mainCategories.map((category, index) => (
                       <option key={index} value={category}>
                         {category}
@@ -76,6 +86,25 @@ export const EditCategoryModal = ({ isOpen, onClose, data }) => {
                   </select>
                   {formik.errors.parentCategoryId && formik.touched.parentCategoryId && <p className="text-red-500">{formik.errors.parentCategoryId}</p>}
                 </div>
+
+                {/* Conditionally render the Gender select based on the selected Main Category */}
+                {formik.values.mainCategory === "Bags" || formik.values.mainCategory === "Accessories" ? null : (
+                  <div className="flex gap-18 justify-between items-center">
+                    <div className="w-[20vw]">
+                      <h4 className="text-sm font-bold text-gray-900 dark:text-white">Gender</h4>
+                    </div>
+                    <div className="w-full">
+                      <select id="gender" name="gender" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("gender")} onChange={handleGenderChange}>
+                        <option value="" disabled>
+                          {formik.values.gender}
+                        </option>
+                        <option value="Men">Men</option>
+                        <option value="Women">Women</option>
+                      </select>
+                      {formik.touched.gender && formik.errors.gender ? <div className="text-red-500">{formik.errors.gender}</div> : null}
+                    </div>
+                  </div>
+                )}
               </div>
             </ModalBody>
             <ModalFooter>

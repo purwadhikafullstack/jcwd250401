@@ -14,6 +14,19 @@ exports.createCategory = async (req, res) => {
       });
     }
 
+    const category = await Category.findOne({
+      where: {
+        name: name.charAt(0).toUpperCase() + name.slice(1),
+      },
+    });
+
+    if (category) {
+      return res.status(404).json({
+        ok: false,
+        message: "Category already exists",
+      });
+    }
+
     let parentCategoryId;
     switch (true) {
       case mainCategory === "Jackets" && gender === "Men":
@@ -53,7 +66,7 @@ exports.createCategory = async (req, res) => {
     return res.status(201).json({
       ok: true,
       message: "Category created successfully",
-      detail: newCategory,
+      detail: newCategory, 
     });
   } catch (error) {
     console.error(error);
@@ -107,8 +120,10 @@ exports.editCategory = async (req, res) => {
         parentCategoryId = 8;
         break;
       case mainCategory === "Bags":
+        parentCategoryId = 9;
+        break;
       case mainCategory === "Accessories":
-        parentCategoryId = null;
+        parentCategoryId = 10;
         break;
       default:
         return res.status(400).json({
@@ -125,7 +140,7 @@ exports.editCategory = async (req, res) => {
     return res.status(200).json({
       ok: true,
       message: "Category updated successfully",
-      detail: category,
+      detail: category.name,
     });
   } catch (error) {
     console.error(error);
