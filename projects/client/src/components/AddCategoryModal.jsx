@@ -26,6 +26,7 @@ function AddCategoryModal({ isOpen, isClose }) {
         then: Yup.string().required("Please select a gender"),
       }),
     }),
+
     onSubmit: async (values) => {
       try {
         setIsSubmitting(true);
@@ -41,6 +42,7 @@ function AddCategoryModal({ isOpen, isClose }) {
             toast.success("Category added successfully", {
               autoClose: 1000,
               onAutoClose: (t) => {
+                formik.resetForm();
                 isClose();
                 setIsSubmitting(false);
               },
@@ -56,9 +58,13 @@ function AddCategoryModal({ isOpen, isClose }) {
           toast.error(error.response.data.message, {
             description: error.response.data.detail,
           });
+        } else if (error.response.status === 403) {
+          toast.error(error.response.data.message, {
+            description: error.response.data.detail,
+          });
         }
       } finally {
-        formik.resetForm();
+        
         setIsSubmitting(false);
       }
     },

@@ -15,12 +15,14 @@ const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const addressRouter = require("./routes/address");
 const categoryRouter = require("./routes/category");
+const productRouter = require("./routes/product");
 
 //Routing
 app.use("/auth", authRouter);
 app.use("/profile", profileRouter);
 app.use("/address", addressRouter);
 app.use("/category", categoryRouter);
+app.use("/product", productRouter);
 
 app.use("/public", express.static(__dirname + "/public"));
 

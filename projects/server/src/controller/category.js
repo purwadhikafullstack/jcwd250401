@@ -21,7 +21,7 @@ exports.createCategory = async (req, res) => {
     });
 
     if (category) {
-      return res.status(404).json({
+      return res.status(403).json({
         ok: false,
         message: "Category already exists",
       });
@@ -48,8 +48,10 @@ exports.createCategory = async (req, res) => {
         parentCategoryId = 8;
         break;
       case mainCategory === "Bags":
+        parentCategoryId = 9
+        break;
       case mainCategory === "Accessories":
-        parentCategoryId = null;
+        parentCategoryId = 10;
         break;
       default:
         return res.status(400).json({
