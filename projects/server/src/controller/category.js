@@ -14,6 +14,19 @@ exports.createCategory = async (req, res) => {
       });
     }
 
+    const category = await Category.findOne({
+      where: {
+        name: name.charAt(0).toUpperCase() + name.slice(1),
+      },
+    });
+
+    if (category) {
+      return res.status(403).json({
+        ok: false,
+        message: "Category already exists",
+      });
+    }
+
     let parentCategoryId;
     switch (true) {
       case mainCategory === "Jackets" && gender === "Men":
@@ -35,8 +48,10 @@ exports.createCategory = async (req, res) => {
         parentCategoryId = 8;
         break;
       case mainCategory === "Bags":
+        parentCategoryId = 9
+        break;
       case mainCategory === "Accessories":
-        parentCategoryId = null;
+        parentCategoryId = 10;
         break;
       default:
         return res.status(400).json({

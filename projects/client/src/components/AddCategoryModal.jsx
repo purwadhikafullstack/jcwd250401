@@ -21,20 +21,20 @@ function AddCategoryModal({ isOpen, isClose }) {
     validationSchema: Yup.object({
       name: Yup.string().required("Please enter your category name"),
       mainCategory: Yup.string().required("Please select the main category"),
-      gender: Yup.string().required("Please select a gender"),
+      gender: Yup.string().when("mainCategory", {
+        is: (mainCategory) => !(mainCategory === "Bags" || mainCategory === "Accessories"),
+        then: Yup.string().required("Please select a gender"),
+      }),
     }),
+
     onSubmit: async (values) => {
       try {
         setIsSubmitting(true);
 
-        if (formik.values.mainCategory === "Bags" || formik.values.mainCategory === "Accessories") {
-          formik.values.mainCategory = null;
-        }
-
         const response = await api.post("/category", {
           name: values.name,
           mainCategory: values.mainCategory,
-          gender: values.gender
+          gender: values.gender,
         });
 
         if (response.status === 201) {
@@ -42,6 +42,7 @@ function AddCategoryModal({ isOpen, isClose }) {
             toast.success("Category added successfully", {
               autoClose: 1000,
               onAutoClose: (t) => {
+                formik.resetForm();
                 isClose();
                 setIsSubmitting(false);
               },
@@ -57,9 +58,13 @@ function AddCategoryModal({ isOpen, isClose }) {
           toast.error(error.response.data.message, {
             description: error.response.data.detail,
           });
+        } else if (error.response.status === 403) {
+          toast.error(error.response.data.message, {
+            description: error.response.data.detail,
+          });
         }
       } finally {
-        formik.resetForm();
+        
         setIsSubmitting(false);
       }
     },
