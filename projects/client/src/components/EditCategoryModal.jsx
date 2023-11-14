@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import api from "../api";
 
 export const EditCategoryModal = ({ isOpen, onClose, data }) => {
-    console.log(data);
   const mainCategories = ["Jackets", "Tops", "Bottom", "Bags", "Accessories"];
 
   const handleCategoryChange = (e) => {
