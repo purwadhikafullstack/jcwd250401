@@ -6,33 +6,11 @@ import api from "../api";
 import { toast } from "sonner";
 import { AiOutlineLoading } from "react-icons/ai";
 import { showLoginModal } from "../slices/authModalSlices";
-import { showVerifyModal } from "../slices/authModalSlices";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton } from "@chakra-ui/react";
 
 function AddCategoryModal({ isOpen, isClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const mainCategories = [
-    {
-      name: "Jackets",
-      id: 1,
-    },
-    {
-      name: "Tops",
-      id: 2,
-    },
-    {
-      name: "Bottoms",
-      id: 3,
-    },
-    {
-      name: "Bags",
-      id: null,
-    },
-    {
-      name: "Accessories",
-      id: null,
-    },
-  ];
+  const mainCategories = ["Jackets", "Tops", "Bottom", "Bags", "Accessories"];
 
   const formik = useFormik({
     initialValues: {
@@ -55,7 +33,8 @@ function AddCategoryModal({ isOpen, isClose }) {
 
         const response = await api.post("/category", {
           name: values.name,
-          parentCategoryId: values.mainCategory,
+          mainCategory: values.mainCategory,
+          gender: values.gender
         });
 
         if (response.status === 201) {
@@ -120,8 +99,8 @@ function AddCategoryModal({ isOpen, isClose }) {
                         Select main category
                       </option>
                       {mainCategories.map((category, index) => (
-                        <option key={index} value={category.id}>
-                          {category.name}
+                        <option key={index} value={category}>
+                          {category}
                         </option>
                       ))}
                     </select>

@@ -6,19 +6,19 @@ import { PiMagnifyingGlass } from "react-icons/pi";
 import { useState } from "react";
 import AddProductModal from "../components/AddProductModal";
 import AddCategoryModal from "../components/AddCategoryModal";
-
+import { CategoryLists } from "../components/CategoryLists";
 
 function Product() {
+  const navList = ["All Products", "Out of stock", "Category", "Archive"];
+  const [openProductModal, setOpenProductModal] = useState(false);
+  const [openCategoryModal, setOpenCategoryModal] = useState(false);
+  const [selectedComponent, setSelectedComponent] = useState("All Products");
 
-const [openProductModal, setOpenProductModal] = useState(false);
-const [openCategoryModal, setOpenCategoryModal] = useState(false);
-
-const openAddProductModal = () => setOpenProductModal(true);
-const closeAddProductModal = () => setOpenProductModal(false);
-
-const openAddCategoryModal = () => setOpenCategoryModal(true);
-const closeAddCategoryModal = () => setOpenCategoryModal(false);
-
+  const openAddProductModal = () => setOpenProductModal(true);
+  const closeAddProductModal = () => setOpenProductModal(false);
+  const openAddCategoryModal = () => setOpenCategoryModal(true);
+  const closeAddCategoryModal = () => setOpenCategoryModal(false);
+  const handleSelectComponent = (component) => setSelectedComponent(component);
 
   return (
     <div className="flex flex-row justify-between">
@@ -38,33 +38,39 @@ const closeAddCategoryModal = () => setOpenCategoryModal(false);
           </div>
           <div className="flex items-center p-4 mt-4 bg-white rounded-lg shadow-md">
             <div className="flex gap-14 mx-4">
-              <span className="text-sm font-bold text-gray-900 dark:text-white cursor-pointer hover:text-gray-700">All Products</span>
-              <span className="text-sm font-bold text-gray-900 dark:text-white cursor-pointer hover:text-gray-700">Out of stock</span>
-              <span className="text-sm font-bold text-gray-900 dark:text-white cursor-pointer hover:text-gray-700">Category</span>
-              <span className="text-sm font-bold text-gray-900 dark:text-white cursor-pointer hover:text-gray-700">Archive</span>
+              {navList.map((nav, index) => (
+                <span key={index} className="text-sm font-bold text-gray-900 dark:text-white cursor-pointer hover:text-gray-700" onClick={() => handleSelectComponent(nav)}>
+                  {nav}
+                </span>
+              ))}
             </div>
           </div>
           <div className="flex items-center mt-4">
-            <div>
-              <InputGroup w="250px">
-                <InputLeftElement pl={2} mt="1px">
-                  <PiMagnifyingGlass />
-                </InputLeftElement>
-                <Input 
-                  bg="white"
-                  size="md"
-                  borderRadius="md"
-                  boxShadow="md"
-                  placeholder="Search by product or SKU"
-                  _placeholder={{ fontSize: "xs", marginBottom: "20px"}} // added textAlign property
-                ></Input>
-              </InputGroup>
-            </div>
+            {selectedComponent === "All Products" && (
+              <div>
+                <InputGroup w="250px">
+                  <InputLeftElement pl={2} mt="1px">
+                    <PiMagnifyingGlass />
+                  </InputLeftElement>
+                  <Input
+                    bg="white"
+                    size="md"
+                    borderRadius="md"
+                    boxShadow="md"
+                    placeholder="Search by product or SKU"
+                    _placeholder={{ fontSize: "xs", marginBottom: "20px" }} // added textAlign property
+                  ></Input>
+                </InputGroup>
+              </div>
+            )}
+            {selectedComponent === "Out of stock" && "Out of stock"}
+            {selectedComponent === "Category" && <CategoryLists />}
+            {selectedComponent === "Archive" && "Archive"}
           </div>
         </div>
       </div>
-     <AddProductModal isOpen={openProductModal} isClose={closeAddProductModal} />
-     <AddCategoryModal isOpen={openCategoryModal} isClose={closeAddCategoryModal} />
+      <AddProductModal isOpen={openProductModal} isClose={closeAddProductModal} />
+      <AddCategoryModal isOpen={openCategoryModal} isClose={closeAddCategoryModal} />
     </div>
   );
 }
