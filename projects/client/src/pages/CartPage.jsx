@@ -7,50 +7,47 @@ import {
 import { CartItem } from '../components/CartItem'
 import { CartOrderSummary } from '../components/CartOrderSummary'
 import api from '../api'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux';
+import { setCartItems, removeItemFromCart, updateCartItem } from '../slices/cartSlices';  // Import Redux actions
 
 export const CartPage = () => {
-  const [cartItems, setCartItems] = useState([]);
+  const dispatch = useDispatch();
+    const cartItems = useSelector((state) => state.cart.items);
 
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
         const response = await api.get('/api/cart/items');
-        setCartItems(response.data.cartItems); // Update based on the API response structure
+        dispatch(setCartItems(response.data.cartItems)); // Update based on API response
+        console.log(response.data.cartItems);
       } catch (error) {
         console.error('Failed to fetch cart items:', error);
       }
     };
-
     fetchCartItems();
-  }, []);
+  }, [dispatch]);
 
   const handleDelete = async (productId) => {
     try {
       await api.delete(`/api/cart/items/${productId}`);
-      // Update the cartItems state by filtering out the deleted item
-      setCartItems(currentItems => currentItems.filter(item => item.Product.id !== productId));
+      dispatch(removeItemFromCart({ productId })); // Use productId to dispatch
     } catch (error) {
       console.error('Failed to delete the item:', error);
-      // Handle any UI changes or notifications for the error
     }
-  };  
-
+  };
+  
   const handleQuantityChange = async (productId, newQuantity) => {
     try {
       // Make API call to update quantity
-      await api.patch(`/api/cart/items/${productId}`, { newQuantity });
+      const response = await api.patch(`/api/cart/items/${productId}`, { quantity: newQuantity });
   
-      // Update local state
-      setCartItems(currentItems => currentItems.map(item => {
-        if (item.Product.id === productId) {
-          return { ...item, quantity: newQuantity };
-        }
-        return item;
-      }));
+      // Dispatch action to update Redux store
+      if (response.data && response.data.orderItem) {
+        dispatch(updateCartItem(response.data.orderItem));
+      }
     } catch (error) {
       console.error('Failed to update quantity:', error);
-      // Handle any UI changes or notifications for the error
     }
   };  
 
@@ -100,20 +97,10 @@ export const CartPage = () => {
         {cartItems.map((item) => (
           <CartItem
             key={item.id}
-            name={item.Product.name}
-            description={item.Product.description}
-            imageUrl={item.Product.imageUrl} // Assuming this exists, else provide a default or modify CartItem
-            price={item.Product.price}
-            currency="USD" // Assuming currency is not in API response, provide a default
-            sku={item.Product.id} // Assuming you want to use Product ID as SKU
-            color="Default Color" // Provide default or handle in CartItem
-            size="Default Size" // Provide default or handle in CartItem
-            stock={item.stock}
-            quantity={item.quantity}
-            // ... any other props that CartItem needs
-            onQuantityChange={(newQuantity) => handleQuantityChange(item.Product.id, newQuantity)}
-            onDelete={() => handleDelete(item.Product.id)}
-          />
+            item={item} // Pass the entire item object
+            onQuantityChange={(newQuantity) => handleQuantityChange(item.id, newQuantity)}
+            onDelete={() => handleDelete(item.id)}
+          />        
         ))}
         </Stack>
       </Stack>

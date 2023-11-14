@@ -1,13 +1,10 @@
+import React from 'react';
+import { useSelector } from 'react-redux';
 import {
-  Button,
-  Flex,
-  Heading,
-  Stack,
-  Text,
-  useColorModeValue as mode,
-} from '@chakra-ui/react'
-import { FaArrowRight } from 'react-icons/fa'
-import { formatPrice } from './PriceTag'
+  Button, Flex, Heading, Stack, Text, useColorModeValue as mode,
+} from '@chakra-ui/react';
+import { FaArrowRight } from 'react-icons/fa';
+import { formatPrice } from './PriceTag';
 
 const OrderSummaryItem = (props) => {
   const { label, value, children } = props
@@ -21,11 +18,13 @@ const OrderSummaryItem = (props) => {
   )
 }
 
-export const CartOrderSummary = ({ cartItems }) => {
-  // Check if cartItems is defined and is an array
-  const subtotal = Array.isArray(cartItems) ? cartItems.reduce((total, item) => {
+export const CartOrderSummary = () => {
+  const cartItems = useSelector((state) => state.cart.items);
+
+  const subtotal = cartItems.reduce((total, item) => {
     return total + (item.quantity * item.Product.price);
-  }, 0) : 0;
+  }, 0);
+
   const tax = subtotal * 0.10; // 10% tax
   const total = subtotal + tax; // Total is subtotal plus tax
   return (
