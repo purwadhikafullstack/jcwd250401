@@ -5,6 +5,6 @@ const { multerUpload } = require("../lib/multer");
 const productController = require("../controller/product");
 const productValidator = require("../middleware/validation/product");
 
-router.post("/", multerUpload.array("images", 4), productValidator.productValidationRules, productValidator.applyProductValidation, productController.handleAddProduct);
+router.post("/", multerUpload.array("productImages", 5), productValidator.productValidationRules, productValidator.applyProductValidation, productController.handleAddProduct);
 
 module.exports = router;
