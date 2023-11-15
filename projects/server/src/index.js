@@ -15,6 +15,7 @@ const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const addressRouter = require("./routes/address");
 const categoryRouter = require("./routes/category");
+const productRouter = require("./routes/product");
 const cartRoutes = require("./routes/cartRoutes");
 const WarehouseRoutes = require("./routes/warehouse");
 
@@ -23,6 +24,7 @@ app.use("/auth", authRouter);
 app.use("/profile", profileRouter);
 app.use("/address", addressRouter);
 app.use("/category", categoryRouter);
+app.use("/product", productRouter);
 app.use("/api/cart", cartRoutes);
 app.use("/api/warehouse", WarehouseRoutes);
 

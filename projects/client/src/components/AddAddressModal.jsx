@@ -50,7 +50,7 @@ export const AddAddressModal = ({ isOpen, onClose }) => {
           city: values.city,
           district: values.district,
           subDistrict: values.subDistrict,
-          phoneNumber: values.phoneNumber.toString(),
+          phoneNumber: 0 + values.phoneNumber.toString(),
           setAsdefault: values.setAsdefault,
         });
 

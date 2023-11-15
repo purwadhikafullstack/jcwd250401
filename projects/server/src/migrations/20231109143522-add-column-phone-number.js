@@ -1,14 +1,15 @@
-"use strict";
+'use strict';
 
-/** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up(queryInterface, Sequelize) {
-    await queryInterface.addColumn("Addresses", "phoneNumber", {
-      type: Sequelize.STRING
-    });
+  up: async (queryInterface, Sequelize) => {
+    // await queryInterface.addColumn('Admins', 'photoProfile', {
+    //   type: Sequelize.STRING,
+    //   allowNull: true, // Modify this as needed
+    //   after: 'password', // Specify the column after which the new column should be added
+    // });
   },
 
-  async down(queryInterface, Sequelize) {
-    await queryInterface.removeColumn("Addresses", "phoneNumber");
+  down: async (queryInterface, Sequelize) => {
+    await queryInterface.removeColumn('Addresses', 'phoneNumber');
   },
 };
