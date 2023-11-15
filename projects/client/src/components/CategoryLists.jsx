@@ -64,6 +64,7 @@ export const CategoryLists = () => {
   useEffect(() => {
     getCategories();
   }, [categoryLists]);
+
   return (
     <>
       <div className="flex w-[90vw] h-[60vh] md:h-[62vh] overflow-y-auto">
@@ -117,7 +118,7 @@ export const CategoryLists = () => {
                       </div>
                     )}
                     <ConfirmDeleteCategory isOpen={openDeleteModal} onClose={handleDeleteCategory} data={selectedCategory} mainCategories={categories} />
-                    {selectedCategory && <EditCategoryModal isOpen={openEditModal} onClose={handleCloseEditModal} data={selectedCategory} />}
+                    {selectedCategory && <EditCategoryModal isOpen={openEditModal} onClose={handleCloseEditModal} data={selectedCategory} mainCategories={categories}/>}
                   </div>
                 ))
               ) : (
