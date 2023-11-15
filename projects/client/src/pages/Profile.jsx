@@ -76,22 +76,22 @@ export const Profile = () => {
                   <div className="ml-0 sm:ml-[2vw]">
                     <div className="flex gap-8 mb-3">
                       <p className="text-sm text-gray-500 min-w-[20vw] sm:min-w-[5vw]">Username</p>
-                      <p className="text-sm text-gray-500">{userName}</p>
+                      <p className="text-sm text-gray-500">{userName ? userData?.username : "Not yet"}</p>
                     </div>
 
                     <div className="flex gap-8 mb-3">
                       <p className="text-sm text-gray-500 min-w-[20vw] sm:min-w-[5vw]">First name</p>
-                      <p className="text-sm text-gray-500">{firstName ? firstName : "Not yet"}</p>
+                      <p className="text-sm text-gray-500">{firstName ? userData?.firstName : "Not yet"}</p>
                     </div>
 
                     <div className="flex gap-8 mb-3">
                       <p className="text-sm text-gray-500 min-w-[20vw] sm:min-w-[5vw]">Last name</p>
-                      <p className="text-sm text-gray-500">{lastName ? lastName : "Not yet"}</p>
+                      <p className="text-sm text-gray-500">{lastName ? userData?.lastName : "Not yet"}</p>
                     </div>
 
                     <div className="flex gap-8 mb-3">
                       <p className="text-sm text-gray-500 min-w-[20vw] sm:min-w-[5vw]">Email</p>
-                      <p className="text-sm text-gray-500">{email ? email : "Not yet"}</p>
+                      <p className="text-sm text-gray-500">{email ? userData?.email : "Not yet"}</p>
                     </div>
                   </div>
                 </div>
