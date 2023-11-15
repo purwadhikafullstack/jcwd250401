@@ -6,5 +6,6 @@ const productController = require("../controller/product");
 const productValidator = require("../middleware/validation/product");
 
 router.post("/", multerUpload.array("productImages", 5), productValidator.productValidationRules, productValidator.applyProductValidation, productController.handleAddProduct);
+router.get("/", productController.handleGetAllProducts)
 
 module.exports = router;
