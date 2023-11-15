@@ -84,7 +84,7 @@ exports.editCategory = async (req, res) => {
         detail: errors.array(),
       });
     }
-    
+
     const category = await Category.findByPk(id);
     if (!category) {
       return res.status(404).json({
@@ -92,7 +92,7 @@ exports.editCategory = async (req, res) => {
         message: "Category not found",
       });
     }
-    
+
     if (mainCategory === "" || mainCategory === undefined) {
       return res.status(400).json({
         ok: false,
@@ -104,6 +104,13 @@ exports.editCategory = async (req, res) => {
       return res.status(400).json({
         ok: false,
         message: "Can't edit main category",
+      });
+    }
+
+    if (name === category.name) {
+      return res.status(400).json({
+        ok: false,
+        message: "New name must be different",
       });
     }
 
@@ -227,7 +234,7 @@ exports.handleGetSubCategory = async (req, res) => {
     if (!mainCategoryInstance) {
       return res.status(404).json({
         ok: false,
-        message: 'Main category not found.',
+        message: "Main category not found.",
       });
     }
 
@@ -238,14 +245,14 @@ exports.handleGetSubCategory = async (req, res) => {
 
     return res.status(200).json({
       ok: true,
-      message: 'Subcategories retrieved successfully',
+      message: "Subcategories retrieved successfully",
       detail: subcategories,
     });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
       ok: false,
-      message: 'Internal server error',
+      message: "Internal server error",
       detail: String(error),
     });
   }

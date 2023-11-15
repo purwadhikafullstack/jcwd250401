@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 
 export const EditCategoryModal =  ({ isOpen, onClose, data }) => {
   const [categories, setCategories] = useState([]);
-  const selectedMainCategory = data && categories.find((category) => category.id === data.parentCategoryId);
+  const selectedMainCategory = data && categories.find((category) => category.id === data.mainCategory);
 
   const handleCategoryChange = (e) => {
     const selectedValue = e.target.value;
@@ -93,8 +93,8 @@ export const EditCategoryModal =  ({ isOpen, onClose, data }) => {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label htmlFor="parentCategoryId">Main Category</label>
-                  <select name="parentCategoryId" id="parentCategoryId" className="border border-black rounded-md p-2" {...formik.getFieldProps("parentCategoryId")} onChange={handleCategoryChange}>
+                  <label htmlFor="mainCategory">Main Category</label>
+                  <select name="mainCategory" id="mainCategory" className="border border-black rounded-md p-2" {...formik.getFieldProps("mainCategory")} onChange={handleCategoryChange}>
                     <option value="">Select a main category</option>
                     {categories.map((category, index) => (
                       <option key={index} value={category.name}>
@@ -102,7 +102,7 @@ export const EditCategoryModal =  ({ isOpen, onClose, data }) => {
                       </option>
                     ))}
                   </select>
-                  {formik.errors.parentCategoryId && formik.touched.parentCategoryId && <p className="text-red-500">{formik.errors.parentCategoryId}</p>}
+                  {formik.errors.mainCategory && formik.touched.mainCategory && <p className="text-red-500">{formik.errors.mainCategory}</p>}
                 </div>
               </div>
             </ModalBody>
