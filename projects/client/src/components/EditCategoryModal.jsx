@@ -3,31 +3,33 @@ import { useFormik } from "formik";
 import * as yup from "yup";
 import { toast } from "sonner";
 import api from "../api";
+import { useEffect, useState } from "react";
 
-export const EditCategoryModal = ({ isOpen, onClose, data }) => {
-  const mainCategories = ["Jackets", "Tops", "Bottom", "Bags", "Accessories"];
+export const EditCategoryModal =  ({ isOpen, onClose, data }) => {
+  const [categories, setCategories] = useState([]);
+  const selectedMainCategory = data && categories.find((category) => category.id === data.parentCategoryId);
 
   const handleCategoryChange = (e) => {
     const selectedValue = e.target.value;
     formik.setFieldValue("mainCategory", selectedValue);
   };
+
   const formik = useFormik({
     initialValues: {
       name: data?.name,
-      mainCategory: data?.mainCategory,
-      gender: data?.gender,
+      mainCategory: selectedMainCategory && selectedMainCategory.name,
     },
     validationSchema: yup.object({
       name: yup.string().required("Please enter your category name"),
-      parentCategoryId: yup.string().required("Please select the main category"),
+      mainCategory: yup.string().required("Please select the main category"),
     }),
     onSubmit: async (values) => {
       try {
         const response = await api.put(`/category/${data.id}`, {
           name: values.name,
           mainCategory: values.mainCategory,
-          gender: values.gender,
         });
+
 
         if (response.data.ok) {
           toast.success(response.data.message, {
@@ -49,10 +51,35 @@ export const EditCategoryModal = ({ isOpen, onClose, data }) => {
       }
     },
   });
+
+  const getCategories = async () => {
+    try {
+      const response = await api.get("/category");
+      const categories = response.data.detail.filter((category) => category.id <= 5);
+      setCategories(categories);
+    } catch (error) {
+      if (error.response.status === 500) {
+        toast.error(error.response.data.message, {
+          description: error.response.data.detail,
+        });
+      } else if (error.response.status === 400) {
+        toast.error(error.response.data.message, {
+          description: error.response.data.detail,
+        });
+      }
+    }
+  };
+  useEffect(() => {
+    getCategories();
+
+    if(selectedMainCategory){
+      formik.setFieldValue("mainCategory", selectedMainCategory.name)
+    }
+  }, []);
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
-        <ModalOverlay bg="none" backdropFilter="blur(1px)" />
+        <ModalOverlay bg="none" backdropFilter="auto" backdropBlur="2px" />
         <ModalContent>
           <form onSubmit={formik.handleSubmit}>
             <ModalHeader>Edit Category</ModalHeader>
@@ -64,13 +91,14 @@ export const EditCategoryModal = ({ isOpen, onClose, data }) => {
                   <input type="text" name="name" id="name" className="border border-black rounded-md p-2" placeholder="Category Name" {...formik.getFieldProps("name")} />
                   {formik.errors.name && formik.touched.name && <p className="text-red-500">{formik.errors.name}</p>}
                 </div>
+
                 <div className="flex flex-col gap-2">
                   <label htmlFor="parentCategoryId">Main Category</label>
                   <select name="parentCategoryId" id="parentCategoryId" className="border border-black rounded-md p-2" {...formik.getFieldProps("parentCategoryId")} onChange={handleCategoryChange}>
                     <option value="">Select a main category</option>
-                    {mainCategories.map((category, index) => (
-                      <option key={index} value={category}>
-                        {category}
+                    {categories.map((category, index) => (
+                      <option key={index} value={category.name}>
+                        {category.name}
                       </option>
                     ))}
                   </select>

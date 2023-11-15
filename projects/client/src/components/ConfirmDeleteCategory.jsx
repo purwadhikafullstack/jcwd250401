@@ -1,10 +1,15 @@
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalOverlay } from "@chakra-ui/react";
 import api from "../api";
 import { toast } from "sonner";
+import { useDispatch } from "react-redux";
+import { removeCategory } from "../slices/categorySlices";
 
 export const ConfirmDeleteCategory = ({ isOpen, onClose, data }) => {
+  const dispatch = useDispatch();
+
   const handleDeleteCategory = async () => {
     await api.delete(`/category/${data?.id}`);
+    dispatch(removeCategory(data?.id));
     toast.success("Category deleted successfully", {
       duration: 700,
       autoClose: 500,
@@ -33,7 +38,9 @@ export const ConfirmDeleteCategory = ({ isOpen, onClose, data }) => {
             <button className="bg-slate-900 hover:bg-slate-700 text-white p-2 rounded-md mr-2" onClick={onClose}>
               Cancel
             </button>
-            <button className="bg-red-700 hover:bg-red-800 p-2 text-white rounded-md" onClick={handleDeleteCategory}>Confirm</button>
+            <button className="bg-red-700 hover:bg-red-800 p-2 text-white rounded-md" onClick={handleDeleteCategory}>
+              Confirm
+            </button>
           </ModalFooter>
         </ModalContent>
       </Modal>

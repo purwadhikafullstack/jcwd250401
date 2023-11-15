@@ -7,24 +7,22 @@ import { toast } from "sonner";
 import { AiOutlineLoading } from "react-icons/ai";
 import { showLoginModal } from "../slices/authModalSlices";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton } from "@chakra-ui/react";
+import { addCategory } from "../slices/categorySlices";
+import { useDispatch } from "react-redux";
 
 function AddCategoryModal({ isOpen, isClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const mainCategories = ["Jackets", "Tops", "Bottom", "Bags", "Accessories"];
+  const dispatch = useDispatch();
 
   const formik = useFormik({
     initialValues: {
       name: "",
       mainCategory: "",
-      gender: "",
     },
     validationSchema: Yup.object({
       name: Yup.string().required("Please enter your category name"),
       mainCategory: Yup.string().required("Please select the main category"),
-      gender: Yup.string().when("mainCategory", {
-        is: (mainCategory) => !(mainCategory === "Bags" || mainCategory === "Accessories"),
-        then: (gender) => Yup.string().required("Please select a gender"),
-      }),
     }),
 
     onSubmit: async (values) => {
@@ -34,12 +32,14 @@ function AddCategoryModal({ isOpen, isClose }) {
         const response = await api.post("/category", {
           name: values.name,
           mainCategory: values.mainCategory,
-          gender: values.gender,
         });
+
+        dispatch(addCategory(response.data.detail));
 
         if (response.status === 201) {
           setTimeout(() => {
             toast.success("Category added successfully", {
+              duration: 700,
               autoClose: 1000,
               onAutoClose: (t) => {
                 formik.resetForm();
@@ -111,25 +111,6 @@ function AddCategoryModal({ isOpen, isClose }) {
                     {formik.touched.mainCategory && formik.errors.mainCategory ? <div className="text-red-500">{formik.errors.mainCategory}</div> : null}
                   </div>
                 </div>
-
-                {/* Conditionally render the Gender select based on the selected Main Category */}
-                {formik.values.mainCategory === "Bags" || formik.values.mainCategory === "Accessories" ? null : (
-                  <div className="flex gap-18 justify-between items-center">
-                    <div className="w-[20vw]">
-                      <h4 className="text-sm font-bold text-gray-900 dark:text-white">Gender</h4>
-                    </div>
-                    <div className="w-full">
-                      <select id="gender" name="gender" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("gender")}>
-                        <option value="" disabled>
-                          Select product gender
-                        </option>
-                        <option value="Men">Men</option>
-                        <option value="Women">Women</option>
-                      </select>
-                      {formik.touched.gender && formik.errors.gender ? <div className="text-red-500">{formik.errors.gender}</div> : null}
-                    </div>
-                  </div>
-                )}
 
                 <div>
                   {isSubmitting ? (

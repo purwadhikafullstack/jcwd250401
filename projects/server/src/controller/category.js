@@ -2,7 +2,7 @@ const { validationResult } = require("express-validator");
 const { Category } = require("../models");
 
 exports.createCategory = async (req, res) => {
-  let { name, mainCategory, gender } = req.body;
+  let { name, mainCategory } = req.body;
   const errors = validationResult(req);
 
   try {
@@ -16,34 +16,25 @@ exports.createCategory = async (req, res) => {
 
     let parentCategoryId;
     switch (true) {
-      case mainCategory === "Jackets" && gender === "Men":
+      case mainCategory === "Jackets":
+        parentCategoryId = 1;
+        break;
+      case mainCategory === "Tops":
+        parentCategoryId = 2;
+        break;
+      case mainCategory === "Bottom":
         parentCategoryId = 3;
         break;
-      case mainCategory === "Tops" && gender === "Men":
+      case mainCategory === "Bags":
         parentCategoryId = 4;
         break;
-      case mainCategory === "Bottom" && gender === "Men":
-        parentCategoryId = 5;
-        break;
-      case mainCategory === "Jackets" && gender === "Women":
-        parentCategoryId = 6;
-        break;
-      case mainCategory === "Tops" && gender === "Women":
-        parentCategoryId = 7;
-        break;
-      case mainCategory === "Bottom" && gender === "Women":
-        parentCategoryId = 8;
-        break;
-      case mainCategory === "Bags":
-        parentCategoryId = 9;
-        break;
       case mainCategory === "Accessories":
-        parentCategoryId = 10;
+        parentCategoryId = 5;
         break;
       default:
         return res.status(400).json({
           ok: false,
-          message: "Invalid combination of mainCategory and gender",
+          message: "Invalid mainCategory",
         });
     }
 
@@ -82,7 +73,7 @@ exports.createCategory = async (req, res) => {
 
 exports.editCategory = async (req, res) => {
   const { id } = req.params;
-  let { name, mainCategory, gender } = req.body;
+  let { name, mainCategory } = req.body;
   const errors = validationResult(req);
 
   try {
@@ -93,7 +84,7 @@ exports.editCategory = async (req, res) => {
         detail: errors.array(),
       });
     }
-
+    
     const category = await Category.findByPk(id);
     if (!category) {
       return res.status(404).json({
@@ -101,35 +92,42 @@ exports.editCategory = async (req, res) => {
         message: "Category not found",
       });
     }
+    
+    if (mainCategory === "" || mainCategory === undefined) {
+      return res.status(400).json({
+        ok: false,
+        message: "Main category is a required parameter.",
+      });
+    }
+
+    if (category.parentCategoryId === null) {
+      return res.status(400).json({
+        ok: false,
+        message: "Can't edit main category",
+      });
+    }
 
     let parentCategoryId;
     switch (true) {
-      case mainCategory === "Jackets" && gender === "Men":
+      case mainCategory === "Jackets":
+        parentCategoryId = 1;
+        break;
+      case mainCategory === "Tops":
+        parentCategoryId = 2;
+        break;
+      case mainCategory === "Bottom":
         parentCategoryId = 3;
         break;
-      case mainCategory === "Tops" && gender === "Men":
+      case mainCategory === "Bags":
         parentCategoryId = 4;
         break;
-      case mainCategory === "Bottom" && gender === "Men":
-        parentCategoryId = 5;
-        break;
-      case mainCategory === "Jackets" && gender === "Women":
-        parentCategoryId = 6;
-        break;
-      case mainCategory === "Tops" && gender === "Women":
-        parentCategoryId = 7;
-        break;
-      case mainCategory === "Bottom" && gender === "Women":
-        parentCategoryId = 8;
-        break;
-      case mainCategory === "Bags":
       case mainCategory === "Accessories":
-        parentCategoryId = null;
+        parentCategoryId = 5;
         break;
       default:
         return res.status(400).json({
           ok: false,
-          message: "Invalid combination of mainCategory and gender",
+          message: "Invalid mainCategory",
         });
     }
 
@@ -141,7 +139,7 @@ exports.editCategory = async (req, res) => {
     return res.status(200).json({
       ok: true,
       message: "Category updated successfully",
-      detail: category,
+      detail: category.name,
     });
   } catch (error) {
     console.error(error);
@@ -163,6 +161,13 @@ exports.deleteCategory = async (req, res) => {
       return res.status(404).json({
         ok: false,
         message: "Category not found",
+      });
+    }
+
+    if (category.parentCategoryId === null) {
+      return res.status(400).json({
+        ok: false,
+        message: "Can't delete main category",
       });
     }
 
