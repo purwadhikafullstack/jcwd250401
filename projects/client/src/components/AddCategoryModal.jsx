@@ -6,63 +6,43 @@ import api from "../api";
 import { toast } from "sonner";
 import { AiOutlineLoading } from "react-icons/ai";
 import { showLoginModal } from "../slices/authModalSlices";
-import { showVerifyModal } from "../slices/authModalSlices";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton } from "@chakra-ui/react";
+import { addCategory } from "../slices/categorySlices";
+import { useDispatch } from "react-redux";
 
 function AddCategoryModal({ isOpen, isClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const mainCategories = [
-    {
-      name: "Jackets",
-      id: 1,
-    },
-    {
-      name: "Tops",
-      id: 2,
-    },
-    {
-      name: "Bottoms",
-      id: 3,
-    },
-    {
-      name: "Bags",
-      id: null,
-    },
-    {
-      name: "Accessories",
-      id: null,
-    },
-  ];
+  const mainCategories = ["Jackets", "Tops", "Bottom", "Bags", "Accessories"];
+  const dispatch = useDispatch();
 
   const formik = useFormik({
     initialValues: {
       name: "",
       mainCategory: "",
-      gender: "",
     },
     validationSchema: Yup.object({
       name: Yup.string().required("Please enter your category name"),
       mainCategory: Yup.string().required("Please select the main category"),
-      gender: Yup.string().required("Please select a gender"),
     }),
+
     onSubmit: async (values) => {
       try {
         setIsSubmitting(true);
 
-        if (formik.values.mainCategory === "Bags" || formik.values.mainCategory === "Accessories") {
-          formik.values.mainCategory = null;
-        }
-
         const response = await api.post("/category", {
           name: values.name,
-          parentCategoryId: values.mainCategory,
+          mainCategory: values.mainCategory,
         });
+
+        dispatch(addCategory(response.data.detail));
 
         if (response.status === 201) {
           setTimeout(() => {
             toast.success("Category added successfully", {
+              duration: 700,
               autoClose: 1000,
               onAutoClose: (t) => {
+                formik.resetForm();
                 isClose();
                 setIsSubmitting(false);
               },
@@ -78,9 +58,12 @@ function AddCategoryModal({ isOpen, isClose }) {
           toast.error(error.response.data.message, {
             description: error.response.data.detail,
           });
+        } else if (error.response.status === 403) {
+          toast.error(error.response.data.message, {
+            description: error.response.data.detail,
+          });
         }
       } finally {
-        formik.resetForm();
         setIsSubmitting(false);
       }
     },
@@ -120,33 +103,14 @@ function AddCategoryModal({ isOpen, isClose }) {
                         Select main category
                       </option>
                       {mainCategories.map((category, index) => (
-                        <option key={index} value={category.id}>
-                          {category.name}
+                        <option key={index} value={category}>
+                          {category}
                         </option>
                       ))}
                     </select>
                     {formik.touched.mainCategory && formik.errors.mainCategory ? <div className="text-red-500">{formik.errors.mainCategory}</div> : null}
                   </div>
                 </div>
-
-                {/* Conditionally render the Gender select based on the selected Main Category */}
-                {formik.values.mainCategory === "Bags" || formik.values.mainCategory === "Accessories" ? null : (
-                  <div className="flex gap-18 justify-between items-center">
-                    <div className="w-[20vw]">
-                      <h4 className="text-sm font-bold text-gray-900 dark:text-white">Gender</h4>
-                    </div>
-                    <div className="w-full">
-                      <select id="gender" name="gender" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("gender")}>
-                        <option value="" disabled>
-                          Select product gender
-                        </option>
-                        <option value="Men">Men</option>
-                        <option value="Women">Women</option>
-                      </select>
-                      {formik.touched.gender && formik.errors.gender ? <div className="text-red-500">{formik.errors.gender}</div> : null}
-                    </div>
-                  </div>
-                )}
 
                 <div>
                   {isSubmitting ? (

@@ -21,8 +21,8 @@ function Navigationadmin() {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const navigate = useNavigate();
   const location = useLocation(); // Get the current location
-  const accounts = ["Profile", "Address Book", "My Order", "Change My Password"];
-  const accountsDropdown = ["Profile", "Address Book", "My Order", "Change My Password", "Search", "Cart", "Favorites"];
+  const accounts = ["Profile", "Address Book", "My Order", "Change Password"];
+  const accountsDropdown = ["Profile", "Address Book", "My Order", "Change Password", "Search", "Cart", "Favorites"];
   const isLogin = true;
   const photoProfile = false;
   const dispatch = useDispatch();
@@ -55,15 +55,15 @@ function Navigationadmin() {
         <PiBell className="text-2xl cursor-pointer" />
         <img src={photoProfile ? `http://localhost:8000/public/${photoProfile}` : "https://via.placeholder.com/150"} alt="Profile" className="w-6 h-6 rounded-full cursor-pointer" onClick={handleIconClick} />
         {dropdownVisible && (
-          <div className="absolute top-16 w-48 h-48 bg-white ring-1 ring-black ring-opacity-5 z-10" onMouseLeave={() => setDropdownVisible(false)}>
-            {accounts.map((account, index) => {
+          <div className="absolute top-16 w-48 h-10 bg-white ring-1 ring-black ring-opacity-5 z-10" onMouseLeave={() => setDropdownVisible(false)}>
+            {/* {accounts.map((account, index) => {
               const joinedAccounts = account.toLowerCase().replace(/\s/g, "-");
               return (
                 <Link key={index} to={`/account/${joinedAccounts}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                   {account}
                 </Link>
               );
-            })}
+            })} */}
             <p className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" onClick={handleLogout}>
               Log Out
             </p>
@@ -78,14 +78,14 @@ function Navigationadmin() {
         <GiHamburgerMenu className="text-xl cursor-pointer flex lg:hidden" onClick={handleIconClick} />
         {dropdownVisible && (
           <div className="w-[50vw]">
-            {accountsDropdown.map((account, index) => {
+            {/* {accountsDropdown.map((account, index) => {
               const joinedAccounts = account.toLowerCase().replace(" ", "-");
               return (
                 <Link key={index} to={`/account/${joinedAccounts}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                   {account}
                 </Link>
               );
-            })}
+            })} */}
             <p className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" role="menuitem" onClick={handleLogout}>
               Log Out
             </p>
