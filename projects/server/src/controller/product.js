@@ -90,3 +90,76 @@ exports.handleAddProduct = async (req, res) => {
     });
   }
 };
+
+exports.handleGetAllProducts = async (req, res) => {
+  const limit = parseInt(req.query.limit) || 100;
+  const page = parseInt(req.query.page) || 1;
+  const sort = req.query.sort; // Get the sorting parameter from the query
+  const category = req.query.category; // Get the category filter from the query
+  const search = req.query.search; // Get the search query from the query
+  const filterBy = req.query.filterBy; // Get the filterBy query from the query
+
+  try {
+    const filter = {
+      include: [{ model: ProductImage }, { model: ProductCategory, include: [{ model: Category }] }],
+      where: {},
+    };
+
+    // Apply category filter
+    if (category && category !== "All") {
+      filter.include[1].where = { name: category }; // Assuming Category model has a 'name' column
+    }
+
+    // Apply search query filter using Sequelize's Op.like
+    if (search) {
+      filter.where.name = {
+        [Op.like]: `%${search}%`,
+      };
+    }
+
+    // Include sorting options
+    if (sort) {
+      if (sort === "alphabetical-asc") {
+        filter.order = [["name", "ASC"]];
+      } else if (sort === "alphabetical-desc") {
+        filter.order = [["name", "DESC"]];
+      }
+    }
+
+    if (filterBy) {
+      if (filterBy === "price-asc") {
+        filter.order = [["price", "ASC"]];
+      } else if (filterBy === "price-desc") {
+        filter.order = [["price", "DESC"]];
+      }
+    }
+
+    // Apply pagination
+    filter.limit = limit;
+    filter.offset = (page - 1) * limit;
+
+    const products = await Product.findAndCountAll(filter);
+
+    if (!products || products.count === 0) {
+      return res.status(404).json({
+        ok: false,
+        message: "No products found!",
+      });
+    }
+
+    res.status(200).json({
+      ok: true,
+      pagination: {
+        totalData: products.count,
+        page: page,
+      },
+      details: products.rows,
+    });
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+    });
+  }
+};
