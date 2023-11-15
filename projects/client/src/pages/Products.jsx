@@ -17,6 +17,7 @@ function Product() {
   const [openCategoryModal, setOpenCategoryModal] = useState(false);
   const [selectedComponent, setSelectedComponent] = useState("All Products");
   const [pillWidth, setPillWidth] = useState(0); // State to store the width of the pill
+  const handleSelectComponent = (nav) => setSelectedComponent(nav);
 
   const navRefs = useRef([]); // Refs to store references to each navigation item
 
