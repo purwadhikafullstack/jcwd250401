@@ -101,7 +101,7 @@ exports.handleGetAllProducts = async (req, res) => {
 
   try {
     const filter = {
-      include: [{ model: ProductImage }, { model: ProductCategory, include: [{ model: Category }] }],
+      include: [{ model: ProductImage, as: "productImages" }, { model: ProductCategory, include: [{ model: Category }] }],
       where: {},
     };
 
