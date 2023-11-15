@@ -84,7 +84,6 @@ export const UpdateProfileModal = ({ isOpen, onClose }) => {
                 setSelectedImage(null);
                 setPreview(null);
                 setIsSubmitting(false);
-                console.log(response);
                 dispatch(updateProfile(response.data));
                 onClose();
               },
