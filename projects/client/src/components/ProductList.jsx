@@ -27,7 +27,7 @@ function ProductList() {
   ];
 
   const categories = [
-    { label: "All", value: "All" },
+    { label: "All Category", value: "All" },
     { label: "Category 1", value: "Category 1" },
     { label: "Category 2", value: "Category 2" },
     { label: "Category 3", value: "Category 3" },
