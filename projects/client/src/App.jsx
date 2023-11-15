@@ -13,6 +13,7 @@ import { PaymentProof } from "./pages/PaymentProof";
 import { Order } from "./pages/Order";
 import { CartPage } from "./pages/CartPage";
 
+
 const routesConfig = [
   // USER ROUTES
   { path: "/", component: <Homepage />, showNavigationbar: true },

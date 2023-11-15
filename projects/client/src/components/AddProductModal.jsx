@@ -435,7 +435,7 @@ function AddProductModal({ isOpen, isClose }) {
                       const previewImage = dropzoneImages.find((img) => img.index === index);
 
                       return (
-                        <div key={index} className="lg:w-[139px] lg:h-[139px] w-[80%] h-[250px] relative">
+                        <div key={index} className="lg:w-[131px] lg:h-[131px] w-[80%] h-[250px] relative">
                           <div
                             onClick={() => handleClick(index)}
                             className={`w-full h-full border-dashed border-2 border-gray-300 rounded-md flex shadow-md shadow-gray-200 focus:ring-transparent items-center justify-center bg-transparent ${
