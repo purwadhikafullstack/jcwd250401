@@ -1,14 +1,9 @@
 const { Category } = require("../src/models");
 
 const categories = [
-  { name: "Men", parentCategoryId: null },
-  { name: "Women", parentCategoryId: null },
-  { name: "Jackets", parentCategoryId: 1 },
-  { name: "Tops", parentCategoryId: 1 },
-  { name: "Bottom", parentCategoryId: 1 },
-  { name: "Jackets", parentCategoryId: 2 },
-  { name: "Tops", parentCategoryId: 2 },
-  { name: "Bottom", parentCategoryId: 2 },
+  { name: "Jackets", parentCategoryId: null },
+  { name: "Tops", parentCategoryId: null },
+  { name: "Bottom", parentCategoryId: null },
   { name: "Bags", parentCategoryId: null },
   { name: "Accessories", parentCategoryId: null },
 ];

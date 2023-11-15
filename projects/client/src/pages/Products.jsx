@@ -27,22 +27,31 @@ function Product() {
         <div className="shadow-md fixed top-0 left-[16vw] right-0 z-50 bg-white">
           <Navigationadmin />
         </div>
-        <div className="flex flex-col mt-16 p-8 ">
+        <div className="flex flex-col mt-16 py-8 px-4 md:p-8">
           <div className="flex justify-end items-center gap-2">
-            <Button color="light" size="medium" className="p-2 w-52 shadow-md" onClick={openAddCategoryModal}>
+            <Button color="light" size="medium" className="md:p-2 w-52 shadow-md" onClick={openAddCategoryModal}>
               Add Categories
             </Button>
-            <Button color="dark" size="medium" className="p-2 w-52 shadow-md" onClick={openAddProductModal}>
+            <Button color="dark" size="medium" className="md:p-2 w-52 shadow-md" onClick={openAddProductModal}>
               Add Products
             </Button>
           </div>
-          <div className="flex items-center p-4 mt-4 bg-white rounded-lg shadow-md">
-            <div className="flex gap-14 mx-4">
+          <div className="flex items-center p-2 md:p-4 mt-4 bg-white rounded-lg shadow-md">
+            <div className="hidden md:flex flex-wrap gap-3 lg:gap-14 mx-4">
               {navList.map((nav, index) => (
-                <span key={index} className="text-sm font-bold text-gray-900 dark:text-white cursor-pointer hover:text-gray-700" onClick={() => handleSelectComponent(nav)}>
+                <span key={index} className="text-sm font-bold text-gray-900 dark:text-white cursor-pointer hover:text-gray-700 w-[100px]" onClick={() => handleSelectComponent(nav)}>
                   {nav}
                 </span>
               ))}
+            </div>
+            <div className=" ml-2 flex md:hidden flex-wrap">
+              <select className="text-sm font-bold text-gray-900 dark:text-white cursor-pointer hover:text-gray-700 w-[150px] rounded-md" onChange={(e) => handleSelectComponent(e.target.value)}>
+                {navList.map((nav, index) => (
+                  <option key={index} value={nav}>
+                    {nav}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
           <div className="flex items-center mt-4">

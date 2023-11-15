@@ -3,38 +3,33 @@ import { useFormik } from "formik";
 import * as yup from "yup";
 import { toast } from "sonner";
 import api from "../api";
+import { useEffect, useState } from "react";
 
-export const EditCategoryModal = ({ isOpen, onClose, data }) => {
-  const mainCategories = ["Jackets", "Tops", "Bottom", "Bags", "Accessories"];
+export const EditCategoryModal =  ({ isOpen, onClose, data }) => {
+  const [categories, setCategories] = useState([]);
+  const selectedMainCategory = data && categories.find((category) => category.id === data.parentCategoryId);
 
   const handleCategoryChange = (e) => {
     const selectedValue = e.target.value;
     formik.setFieldValue("mainCategory", selectedValue);
   };
 
-  const handleGenderChange = (e) => {
-    const selectedValue = e.target.value;
-    formik.setFieldValue("gender", selectedValue);
-  };
-
   const formik = useFormik({
     initialValues: {
       name: data?.name,
-      mainCategory: data?.mainCategory,
-      gender: data?.gender,
+      mainCategory: selectedMainCategory && selectedMainCategory.name,
     },
     validationSchema: yup.object({
       name: yup.string().required("Please enter your category name"),
       mainCategory: yup.string().required("Please select the main category"),
-      gender: yup.string().required("Please select a gender"),
     }),
     onSubmit: async (values) => {
       try {
         const response = await api.put(`/category/${data.id}`, {
           name: values.name,
           mainCategory: values.mainCategory,
-          gender: values.gender,
         });
+
 
         if (response.data.ok) {
           toast.success(response.data.message, {
@@ -56,6 +51,31 @@ export const EditCategoryModal = ({ isOpen, onClose, data }) => {
       }
     },
   });
+
+  const getCategories = async () => {
+    try {
+      const response = await api.get("/category");
+      const categories = response.data.detail.filter((category) => category.id <= 5);
+      setCategories(categories);
+    } catch (error) {
+      if (error.response.status === 500) {
+        toast.error(error.response.data.message, {
+          description: error.response.data.detail,
+        });
+      } else if (error.response.status === 400) {
+        toast.error(error.response.data.message, {
+          description: error.response.data.detail,
+        });
+      }
+    }
+  };
+  useEffect(() => {
+    getCategories();
+
+    if(selectedMainCategory){
+      formik.setFieldValue("mainCategory", selectedMainCategory.name)
+    }
+  }, []);
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
@@ -76,35 +96,14 @@ export const EditCategoryModal = ({ isOpen, onClose, data }) => {
                   <label htmlFor="parentCategoryId">Main Category</label>
                   <select name="parentCategoryId" id="parentCategoryId" className="border border-black rounded-md p-2" {...formik.getFieldProps("parentCategoryId")} onChange={handleCategoryChange}>
                     <option value="">Select a main category</option>
-                    {mainCategories.map((category, index) => (
-                      <option key={index} value={category}>
-                        {category}
+                    {categories.map((category, index) => (
+                      <option key={index} value={category.name}>
+                        {category.name}
                       </option>
                     ))}
                   </select>
                   {formik.errors.parentCategoryId && formik.touched.parentCategoryId && <p className="text-red-500">{formik.errors.parentCategoryId}</p>}
                 </div>
-
-                {/* Conditionally render the Gender select based on the selected Main Category */}
-                {formik.values.mainCategory === "Bags" || formik.values.mainCategory === "Accessories" ? (
-                  <div className="flex gap-18 h-[10vh] justify-between items-center"></div>
-                ) : (
-                  <div className="flex gap-18 h-[10vh] justify-between items-center">
-                    <div className="w-[20vw]">
-                      <h4 className="text-sm font-bold text-gray-900 dark:text-white">Gender</h4>
-                    </div>
-                    <div className="w-full">
-                      <select id="gender" name="gender" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500" {...formik.getFieldProps("gender")} onChange={handleGenderChange}>
-                        <option value="">
-                          select Gender
-                        </option>
-                        <option value="Men">Men</option>
-                        <option value="Women">Women</option>
-                      </select>
-                      {formik.touched.gender && formik.errors.gender ? <div className="text-red-500">{formik.errors.gender}</div> : null}
-                    </div>
-                  </div>
-                )}
               </div>
             </ModalBody>
             <ModalFooter>
