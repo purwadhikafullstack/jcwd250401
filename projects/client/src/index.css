@@ -54,3 +54,13 @@
   opacity: 0;
   max-height: 0;
 }
+
+
+.pill-animation {
+  transition: width 0.3s ease; /* You can adjust the duration and easing function */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+

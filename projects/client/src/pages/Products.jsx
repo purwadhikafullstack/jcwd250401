@@ -7,12 +7,25 @@ import { useState } from "react";
 import AddProductModal from "../components/AddProductModal";
 import AddCategoryModal from "../components/AddCategoryModal";
 import { CategoryLists } from "../components/CategoryLists";
+import ProductList from "../components/ProductList";
+import { useEffect } from "react";
+import { useRef } from "react";
 
 function Product() {
   const navList = ["All Products", "Out of stock", "Category", "Archive"];
   const [openProductModal, setOpenProductModal] = useState(false);
   const [openCategoryModal, setOpenCategoryModal] = useState(false);
   const [selectedComponent, setSelectedComponent] = useState("All Products");
+  const [pillWidth, setPillWidth] = useState(0); // State to store the width of the pill
+
+  const navRefs = useRef([]); // Refs to store references to each navigation item
+
+  useEffect(() => {
+    // Calculate the width of the selected navigation item
+    if (navRefs[selectedComponent]) {
+      setPillWidth(navRefs[selectedComponent].offsetWidth);
+    }
+  }, [selectedComponent]);
 
   const openAddProductModal = () => setOpenProductModal(true);
   const closeAddProductModal = () => setOpenProductModal(false);
@@ -21,13 +34,13 @@ function Product() {
   const handleSelectComponent = (component) => setSelectedComponent(component);
 
   return (
-    <div className="flex flex-row justify-between">
+    <div className="flex flex-row justify-between h-screen">
       <Sidebar />
       <div className="w-[84vw] bg-[#f0f0f0] overflow-hidden flex flex-col">
         <div className="shadow-md fixed top-0 left-[16vw] right-0 z-50 bg-white">
           <Navigationadmin />
         </div>
-        <div className="flex flex-col mt-16 p-8 ">
+        <div className="flex flex-col mt-16 p-8">
           <div className="flex justify-end items-center gap-2">
             <Button color="light" size="medium" className="p-2 w-52 shadow-md" onClick={openAddCategoryModal}>
               Add Categories
@@ -39,30 +52,21 @@ function Product() {
           <div className="flex items-center p-4 mt-4 bg-white rounded-lg shadow-md">
             <div className="flex gap-14 mx-4">
               {navList.map((nav, index) => (
-                <span key={index} className="text-sm font-bold text-gray-900 dark:text-white cursor-pointer hover:text-gray-700" onClick={() => handleSelectComponent(nav)}>
+                <span
+                  key={index}
+                  className={`text-sm font-bold ${selectedComponent === nav ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300"} cursor-pointer hover:text-gray-700 relative 
+                  }`}
+                  onClick={() => handleSelectComponent(nav)}
+                  ref={(ref) => (navRefs[nav] = ref)} // Save a reference to the navigation item
+                >
                   {nav}
+                  {selectedComponent === nav && <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-4 pill-animation bg-black h-1 rounded-lg" style={{ width: `${pillWidth}px` }}></div>}
                 </span>
               ))}
             </div>
           </div>
           <div className="flex items-center mt-4">
-            {selectedComponent === "All Products" && (
-              <div>
-                <InputGroup w="250px">
-                  <InputLeftElement pl={2} mt="1px">
-                    <PiMagnifyingGlass />
-                  </InputLeftElement>
-                  <Input
-                    bg="white"
-                    size="md"
-                    borderRadius="md"
-                    boxShadow="md"
-                    placeholder="Search by product or SKU"
-                    _placeholder={{ fontSize: "xs", marginBottom: "20px" }} // added textAlign property
-                  ></Input>
-                </InputGroup>
-              </div>
-            )}
+            {selectedComponent === "All Products" && <ProductList />}
             {selectedComponent === "Out of stock" && "Out of stock"}
             {selectedComponent === "Category" && <CategoryLists />}
             {selectedComponent === "Archive" && "Archive"}
