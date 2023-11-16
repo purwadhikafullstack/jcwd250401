@@ -57,17 +57,21 @@ export const EditCategoryModal = ({ isOpen, onClose, data, mainCategories }) => 
             <Text textColor="white">Edit Category</Text>
           </ModalHeader>
           <ModalCloseButton textColor="white" />
-          <ModalBody>
-            <form onSubmit={formik.handleSubmit}>
+          <form onSubmit={formik.handleSubmit}>
+            <ModalBody>
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
-                  <label htmlFor="name" className="text-white">Category Name</label>
+                  <label htmlFor="name" className="text-white">
+                    Category Name
+                  </label>
                   <input type="text" name="name" id="name" className="border border-black rounded-md p-2" placeholder="Category Name" {...formik.getFieldProps("name")} />
                   {formik.errors.name && formik.touched.name && <p className="text-red-500">{formik.errors.name}</p>}
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label htmlFor="mainCategory" className="text-white">Main Category</label>
+                  <label htmlFor="mainCategory" className="text-white">
+                    Main Category
+                  </label>
                   <select name="mainCategory" id="mainCategory" className="border border-black rounded-md p-2" {...formik.getFieldProps("mainCategory")} onChange={handleCategoryChange}>
                     <option value="">Select a main category</option>
                     {categories.map((category, index) => (
@@ -79,16 +83,16 @@ export const EditCategoryModal = ({ isOpen, onClose, data, mainCategories }) => 
                   {formik.errors.mainCategory && formik.touched.mainCategory && <p className="text-red-500">{formik.errors.mainCategory}</p>}
                 </div>
               </div>
-            </form>
-          </ModalBody>
-          <ModalFooter>
-            <button className="bg-slate-900 hover:bg-slate-700 text-white w-20 p-2 rounded-md mr-2" onClick={onClose}>
-              Cancel
-            </button>
-            <button className="bg-red-700 hover:bg-red-800 p-2 text-white w-20 rounded-md" type="submit">
-              Save
-            </button>
-          </ModalFooter>
+            </ModalBody>
+            <ModalFooter>
+              <button className="bg-slate-900 hover:bg-slate-700 text-white w-20 p-2 rounded-md mr-2" onClick={onClose}>
+                Cancel
+              </button>
+              <button className="bg-red-700 hover:bg-red-800 p-2 text-white w-20 rounded-md" type="submit">
+                Save
+              </button>
+            </ModalFooter>
+          </form>
         </ModalContent>
       </Modal>
     </>

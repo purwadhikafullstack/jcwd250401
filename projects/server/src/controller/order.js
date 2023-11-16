@@ -1,4 +1,4 @@
-const { Order } = require("../models");
+const { Order, OrderItem, Product } = require("../models");
 
 exports.paymentProof = async (req, res) => {
   const { id, userId } = req.params;
@@ -38,24 +38,52 @@ exports.paymentProof = async (req, res) => {
   }
 };
 
-exports.getAllOrder = async (req, res) => {
+exports.getOrderLists = async (req, res) => {
   try {
-    const order = await Order.findAll();
+    const { status, page = 1, size = 10, sort = "createdAt", order = "DESC" } = req.query;
+    const limit = parseInt(size);
+    const offset = (parseInt(page) - 1) * limit;
 
-    if (!order) {
+    const filter = {
+      include: [
+        {
+          model: Order,
+          attributes: ["id", "status", "totalPrice"],
+          where: status !== "all" ? { status } : undefined,
+        },
+        {
+          model: Product,
+          attributes: ["id", "name", "image"],
+        },
+      ],
+      where: {},
+      limit: limit,
+      offset: offset,
+    };
+
+    if (sort) {
+      if (sort === "totalPrice") {
+        filter.order = [[{ model: Order, as: "Order" }, sort, order]];
+      } else {
+        filter.order = [[sort, order]];
+      }
+    }
+
+    const orderLists = await OrderItem.findAll(filter);
+
+    if (orderLists.length === 0) {
       return res.status(404).json({
         ok: false,
-        meesage: "There is no order yet",
+        message: "There is no order yet",
       });
     }
 
     return res.status(200).json({
       ok: true,
       message: "Get all order successfully",
-      detail: order,
+      detail: orderLists,
     });
   } catch (error) {
-    console.error(error);
     return res.status(500).json({
       ok: false,
       message: "Internal server error",
