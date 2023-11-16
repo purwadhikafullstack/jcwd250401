@@ -94,24 +94,10 @@ exports.editCategory = async (req, res) => {
       });
     }
 
-    if (mainCategory === "" || mainCategory === undefined) {
-      return res.status(400).json({
-        ok: false,
-        message: "Main category is a required parameter.",
-      });
-    }
-
     if (category.parentCategoryId === null) {
       return res.status(400).json({
         ok: false,
         message: "Can't edit main category",
-      });
-    }
-
-    if (name === category.name) {
-      return res.status(400).json({
-        ok: false,
-        message: "New name must be different",
       });
     }
 
@@ -201,6 +187,7 @@ exports.getCategories = async (req, res) => {
     const limit = parseInt(size);
     const offset = (parseInt(page) - 1) * limit;
 
+    // If maxId is specified, add it to the where clause
     const whereClause = {
       id: {
         [Op.gte]: minId,
@@ -211,7 +198,8 @@ exports.getCategories = async (req, res) => {
       whereClause.id[Op.lte] = maxId;
     }
 
-    if (parentCategoryId) {
+    // If parentCategoryId is specified, add it to the where clause
+    if (parentCategoryId && parentCategoryId !== "undefined") {
       whereClause.parentCategoryId = parentCategoryId;
     }
 
