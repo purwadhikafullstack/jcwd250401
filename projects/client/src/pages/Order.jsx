@@ -120,29 +120,29 @@ export const Order = () => {
                     const date = createdAt.toLocaleDateString();
                     const time = createdAt.toLocaleTimeString();
                     return (
-                        <div key={index} className="border border-gray-200 rounded-md p-2 my-2">
-                          <div className="flex justify-between h-[5vh]">
-                            <p>{orderItem.Order.status}</p>
-                            <p>
-                              {date}, {time}
-                            </p>
-                          </div>
+                      <div key={index} className="border border-gray-200 rounded-md p-2 my-2">
+                        <div className="flex justify-between h-[5vh]">
+                          <p>{orderItem.Order.status}</p>
+                          <p>
+                            {date}, {time}
+                          </p>
+                        </div>
 
-                          <div className="flex justify-between">
-                            <div className="flex">
-                              <img src={orderItem.Product.image} alt={orderItem.Product.name} className="w-[30vw] h-[20vh] lg:w-[10vw] lg:h-[20vh] object-cover rounded-md" />
-                              <div className="flex justify-between w-full items-center ml-2">
-                                <div className="w-[25vw] lg:w-[20vw]">
-                                  <p className="font-bold">{orderItem.Product.name}</p>
-                                  <p>Quantity: {orderItem.quantity}</p>
-                                </div>
-                                <p>
-                                  <span className="font-bold">Total:</span> Rp{orderItem.Order.totalPrice}
-                                </p>
+                        <div className="flex justify-between">
+                          <div className="flex">
+                            <img src={orderItem.Product.image} alt={orderItem.Product.name} className="w-[30vw] h-[20vh] lg:w-[10vw] lg:h-[20vh] object-cover rounded-md" />
+                            <div className="flex justify-between w-full items-center ml-2">
+                              <div className="w-[25vw] lg:w-[20vw]">
+                                <p className="font-bold">{orderItem.Product.name}</p>
+                                <p>Quantity: {orderItem.quantity}</p>
                               </div>
+                              <p>
+                                <span className="font-bold">Total:</span> Rp{orderItem.Order.totalPrice}
+                              </p>
                             </div>
                           </div>
                         </div>
+                      </div>
                     );
                   })
                 ) : (
@@ -155,6 +155,7 @@ export const Order = () => {
                 <button disabled={page === 1} onClick={() => setPage(page - 1)} className="px-2 py-1 my-2 bg-gray-100 rounded-md text-sm font-sagoe text-gray-700 hover:bg-gray-200">
                   Prev
                 </button>
+                <span className="text-lg font-bold text-gray-900 dark:text-white">{page}</span>
                 <button disabled={orderLists.length < size} onClick={() => setPage(page + 1)} className="px-2 py-1 my-2 bg-gray-100 rounded-md text-sm font-sagoe text-gray-700 hover:bg-gray-200">
                   Next
                 </button>
