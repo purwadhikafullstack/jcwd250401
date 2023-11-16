@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator");
 const { Category } = require("../models");
+const { Op } = require("sequelize");
 
 exports.createCategory = async (req, res) => {
   let { name, mainCategory } = req.body;
@@ -196,8 +197,29 @@ exports.deleteCategory = async (req, res) => {
 
 exports.getCategories = async (req, res) => {
   try {
+    const { minId = 1, maxId, page = 1, size = 10, parentCategoryId } = req.query;
+    const limit = parseInt(size);
+    const offset = (parseInt(page) - 1) * limit;
+
+    const whereClause = {
+      id: {
+        [Op.gte]: minId,
+      },
+    };
+
+    if (maxId) {
+      whereClause.id[Op.lte] = maxId;
+    }
+
+    if (parentCategoryId) {
+      whereClause.parentCategoryId = parentCategoryId;
+    }
+
     const categories = await Category.findAll({
+      where: whereClause,
       order: [["name", "ASC"]],
+      limit,
+      offset,
     });
 
     if (categories.length === 0) {

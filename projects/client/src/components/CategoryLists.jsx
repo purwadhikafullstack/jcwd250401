@@ -15,22 +15,26 @@ export const CategoryLists = () => {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [selectedMainCategory, setSelectedMainCategory] = useState("All");
-  const filteredSubCategories = subcategories.filter((category) => category.parentCategoryId === selectedMainCategory?.id);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
+  const filteredSubCategories = subcategories?.filter((category) => category.parentCategoryId === selectedMainCategory?.id);
   const categoryLists = useSelector((state) => state?.category?.categoryLists);
+  const size = 5;
 
   const getCategories = async () => {
     try {
-      const response = await api.get("/category");
-      const categories = response.data.detail.filter((category) => category.id <= 5);
-      const subCategories = response.data.detail.filter((category) => category.id > 5);
-      setCategories(categories);
-      setSubcategories(subCategories);
+      const mainCategoryResponse = await api.get("/category?maxId=5");
+      const subCategoryResponse = await api.get(`/category?minId=6&page=${page}&size=${size}`);
+
+      setCategories(mainCategoryResponse.data.detail);
+      setSubcategories(subCategoryResponse.data.detail);
+      setHasMore(subCategoryResponse.data.detail?.length === size);
     } catch (error) {
-      if (error.response.status === 500) {
+      if (error.response && error.response.status === 500) {
         toast.error(error.response.data.message, {
           description: error.response.data.detail,
         });
-      } else if (error.response.status === 400) {
+      } else if (error.response && error.response.status === 400) {
         toast.error(error.response.data.message, {
           description: error.response.data.detail,
         });
@@ -44,18 +48,18 @@ export const CategoryLists = () => {
     else setSelectedMainCategory(categories.find((category) => category.id === Number(e.target.value)));
   };
 
-  const handleDeleteCategory = (category) => {
+  const toggleDeleteModal = (category) => {
     setSelectedCategory(category);
     setOpenDeleteModal(!openDeleteModal);
     getCategories();
   };
 
-  const handleEditCategory = (category) => {
+  const toggleEditModal = (category) => {
     setSelectedCategory(category);
     setOpenEditModal(!openEditModal);
   };
 
-  const handleCloseEditModal = () => {
+  const closeEditModal = () => {
     setOpenEditModal(!openEditModal);
     setSelectedCategory(null);
     getCategories();
@@ -63,7 +67,7 @@ export const CategoryLists = () => {
 
   useEffect(() => {
     getCategories();
-  }, [categoryLists]);
+  }, [categoryLists, page, size]);
 
   return (
     <>
@@ -109,16 +113,12 @@ export const CategoryLists = () => {
                 subcategories.map((category, index) => (
                   <div className="flex justify-between items-center px-8 py-2 bg-white w-full h-[7vh] shadow-md rounded-md" key={index}>
                     <span className="text-lg font-bold text-gray-900 dark:text-white hover:text-gray-700">{category.name}</span>
-                    {isWarehouseAdmin ? (
-                      ""
-                    ) : (
-                      <div className="flex gap-2">
-                        <FiEdit className="text-lg font-bold text-gray-900 dark:text-white cursor-pointer hover:text-gray-700" onClick={() => handleEditCategory(category)} />
-                        <BsTrash3Fill className="text-lg font-bold text-gray-900 dark:text-white cursor-pointer hover:text-gray-700" onClick={() => handleDeleteCategory(category)} />
-                      </div>
-                    )}
-                    <ConfirmDeleteCategory isOpen={openDeleteModal} onClose={handleDeleteCategory} data={selectedCategory} mainCategories={categories} />
-                    {selectedCategory && <EditCategoryModal isOpen={openEditModal} onClose={handleCloseEditModal} data={selectedCategory} mainCategories={categories}/>}
+                    <div className={`${isWarehouseAdmin ? "hidden" : "flex"} gap-2`}>
+                      <FiEdit className="text-lg font-bold text-gray-900 dark:text-white cursor-pointer hover:text-gray-700" onClick={() => toggleEditModal(category)} />
+                      <BsTrash3Fill className="text-lg font-bold text-gray-900 dark:text-white cursor-pointer hover:text-gray-700" onClick={() => toggleDeleteModal(category)} />
+                    </div>
+                    <ConfirmDeleteCategory isOpen={openDeleteModal} onClose={toggleDeleteModal} data={selectedCategory} mainCategories={categories} />
+                    {selectedCategory && <EditCategoryModal isOpen={openEditModal} onClose={closeEditModal} data={selectedCategory} mainCategories={categories} />}
                   </div>
                 ))
               ) : (
@@ -130,16 +130,12 @@ export const CategoryLists = () => {
               filteredSubCategories.map((category, index) => (
                 <div className="flex justify-between items-center px-8 py-2 bg-white w-full h-[7vh] shadow-md rounded-md" key={index}>
                   <span className="text-lg font-bold text-gray-900 dark:text-white hover:text-gray-700">{category.name}</span>
-                  {isWarehouseAdmin ? (
-                    ""
-                  ) : (
-                    <div className="flex gap-2">
-                      <FiEdit className="text-lg font-bold text-gray-900 dark:text-white cursor-pointer hover:text-gray-700" onClick={() => handleEditCategory(category)} />
-                      <BsTrash3Fill className="text-lg font-bold text-gray-900 dark:text-white cursor-pointer hover:text-gray-700" onClick={() => handleDeleteCategory(category)} />
-                    </div>
-                  )}
-                  <ConfirmDeleteCategory isOpen={openDeleteModal} onClose={handleDeleteCategory} data={selectedCategory} mainCategories={categories} />
-                  {selectedCategory && <EditCategoryModal isOpen={openEditModal} onClose={handleCloseEditModal} data={selectedCategory} />}
+                  <div className={`${isWarehouseAdmin ? "hidden" : "flex"} gap-2`}>
+                    <FiEdit className="text-lg font-bold text-gray-900 dark:text-white cursor-pointer hover:text-gray-700" onClick={() => toggleEditModal(category)} />
+                    <BsTrash3Fill className="text-lg font-bold text-gray-900 dark:text-white cursor-pointer hover:text-gray-700" onClick={() => toggleDeleteModal(category)} />
+                  </div>
+                  <ConfirmDeleteCategory isOpen={openDeleteModal} onClose={toggleDeleteModal} data={selectedCategory} mainCategories={categories} />
+                  {selectedCategory && <EditCategoryModal isOpen={openEditModal} onClose={closeEditModal} data={selectedCategory} />}
                 </div>
               ))
             ) : (
@@ -147,6 +143,15 @@ export const CategoryLists = () => {
                 <p className="text-lg font-bold text-gray-900 dark:text-white">No Sub Categories Found</p>
               </div>
             )}
+          </div>
+          <div className="flex justify-between items-center w-full h-[10vh]">
+            <button onClick={() => setPage(page - 1)} disabled={page === 1} className="bg-white p-2 rounded-lg shadow-md font-bold min-w-[70px]">
+              Previous
+            </button>
+            <span className="text-lg font-bold text-gray-900 dark:text-white">{page}</span>
+            <button onClick={() => setPage(page + 1)} disabled={!hasMore} className="bg-white p-2 rounded-lg shadow-md font-bold min-w-[70px]">
+              Next
+            </button>
           </div>
         </div>
       </div>
