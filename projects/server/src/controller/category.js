@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator");
 const { Category } = require("../models");
+const { Op } = require("sequelize");
 
 exports.createCategory = async (req, res) => {
   let { name, mainCategory } = req.body;
@@ -93,24 +94,10 @@ exports.editCategory = async (req, res) => {
       });
     }
 
-    if (mainCategory === "" || mainCategory === undefined) {
-      return res.status(400).json({
-        ok: false,
-        message: "Main category is a required parameter.",
-      });
-    }
-
     if (category.parentCategoryId === null) {
       return res.status(400).json({
         ok: false,
         message: "Can't edit main category",
-      });
-    }
-
-    if (name === category.name) {
-      return res.status(400).json({
-        ok: false,
-        message: "New name must be different",
       });
     }
 
@@ -136,6 +123,19 @@ exports.editCategory = async (req, res) => {
           ok: false,
           message: "Invalid mainCategory",
         });
+    }
+
+    const existingCategory = await Category.findOne({
+      where: {
+        name: name.charAt(0).toUpperCase() + name.slice(1),
+      },
+    });
+
+    if (existingCategory && existingCategory.id !== id) {
+      return res.status(403).json({
+        ok: false,
+        message: "Category with the same name already exists",
+      });
     }
 
     name = name.charAt(0).toUpperCase() + name.slice(1);
@@ -196,8 +196,31 @@ exports.deleteCategory = async (req, res) => {
 
 exports.getCategories = async (req, res) => {
   try {
+    const { minId = 1, maxId, page = 1, size = 10, parentCategoryId } = req.query;
+    const limit = parseInt(size);
+    const offset = (parseInt(page) - 1) * limit;
+
+    // If maxId is specified, add it to the where clause
+    const whereClause = {
+      id: {
+        [Op.gte]: minId,
+      },
+    };
+
+    if (maxId) {
+      whereClause.id[Op.lte] = maxId;
+    }
+
+    // If parentCategoryId is specified, add it to the where clause
+    if (parentCategoryId && parentCategoryId !== "undefined") {
+      whereClause.parentCategoryId = parentCategoryId;
+    }
+
     const categories = await Category.findAll({
+      where: whereClause,
       order: [["name", "ASC"]],
+      limit,
+      offset,
     });
 
     if (categories.length === 0) {
