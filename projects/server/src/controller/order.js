@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const { Order, OrderItem, Product } = require("../models");
 
 exports.paymentProof = async (req, res) => {
@@ -40,7 +41,8 @@ exports.paymentProof = async (req, res) => {
 
 exports.getOrderLists = async (req, res) => {
   try {
-    const { status, page = 1, size = 10, sort = "createdAt", order = "DESC" } = req.query;
+    const { userId } = req.params;
+    const { status = "all", page = 1, size = 10, sort = "createdAt", order = "DESC" } = req.query;
     const limit = parseInt(size);
     const offset = (parseInt(page) - 1) * limit;
 
@@ -48,7 +50,7 @@ exports.getOrderLists = async (req, res) => {
       include: [
         {
           model: Order,
-          attributes: ["id", "status", "totalPrice"],
+          attributes: ["id", "status", "totalPrice", "userId"],
           where: status !== "all" ? { status } : undefined,
         },
         {
@@ -56,7 +58,9 @@ exports.getOrderLists = async (req, res) => {
           attributes: ["id", "name", "image"],
         },
       ],
-      where: {},
+      where: {
+        "$Order.status$": status !== "all" ? status : { [Op.ne]: null },
+      },
       limit: limit,
       offset: offset,
     };
@@ -67,6 +71,10 @@ exports.getOrderLists = async (req, res) => {
       } else {
         filter.order = [[sort, order]];
       }
+    }
+
+    if (userId) {
+      filter.include[0].where = { userId };
     }
 
     const orderLists = await OrderItem.findAll(filter);
