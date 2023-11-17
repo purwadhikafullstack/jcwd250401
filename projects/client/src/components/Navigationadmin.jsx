@@ -5,7 +5,7 @@ import rains from "../assets/rains.png";
 import AuthModal from "./AuthModal";
 import { useSelector, useDispatch } from "react-redux";
 import { showLoginModal, showSignUpModal } from "../slices/authModalSlices";
-import { logout } from "../slices/accountSlices";
+import { logoutAdmin } from "../slices/accountSlices";
 import { getAuth, signOut } from "firebase/auth"; // Import Firebase authentication functions
 import api from "../api";
 import { toast } from "sonner";
@@ -24,7 +24,7 @@ function Navigationadmin() {
   const handleLogout = () => {
     try {
       navigate("/adminlogin");
-      dispatch(logout());
+      dispatch(logoutAdmin());
       setDropdownVisible(false);
     } catch (error) {
       console.error(error);

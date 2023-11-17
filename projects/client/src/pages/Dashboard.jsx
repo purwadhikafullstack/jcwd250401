@@ -2,19 +2,19 @@ import Sidebar from "../components/Sidebar";
 import Navigationadmin from "../components/Navigationadmin";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
 import { useEffect } from "react";
 
 function Dashboard() {
-  const isAdminLogin = useSelector((state) => state?.account?.profile?.data?.token);
+  const adminProfile = JSON.parse(localStorage.getItem("adminProfile"))
+  const token = adminProfile?.data?.token
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isAdminLogin) {
+    if (!token) {
       toast.error("Please login first");
       navigate("/adminlogin");
     }
-  },[isAdminLogin]);
+  },[token]);
 
   return (
     <div className="flex flex-row justify-between">
