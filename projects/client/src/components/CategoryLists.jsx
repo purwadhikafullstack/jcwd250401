@@ -6,9 +6,11 @@ import { FiEdit } from "react-icons/fi";
 import { ConfirmDeleteCategory } from "./ConfirmDeleteCategory";
 import { EditCategoryModal } from "./EditCategoryModal";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 export const CategoryLists = () => {
-  const isWarehouseAdmin = useSelector((state) => state?.account?.profile?.data.profile?.isWarehouseAdmin);
+  const isWarehouseAdmin = useSelector((state) => state?.account?.profile?.data?.profile?.isWarehouseAdmin);
+  const isAdminLogin = useSelector((state) => state?.account?.profile?.data?.token)
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -19,6 +21,7 @@ export const CategoryLists = () => {
   const [page, setPage] = useState(1);
   const categoryLists = useSelector((state) => state?.category?.categoryLists);
   const size = 5;
+  const navigate = useNavigate()
 
   const getCategories = async () => {
     try {
@@ -65,6 +68,10 @@ export const CategoryLists = () => {
   };
 
   useEffect(() => {
+    if (!isAdminLogin){
+      toast.error("Please login first")
+      navigate("/adminlogin")
+    }
     getCategories();
   }, [categoryLists, page, size, selectedMainCategory]);
 

@@ -39,7 +39,12 @@ export const EditCategoryModal = ({ isOpen, onClose, data, mainCategories }) => 
           toast.error(error.response.data.message, {
             description: error.response.data.detail,
           });
-        } else if (error.response && error.response.status === 500) {
+        } else if( error.response && error.response.status === 403){
+          toast.error(error.response.data.message, {
+            description: error.response.data.detail,
+          });
+        }
+        else if (error.response && error.response.status === 500) {
           toast.error(error.response.data.message, {
             description: error.response.data.detail,
           });
