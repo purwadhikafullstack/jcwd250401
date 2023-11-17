@@ -5,15 +5,20 @@ import { AiOutlineCloudUpload } from "react-icons/ai";
 import { BsImage } from "react-icons/bs";
 import api from "../api";
 import { toast } from "sonner";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { showLoginModal } from "../slices/authModalSlices";
 
 export const PaymentProof = () => {
+  const isLogin = useSelector((state) => state?.account?.isLogin);
   const userName = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const userDataInformation = useSelector((state) => state?.account?.profile?.data?.profile);
   const [userData, setUserData] = useState(null);
   const [selectedImageName, setSelectedImageName] = useState(null);
   const [preview, setPreview] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   // create a simple object url from the image
   const createObjectURL = (file) => {
@@ -27,8 +32,6 @@ export const PaymentProof = () => {
     accept: "image/jpeg, image/png, image/jpg",
     maxSize: 2000000,
     onDrop: (acceptedFiles) => {
-      
-
       formik.setFieldValue("paymentProofImage", acceptedFiles[0]);
       setSelectedImageName(acceptedFiles[0].name);
       setTimeout(() => {
@@ -62,7 +65,7 @@ export const PaymentProof = () => {
             setPreview(null);
             setIsUploading(false);
           }, 2000);
-        } 
+        }
       } catch (error) {
         if (error.response && error.response.status === 400) {
           toast.error(error.response.data.message);
@@ -80,19 +83,24 @@ export const PaymentProof = () => {
   });
 
   useEffect(() => {
-    const getUserData = async () => {
-      try {
-        const response = await api.get(`/profile/${userName}`);
-        setUserData(response.data.detail);
-      } catch (error) {
-        if (error.response && error.response.status === 400) {
-          toast.error(error.response.data.message);
-        } else if (error.response && error.response.status === 500) {
-          toast.error(error.response.data.message);
+    if (!isLogin) {
+      navigate("/");
+      dispatch(showLoginModal());
+    } else {
+      const getUserData = async () => {
+        try {
+          const response = await api.get(`/profile/${userName}`);
+          setUserData(response.data.detail);
+        } catch (error) {
+          if (error.response && error.response.status === 400) {
+            toast.error(error.response.data.message);
+          } else if (error.response && error.response.status === 500) {
+            toast.error(error.response.data.message);
+          }
         }
-      }
-    };
-    getUserData();
+      };
+      getUserData();
+    }
   }, [userDataInformation]);
   return (
     <div className="h-[88vh] w-full flex justify-center items-center">
