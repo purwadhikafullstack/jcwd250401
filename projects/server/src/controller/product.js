@@ -127,6 +127,10 @@ exports.handleGetAllProducts = async (req, res) => {
         filter.order = [["name", "ASC"]];
       } else if (sort === "alphabetical-desc") {
         filter.order = [["name", "DESC"]];
+      } else if (sort === "date-asc") {
+        filter.order = [["createdAt", "ASC"]];
+      } else if (sort === "date-desc") {
+        filter.order = [["createdAt", "DESC"]];
       }
     }
 
