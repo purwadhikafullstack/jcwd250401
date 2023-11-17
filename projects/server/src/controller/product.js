@@ -103,15 +103,14 @@ exports.handleGetAllProducts = async (req, res) => {
     const filter = {
       include: [
         { model: ProductImage, as: "productImages" },
-        { model: Category, as: "Categories", through: { attributes: [] } }, // Ensure through attribute is empty for belongsToMany
+        { model: Category, as: "Categories", through: { attributes: [] } },
       ],
       where: {},
     };
 
     // Apply category filter
     if (category && category !== "All") {
-      filter.include[1].where = {};
-      filter.include[1].where.name = category; // Assuming 'name' is the correct column in the Category model
+      filter.include[1].where = { name: category };
     }
 
     // Apply search query filter using Sequelize's Op.like
@@ -142,14 +141,21 @@ exports.handleGetAllProducts = async (req, res) => {
       }
     }
 
-    // Apply pagination
-    filter.limit = limit;
-    filter.offset = (page - 1) * limit;
+    // Retrieve products without pagination to get the total count
+    const totalData = await Product.count({
+      ...filter,
+      distinct: true, // Add this line to ensure distinct counts
+      col: 'id'
+    });
 
-    const totalData = await Product.count({ where: filter.where });
-    const products = await Product.findAndCountAll(filter);
+    // Retrieve products with pagination
+    const products = await Product.findAll({
+      ...filter,
+      limit,
+      offset: (page - 1) * limit,
+    });
 
-    if (!products || products.count === 0) {
+    if (!products || products.length === 0) {
       return res.status(404).json({
         ok: false,
         message: "No products found!",
@@ -160,9 +166,9 @@ exports.handleGetAllProducts = async (req, res) => {
       ok: true,
       pagination: {
         totalData,
-        page: page,
+        page,
       },
-      details: products.rows,
+      details: products,
     });
   } catch (error) {
     console.error("Error fetching data:", error);

@@ -39,6 +39,7 @@ function ProductList() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setCurrentPage(1);
         const response = await api.get(`/product?page=${currentPage}&limit=${productsPerPage}&sort=${sortCriteria}&category=${selectedCategory}&search=${searchInput}&filterBy=${selectedFilter}`);
         const responseData = response.data.details;
         const totalData = response.data.pagination.totalData;
@@ -57,7 +58,7 @@ function ProductList() {
     };
 
     fetchProducts();
-  }, [currentPage, sortCriteria, selectedCategory, searchInput, selectedFilter]);
+  }, [currentPage, sortCriteria, selectedCategory, searchInput, selectedFilter, totalPages, totalData]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -132,6 +133,18 @@ function ProductList() {
     }),
   ];
 
+  const customStyles = {
+    control: (provided) => ({
+      ...provided,
+      height: '2rem', // Adjust the height value as needed
+    }),
+    menu: (provided) => ({
+      ...provided,
+      maxHeight: '200px', // Set the desired height of the dropdown menu
+    }),
+  };
+  
+
   return (
     <div className="flex flex-col gap-4 w-full h-screen">
       <div className="w-full flex justify-between space-x-16">
@@ -169,18 +182,27 @@ function ProductList() {
             </select>
           </div>
           <div className="w-full">
-            <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" onChange={handleCategoryChange}>
+            <select
+              className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent"
+              onChange={handleCategoryChange}
+            >
               <option value="" disabled className="text-gray-400">
                 Category
               </option>
               {sortingProduct.map((opt) => (
                 <React.Fragment key={opt.value}>
-                  <option value={opt.value} style={{ marginLeft: opt.subOpts ? "1rem" : "0" }}>
+                  <option
+                    value={opt.value}
+                    disabled={opt.subOpts}
+                    style={{
+                      fontWeight: opt.subOpts ? "bold" : "normal",
+                    }}
+                  >
                     {opt.label}
                   </option>
                   {opt.subOpts &&
                     opt.subOpts.map((subOpt) => (
-                      <option key={subOpt.value} value={subOpt.value} style={{ marginLeft: "2rem" }}>
+                      <option key={subOpt.value} value={subOpt.value}>
                         {subOpt.label}
                       </option>
                     ))}
@@ -188,6 +210,7 @@ function ProductList() {
               ))}
             </select>
           </div>
+
           <div className="w-full">
             <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" onChange={handleSortChange}>
               <option value="" disabled className="text-gray-400">
@@ -202,7 +225,7 @@ function ProductList() {
           </div>
         </div>
       </div>
-      <div className="space-y-6 overflow-y-scroll scrollbar-hide h-[55vh]">
+      <div className="space-y-6 overflow-y-scroll scrollbar-hide h-[56vh]">
         {products.length == 0 ? (
           <Text textAlign={"center"} fontStyle={"italic"}>
             No data matches.
