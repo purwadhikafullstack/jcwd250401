@@ -94,20 +94,24 @@ exports.handleAddProduct = async (req, res) => {
 exports.handleGetAllProducts = async (req, res) => {
   const limit = parseInt(req.query.limit) || 100;
   const page = parseInt(req.query.page) || 1;
-  const sort = req.query.sort; // Get the sorting parameter from the query
-  const category = req.query.category; // Get the category filter from the query
-  const search = req.query.search; // Get the search query from the query
-  const filterBy = req.query.filterBy; // Get the filterBy query from the query
+  const sort = req.query.sort;
+  const category = req.query.category;
+  const search = req.query.search;
+  const filterBy = req.query.filterBy;
 
   try {
     const filter = {
-      include: [{ model: ProductImage, as: "productImages" }, { model: ProductCategory, include: [{ model: Category }] }],
+      include: [
+        { model: ProductImage, as: "productImages" },
+        { model: Category, as: "Categories", through: { attributes: [] } }, // Ensure through attribute is empty for belongsToMany
+      ],
       where: {},
     };
 
     // Apply category filter
     if (category && category !== "All") {
-      filter.include[1].where = { name: category }; // Assuming Category model has a 'name' column
+      filter.include[1].where = {};
+      filter.include[1].where.name = category; // Assuming 'name' is the correct column in the Category model
     }
 
     // Apply search query filter using Sequelize's Op.like
@@ -138,6 +142,7 @@ exports.handleGetAllProducts = async (req, res) => {
     filter.limit = limit;
     filter.offset = (page - 1) * limit;
 
+    const totalData = await Product.count({ where: filter.where });
     const products = await Product.findAndCountAll(filter);
 
     if (!products || products.count === 0) {
@@ -150,7 +155,7 @@ exports.handleGetAllProducts = async (req, res) => {
     res.status(200).json({
       ok: true,
       pagination: {
-        totalData: products.count,
+        totalData,
         page: page,
       },
       details: products.rows,

@@ -1,13 +1,54 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
+import { useDispatch } from "react-redux";
+import { addProduct } from "../slices/productSlices";
+import api from "../api";
+import { useSelector } from "react-redux";
+
 
 function ProductList() {
   const [sortCriteria, setSortCriteria] = useState("alphabetical-asc"); // Default sorting criteria that matches the backend;
   const [searchInput, setSearchInput] = useState(""); // Initialize with "All"
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [products, setProducts] = useState([]);
   const [selectedWarehouse, setSelectedWarehouse] = useState("All Warehouse");
   const [selectedFilter, setSelectedFilter] = useState("Filter");
+  const dispatch = useDispatch();
+  const [products, setProducts] = useState([]); // Initialize with empty array  
+
+  const handleSortCriteriaChange = (e) => {
+    setSortCriteria(e.target.value);
+  };
+
+  const handleSearchInputChange = (e) => {
+    setSearchInput(e.target.value);
+  };
+
+  const handleCategoryChange = (e) => {
+    setSelectedCategory(e.target.value);
+  };
+
+  const handleWarehouseChange = (e) => {
+    setSelectedWarehouse(e.target.value);
+  };
+
+  const handleFilterChange = (e) => {
+    setSelectedFilter(e.target.value);
+  };
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await api.get("/product");
+        const responseData = response.data.details;
+
+        setProducts(responseData);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const warehouse = [
     { label: "All Warehouse", value: "All" },
