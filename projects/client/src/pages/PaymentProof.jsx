@@ -6,13 +6,15 @@ import { BsImage } from "react-icons/bs";
 import api from "../api";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { showLoginModal } from "../slices/authModalSlices";
+// const {orderId} = useParams()
 
 export const PaymentProof = () => {
   const isLogin = useSelector((state) => state?.account?.isLogin);
   const userName = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const userDataInformation = useSelector((state) => state?.account?.profile?.data?.profile);
+  const orderId = 2
   const [userData, setUserData] = useState(null);
   const [selectedImageName, setSelectedImageName] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -50,8 +52,7 @@ export const PaymentProof = () => {
         data.append("paymentProofImage", values.paymentProofImage);
         setIsUploading(true);
 
-        console.log(values);
-        const response = await api.put(`/order/${userData.id}/1`, data, {
+        const response = await api.put(`/order/${userData.id}/${orderId}`, data, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
