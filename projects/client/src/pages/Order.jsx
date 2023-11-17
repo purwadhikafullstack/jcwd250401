@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { showLoginModal } from "../slices/authModalSlices";
 import api from "../api";
 import { toast } from "sonner";
+import { PaymentProofModal } from "./PaymentProofModal";
 
 export const Order = () => {
   const isLogin = useSelector((state) => state?.account?.isLogin);
@@ -12,6 +13,8 @@ export const Order = () => {
   const listsMenu = ["Profile", "Address Book", "My Order", "Change Password"];
   const orderStatus = ["All", "Waiting for Payment", "Waiting for Payment Confirmation", "On Process", "On Delivery", "Delivered", "Cancelled"];
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [openModalProof, setOpenModalProof] = useState(false);
   const [orderLists, setOrderLists] = useState([]);
   const [page, setPage] = useState(1);
   const size = 5;
@@ -27,6 +30,10 @@ export const Order = () => {
     }, 2000);
   }
   const handleStatusChange = (status) => setSelectedStatus(status);
+  // const handleOpenModalProof = (orderId) => {
+  //   setSelectedOrder(orderId);
+  //   setOpenModalProof(true);
+  // };
 
   useEffect(() => {
     const getOrderLists = async (userId) => {
@@ -152,6 +159,9 @@ export const Order = () => {
                               </p>
                             </div>
                           </div>
+                          {/* <button onClick={() => handleOpenModalProof(orderItem.Order.id)} className="px-2 py-1 bg-gray-100 rounded-md text-sm font-sagoe text-gray-700 hover:bg-gray-200 w-full h-[5vh] self-end">
+                            Upload Payment Proof
+                          </button> */}
                         </div>
                       </div>
                     );
@@ -179,6 +189,7 @@ export const Order = () => {
           )}
         </div>
       </div>
+      {/* <PaymentProofModal isOpen={openModalProof} onClose={() => setOpenModalProof(false)} orderId={selectedOrder} /> */}
     </>
   );
 };
