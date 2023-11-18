@@ -35,20 +35,15 @@ export const EditCategoryModal = ({ isOpen, onClose, data, mainCategories }) => 
           });
         }
       } catch (error) {
-        if (error.response && error.response.status === 400) {
+        if ((error.response && (error.response.status === 400) || error.response.status === 403)) {
           toast.error(error.response.data.message, {
             description: error.response.data.detail,
           });
-        } else if( error.response && error.response.status === 403){
+        } else if (error.response && error.response.status === 500) {
           toast.error(error.response.data.message, {
             description: error.response.data.detail,
           });
-        }
-        else if (error.response && error.response.status === 500) {
-          toast.error(error.response.data.message, {
-            description: error.response.data.detail,
-          });
-          console.error(error);
+          console.error("Internal Server Error: Something went wrong");
         }
       }
     },
@@ -79,7 +74,7 @@ export const EditCategoryModal = ({ isOpen, onClose, data, mainCategories }) => 
                   </label>
                   <select name="mainCategory" id="mainCategory" className="border border-black rounded-md p-2" {...formik.getFieldProps("mainCategory")} onChange={handleCategoryChange}>
                     <option value="">Select a main category</option>
-                    {categories.map((category, index) => (
+                    {categories?.map((category, index) => (
                       <option key={index} value={category.name}>
                         {category.name}
                       </option>
