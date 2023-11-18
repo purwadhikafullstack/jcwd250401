@@ -12,9 +12,21 @@ exports.handleAddProduct = async (req, res) => {
     });
 
     if (existingProduct) {
-      return res.status(404).json({
+      // Check if the existing product has the same gender
+      if (existingProduct.gender === (productGender || "Unisex")) {
+        return res.status(404).json({
+          ok: false,
+          msg: "Product with the same name and gender already exists",
+        });
+      }
+    }
+
+    const images = req.files; // Assuming you use 'files' for multiple file uploads
+
+    if (!images || images.length === 0) {
+      return res.status(400).json({
         ok: false,
-        msg: "Product already exists",
+        msg: "No images uploaded",
       });
     }
 
@@ -30,14 +42,6 @@ exports.handleAddProduct = async (req, res) => {
 
     console.log(req.files);
     // Handle multiple images
-    const images = req.files; // Assuming you use 'files' for multiple file uploads
-
-    if (!images || images.length === 0) {
-      return res.status(400).json({
-        ok: false,
-        msg: "No images uploaded",
-      });
-    }
 
     // Prepare the array of objects to be inserted
     const imageObjects = images.map((image) => {
@@ -77,6 +81,14 @@ exports.handleAddProduct = async (req, res) => {
         fields: ["productId", "categoryId"], // Specify the fields to include in the bulkCreate operation
       }
     );
+
+    const genderCode = gender === "Men" ? "001" : gender === "Women" ? "002" : "003";
+    const subCategoryId = subCategoryInstance.id < 10 ? `0${subCategoryInstance.id}` : subCategoryInstance.id;
+    const sku = `${mainCategoryInstance.id}${subCategoryId}${genderCode}${product.id}`;
+    
+    // Update product with SKU using save()
+    product.sku = sku;
+    await product.save();
 
     return res.status(201).json({
       ok: true,
@@ -132,9 +144,9 @@ exports.handleGetAllProducts = async (req, res) => {
         filter.order = [["createdAt", "ASC"]];
       } else if (sort === "date-desc") {
         filter.order = [["createdAt", "DESC"]];
-      }  else if (sort === "price-asc") {
+      } else if (sort === "price-asc") {
         filter.order = [["price", "ASC"]];
-      } else if (sort  === "price-desc") {
+      } else if (sort === "price-desc") {
         filter.order = [["price", "DESC"]];
       }
     }
@@ -148,12 +160,12 @@ exports.handleGetAllProducts = async (req, res) => {
         filter.where.gender = "Unisex";
       }
     }
-    
+
     // Retrieve products without pagination to get the total count
     const totalData = await Product.count({
       ...filter,
       distinct: true, // Add this line to ensure distinct counts
-      col: 'id'
+      col: "id",
     });
 
     // Retrieve products with pagination

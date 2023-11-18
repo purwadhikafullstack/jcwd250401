@@ -4,9 +4,11 @@ import { useDispatch } from "react-redux";
 import { addProduct } from "../slices/productSlices";
 import api from "../api";
 import { useSelector } from "react-redux";
-import { PiInfo } from "react-icons/pi";
-import { Box, Button, Flex, Text } from "@chakra-ui/react";
+import { PiCaretDown, PiEye, PiInfo, PiShoppingBag } from "react-icons/pi";
+import { Box, Button, Flex, Menu, MenuButton, MenuItem, MenuList, Text } from "@chakra-ui/react";
 import { setProductList } from "../slices/productSlices";
+import _debounce from "lodash/debounce";
+import { ChevronDownIcon } from "@chakra-ui/icons";
 
 function ProductList() {
   const [sortCriteria, setSortCriteria] = useState("date-desc"); // Default sorting criteria that matches the backend;
@@ -24,11 +26,9 @@ function ProductList() {
 
   const newProducts = useSelector((state) => state.product?.productList);
 
-  
-
-  const handleSearchInputChange = (e) => {
+  const handleSearchInputChange = _debounce((e) => {
     setSearchInput(e.target.value);
-  };
+  }, 600); // 600 milliseconds debounce time (adjust as needed)
 
   const handleWarehouseChange = (e) => {
     setSelectedWarehouse(e.target.value);
@@ -45,7 +45,7 @@ function ProductList() {
     const fetchProducts = async () => {
       try {
         setCurrentPage(1);
-        
+
         const response = await api.get(`/product?page=${currentPage}&limit=${productsPerPage}&sort=${sortCriteria}&category=${selectedCategory}&search=${searchInput}&filterBy=${selectedFilter}`);
         const responseData = response.data.details;
         const totalData = response.data.pagination.totalData;
@@ -156,12 +156,17 @@ function ProductList() {
   return (
     <div className="flex flex-col gap-4 w-full h-screen">
       <div className="w-full flex justify-between space-x-16">
-        <div className="w-[25vw]">
+        <div className="w-[30vw]">
           <div className="relative">
             <span className="absolute inset-y-0 left-2 pl-1 flex items-center">
               <FaSearch className="text-gray-400" />
             </span>
-            <input type="text" className="pl-10 pr-3 py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" placeholder="Search by product or SKU" />
+            <input
+              type="text"
+              className="pl-10 pr-3 py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent"
+              placeholder="Search by product or SKU"
+              onChange={handleSearchInputChange}
+            />
           </div>
         </div>
         <div className="flex gap-4 w-full">
@@ -239,7 +244,7 @@ function ProductList() {
           ""
         )}
         {products.map((product) => (
-          <div key={product.id} className="bg-white items-center flex gap-6 h-36 w-full px-6 py-2 rounded-lg shadow-md">
+          <div key={product.id} className="bg-white items-center justify-between flex gap-6 h-36 w-full px-6 py-2 rounded-lg shadow-md">
             <div className="h-[100px] w-[100px] flex justify-center items-center">
               {product.productImages[0].imageUrl ? (
                 <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-lg" alt="Product Image" />
@@ -253,8 +258,49 @@ function ProductList() {
               )}
             </div>
 
-            <div className="font-semibold flex-1 text-center">{product.name}</div>
-            <div className="font-semibold flex-1">{formatToRupiah(product.price)}</div>
+            <div className="flex w-60 flex-col">
+              <span className="font-bold">{product.name} </span>
+              <span>
+                SKU : {product.sku} ({product.gender}){" "}
+              </span>
+            </div>
+            <div className="flex w-40 flex-col">
+              <span className="font-bold">Statistic</span>
+              <div className="flex flex-row items-center gap-4">
+                <div className="flex flex-row items-center gap-1">
+                  {" "}
+                  <PiEye /> {product.viewCount}{" "}
+                </div>
+                <div className="flex flex-row items-center gap-1">
+                  {" "}
+                  <PiShoppingBag /> {product.soldCount}{" "}
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col w-48 ">
+              <span className="font-bold">Price</span>
+              <span>{formatToRupiah(product.price)}</span>
+            </div>
+            <div className="flex flex-col w-44">
+              <span className="font-bold">Stock</span>
+              <span>20</span>
+            </div>
+            <div>
+              <Menu>
+                <MenuButton px={2} py={2} transition="all 0.2s" borderRadius="lg" textColor="gray.600" boxShadow="md" borderColor="gray.500" borderWidth="2px" _hover={{ bg: "gray.900", textColor: "white" }} _expanded={{ bg: "gray.900", textColor: "white" }}>
+                  <Flex justifyContent="between" gap={4} px={2} alignItems="center">
+                    <Text fontWeight="bold">Edit</Text>
+                    <PiCaretDown size="20px" />
+                  </Flex>
+                </MenuButton>
+                <MenuList>
+                  <MenuItem>Edit</MenuItem>
+                  <MenuItem>Change category</MenuItem>
+                  <MenuItem>Update stock</MenuItem>
+                  <MenuItem>Delete</MenuItem>
+                </MenuList>
+              </Menu>
+            </div>
           </div>
         ))}
       </div>
