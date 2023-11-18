@@ -9,6 +9,8 @@ import { Box, Button, Flex, Menu, MenuButton, MenuItem, MenuList, Text } from "@
 import { setProductList } from "../slices/productSlices";
 import _debounce from "lodash/debounce";
 import { ChevronDownIcon } from "@chakra-ui/icons";
+import EditProductModal from "./EditProductModal";
+import { EditCategoryModal } from "./EditCategoryModal";
 
 function ProductList() {
   const [sortCriteria, setSortCriteria] = useState("date-desc"); // Default sorting criteria that matches the backend;
@@ -23,6 +25,8 @@ function ProductList() {
   const dispatch = useDispatch();
   const [categories, setCategories] = useState([]); // Initialize with empty array
   const [products, setProducts] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [openEditProductModal, setOpenEditProductModal] = useState(false);
 
   const newProducts = useSelector((state) => state.product?.productList);
 
@@ -142,15 +146,9 @@ function ProductList() {
     }),
   ];
 
-  const customStyles = {
-    control: (provided) => ({
-      ...provided,
-      height: "2rem", // Adjust the height value as needed
-    }),
-    menu: (provided) => ({
-      ...provided,
-      maxHeight: "200px", // Set the desired height of the dropdown menu
-    }),
+  const toggleEditModal = (product) => {
+    setSelectedProduct(product);
+    setOpenEditProductModal(!openEditProductModal);
   };
 
   return (
@@ -287,14 +285,25 @@ function ProductList() {
             </div>
             <div>
               <Menu>
-                <MenuButton px={2} py={2} transition="all 0.2s" borderRadius="lg" textColor="gray.600" boxShadow="md" borderColor="gray.500" borderWidth="2px" _hover={{ bg: "gray.900", textColor: "white" }} _expanded={{ bg: "gray.900", textColor: "white" }}>
+                <MenuButton
+                  px={2}
+                  py={2}
+                  transition="all 0.2s"
+                  borderRadius="lg"
+                  textColor="gray.600"
+                  boxShadow="md"
+                  borderColor="gray.500"
+                  borderWidth="2px"
+                  _hover={{ bg: "gray.900", textColor: "white" }}
+                  _expanded={{ bg: "gray.900", textColor: "white" }}
+                >
                   <Flex justifyContent="between" gap={4} px={2} alignItems="center">
                     <Text fontWeight="bold">Edit</Text>
                     <PiCaretDown size="20px" />
                   </Flex>
                 </MenuButton>
                 <MenuList>
-                  <MenuItem>Edit</MenuItem>
+                  <MenuItem onClick={() => toggleEditModal(product)}>Edit</MenuItem>
                   <MenuItem>Change category</MenuItem>
                   <MenuItem>Update stock</MenuItem>
                   <MenuItem>Delete</MenuItem>
@@ -320,6 +329,7 @@ function ProductList() {
           </Box>
         </Flex>
       </Box>
+      <EditCategoryModal isOpen={openEditProductModal} isClose={toggleEditModal} />
     </div>
   );
 }
