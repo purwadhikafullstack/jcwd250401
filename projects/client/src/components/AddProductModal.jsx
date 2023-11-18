@@ -12,6 +12,7 @@ import { showVerifyModal } from "../slices/authModalSlices";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Text } from "@chakra-ui/react";
 import { useDropzone } from "react-dropzone";
 import { PiImage, PiImageThin, PiWarningCircleBold } from "react-icons/pi";
+import { addProduct } from "../slices/productSlices";
 
 function AddProductModal({ isOpen, isClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -77,9 +78,11 @@ function AddProductModal({ isOpen, isClose }) {
           },
         });
 
+        const responseData = response.data.details;
         if (response.status === 201) {
           setTimeout(() => {
             setIsSubmitting(false);
+            dispatch(addProduct(responseData));
             toast.success("Successfully added new product", {
               autoClose: 1000,
               onAutoClose: (t) => {

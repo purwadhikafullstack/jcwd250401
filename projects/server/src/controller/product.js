@@ -18,12 +18,14 @@ exports.handleAddProduct = async (req, res) => {
       });
     }
 
+    const gender = productGender || "Unisex";
+
     // Create the product
     const product = await Product.create({
       name: productName,
       price: productPrice,
       description: productDescription,
-      gender: productGender,
+      gender: gender,
     });
 
     console.log(req.files);
@@ -130,17 +132,23 @@ exports.handleGetAllProducts = async (req, res) => {
         filter.order = [["createdAt", "ASC"]];
       } else if (sort === "date-desc") {
         filter.order = [["createdAt", "DESC"]];
-      }
-    }
-
-    if (filterBy) {
-      if (filterBy === "price-asc") {
+      }  else if (sort === "price-asc") {
         filter.order = [["price", "ASC"]];
-      } else if (filterBy === "price-desc") {
+      } else if (sort  === "price-desc") {
         filter.order = [["price", "DESC"]];
       }
     }
 
+    if (filterBy && filterBy.toLowerCase() !== "all genders") {
+      if (filterBy.toLowerCase() === "men") {
+        filter.where.gender = "Men";
+      } else if (filterBy.toLowerCase() === "women") {
+        filter.where.gender = "Women";
+      } else if (filterBy.toLowerCase() === "unisex") {
+        filter.where.gender = "Unisex";
+      }
+    }
+    
     // Retrieve products without pagination to get the total count
     const totalData = await Product.count({
       ...filter,

@@ -6,20 +6,25 @@ import api from "../api";
 import { useSelector } from "react-redux";
 import { PiInfo } from "react-icons/pi";
 import { Box, Button, Flex, Text } from "@chakra-ui/react";
+import { setProductList } from "../slices/productSlices";
 
 function ProductList() {
   const [sortCriteria, setSortCriteria] = useState("date-desc"); // Default sorting criteria that matches the backend;
   const [searchInput, setSearchInput] = useState(""); // Initialize with "All"
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedWarehouse, setSelectedWarehouse] = useState("All Warehouse");
-  const [selectedFilter, setSelectedFilter] = useState("price-desc");
+  const [selectedFilter, setSelectedFilter] = useState("All Gender");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalData, setTotalData] = useState(0);
   const productsPerPage = 10; // Number of products to display per page
   const dispatch = useDispatch();
   const [categories, setCategories] = useState([]); // Initialize with empty array
-  const [products, setProducts] = useState([]); // Initialize with empty array
+  const [products, setProducts] = useState([]);
+
+  const newProducts = useSelector((state) => state.product?.productList);
+
+  
 
   const handleSearchInputChange = (e) => {
     setSearchInput(e.target.value);
@@ -40,13 +45,13 @@ function ProductList() {
     const fetchProducts = async () => {
       try {
         setCurrentPage(1);
+        
         const response = await api.get(`/product?page=${currentPage}&limit=${productsPerPage}&sort=${sortCriteria}&category=${selectedCategory}&search=${searchInput}&filterBy=${selectedFilter}`);
         const responseData = response.data.details;
         const totalData = response.data.pagination.totalData;
         const totalPages = Math.ceil(totalData / productsPerPage);
         setTotalData(totalData);
         setTotalPages(totalPages);
-
         setProducts(responseData);
       } catch (error) {
         if (error?.response?.status == 404) {
@@ -58,7 +63,7 @@ function ProductList() {
     };
 
     fetchProducts();
-  }, [currentPage, sortCriteria, selectedCategory, searchInput, selectedFilter, totalPages, totalData]);
+  }, [currentPage, sortCriteria, selectedCategory, searchInput, selectedFilter, totalPages, totalData, newProducts]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -103,15 +108,19 @@ function ProductList() {
   ];
 
   const sortingOptions = [
-    { label: "Date DESC", value: "date-desc" },
     { label: "Date ASC", value: "date-asc" },
+    { label: "Date DESC", value: "date-desc" },
     { label: "(A-Z)", value: "alphabetical-asc" },
     { label: "(Z-A)", value: "alphabetical-desc" },
+    { label: "Price ASC", value: "price-asc" },
+    { label: "Price DESC", value: "price-desc" },
   ];
 
   const filterOptions = [
-    { label: "Price DESC", value: "price-desc" },
-    { label: "Price ASC", value: "price-asc" },
+    { label: "All Genders", value: "All Genders" },
+    { label: "Men", value: "Men" },
+    { label: "Women", value: "Women" },
+    { label: "Unisex", value: "Unisex" },
   ];
 
   const sortingProduct = [
@@ -136,14 +145,13 @@ function ProductList() {
   const customStyles = {
     control: (provided) => ({
       ...provided,
-      height: '2rem', // Adjust the height value as needed
+      height: "2rem", // Adjust the height value as needed
     }),
     menu: (provided) => ({
       ...provided,
-      maxHeight: '200px', // Set the desired height of the dropdown menu
+      maxHeight: "200px", // Set the desired height of the dropdown menu
     }),
   };
-  
 
   return (
     <div className="flex flex-col gap-4 w-full h-screen">
@@ -182,10 +190,7 @@ function ProductList() {
             </select>
           </div>
           <div className="w-full">
-            <select
-              className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent"
-              onChange={handleCategoryChange}
-            >
+            <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" onChange={handleCategoryChange}>
               <option value="" disabled className="text-gray-400">
                 Category
               </option>
@@ -236,7 +241,7 @@ function ProductList() {
         {products.map((product) => (
           <div key={product.id} className="bg-white items-center flex gap-6 h-36 w-full px-6 py-2 rounded-lg shadow-md">
             <div className="h-[100px] w-[100px] flex justify-center items-center">
-              {product.productImages[0]?.imageUrl ? (
+              {product.productImages[0].imageUrl ? (
                 <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-lg" alt="Product Image" />
               ) : (
                 <div className="w-full h-full flex justify-center items-center bg-gray-200 text-gray-400">
