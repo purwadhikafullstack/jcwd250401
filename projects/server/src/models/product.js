@@ -12,17 +12,24 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "productId",
         as: "productImages",
       });
-      Product.hasMany(models.ProductCategory, { foreignKey: "productId" });
+      Product.belongsToMany(models.Category, {
+        through: "ProductCategory",
+        foreignKey: "productId",
+      });
       Product.hasMany(models.OrderItem, { foreignKey: "productId" });
       Product.hasMany(models.Mutation, { foreignKey: "productId" });
+
     }
   }
   Product.init(
     {
+      sku: DataTypes.STRING,
       name: DataTypes.STRING,
       description: DataTypes.STRING,
       price: DataTypes.INTEGER,
       gender: DataTypes.STRING,
+      viewCount: DataTypes.INTEGER,
+      soldCount: DataTypes.INTEGER,
     },
     {
       sequelize,

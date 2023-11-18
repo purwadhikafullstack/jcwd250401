@@ -12,22 +12,15 @@ exports.handleAddProduct = async (req, res) => {
     });
 
     if (existingProduct) {
-      return res.status(404).json({
-        ok: false,
-        msg: "Product already exists",
-      });
+      // Check if the existing product has the same gender
+      if (existingProduct.gender === (productGender || "Unisex")) {
+        return res.status(404).json({
+          ok: false,
+          msg: "Product with the same name and gender already exists",
+        });
+      }
     }
 
-    // Create the product
-    const product = await Product.create({
-      name: productName,
-      price: productPrice,
-      description: productDescription,
-      gender: productGender,
-    });
-
-    console.log(req.files);
-    // Handle multiple images
     const images = req.files; // Assuming you use 'files' for multiple file uploads
 
     if (!images || images.length === 0) {
@@ -36,6 +29,19 @@ exports.handleAddProduct = async (req, res) => {
         msg: "No images uploaded",
       });
     }
+
+    const gender = productGender || "Unisex";
+
+    // Create the product
+    const product = await Product.create({
+      name: productName,
+      price: productPrice,
+      description: productDescription,
+      gender: gender,
+    });
+
+    console.log(req.files);
+    // Handle multiple images
 
     // Prepare the array of objects to be inserted
     const imageObjects = images.map((image) => {
@@ -76,6 +82,14 @@ exports.handleAddProduct = async (req, res) => {
       }
     );
 
+    const genderCode = gender === "Men" ? "001" : gender === "Women" ? "002" : "003";
+    const subCategoryId = subCategoryInstance.id < 10 ? `0${subCategoryInstance.id}` : subCategoryInstance.id;
+    const sku = `${mainCategoryInstance.id}${subCategoryId}${genderCode}${product.id}`;
+    
+    // Update product with SKU using save()
+    product.sku = sku;
+    await product.save();
+
     return res.status(201).json({
       ok: true,
       msg: "Product, images, and ProductCategory records added successfully",
@@ -94,20 +108,23 @@ exports.handleAddProduct = async (req, res) => {
 exports.handleGetAllProducts = async (req, res) => {
   const limit = parseInt(req.query.limit) || 100;
   const page = parseInt(req.query.page) || 1;
-  const sort = req.query.sort; // Get the sorting parameter from the query
-  const category = req.query.category; // Get the category filter from the query
-  const search = req.query.search; // Get the search query from the query
-  const filterBy = req.query.filterBy; // Get the filterBy query from the query
+  const sort = req.query.sort;
+  const category = req.query.category;
+  const search = req.query.search;
+  const filterBy = req.query.filterBy;
 
   try {
     const filter = {
-      include: [{ model: ProductImage }, { model: ProductCategory, include: [{ model: Category }] }],
+      include: [
+        { model: ProductImage, as: "productImages" },
+        { model: Category, as: "Categories", through: { attributes: [] } },
+      ],
       where: {},
     };
 
     // Apply category filter
     if (category && category !== "All") {
-      filter.include[1].where = { name: category }; // Assuming Category model has a 'name' column
+      filter.include[1].where = { name: category };
     }
 
     // Apply search query filter using Sequelize's Op.like
@@ -123,24 +140,42 @@ exports.handleGetAllProducts = async (req, res) => {
         filter.order = [["name", "ASC"]];
       } else if (sort === "alphabetical-desc") {
         filter.order = [["name", "DESC"]];
-      }
-    }
-
-    if (filterBy) {
-      if (filterBy === "price-asc") {
+      } else if (sort === "date-asc") {
+        filter.order = [["createdAt", "ASC"]];
+      } else if (sort === "date-desc") {
+        filter.order = [["createdAt", "DESC"]];
+      } else if (sort === "price-asc") {
         filter.order = [["price", "ASC"]];
-      } else if (filterBy === "price-desc") {
+      } else if (sort === "price-desc") {
         filter.order = [["price", "DESC"]];
       }
     }
 
-    // Apply pagination
-    filter.limit = limit;
-    filter.offset = (page - 1) * limit;
+    if (filterBy && filterBy.toLowerCase() !== "all genders") {
+      if (filterBy.toLowerCase() === "men") {
+        filter.where.gender = "Men";
+      } else if (filterBy.toLowerCase() === "women") {
+        filter.where.gender = "Women";
+      } else if (filterBy.toLowerCase() === "unisex") {
+        filter.where.gender = "Unisex";
+      }
+    }
 
-    const products = await Product.findAndCountAll(filter);
+    // Retrieve products without pagination to get the total count
+    const totalData = await Product.count({
+      ...filter,
+      distinct: true, // Add this line to ensure distinct counts
+      col: "id",
+    });
 
-    if (!products || products.count === 0) {
+    // Retrieve products with pagination
+    const products = await Product.findAll({
+      ...filter,
+      limit,
+      offset: (page - 1) * limit,
+    });
+
+    if (!products || products.length === 0) {
       return res.status(404).json({
         ok: false,
         message: "No products found!",
@@ -150,10 +185,10 @@ exports.handleGetAllProducts = async (req, res) => {
     res.status(200).json({
       ok: true,
       pagination: {
-        totalData: products.count,
-        page: page,
+        totalData,
+        page,
       },
-      details: products.rows,
+      details: products,
     });
   } catch (error) {
     console.error("Error fetching data:", error);

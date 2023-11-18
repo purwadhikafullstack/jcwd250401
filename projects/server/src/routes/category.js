@@ -9,5 +9,6 @@ router.put("/:id", categoryValidation.validateCategory, categoryController.editC
 router.delete("/:id", categoryController.deleteCategory);
 router.get("/", categoryController.getCategories);
 router.get("/sub-categories", categoryController.handleGetSubCategory);
+router.get("/child-categories", categoryController.handleGetCategoriesWithSubcategories);
 
 module.exports = router;

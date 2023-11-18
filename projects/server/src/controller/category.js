@@ -280,3 +280,41 @@ exports.handleGetSubCategory = async (req, res) => {
     });
   }
 };
+
+
+exports.handleGetCategoriesWithSubcategories = async (req, res) => {
+  try {
+    const categories = await Category.findAll({
+      include: [
+        {
+          model: Category, // Subcategory model
+          as: 'subcategories',
+          attributes: ['id', 'name'], // Fetch only the 'id' and 'name' columns for subcategories
+        },
+      ],
+      where: {
+        parentCategoryId: null, // Fetch only main categories
+      },
+      attributes: ['id', 'name'], // Fetch only the 'id' and 'name' columns for main categories
+    });
+
+    if (!categories || categories.length === 0) {
+      return res.status(404).json({
+        ok: false,
+        message: "No categories found!",
+      });
+    }
+
+    res.status(200).json({
+      ok: true,
+      message: "Categories retrieved successfully",
+      details: categories,
+    });
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      message: "Failed to retrieve categories",
+      detail: String(error),
+    });
+  }
+};

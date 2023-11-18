@@ -2,7 +2,7 @@ const { body, validationResult } = require("express-validator");
 
 exports.productValidationRules = [
   body("productName").isLength({ min: 5 }).withMessage("product name must be minimum 5 characters"),
-  body("productDescription").isLength({ min: 15 }).withMessage("product description must be minimum 15 characters"),
+  body("productDescription").isLength({ min: 10 }).withMessage("product description must be minimum 10 characters"),
 ];
 
 exports.applyProductValidation = [
