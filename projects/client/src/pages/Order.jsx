@@ -5,15 +5,19 @@ import { useEffect, useState } from "react";
 import { showLoginModal } from "../slices/authModalSlices";
 import api from "../api";
 import { toast } from "sonner";
+import { PaymentProofModal } from "./PaymentProofModal";
 
 export const Order = () => {
   const isLogin = useSelector((state) => state?.account?.isLogin);
+  const userName = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const listsMenu = ["Profile", "Address Book", "My Order", "Change Password"];
   const orderStatus = ["All", "Waiting for Payment", "Waiting for Payment Confirmation", "On Process", "On Delivery", "Delivered", "Cancelled"];
-  const [selectedStatus, setSelectedStatus] = useState("All");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [openModalProof, setOpenModalProof] = useState(false);
   const [orderLists, setOrderLists] = useState([]);
   const [page, setPage] = useState(1);
-  const size = 10;
+  const size = 5;
   const [sort, setSort] = useState("createdAt");
   const [order, setOrder] = useState("DESC");
   const navigate = useNavigate();
@@ -25,27 +29,40 @@ export const Order = () => {
       dispatch(showLoginModal());
     }, 2000);
   }
-  const handleStatusChange = (status) => {
-    setSelectedStatus(status);
-  };
+  const handleStatusChange = (status) => setSelectedStatus(status);
+  // const handleOpenModalProof = (orderId) => {
+  //   setSelectedOrder(orderId);
+  //   setOpenModalProof(true);
+  // };
 
   useEffect(() => {
-    const getOrderLists = async () => {
+    const getOrderLists = async (userId) => {
       try {
-        const response = await api.get(`/order?status=${selectedStatus}&page=${Number(page)}&size=${Number(size)}&sort=${sort}&order=${order}`);
-        const orderLists = response.data.detail;
-        setOrderLists(orderLists);
+        const response = await api.get(`/order/${userId}?status=${selectedStatus}&page=${Number(page)}&size=${Number(size)}&sort=${sort}&order=${order}`);
+        setOrderLists(response.data.detail);
       } catch (error) {
-        if (error.response && error.response.status === 404) {
+        if (error.response && (error.response.status === 404 || error.response.status === 500)) {
           toast.error(error.response.data.message);
-        } else if (error.response && error.response.status === 500) {
-          console.error(error.response.data.detail);
-          toast.error(error.response.data.message);
+          setOrderLists([]);
+          if (error.response.status === 500) console.error(error.response.data.detail);
         }
       }
     };
-    getOrderLists();
-  }, [selectedStatus, page, size, sort, order]);
+    const getUserData = async () => {
+      try {
+        const response = await api.get(`/profile/${userName}`);
+
+        getOrderLists(response.data.detail.id);
+      } catch (error) {
+        if (error.response && (error.response.status === 404 || error.response.status === 500)) {
+          toast.error(error.response.data.message);
+          if (error.response.status === 500) console.error(error.response.data.detail);
+        }
+      }
+    };
+
+    getUserData();
+  }, [userName, selectedStatus, page, size, sort, order]);
 
   return (
     <>
@@ -70,10 +87,11 @@ export const Order = () => {
                 <p className="font-bold">Status</p>
                 <div>
                   {orderStatus.map((status, index) => {
-                    const isSelected = selectedStatus === status;
+                    const joinedStatus = status.toLowerCase().replace(/\s/g, "-");
+                    const isSelected = selectedStatus === joinedStatus;
 
                     return (
-                      <button key={index} className={`m-2 bg-gray-100 ${isSelected && "bg-gray-200"} px-2 py-1 min-w-[5vw] rounded-md text-sm font-sagoe text-gray-700 hover:bg-gray-200`} onClick={() => handleStatusChange(status)}>
+                      <button key={index} className={`m-2 bg-gray-100 ${isSelected && "bg-gray-200"} px-2 py-1 min-w-[5vw] rounded-md text-sm font-sagoe text-gray-700 hover:bg-gray-200`} onClick={() => handleStatusChange(joinedStatus)}>
                         {status}
                       </button>
                     );
@@ -141,6 +159,9 @@ export const Order = () => {
                               </p>
                             </div>
                           </div>
+                          {/* <button onClick={() => handleOpenModalProof(orderItem.Order.id)} className="px-2 py-1 bg-gray-100 rounded-md text-sm font-sagoe text-gray-700 hover:bg-gray-200 w-full h-[5vh] self-end">
+                            Upload Payment Proof
+                          </button> */}
                         </div>
                       </div>
                     );
@@ -151,7 +172,7 @@ export const Order = () => {
                   </div>
                 )}
               </div>
-              <div className={`${orderLists.length > 0 ? "flex" : "hidden"} justify-between`}>
+              <div className={`flex justify-between`}>
                 <button disabled={page === 1} onClick={() => setPage(page - 1)} className="px-2 py-1 my-2 bg-gray-100 rounded-md text-sm font-sagoe text-gray-700 hover:bg-gray-200">
                   Prev
                 </button>
@@ -168,6 +189,7 @@ export const Order = () => {
           )}
         </div>
       </div>
+      {/* <PaymentProofModal isOpen={openModalProof} onClose={() => setOpenModalProof(false)} orderId={selectedOrder} /> */}
     </>
   );
 };

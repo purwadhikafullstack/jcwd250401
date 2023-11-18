@@ -3,7 +3,9 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   //Login
   isLogin: window.localStorage.getItem("isLoggedIn") === "true",
+  isLoginAdmin: window.localStorage.getItem("isLoggedInAdmin") === "true",
   profile: window.localStorage.getItem("profile") ? JSON.parse(window.localStorage.getItem("profile")) : {},
+  adminProfile: window.localStorage.getItem("adminProfile") ? JSON.parse(window.localStorage.getItem("adminProfile")) : {},
   showUnauthorizedModal: false,
   redirectTo: "",
   userPhotoProfile: "",
@@ -25,6 +27,18 @@ const accountSlices = createSlice({
       window.localStorage.setItem("isLoggedIn", false);
       window.localStorage.setItem("profile", JSON.stringify({}));
     },
+    loginAdmin(state, action) {
+      state.isLoginAdmin = true;
+      state.adminProfile = action.payload;
+      window.localStorage.setItem("isLoggedInAdmin", "true");
+      window.localStorage.setItem("adminProfile", JSON.stringify(action.payload));
+    },
+    logoutAdmin(state) {
+      state.isLoginAdmin = false;
+      state.profile = {};
+      window.localStorage.setItem("isLoggedInAdmin", false);
+      window.localStorage.setItem("adminProfile", JSON.stringify({}));
+    },
     showUnauthorizedModal(state, action) {
       state.showUnauthorizedModal = true;
       state.redirectTo = action.payload;
@@ -39,5 +53,5 @@ const accountSlices = createSlice({
   },
 });
 
-export const { login, logout, showUnauthorizedModal, hideUnauthorizeModal, updateProfile } = accountSlices.actions;
+export const { login, logout, loginAdmin, logoutAdmin, showUnauthorizedModal, hideUnauthorizeModal, updateProfile } = accountSlices.actions;
 export default accountSlices.reducer;
