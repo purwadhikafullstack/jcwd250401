@@ -85,7 +85,7 @@ exports.handleAddProduct = async (req, res) => {
     const genderCode = gender === "Men" ? "001" : gender === "Women" ? "002" : "003";
     const subCategoryId = subCategoryInstance.id < 10 ? `0${subCategoryInstance.id}` : subCategoryInstance.id;
     const sku = `${mainCategoryInstance.id}${subCategoryId}${genderCode}${product.id}`;
-    
+
     // Update product with SKU using save()
     product.sku = sku;
     await product.save();
@@ -129,9 +129,10 @@ exports.handleGetAllProducts = async (req, res) => {
 
     // Apply search query filter using Sequelize's Op.like
     if (search) {
-      filter.where.name = {
-        [Op.like]: `%${search}%`,
-      };
+      filter.where[Op.or] = [
+        { name: { [Op.like]: `%${search}%` } },
+        { sku: { [Op.like]: `%${search}%` } },
+      ];
     }
 
     // Include sorting options
