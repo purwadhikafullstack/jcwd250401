@@ -4,7 +4,8 @@ import storage from "redux-persist/lib/storage"; // Use local storage for persis
 import authModalReducer from "./slices/authModalSlices";
 import accountReducer from "./slices/accountSlices";
 import addressReducer from "./slices/addressSlices";
-import categoryReducer from "./slices/categorySlices"
+import categoryReducer from "./slices/categorySlices";
+import productReducer from "./slices/productSlices";
 
 const persistConfig = {
   key: "root", // The key to use for storing data in local storage
@@ -18,6 +19,7 @@ const persistedRootReducer = persistReducer(
     account: accountReducer,
     address: addressReducer,
     category: categoryReducer,
+    product: productReducer,
   })
 );
 

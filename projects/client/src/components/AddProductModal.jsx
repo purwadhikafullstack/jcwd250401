@@ -12,6 +12,7 @@ import { showVerifyModal } from "../slices/authModalSlices";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Text } from "@chakra-ui/react";
 import { useDropzone } from "react-dropzone";
 import { PiImage, PiImageThin, PiWarningCircleBold } from "react-icons/pi";
+import { addProduct } from "../slices/productSlices";
 
 function AddProductModal({ isOpen, isClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -77,9 +78,11 @@ function AddProductModal({ isOpen, isClose }) {
           },
         });
 
+        const responseData = response.data.details;
         if (response.status === 201) {
           setTimeout(() => {
             setIsSubmitting(false);
+            dispatch(addProduct(responseData));
             toast.success("Successfully added new product", {
               autoClose: 1000,
               onAutoClose: (t) => {
@@ -93,7 +96,18 @@ function AddProductModal({ isOpen, isClose }) {
           }, 3000);
         }
       } catch (error) {
-        // Handle different error scenarios based on the HTTP status code
+        if (error.response.status === 400) {
+          setTimeout(() => {
+            setIsSubmitting(false);
+            toast.error("Please upload at least one photo of the product.");
+          }, 3000);
+        }
+        if (error.response.status === 404) {
+          setTimeout(() => {
+            setIsSubmitting(false);
+            toast.error("Product already exist, please add a new one.");
+          }, 3000);
+        }
       } finally {
         setTimeout(() => {
           setIsSubmitting(false);
@@ -430,12 +444,12 @@ function AddProductModal({ isOpen, isClose }) {
                     <h4 className="text-xs font-light text-gray-900 dark:text-white">Add at least 3 photos of the product to showcase its unique qualities and grab the attention of your followers.</h4>
                   </div>
                   <input type="file" accept="image/*" style={{ display: "none" }} ref={fileInputRef} onChange={(e) => onDrop([e.target.files[0]])} />
-                  <div className="lg:flex flex lg:flex-row flex-col lg:justify-center lg:items-center justify-center items-center lg:space-x-5 space-y-4 lg:space-y-0">
+                  <div className="lg:flex flex w-full lg:flex-row flex-col lg:justify-start lg:items-center justify-center items-center lg:space-x-5 space-y-4 lg:space-y-0">
                     {[0, 1, 2, 3, 4].map((index) => {
                       const previewImage = dropzoneImages.find((img) => img.index === index);
 
                       return (
-                        <div key={index} className="lg:w-[139px] lg:h-[139px] w-[80%] h-[250px] relative">
+                        <div key={index} className="lg:w-[139px] lg:h-[138px] w-[80%] h-[250px] relative">
                           <div
                             onClick={() => handleClick(index)}
                             className={`w-full h-full border-dashed border-2 border-gray-300 rounded-md flex shadow-md shadow-gray-200 focus:ring-transparent items-center justify-center bg-transparent ${
