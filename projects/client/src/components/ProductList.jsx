@@ -329,7 +329,7 @@ function ProductList() {
           </Box>
         </Flex>
       </Box>
-      <EditCategoryModal isOpen={openEditProductModal} isClose={toggleEditModal} />
+      <EditProductModal isOpen={openEditProductModal} isClose={toggleEditModal} />
     </div>
   );
 }
