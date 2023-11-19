@@ -47,11 +47,11 @@ function AddProductModal({ isOpen, isClose }) {
       productImages: [],
     },
     validationSchema: Yup.object({
-      productName: Yup.string().required("Please enter your product name"),
+      productName: Yup.string().required("Please enter your product name").min(6, "Product name must be at least 6 characters"),
       productGender: Yup.string().required("Please enter your product gender"),
       productMainCategory: Yup.string().required("Please enter your product main category"),
       productSubCategory: Yup.string().required("Please enter your product sub category"),
-      productDescription: Yup.string().required("Please enter your description"),
+      productDescription: Yup.string().required("Please enter your description").min(10, "Product description must be at least 10 characters"),
       productPrice: Yup.string().required("Please enter your product price"),
     }),
     onSubmit: async (values) => {
@@ -281,7 +281,7 @@ function AddProductModal({ isOpen, isClose }) {
                     <h4 className="text-xs font-light text-gray-900 dark:text-white">Select product main category, sub category, and gender if needed.</h4>
                   </div>
                   <div className="flex lg:flex-row space-y-2 lg:space-y-0 flex-col w-full ">
-                    {formik.values.productMainCategory !== "bags" && formik.values.productMainCategory !== "accessories" ? (
+                    {formik.values.productMainCategory !== "Bags" && formik.values.productMainCategory !== "Accessories" ? (
                       <>
                         <div className="flex flex-col w-full">
                           <div>
@@ -392,15 +392,15 @@ function AddProductModal({ isOpen, isClose }) {
                             <select
                               id="productSubCategory"
                               name="productSubCategory"
-                              className="w-full px-4 py-2 border-2 border-gray-300 shadow-md shadow-gray-200 lg:rounded-none lg:rounded-r-lg rounded-lg focus:ring-transparent focus:border-gray-500"
+                              className="w-full px-4 py-2 border-2 border-gray-300 shadow-md shadow-gray-200  lg:rounded-none rounded-lg focus:ring-transparent focus:border-gray-500"
                               {...formik.getFieldProps("productSubCategory")}
                             >
                               <option value="" disabled className="text-gray-400">
                                 Select sub category
                               </option>
-                              {subCategories.map((category) => (
-                                <option key={category.value} value={category.value}>
-                                  {category.label}
+                              {subCategories.map((subcategory) => (
+                                <option key={subcategory.id} value={subcategory.name}>
+                                  {subcategory.name}
                                 </option>
                               ))}
                             </select>
@@ -427,7 +427,7 @@ function AddProductModal({ isOpen, isClose }) {
                       id="productDescription"
                       name="productDescription"
                       placeholder="Describe the product..."
-                      className="w-full h-36 px-4 py-2 border-2 border-gray-300 rounded-lg shadow-md shadow-gray-200 focus:ring-transparent resize-none focus:border-gray-500"
+                      className="w-full h-56 px-4 py-2 border-2 border-gray-300 rounded-lg shadow-md shadow-gray-200 focus:ring-transparent resize-none focus:border-gray-500"
                       {...formik.getFieldProps("productDescription")}
                     />
                     {formik.touched.productDescription && formik.errors.productDescription ? (
@@ -449,7 +449,7 @@ function AddProductModal({ isOpen, isClose }) {
                       const previewImage = dropzoneImages.find((img) => img.index === index);
 
                       return (
-                        <div key={index} className="lg:w-[139px] lg:h-[138px] w-[80%] h-[250px] relative">
+                        <div key={index} className="lg:w-[136px] lg:h-[200px] w-[80%] h-[250px] relative">
                           <div
                             onClick={() => handleClick(index)}
                             className={`w-full h-full border-dashed border-2 border-gray-300 rounded-md flex shadow-md shadow-gray-200 focus:ring-transparent items-center justify-center bg-transparent ${

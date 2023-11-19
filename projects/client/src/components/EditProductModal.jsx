@@ -13,7 +13,7 @@ import { useDropzone } from "react-dropzone";
 import { PiImage, PiImageThin, PiWarningCircleBold } from "react-icons/pi";
 import { addProduct } from "../slices/productSlices";
 
-function EditProductModal({ isOpen, isClose }) {
+function EditProductModal({ isOpen, isClose, data }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewImages, setPreviewImages] = useState([]);
   const [activeIndex, setActiveIndex] = useState(null);
@@ -22,8 +22,12 @@ function EditProductModal({ isOpen, isClose }) {
   const [dropzoneImages, setDropzoneImages] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
 
+  console.log(data);
+
   const handleInputChange = (event) => {
     const rawValue = event.target.value.replace(/[^\d]/g, ""); // Remove non-numeric characters
+    const numericValue = parseInt(rawValue, 10); // Parse the numeric value
+
     const formatted = new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
@@ -31,58 +35,101 @@ function EditProductModal({ isOpen, isClose }) {
     }).format(rawValue);
 
     setFormattedValue(formatted);
-    // You can also update the formik field value if needed
-    formik.setFieldValue("productPrice", rawValue);
+    formik.setFieldValue("productPrice", numericValue);
   };
+
+  useEffect(() => {
+    const formatted = new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(data?.price || 0); // Use data?.price or a default value if it's undefined
+    setFormattedValue(formatted);
+  }, [data?.price]);
+
+  useEffect(() => {
+    const fetchPreviewImages = async () => {
+      try {
+        const images = data?.productImages || [];
+        const previewImagePromises = images.map(async (image, index) => {
+          const response = await fetch(`http://localhost:8000/public/${image.imageUrl}`);
+          const blob = await response.blob();
+          if (blob.type.startsWith("image/")) {
+            // Create an object with file, preview, and index properties
+            return {
+              file: new File([blob], image.name, { type: blob.type }),
+              preview: URL.createObjectURL(blob),
+              index, // Add index property
+            };
+          }
+          return null; // Filter out non-image blobs
+        });
+
+        const updatedPreviewImages = (await Promise.all(previewImagePromises)).filter((image) => image !== null);
+        setPreviewImages(updatedPreviewImages);
+        setDropzoneImages(updatedPreviewImages);
+
+        formik.setFieldValue(
+          "productImages",
+          updatedPreviewImages.map((img) => img.file)
+        );
+      } catch (error) {
+        // Handle errors if necessary
+        console.error("Error fetching preview images:", error);
+      }
+    };
+
+    fetchPreviewImages();
+  }, [data?.productImages]);
 
   const formik = useFormik({
     initialValues: {
-      productName: "",
-      productGender: "",
-      productMainCategory: "",
-      productSubCategory: "",
-      productDescription: "",
-      productPrice: "",
-      productImages: [],
+      productName: data?.name,
+      productGender: data?.gender,
+      productMainCategory: data?.Categories[0]?.name,
+      productSubCategory: data?.Categories[1]?.name,
+      productDescription: data?.description,
+      productPrice: data?.price || 0,
+      productImages: "",
     },
     validationSchema: Yup.object({
-      productName: Yup.string().required("Please enter your product name"),
+      productName: Yup.string().required("Please enter your product name").min(6, "Product name must be at least 6 characters"),
       productGender: Yup.string().required("Please enter your product gender"),
       productMainCategory: Yup.string().required("Please enter your product main category"),
       productSubCategory: Yup.string().required("Please enter your product sub category"),
-      productDescription: Yup.string().required("Please enter your description"),
+      productDescription: Yup.string().required("Please enter your description").min(10, "Product description must be at least 10 characters"),
       productPrice: Yup.string().required("Please enter your product price"),
     }),
     onSubmit: async (values) => {
       try {
         setIsSubmitting(true);
 
-        const data = new FormData();
-        data.append("productName", values.productName);
-        data.append("productGender", values.productGender);
-        data.append("productMainCategory", values.productMainCategory);
-        data.append("productSubCategory", values.productSubCategory);
-        data.append("productDescription", values.productDescription);
-        data.append("productPrice", values.productPrice);
+        const datas = new FormData();
+        datas.append("productName", values.productName);
+        datas.append("productGender", values.productGender);
+        datas.append("productMainCategory", values.productMainCategory);
+        datas.append("productSubCategory", values.productSubCategory);
+        datas.append("productDescription", values.productDescription);
+        datas.append("productPrice", values.productPrice);
 
         if (values.productImages) {
           values.productImages.forEach((image) => {
-            data.append("productImages", image);
+            datas.append("productImages", image);
           });
         }
 
-        const response = await api.post("/product", data, {
+        const response = await api.put(`/product/${data.id}`, datas, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
 
         const responseData = response.data.details;
-        if (response.status === 201) {
+        if (response.status === 200) {
           setTimeout(() => {
             setIsSubmitting(false);
             dispatch(addProduct(responseData));
-            toast.success("Successfully added new product", {
+            toast.success("Update product success", {
               autoClose: 1000,
               onAutoClose: (t) => {
                 formik.resetForm();
@@ -104,7 +151,7 @@ function EditProductModal({ isOpen, isClose }) {
         if (error.response.status === 404) {
           setTimeout(() => {
             setIsSubmitting(false);
-            toast.error("Product already exist, please add a new one.");
+            toast.error("Product not found.");
           }, 3000);
         }
       } finally {
@@ -224,8 +271,7 @@ function EditProductModal({ isOpen, isClose }) {
         <ModalContent>
           <ModalHeader py={0}>
             <div className="px-4 lg:mt-7 mt-10 lg:mb-0 mb-4">
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Add Product</h3>
-              <h4 className="text-sm font-light text-gray-900 dark:text-white">Add a new product to your store</h4>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Product</h3>
             </div>
           </ModalHeader>
           <ModalCloseButton />
@@ -280,7 +326,7 @@ function EditProductModal({ isOpen, isClose }) {
                     <h4 className="text-xs font-light text-gray-900 dark:text-white">Select product main category, sub category, and gender if needed.</h4>
                   </div>
                   <div className="flex lg:flex-row space-y-2 lg:space-y-0 flex-col w-full ">
-                    {formik.values.productMainCategory !== "bags" && formik.values.productMainCategory !== "accessories" ? (
+                    {formik.values.productMainCategory !== "Bags" && formik.values.productMainCategory !== "Accessories" ? (
                       <>
                         <div className="flex flex-col w-full">
                           <div>
@@ -391,15 +437,15 @@ function EditProductModal({ isOpen, isClose }) {
                             <select
                               id="productSubCategory"
                               name="productSubCategory"
-                              className="w-full px-4 py-2 border-2 border-gray-300 shadow-md shadow-gray-200 lg:rounded-none lg:rounded-r-lg rounded-lg focus:ring-transparent focus:border-gray-500"
+                              className="w-full px-4 py-2 border-2 border-gray-300 shadow-md shadow-gray-200  lg:rounded-none rounded-lg focus:ring-transparent focus:border-gray-500"
                               {...formik.getFieldProps("productSubCategory")}
                             >
                               <option value="" disabled className="text-gray-400">
                                 Select sub category
                               </option>
-                              {subCategories.map((category) => (
-                                <option key={category.value} value={category.value}>
-                                  {category.label}
+                              {subCategories.map((subcategory) => (
+                                <option key={subcategory.id} value={subcategory.name}>
+                                  {subcategory.name}
                                 </option>
                               ))}
                             </select>
@@ -426,7 +472,7 @@ function EditProductModal({ isOpen, isClose }) {
                       id="productDescription"
                       name="productDescription"
                       placeholder="Describe the product..."
-                      className="w-full h-36 px-4 py-2 border-2 border-gray-300 rounded-lg shadow-md shadow-gray-200 focus:ring-transparent resize-none focus:border-gray-500"
+                      className="w-full h-56 px-4 py-2 border-2 border-gray-300 rounded-lg shadow-md shadow-gray-200 focus:ring-transparent resize-none focus:border-gray-500"
                       {...formik.getFieldProps("productDescription")}
                     />
                     {formik.touched.productDescription && formik.errors.productDescription ? (
@@ -446,9 +492,8 @@ function EditProductModal({ isOpen, isClose }) {
                   <div className="lg:flex flex w-full lg:flex-row flex-col lg:justify-start lg:items-center justify-center items-center lg:space-x-5 space-y-4 lg:space-y-0">
                     {[0, 1, 2, 3, 4].map((index) => {
                       const previewImage = dropzoneImages.find((img) => img.index === index);
-
                       return (
-                        <div key={index} className="lg:w-[139px] lg:h-[138px] w-[80%] h-[250px] relative">
+                        <div key={index} className="lg:w-[136px] lg:h-[200px] w-[80%] h-[250px] relative">
                           <div
                             onClick={() => handleClick(index)}
                             className={`w-full h-full border-dashed border-2 border-gray-300 rounded-md flex shadow-md shadow-gray-200 focus:ring-transparent items-center justify-center bg-transparent ${
@@ -489,11 +534,11 @@ function EditProductModal({ isOpen, isClose }) {
                       isProcessing
                       processingSpinner={<AiOutlineLoading className="h-6 w-6 animate-spin" />}
                     >
-                      Adding Product...
+                      Updating Product...
                     </Button>
                   ) : (
                     <Button className="w-full shadow-md shadow-gray-200 focus:ring-transparent bg-[#40403F] enabled:hover:bg-[#777777]" size="lg" type="submit" disabled={isSubmitting}>
-                      Add Product
+                      Update Product
                     </Button>
                   )}
                 </div>

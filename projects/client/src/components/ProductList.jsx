@@ -303,8 +303,7 @@ function ProductList() {
                   </Flex>
                 </MenuButton>
                 <MenuList>
-                  <MenuItem onClick={() => toggleEditModal(product)}>Edit</MenuItem>
-                  <MenuItem>Change category</MenuItem>
+                  <MenuItem onClick={() => toggleEditModal(product)}>Edit product</MenuItem>
                   <MenuItem>Update stock</MenuItem>
                   <MenuItem>Delete</MenuItem>
                 </MenuList>
@@ -329,7 +328,7 @@ function ProductList() {
           </Box>
         </Flex>
       </Box>
-      <EditProductModal isOpen={openEditProductModal} isClose={toggleEditModal} />
+      {selectedProduct && <EditProductModal isOpen={openEditProductModal} data={selectedProduct} isClose={toggleEditModal} />}
     </div>
   );
 }
