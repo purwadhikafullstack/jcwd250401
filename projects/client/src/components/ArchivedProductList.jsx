@@ -8,12 +8,9 @@ import { PiCaretDown, PiEye, PiInfo, PiShoppingBag } from "react-icons/pi";
 import { Box, Button, Flex, Menu, MenuButton, MenuItem, MenuList, Text } from "@chakra-ui/react";
 import { setProductList } from "../slices/productSlices";
 import _debounce from "lodash/debounce";
-import { ChevronDownIcon } from "@chakra-ui/icons";
-import EditProductModal from "./EditProductModal";
-import { EditCategoryModal } from "./EditCategoryModal";
-import ArchiveProductModal from "./ArchiveProductModal";
+import UnarchiveProductModal from "./UnarchiveProductModal";
 
-function ProductList() {
+function ArchivedProductList() {
   const [sortCriteria, setSortCriteria] = useState("date-desc"); // Default sorting criteria that matches the backend;
   const [searchInput, setSearchInput] = useState(""); // Initialize with "All"
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -27,8 +24,7 @@ function ProductList() {
   const [categories, setCategories] = useState([]); // Initialize with empty array
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [openEditProductModal, setOpenEditProductModal] = useState(false);
-  const [openArchiveProductModal, setOpenArchiveProductModal] = useState(false);
+  const [openUnarchiveProductModal, setOpenUnarchiveProductModal] = useState(false);
 
   const newProducts = useSelector((state) => state.product?.productList);
 
@@ -52,7 +48,7 @@ function ProductList() {
       try {
         setCurrentPage(1);
 
-        const response = await api.get(`/product?page=${currentPage}&limit=${productsPerPage}&sort=${sortCriteria}&category=${selectedCategory}&search=${searchInput}&filterBy=${selectedFilter}`);
+        const response = await api.get(`/product?page=${currentPage}&limit=${productsPerPage}&sort=${sortCriteria}&category=${selectedCategory}&search=${searchInput}&filterBy=${selectedFilter}&isArchived=true`);
         const responseData = response.data.details;
         const totalData = response.data.pagination.totalData;
         const totalPages = Math.ceil(totalData / productsPerPage);
@@ -148,14 +144,9 @@ function ProductList() {
     }),
   ];
 
-  const toggleEditModal = (product) => {
+  const toggleUnarchiveModal = (product) => {
     setSelectedProduct(product);
-    setOpenEditProductModal(!openEditProductModal);
-  };
-
-  const toggleArchiveModal = (product) => {
-    setSelectedProduct(product);
-    setOpenArchiveProductModal(!openArchiveProductModal);
+    setOpenUnarchiveProductModal(!openUnarchiveProductModal);
   };
 
   return (
@@ -240,7 +231,7 @@ function ProductList() {
           </div>
         </div>
       </div>
-      <div className="space-y-6 overflow-y-scroll scrollbar-hide h-[56vh] ">
+      <div className="space-y-6 overflow-y-scroll scrollbar-hide h-[56vh]">
         {products.length == 0 ? (
           <Text textAlign={"center"} fontStyle={"italic"}>
             No data matches.
@@ -252,7 +243,7 @@ function ProductList() {
           <div key={product.id} className="bg-white items-center justify-between flex gap-6 h-36 w-full px-6 py-2 rounded-lg shadow-md">
             <div className="h-[100px] w-[100px] flex justify-center items-center">
               {product.productImages[0].imageUrl ? (
-                <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-2xl" alt="Product Image" />
+                <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-lg" alt="Product Image" style={{ filter: "grayscale(100%)" }} />
               ) : (
                 <div className="w-full h-full flex justify-center items-center bg-gray-200 text-gray-400">
                   <div className="flex flex-col items-center justify-center">
@@ -264,7 +255,8 @@ function ProductList() {
             </div>
 
             <div className="flex w-60 flex-col">
-              <span className="font-bold">{product.name} </span>
+              <span className="font-bold">(Archived)</span>
+              <span className="font-bold">{product.name}</span>
               <span>
                 SKU : {product.sku} ({product.gender}){" "}
               </span>
@@ -310,10 +302,7 @@ function ProductList() {
                   </Flex>
                 </MenuButton>
                 <MenuList>
-                  <MenuItem onClick={() => toggleEditModal(product)}>Edit product</MenuItem>
-                  <MenuItem>Update stock</MenuItem>
-                  <MenuItem onClick={() => toggleArchiveModal(product)}>Archive</MenuItem>
-                  <MenuItem>Delete</MenuItem>
+                  <MenuItem onClick={() => toggleUnarchiveModal(product)}>Unarchive</MenuItem>
                 </MenuList>
               </Menu>
             </div>
@@ -322,7 +311,10 @@ function ProductList() {
       </div>
       <Box display="flex" justifyContent="right" gap={2} textAlign="right" mr={4}>
         <Flex alignItems={"center"} gap={2}>
-          <Text mr={2} fontWeight={"bold"}> Page </Text>
+          <Text mr={2} fontWeight={"bold"}>
+            {" "}
+            Page{" "}
+          </Text>
           <Box>
             <Button
               boxShadow="md"
@@ -331,7 +323,6 @@ function ProductList() {
               w="30px"
               borderRadius="lg"
               onClick={() => handlePageChange(1)}
-            
               variant={currentPage === 1 ? "solid" : "outline"}
               bgColor={currentPage === 1 ? "white" : "gray.900"}
               textColor={currentPage === 1 ? "gray.900" : "white"}
@@ -361,10 +352,9 @@ function ProductList() {
           </Box>
         </Flex>
       </Box>
-      {selectedProduct && <ArchiveProductModal isOpen={openArchiveProductModal} data={selectedProduct} isClose={toggleArchiveModal} />}
-      {selectedProduct && <EditProductModal isOpen={openEditProductModal} data={selectedProduct} isClose={toggleEditModal} />}
+      {selectedProduct && <UnarchiveProductModal isOpen={openUnarchiveProductModal} data={selectedProduct} isClose={toggleUnarchiveModal} />}
     </div>
   );
 }
 
-export default ProductList;
+export default ArchivedProductList;

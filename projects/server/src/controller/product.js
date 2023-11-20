@@ -215,6 +215,7 @@ exports.handleGetAllProducts = async (req, res) => {
   const category = req.query.category;
   const search = req.query.search;
   const filterBy = req.query.filterBy;
+  const isArchived = req.query.isArchived || false; // New query parameter
 
   try {
     const filter = {
@@ -262,6 +263,13 @@ exports.handleGetAllProducts = async (req, res) => {
       }
     }
 
+    // Add condition for isArchived
+    if (isArchived === "true") {
+      filter.where.isArchived = true;
+    } else {
+      filter.where.isArchived = false;
+    }
+
     // Retrieve products without pagination to get the total count
     const totalData = await Product.count({
       ...filter,
@@ -299,3 +307,68 @@ exports.handleGetAllProducts = async (req, res) => {
     });
   }
 };
+
+
+exports.handleUnarchiveProduct = async (req, res) => {
+  const productId = req.params.productId; // Assuming you're passing the product ID in the request parameters
+
+  try {
+    // Find the product by ID
+    const product = await Product.findByPk(productId);
+
+    if (!product) {
+      return res.status(404).json({
+        ok: false,
+        message: 'Product not found',
+      });
+    }
+
+    // Update the product to mark it as unarchived
+    await product.update({ isArchived: false });
+
+    res.status(200).json({
+      ok: true,
+      message: 'Product unarchived successfully',
+      product: product, // You can customize the response as needed
+    });
+  } catch (error) {
+    console.error('Error unarchiving product:', error);
+    res.status(500).json({
+      ok: false,
+      message: 'Internal server error',
+    });
+  }
+};
+
+exports.handleArchiveProduct = async (req, res) => {
+  const productId = req.params.productId; // Assuming you're passing the product ID in the request parameters
+
+  try {
+    // Find the product by ID
+    const product = await Product.findByPk(productId);
+
+    if (!product) {
+      return res.status(404).json({
+        ok: false,
+        message: 'Product not found',
+      });
+    }
+
+    // Update the product to mark it as archived
+    await product.update({ isArchived: true });
+
+    res.status(200).json({
+      ok: true,
+      message: 'Product archived successfully',
+      product: product, // You can customize the response as needed
+    });
+  } catch (error) {
+    console.error('Error archiving product:', error);
+    res.status(500).json({
+      ok: false,
+      message: 'Internal server error',
+    });
+  }
+};
+  
+  

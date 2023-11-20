@@ -10,6 +10,7 @@ import { CategoryLists } from "../components/CategoryLists";
 import ProductList from "../components/ProductList";
 import { useEffect } from "react";
 import { useRef } from "react";
+import ArchivedProductList from "../components/ArchivedProductList";
 
 function Product() {
   const navList = ["All Products", "Out of stock", "Category", "Archive"];
@@ -78,7 +79,7 @@ function Product() {
             {selectedComponent === "All Products" && <ProductList />}
             {selectedComponent === "Out of stock" && "Out of stock"}
             {selectedComponent === "Category" && <CategoryLists />}
-            {selectedComponent === "Archive" && "Archive"}
+            {selectedComponent === "Archive" && <ArchivedProductList />}
           </div>
         </div>
       </div>
