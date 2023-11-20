@@ -10,6 +10,7 @@ exports.validateToken = (req, res, next) => {
     });
     return;
   }
+
   try {
     token = token.split(" ")[1];
     if (!token) {
@@ -38,27 +39,30 @@ exports.validateToken = (req, res, next) => {
   }
 };
 
-// exports.checkRole = (req, res, next) => {
-//   if (req.user.isAdmin === true) {
-//     next();
-//     return;
-//   }
-//   res.status(401).json({
-//     ok: false,
-//     message: "Permission Denied",
-//   });
-// };
+exports.checkRoleSuperAdmin = (req, res, next) => {
+  if (req.user.isWarehouseAdmin === false) {
+    next();
+    return;
+  }
+  res.status(401).json({
+    ok: false,
+    message: "Permission Denied",
+  });
+};
+
+exports.checkRoleWarehouseAdmin = (req,res, next) => { 
+  if (req.user.isWarehouseAdmin === true) {
+    next();
+    return;
+  }
+  res.status(401).json({
+    ok: false,
+    message: "Permission Denied",
+  });
+}
+
 
 // exports.checkRoleUser = (req, res, next) => {
-//   if (req.user.isAdmin === false) {
-//     next();
-//     return;
-//   }
-//   res.status(401).json({
-//     ok: false,
-//     message: "Permission Denied",
-//   });
-// };
 
 exports.checkRoleUserVerify= (req, res, next) => {
   if (req.user.isVerify === true) {

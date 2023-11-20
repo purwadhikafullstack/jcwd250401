@@ -549,7 +549,7 @@ exports.handleAdminRegister = async (req, res) => {
 };
 
 exports.handleAdminLogin = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, remember } = req.body;
 
   try {
     const account = await Admin.findOne({
@@ -577,10 +577,64 @@ exports.handleAdminLogin = async (req, res) => {
       });
       return;
     }
-    const payload = { id: account.id };
-    const token = jwt.sign(payload, JWT_SECRET_KEY, {
-      expiresIn: "2h",
+    const payload = { id: account.id, isWarehouseAdmin: account.isWarehouseAdmin };
+   
+exports.handleAdminLogin = async (req, res) => {
+  const { email, password, remember } = req.body;
+
+  try {
+    const account = await Admin.findOne({
+      where: {
+        [Op.or]: {
+          email,
+          password,
+        },
+      },
     });
+
+    if (!account) {
+      res.status(401).json({
+        ok: false,
+        message: 'Incorrect email or password',
+      });
+      return;
+    }
+
+    const isValid = await bcrypt.compare(password, account.password);
+    if (!isValid) {
+      res.status(401).json({
+        ok: false,
+        message: 'Incorrect email or password',
+      });
+      return;
+    }
+
+    const payload = { id: account.id, isWarehouseAdmin: account.isWarehouseAdmin };
+    const expiresIn = remember ? '30d' : '2h'; // Set expiration to 1 month if remember is true, otherwise 2 hours
+
+    const token = jwt.sign(payload, JWT_SECRET_KEY, {
+      expiresIn,
+    });
+
+    const response = {
+      token,
+      profile: {
+        email: account.email,
+        isWarehouseAdmin: account.isWarehouseAdmin,
+      },
+    };
+
+    res.status(200).json({
+      ok: true,
+      data: response,
+    });
+  } catch (error) {
+    res.status(401).json({
+      ok: false,
+      message: String(error),
+    });
+  }
+};
 
     const response = {
       token,

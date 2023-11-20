@@ -45,6 +45,7 @@ function AdminLoginPage() {
         const response = await api.post("/auth/admin", {
           email: values.email,
           password: values.password,
+          remember: values.remember,
         });
 
         if (response.status === 200) {
@@ -125,10 +126,12 @@ function AdminLoginPage() {
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Switch id="rememberme" colorScheme="gray"/>
+                  <Switch id="rememberme" colorScheme="gray" isChecked={formik.values.remember} onChange={() => formik.setFieldValue("remember", !formik.values.remember)} />
                   <span className="text-sm text-gray-900 dark:text-white">Remember me</span>
                 </div>
-                <a className="text-sm hover:underline mr-2 font-normal font-sagoe text-[#007AFF] cursor-pointer" onClick={handleShowForgotPasswordModal}>Forgot password?</a>
+                <a className="text-sm hover:underline mr-2 font-normal font-sagoe text-[#007AFF] cursor-pointer" onClick={handleShowForgotPasswordModal}>
+                  Forgot password?
+                </a>
               </div>
               <div>
                 {isSubmitting ? (
@@ -141,8 +144,7 @@ function AdminLoginPage() {
                   </Button>
                 )}
               </div>
-              <div>
-            </div>
+              <div></div>
             </div>
           </form>
         </div>
