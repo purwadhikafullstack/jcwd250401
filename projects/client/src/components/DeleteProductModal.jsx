@@ -44,15 +44,15 @@ function DeleteProductModal({ isOpen, isClose, data }) {
         <ModalBody>
           <Text>Are you sure you want to delete this product?</Text>
           {data && data.productImages && data.productImages.length > 0 && (
-            <>
-              <Flex mt={4} justifyContent="center">
-                <Img src={`http://localhost:8000/public/${data.productImages[0]?.imageUrl}`} boxShadow="lg" w="40%" alt={data.name} loading="eager" />
-              </Flex>
+          <div className="flex flex-col items-center justify-center mt-4">
+              <div className="flex justify-center items-center h-[200px] w-[160px]">
+                <img src={`http://localhost:8000/public/${data.productImages[0]?.imageUrl}`} className="w-full h-full shadow-md" alt={data.name}  />
+              </div>
               <Flex mt={4} gap={2} flexDirection="column" justifyContent="center" alignItems="center">
                 <Text fontWeight="bold">{data.name}</Text>
                 <Text> SKU : {data.sku}</Text>
               </Flex>
-            </>
+            </div>
           )}
         </ModalBody>
         <ModalFooter>

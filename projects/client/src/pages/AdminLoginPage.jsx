@@ -8,6 +8,7 @@ import { AiOutlineLoading } from "react-icons/ai";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Button } from "flowbite-react";
 import { loginAdmin } from "../slices/accountSlices";
+import { login } from "../slices/accountSlices";
 import rains from "../assets/rains.png";
 import api from "../api";
 import { toast } from "sonner";
@@ -55,7 +56,8 @@ function AdminLoginPage() {
               autoClose: 1000,
               onAutoClose: (t) => {
                 setIsSubmitting(false);
-                dispatch(loginAdmin(responseData));
+                // dispatch(loginAdmin(responseData));
+                dispatch(login(responseData));
                 navigate("/dashboard");
               },
             });
