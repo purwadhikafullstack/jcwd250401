@@ -72,6 +72,7 @@ exports.addWarehouse = async (req, res) => {
         const warehouse = await Warehouse.create({
             name,
             location: address,
+            warehouseImage
         });
 
         // Create WarehouseAddress
