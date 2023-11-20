@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Navigationadmin from "../components/Navigationadmin";
 import { Button } from "flowbite-react";
-import AddProductModal from "../components/AddProductModal";
+import AddWarehouseModal from "../components/AddWarehouseModal"; // Import the AddWarehouseModal component
 import WarehouseCard from "../components/WarehouseCard"; // Import the WarehouseCard component
 import api from '../api'; // Replace with your actual API module
 
 function Warehouse() {
   const [warehouses, setWarehouses] = useState([]); // State to store the warehouses
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false); // State to manage AddWarehouseModal visibility
 
   useEffect(() => {
     api.get('/api/warehouse')
@@ -21,6 +22,12 @@ function Warehouse() {
       });
   }, []);
 
+  // Handler to open the AddWarehouseModal
+  const openAddModal = () => setIsAddModalOpen(true);
+
+  // Handler to close the AddWarehouseModal
+  const closeAddModal = () => setIsAddModalOpen(false);
+
   return (
     <div className="flex flex-row justify-between h-screen">
       <Sidebar />
@@ -30,7 +37,8 @@ function Warehouse() {
         </div>
         <div className="flex flex-col mt-16 py-8 px-4 md:p-8 overflow-auto h-full">
           <div className="flex justify-end items-center gap-2">
-            <Button color="dark" size="medium" className="md:p-2 w-52 shadow-md">
+            {/* Updated Button component to open the modal */}
+            <Button color="dark" size="medium" className="md:p-2 w-52 shadow-md" onClick={openAddModal}>
               Add Warehouse
             </Button>
           </div>
@@ -42,6 +50,8 @@ function Warehouse() {
           </div>
         </div>
       </div>
+      {/* AddWarehouseModal component */}
+      <AddWarehouseModal isOpen={isAddModalOpen} onClose={closeAddModal} />
     </div>
   );
 }
