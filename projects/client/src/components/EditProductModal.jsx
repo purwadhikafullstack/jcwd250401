@@ -130,6 +130,7 @@ function EditProductModal({ isOpen, isClose, data }) {
         const responseData = response.data.details;
         if (response.status === 200) {
           setTimeout(() => {
+            isClose();
             setIsSubmitting(false);
             dispatch(addProduct(responseData));
             toast.success("Update product success", {
@@ -139,7 +140,6 @@ function EditProductModal({ isOpen, isClose, data }) {
                 setDropzoneImages([]);
                 setPreviewImages([]);
                 setFormattedValue("");
-                isClose();
               },
             });
           }, 3000);

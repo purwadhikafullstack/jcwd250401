@@ -84,6 +84,7 @@ function AddProductModal({ isOpen, isClose }) {
         const responseData = response.data.details;
         if (response.status === 201) {
           setTimeout(() => {
+            isClose();
             setIsSubmitting(false);
             dispatch(addProduct(responseData));
             toast.success("Successfully added new product", {
@@ -93,7 +94,6 @@ function AddProductModal({ isOpen, isClose }) {
                 setDropzoneImages([]);
                 setPreviewImages([]);
                 setFormattedValue("");
-                isClose();
               },
             });
           }, 3000);
