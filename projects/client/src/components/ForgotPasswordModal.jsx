@@ -12,7 +12,7 @@ import { showLoginModal } from "../slices/authModalSlices";
 import { showVerifyModal } from "../slices/authModalSlices";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from "@chakra-ui/react";
 
-function ForgotPasswordModal({ isOpen, isClose }) {
+function ForgotPasswordModal({ isOpen, isClose, userType="user" }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const dispatch = useDispatch();
   const formik = useFormik({
@@ -26,7 +26,8 @@ function ForgotPasswordModal({ isOpen, isClose }) {
       try {
         setIsSubmitting(true);
 
-        const response = await api.post("/auth/forgotpassword", {
+        const endpoint = userType === "admin" ? "/auth/forgot-password-admin": "/auth/forgotpassword"
+        const response = await api.post(endpoint, {
           email: values.email,
         });
 

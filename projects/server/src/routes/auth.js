@@ -7,31 +7,26 @@ const passwordValidator = require("../middleware/validation/password");
 //auth
 
 //register
-router.post("/register", registerValidator.registerValidationRules,
-registerValidator.applyRegisterValidation, authController.handleRegister);
-router.post("/adminregister", registerValidator.registerValidationRules,
-registerValidator.applyRegisterValidation, authController.handleAdminRegister);
+router.post("/register", registerValidator.registerValidationRules, registerValidator.applyRegisterValidation, authController.handleRegister);
+router.post("/adminregister", registerValidator.registerValidationRules, registerValidator.applyRegisterValidation, authController.handleAdminRegister);
 router.post("/registergoogle", authController.handleRegisterWithGoogle);
 
 //verify
 router.post("/sendverify", authController.handleSendVerifyEmail);
-router.get("/verify",  authController.handleVerify);
+router.get("/verify", authController.handleVerify);
 
 //create password
-router.post("/password", 
-passwordValidator.passwordValidationRules,
-passwordValidator.applyPasswordValidation,
-authController.handleCreatePassword)
+router.post("/password", passwordValidator.passwordValidationRules, passwordValidator.applyPasswordValidation, authController.handleCreatePassword);
 
-//login 
+//login
 router.post("/", authController.handleLogin);
-router.post("/google", authController.handleLoginWithGoogle)
+router.post("/google", authController.handleLoginWithGoogle);
 router.post("/admin", authController.handleAdminLogin);
 
 //forgot password
-router.post("/forgotpassword", authController.handleForgotPassword)
-router.post("/resetpassword", passwordValidator.passwordValidationRules,
-passwordValidator.applyPasswordValidation, authController.handleResetPassword)
-
+router.post("/forgotpassword", authController.handleForgotPassword);
+router.post("/resetpassword", passwordValidator.passwordValidationRules, passwordValidator.applyPasswordValidation, authController.handleResetPassword);
+router.post("/forgot-password-admin", authController.handleForgotPasswordAdmin);
+router.post("/reset-password-admin", passwordValidator.passwordValidationRules, passwordValidator.applyPasswordValidation, authController.handleResetPasswordAdmin);
 
 module.exports = router;
