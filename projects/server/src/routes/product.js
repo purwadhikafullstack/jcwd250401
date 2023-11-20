@@ -10,5 +10,6 @@ router.put("/:productId", multerUpload.array("productImages", 5), productValidat
 router.get("/", productController.handleGetAllProducts)
 router.put("/archive/:productId", productController.handleArchiveProduct);
 router.put("/unarchive/:productId", productController.handleUnarchiveProduct);
+router.delete("/:productId", productController.handleDeleteProduct);
 
 module.exports = router;

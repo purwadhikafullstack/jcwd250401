@@ -233,7 +233,7 @@ function AddProductModal({ isOpen, isClose }) {
             </div>
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody>
+          <ModalBody className="scrollbar-hide">
             <form onSubmit={formik.handleSubmit}>
               <div className="space-y-4 lg:space-y-3 px-4 mb-6">
                 <div className="lg:flex flex lg:flex-row lg:space-x-20 lg:space-y-0 space-y-4 lg:justify-between lg:items-center flex-col">
@@ -452,7 +452,7 @@ function AddProductModal({ isOpen, isClose }) {
                       const previewImage = dropzoneImages.find((img) => img.index === index);
 
                       return (
-                        <div key={index} className="lg:w-[136px] lg:h-[200px] w-[80%] h-[250px] relative">
+                        <div key={index} className="lg:w-[139px] lg:h-[200px] w-[80%] h-[250px] relative">
                           <div
                             onClick={() => handleClick(index)}
                             className={`w-full h-full border-dashed border-2 border-gray-300 rounded-md flex shadow-md shadow-gray-200 focus:ring-transparent items-center justify-center bg-transparent ${
@@ -466,12 +466,12 @@ function AddProductModal({ isOpen, isClose }) {
                                 <>
                                   {index === 0 ? (
                                     <>
-                                      <PiImageThin className="text-gray-400" size={38} />
+                                      <PiImageThin className="text-gray-400" size={44} />
                                       <p className="text-gray-400">Main Photo</p>
                                     </>
                                   ) : (
                                     <>
-                                      <PiImageThin className="text-gray-400" size={38} />
+                                      <PiImageThin className="text-gray-400" size={44} />
                                       <p className="text-gray-400">Photo {index + 1}</p>
                                     </>
                                   )}

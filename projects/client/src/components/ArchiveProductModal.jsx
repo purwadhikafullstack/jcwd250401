@@ -1,4 +1,4 @@
-import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Button } from "@chakra-ui/react";
+import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Button, Flex, Image, Img } from "@chakra-ui/react";
 
 import { Text } from "@chakra-ui/react";
 import api from "../api";
@@ -43,9 +43,16 @@ function ArchiveProductModal({ isOpen, isClose, data }) {
         <ModalCloseButton />
         <ModalBody>
           <Text>Are you sure you want to Archive this product?</Text>
+          <Flex mt={4} justifyContent="center">
+            <Img src={`http://localhost:8000/public/${data.productImages[0].imageUrl}`} boxShadow="lg" w="40%" alt={data.name} />
+          </Flex>
+          <Flex mt={4} gap={2} flexDirection="column" justifyContent="center" alignItems="center">
+            <Text fontWeight="bold">{data.name}</Text>
+            <Text> SKU : {data.sku}</Text>
+          </Flex>
         </ModalBody>
         <ModalFooter>
-          <div className="flex gap-2">
+          <div className="flex gap-2 mb-4">
             <Button px={4} py={2} bgColor="white" textColor="gray.900" size="medium" borderRadius="md" boxShadow="lg" onClick={isClose}>
               Cancel
             </Button>

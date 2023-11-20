@@ -267,7 +267,7 @@ function EditProductModal({ isOpen, isClose, data }) {
 
   return (
     <>
-      <Modal closeOnOverlayClick={false} isOpen={isOpen} size={{ lg: "6xl" }} scrollBehavior="inside" onClose={isClose} isCentered>
+      <Modal closeOnOverlayClick={false} isOpen={isOpen} size={{ lg: "6xl" }} motionPreset="slideInRight" scrollBehavior="inside" onClose={isClose} isCentered>
         <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(1px)" />
         <ModalContent>
           <ModalHeader py={0}>
@@ -276,7 +276,7 @@ function EditProductModal({ isOpen, isClose, data }) {
             </div>
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody>
+          <ModalBody className="scrollbar-hide">
             <form onSubmit={formik.handleSubmit}>
               <div className="space-y-4 lg:space-y-3 px-4 mb-6">
                 <div className="lg:flex flex lg:flex-row lg:space-x-20 lg:space-y-0 space-y-4 lg:justify-between lg:items-center flex-col">
@@ -473,7 +473,7 @@ function EditProductModal({ isOpen, isClose, data }) {
                       id="productDescription"
                       name="productDescription"
                       placeholder="Describe the product..."
-                      className="w-full h-56 px-4 py-2 border-2 border-gray-300 rounded-lg shadow-md shadow-gray-200 focus:ring-transparent resize-none focus:border-gray-500"
+                      className="w-full h-56 px-4 py-2 border-2 scrollbar-hide border-gray-300 rounded-lg shadow-md shadow-gray-200 focus:ring-transparent resize-none focus:border-gray-500"
                       {...formik.getFieldProps("productDescription")}
                     />
                     {formik.touched.productDescription && formik.errors.productDescription ? (
@@ -494,7 +494,7 @@ function EditProductModal({ isOpen, isClose, data }) {
                     {[0, 1, 2, 3, 4].map((index) => {
                       const previewImage = dropzoneImages.find((img) => img.index === index);
                       return (
-                        <div key={index} className="lg:w-[136px] lg:h-[200px] w-[80%] h-[250px] relative">
+                        <div key={index} className="lg:w-[139px] lg:h-[200px] w-[80%] h-[250px] relative">
                           <div
                             onClick={() => handleClick(index)}
                             className={`w-full h-full border-dashed border-2 border-gray-300 rounded-md flex shadow-md shadow-gray-200 focus:ring-transparent items-center justify-center bg-transparent ${
@@ -508,12 +508,12 @@ function EditProductModal({ isOpen, isClose, data }) {
                                 <>
                                   {index === 0 ? (
                                     <>
-                                      <PiImageThin className="text-gray-400" size={38} />
+                                      <PiImageThin className="text-gray-400" size={44} />
                                       <p className="text-gray-400">Main Photo</p>
                                     </>
                                   ) : (
                                     <>
-                                      <PiImageThin className="text-gray-400" size={38} />
+                                      <PiImageThin className="text-gray-400" size={44} />
                                       <p className="text-gray-400">Photo {index + 1}</p>
                                     </>
                                   )}
