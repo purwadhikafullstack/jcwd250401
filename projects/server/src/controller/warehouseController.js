@@ -1,11 +1,6 @@
 const axios = require('axios');
 const { Warehouse, WarehouseAddress } = require('../models'); // Adjust the path as necessary4
 
-// Config default axios with rajaongkir
-axios.defaults.baseURL = 'https://api.rajaongkir.com/starter';
-axios.defaults.headers.common['key'] = process.env.RAJAONGKIR_APIKEY;
-axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
-
 exports.getAllWarehouses = async (req, res) => {
 
     try {
@@ -111,3 +106,101 @@ exports.addWarehouse = async (req, res) => {
         });
     }
 };
+
+exports.updateWarehouse = async (req, res) => {
+    const { id } = req.params;
+    const { name, street, city, province } = req.body;
+    const address = `${street}, ${city}, ${province}`;
+
+    try {
+        // Convert address to coordinates
+        const coordinates = await convertAddressToCoordinates(address);
+
+        if (!coordinates) {
+            return res.status(400).send('Invalid address or unable to find coordinates.');
+        }
+
+        // Update Warehouse with location and coordinates
+        const warehouse = await Warehouse.update({
+            name,
+            location: address,
+        }, {
+            where: {
+                id
+            }
+        });
+
+        // Update WarehouseAddress
+        const warehouseAddress = await WarehouseAddress.update({
+            street,
+            city,
+            province,
+            latitude: coordinates.lat,
+            longitude: coordinates.lon
+        }, {
+            where: {
+                id
+            }
+        });
+
+        // If coordinates not found, return error
+        if (warehouseAddress.latitude === null || warehouseAddress.longitude === null) {
+            return res.status(400).json({
+                ok: false,
+                message: 'Invalid address or unable to find coordinates.'
+            
+            })
+        };
+
+        res.json({
+            ok: true,
+            data: {
+                name,
+                location: address,
+                coordinates: {
+                    latitude: coordinates.lat,
+                    longitude: coordinates.lon
+                }
+            }
+        });
+    } catch (error) {
+        res.status(500).send({
+            message: "Error updating warehouse: " + error.message
+        });
+    }
+}
+
+exports.deleteWarehouse = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+
+        const warehouse = await Warehouse.destroy({
+            where: {
+                id
+            }
+        });
+
+        const warehouseAddress = await WarehouseAddress.destroy({
+            where: {
+                id
+            }
+        });
+
+        if (warehouse === 0 || warehouseAddress === 0) {
+            return res.status(404).send({
+                message: "Warehouse not found"
+            });
+        }
+
+        res.json({
+            ok: true,
+            message: 'Warehouse deleted'
+        });
+        
+    } catch (error) {
+        res.status(500).send({
+            message: "Error deleting warehouse: " + error.message
+        });
+    }
+}

@@ -13,8 +13,20 @@ router.get(
 router.post(
     "/",
     authMiddleware.validateToken,
-    warehouseValidation.addWarehouseValidationRules,
-    warehouseValidation.applyAddWarehouseValidation,
+    warehouseValidation.WarehouseValidationRules,
+    warehouseValidation.applyWarehouseValidation,
     warehouseController.addWarehouse);
+
+router.patch(
+    "/:id",
+    authMiddleware.validateToken,
+    warehouseValidation.WarehouseValidationRules,
+    warehouseValidation.applyWarehouseValidation,
+    warehouseController.updateWarehouse);
+
+router.delete(
+    "/:id",
+    authMiddleware.validateToken,
+    warehouseController.deleteWarehouse);
 
 module.exports = router;

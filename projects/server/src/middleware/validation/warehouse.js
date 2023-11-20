@@ -1,6 +1,6 @@
 const {body, validationResult} = require('express-validator');
 
-exports.addWarehouseValidationRules = [
+exports.WarehouseValidationRules = [
     body('name')
         .isLength({min: 3})
         .withMessage('name must be at least 3 characters'),
@@ -15,7 +15,7 @@ exports.addWarehouseValidationRules = [
         .withMessage('province must be at least 3 characters'),
 ];
 
-exports.applyAddWarehouseValidation = [(req, res, next) => {
+exports.applyWarehouseValidation = [(req, res, next) => {
     const result = validationResult(req);
     if (!result.isEmpty()) {
         // ini validasi gagal
