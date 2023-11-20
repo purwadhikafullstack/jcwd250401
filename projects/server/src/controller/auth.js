@@ -548,36 +548,7 @@ exports.handleAdminRegister = async (req, res) => {
   }
 };
 
-exports.handleAdminLogin = async (req, res) => {
-  const { email, password, remember } = req.body;
 
-  try {
-    const account = await Admin.findOne({
-      where: {
-        [Op.or]: {
-          email,
-          password,
-        },
-      },
-    });
-
-    if (!account) {
-      res.status(401).json({
-        ok: false,
-        message: "Incorrect email or password",
-      });
-      return;
-    }
-
-    const isValid = await bcrypt.compare(password, account.password);
-    if (!isValid) {
-      res.status(401).json({
-        ok: false,
-        message: "Incorrect email or password",
-      });
-      return;
-    }
-    const payload = { id: account.id, isWarehouseAdmin: account.isWarehouseAdmin };
    
 exports.handleAdminLogin = async (req, res) => {
   const { email, password, remember } = req.body;
@@ -636,25 +607,6 @@ exports.handleAdminLogin = async (req, res) => {
   }
 };
 
-    const response = {
-      token,
-      profile: {
-        email: account.email,
-        isWarehouseAdmin: account.isWarehouseAdmin,
-      },
-    };
-
-    res.status(200).json({
-      ok: true,
-      data: response,
-    });
-  } catch (error) {
-    res.status(401).json({
-      ok: false,
-      message: String(error),
-    });
-  }
-};
 
 exports.handleForgotPasswordAdmin = async (req, res) => {
   try {

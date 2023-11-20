@@ -30,18 +30,6 @@ function Product() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (!token) {
-      toast.error("Please login first", {
-        autoClose: 1000,
-        onAutoClose: (t) => {
-          navigate("/adminlogin");
-          dispatch(logoutAdmin());
-        },
-      });
-    }
-  },[token]);
-
-  useEffect(() => {
     // Calculate the width of the selected navigation item
     if (navRefs[selectedComponent]) {
       setPillWidth(navRefs[selectedComponent].offsetWidth);

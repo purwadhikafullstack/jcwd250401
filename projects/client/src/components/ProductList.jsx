@@ -13,6 +13,9 @@ import EditProductModal from "./EditProductModal";
 import { EditCategoryModal } from "./EditCategoryModal";
 import ArchiveProductModal from "./ArchiveProductModal";
 import DeleteProductModal from "./DeleteProductModal";
+import { logoutAdmin } from "../slices/accountSlices";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 function ProductList() {
   const [sortCriteria, setSortCriteria] = useState("date-desc"); // Default sorting criteria that matches the backend;
@@ -31,6 +34,7 @@ function ProductList() {
   const [openEditProductModal, setOpenEditProductModal] = useState(false);
   const [openArchiveProductModal, setOpenArchiveProductModal] = useState(false);
   const [openDeleteProductModal, setOpenDeleteProductModal] = useState(false);
+  const navigate = useNavigate();
 
   const newProducts = useSelector((state) => state.product?.productList);
 
@@ -52,7 +56,6 @@ function ProductList() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-
         const response = await api.get(`/product?page=${currentPage}&limit=${productsPerPage}&sort=${sortCriteria}&category=${selectedCategory}&search=${searchInput}&filterBy=${selectedFilter}`);
         const responseData = response.data.details;
         const totalData = response.data.pagination.totalData;
@@ -66,9 +69,30 @@ function ProductList() {
           setTotalPages(0);
           setProducts([]);
         }
+        if (error?.response?.status === 401) {
+          setTimeout(() => {
+            toast.error(error.response.data.message, {
+              autoClose: 1000,
+              onAutoClose: (t) => {
+                dispatch(logoutAdmin());
+                navigate("/adminlogin");
+              },
+            });
+          }, 600);
+        }
+        if (error?.response?.status === 403) {
+          setTimeout(() => {
+            toast.error(error.response.data.message, {
+              autoClose: 1000,
+              onAutoClose: (t) => {
+                dispatch(logoutAdmin());
+                navigate("/adminlogin");
+              },
+            });
+          }, 600);
+        }
       }
     };
-
     fetchProducts();
   }, [currentPage, sortCriteria, selectedCategory, searchInput, selectedFilter, totalPages, totalData, newProducts]);
 
@@ -328,7 +352,10 @@ function ProductList() {
       </div>
       <Box display="flex" justifyContent="right" gap={2} textAlign="right" mr={4}>
         <Flex alignItems={"center"} gap={2}>
-          <Text mr={2} fontWeight={"bold"}> Page </Text>
+          <Text mr={2} fontWeight={"bold"}>
+            {" "}
+            Page{" "}
+          </Text>
           <Box>
             <Button
               boxShadow="md"
@@ -337,7 +364,6 @@ function ProductList() {
               w="30px"
               borderRadius="lg"
               onClick={() => handlePageChange(1)}
-            
               variant={currentPage === 1 ? "solid" : "outline"}
               bgColor={currentPage === 1 ? "white" : "gray.900"}
               textColor={currentPage === 1 ? "gray.900" : "white"}
@@ -367,9 +393,9 @@ function ProductList() {
           </Box>
         </Flex>
       </Box>
-      { openArchiveProductModal && <ArchiveProductModal isOpen={openArchiveProductModal} data={selectedProduct} isClose={toggleArchiveModal} />}
-      { openEditProductModal && <EditProductModal isOpen={openEditProductModal} data={selectedProduct} isClose={toggleEditModal} />}
-      { openDeleteProductModal && <DeleteProductModal isOpen={openDeleteProductModal} data={selectedProduct} isClose={toggleDeleteModal} /> }
+      {openArchiveProductModal && <ArchiveProductModal isOpen={openArchiveProductModal} data={selectedProduct} isClose={toggleArchiveModal} />}
+      {openEditProductModal && <EditProductModal isOpen={openEditProductModal} data={selectedProduct} isClose={toggleEditModal} />}
+      {openDeleteProductModal && <DeleteProductModal isOpen={openDeleteProductModal} data={selectedProduct} isClose={toggleDeleteModal} />}
     </div>
   );
 }

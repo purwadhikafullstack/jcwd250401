@@ -32,10 +32,25 @@ exports.validateToken = (req, res, next) => {
     req.user = payload;
     next();
   } catch (error) {
-    res.status(403).json({
-      ok: false,
-      message: String(error),
-    });
+    if (error.name === "JsonWebTokenError") {
+      // JWT is malformed
+      res.status(403).json({
+        ok: false,
+        message: "Please login first.",
+      });
+    } else if (error.name === "TokenExpiredError") {
+      // JWT has expired
+      res.status(403).json({
+        ok: false,
+        message: "Your session has expired, please login again",
+      });
+    } else {
+      // Other errors
+      res.status(403).json({
+        ok: false,
+        message: String(error),
+      });
+    }
   }
 };
 
