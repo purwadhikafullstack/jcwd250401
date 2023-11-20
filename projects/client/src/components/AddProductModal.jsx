@@ -48,11 +48,14 @@ function AddProductModal({ isOpen, isClose }) {
     },
     validationSchema: Yup.object({
       productName: Yup.string().required("Please enter your product name").min(6, "Product name must be at least 6 characters"),
-      productGender: Yup.string().required("Please enter your product gender"),
       productMainCategory: Yup.string().required("Please enter your product main category"),
       productSubCategory: Yup.string().required("Please enter your product sub category"),
       productDescription: Yup.string().required("Please enter your description").min(10, "Product description must be at least 10 characters"),
       productPrice: Yup.string().required("Please enter your product price"),
+      productGender: Yup.string().when("productMainCategory", {
+        is: (productMainCategory) => !(productMainCategory === "Bags" || productMainCategory === "Accessories"),
+        then: Yup.string().required("Please select a gender"),
+      }),
     }),
     onSubmit: async (values) => {
       try {
