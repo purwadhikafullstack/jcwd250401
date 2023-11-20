@@ -1,28 +1,32 @@
 import { useNavigate } from "react-router-dom";
 import image from "../assets/image-5.jpg";
 import { useDispatch } from "react-redux";
-import { showForgotPasswordModal } from "../slices/authModalSlices";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useState } from "react";
 import { AiOutlineLoading } from "react-icons/ai";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { Button, Checkbox } from "flowbite-react";
+import { Button } from "flowbite-react";
 import { loginAdmin } from "../slices/accountSlices";
 import rains from "../assets/rains.png";
 import api from "../api";
 import { toast } from "sonner";
 import { Switch } from "@chakra-ui/react";
+import ForgotPasswordModal from "../components/ForgotPasswordModal";
 
 function AdminLoginPage() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
+
   const dispatch = useDispatch();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+
+  const handleShowForgotPasswordModal = () => setShowForgotPasswordModal(!showForgotPasswordModal);
 
   const formik = useFormik({
     initialValues: {
@@ -82,10 +86,10 @@ function AdminLoginPage() {
 
   return (
     <div className="flex justify-between items-center h-screen">
-      <div className="w-[60vw] h-screen bg-cover bg-center" style={{ backgroundImage: `url(${image})` }}>
+      <div className="hidden lg:flex lg:w-[60vw] h-screen bg-cover bg-center" style={{ backgroundImage: `url(${image})` }}>
         &nbsp;
       </div>
-      <div className="w-[40vw] flex items-center justify-center px-20">
+      <div className="w-screen lg:w-[40vw] flex items-center justify-center px-10 lg:px-20">
         <div className="shadow-lg px-10 h-[70vh] flex justify-center items-center rounded-lg">
           <form onSubmit={formik.handleSubmit}>
             <div className="space-y-10">
@@ -124,7 +128,7 @@ function AdminLoginPage() {
                   <Switch id="rememberme" colorScheme="gray"/>
                   <span className="text-sm text-gray-900 dark:text-white">Remember me</span>
                 </div>
-                <a className="text-sm hover:underline mr-2 font-normal font-sagoe text-[#007AFF]">Forgot password?</a>
+                <a className="text-sm hover:underline mr-2 font-normal font-sagoe text-[#007AFF] cursor-pointer" onClick={handleShowForgotPasswordModal}>Forgot password?</a>
               </div>
               <div>
                 {isSubmitting ? (
@@ -137,15 +141,13 @@ function AdminLoginPage() {
                   </Button>
                 )}
               </div>
-              {/* <div>
-              <a onClick={forgotButton} className="text-md font-medium text-gray-900 hover:underline hover:cursor-pointer dark:text-cyan-500">
-                Forgot your password ?
-              </a>
-            </div> */}
+              <div>
+            </div>
             </div>
           </form>
         </div>
       </div>
+      <ForgotPasswordModal isOpen={showForgotPasswordModal} isClose={handleShowForgotPasswordModal} userType={"admin"} />
     </div>
   );
 }
