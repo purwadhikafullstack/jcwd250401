@@ -352,7 +352,7 @@ function ArchivedProductList() {
           </Box>
         </Flex>
       </Box>
-      {selectedProduct && <UnarchiveProductModal isOpen={openUnarchiveProductModal} data={selectedProduct} isClose={toggleUnarchiveModal} />}
+      {<UnarchiveProductModal isOpen={openUnarchiveProductModal} data={selectedProduct} isClose={toggleUnarchiveModal} />}
     </div>
   );
 }
