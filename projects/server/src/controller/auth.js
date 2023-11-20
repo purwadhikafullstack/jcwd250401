@@ -601,3 +601,111 @@ exports.handleAdminLogin = async (req, res) => {
     });
   }
 };
+
+exports.handleForgotPasswordAdmin = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        ok: false,
+        error: "Email is required",
+      });
+    }
+
+    const admin = await Admin.findOne({ where: { email } });
+
+    if (!admin) {
+      return res.status(400).json({
+        message: "admin not found",
+      });
+    }
+
+    const uniqueCode = crypto.randomBytes(20).toString("hex");
+    admin.uniqueCode = uniqueCode;
+    admin.uniqueCodeCreatedAt = new Date();
+    await admin.save();
+
+    const templatePath = path.join(__dirname, "../templates/forgot-password.html");
+    const templateRaw = fs.readFileSync(templatePath, "utf-8");
+    const templateCompile = hbs.compile(templateRaw);
+    const emailHTML = templateCompile({
+      username: admin.email,
+      link: `http://localhost:3000/reset-password-admin?code=${uniqueCode}`,
+    });
+
+    const mailOption = {
+      from: "RAINS Support Team",
+      to: email,
+      subject: "Reset your password",
+      html: emailHTML,
+    };
+
+    mailer.sendMail(mailOption, (err, info) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).send({
+          message: "Internal server error",
+        });
+      } else {
+        return res.status(200).send({
+          ok: true,
+          message: "Forgot password request sent successfully",
+          admin,
+        });
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      message: "Internal server error",
+    });
+  }
+};
+
+exports.handleResetPasswordAdmin = async (req, res) => {
+  try {
+    const { uniqueCode, password } = req.body;
+
+    if (!uniqueCode || !password) {
+      return res.status(400).json({
+        message: "All fields are required",
+      });
+    }
+
+    const admin = await Admin.findOne({ where: { uniqueCode } });
+
+    if (!admin) {
+      return res.status(400).json({
+        message: "Invalid link",
+      });
+    }
+
+    // Check if the code has expired (e.g., within the last hour)
+    const currentTimestamp = Date.now(); // Get the current timestamp in milliseconds
+    const codeCreationTimestamp = admin.uniqueCodeCreatedAt.getTime(); // Assuming uniqueCodeCreatedAt is a Date object
+
+    const codeValidityDuration = 60 * 60 * 1000; // 1 hour in milliseconds
+    if (currentTimestamp - codeCreationTimestamp > codeValidityDuration) {
+      return res.status(400).json({
+        message: "Reset code has expired, please request again",
+      });
+    }
+
+    // Code is still valid; proceed to reset the password
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt);
+
+    admin.password = hashPassword;
+    admin.uniqueCode = null;
+    await admin.save();
+
+    res.status(200).json({
+      message: "Password updated",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};

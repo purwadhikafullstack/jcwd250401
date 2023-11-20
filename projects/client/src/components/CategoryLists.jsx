@@ -6,10 +6,9 @@ import { FiEdit } from "react-icons/fi";
 import { ConfirmDeleteCategory } from "./ConfirmDeleteCategory";
 import { EditCategoryModal } from "./EditCategoryModal";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 
 export const CategoryLists = () => {
-  const isWarehouseAdmin = useSelector((state) => state?.account?.profile?.data?.profile?.isWarehouseAdmin);
+  const isWarehouseAdmin = useSelector((state) => state?.account?.adminProfile?.data?.profile?.isWarehouseAdmin);
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);

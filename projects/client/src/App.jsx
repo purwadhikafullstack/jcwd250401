@@ -16,7 +16,7 @@ import { CartPage } from "./pages/CartPage";
 const routesConfig = [
   // USER ROUTES
   { path: "/", component: <Homepage />, showNavigationbar: true },
-  { path: "/reset-password", component: <ResetPassword />, showNavigationbar: false },
+  { path: "/reset-password", component: <ResetPassword userType={"user"} />, showNavigationbar: false },
   { path: "/account/profile", component: <Profile />, showNavigationbar: true },
   { path: "/account/my-order", component: <Order />, showNavigationbar: true },
   { path: "/account/address-book", component: <Address />, showNavigationbar: true },
@@ -25,6 +25,7 @@ const routesConfig = [
 
   // ADMIN ROUTES
   { path: "/adminlogin", component: <AdminLoginPage />, showNavigationbar: false },
+  { path: "/reset-password-admin", component: <ResetPassword userType={"admin"} />, showNavigationbar: false },
   { path: "/dashboard", component: <Dashboard />, showNavigationbar: false },
   { path: "/dashboard/products", component: <Products />, showNavigationbar: false },
   // Add more route configurations as needed

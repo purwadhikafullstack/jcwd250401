@@ -13,7 +13,7 @@ import image from "../assets/image-4.jpg";
 import imagemobile from "../assets/image-1.jpg";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from "@chakra-ui/react";
 
-function ResetPassword() {
+function ResetPassword({ userType }) {
   const [searchParams] = useSearchParams();
   const [isOpen, setIsOpen] = useState(true);
   const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
@@ -62,7 +62,8 @@ function ResetPassword() {
       try {
         setIsSubmitting(true);
 
-        const response = await api.post("/auth/resetpassword", {
+        const endpoint = userType === "admin" ? "/auth/reset-password-admin" : "/auth/resetpassword";
+        const response = await api.post(endpoint, {
           uniqueCode: searchParams.get("code"),
           password: values.password,
         });
@@ -72,7 +73,7 @@ function ResetPassword() {
             toast.success("New password has been created, Directing you to login page...", {
               autoClose: 3000,
               onAutoClose: (t) => {
-                navigate("/");
+                userType === "admin" ? navigate("/adminlogin") : navigate("/"); 
                 dispatch(showLoginModal());
               },
             });
@@ -121,16 +122,14 @@ function ResetPassword() {
           backgroundPosition: "center",
           minHeight: "100vh",
         }}
-        className="hidden lg:block"
-      ></div>
+        className="hidden lg:block"></div>
       <div
         style={{
           backgroundImage: `url(${imagemobile})`,
           backgroundSize: "cover",
           minHeight: "100vh",
         }}
-        className="block lg:hidden"
-      ></div>
+        className="block lg:hidden"></div>
 
       <Modal closeOnOverlayClick={false} isOpen={isOpen} size="md" onClose={isClose} motionPreset="slideInBottom" isCentered>
         <ModalOverlay bg="blackAlpha.300" />

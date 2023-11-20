@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+
+/* Add the smooth scrolling behavior */
+html {
+  scroll-behavior: smooth;
+}
+
 /* Add the underline effect to links with the .underline-on-hover class */
 .underline-on-hover {
   text-decoration: none;
