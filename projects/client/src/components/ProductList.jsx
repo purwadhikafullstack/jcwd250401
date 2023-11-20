@@ -361,8 +361,8 @@ function ProductList() {
           </Box>
         </Flex>
       </Box>
-      {selectedProduct && <ArchiveProductModal isOpen={openArchiveProductModal} data={selectedProduct} isClose={toggleArchiveModal} />}
-      {selectedProduct && <EditProductModal isOpen={openEditProductModal} data={selectedProduct} isClose={toggleEditModal} />}
+      { openArchiveProductModal && <ArchiveProductModal isOpen={openArchiveProductModal} data={selectedProduct} isClose={toggleArchiveModal} />}
+      { openEditProductModal && <EditProductModal isOpen={openEditProductModal} data={selectedProduct} isClose={toggleEditModal} />}
     </div>
   );
 }

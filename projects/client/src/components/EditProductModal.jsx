@@ -22,8 +22,6 @@ function EditProductModal({ isOpen, isClose, data }) {
   const [dropzoneImages, setDropzoneImages] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
 
-  console.log(data);
-
   const handleInputChange = (event) => {
     const rawValue = event.target.value.replace(/[^\d]/g, ""); // Remove non-numeric characters
     const numericValue = parseInt(rawValue, 10); // Parse the numeric value
