@@ -4,6 +4,7 @@ const router = express.Router();
 const warehouseController = require("../controller/warehouseController");
 const warehouseValidation = require("../middleware/validation/warehouse");
 const authMiddleware = require("../middleware/auth");
+const { multerUpload } = require("../lib/multer");
 
 router.get(
     "/", 
@@ -13,6 +14,7 @@ router.get(
 router.post(
     "/",
     authMiddleware.validateToken,
+    multerUpload.single("warehouseImage"),
     warehouseValidation.WarehouseValidationRules,
     warehouseValidation.applyWarehouseValidation,
     warehouseController.addWarehouse);
@@ -20,6 +22,7 @@ router.post(
 router.patch(
     "/:id",
     authMiddleware.validateToken,
+    multerUpload.single("warehouseImage"),
     warehouseValidation.WarehouseValidationRules,
     warehouseValidation.applyWarehouseValidation,
     warehouseController.updateWarehouse);

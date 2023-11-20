@@ -59,6 +59,15 @@ exports.addWarehouse = async (req, res) => {
             return res.status(400).send('Invalid address or unable to find coordinates.');
         }
 
+        // Retrieve the uploaded image file, if available
+        let warehouseImage;
+        if (req.file) {
+            warehouseImage = req.file.filename; // The filename where the image is stored
+        } else {
+            // Handle the case where no image is uploaded (optional)
+            warehouseImage = 'default-image-path'; // Or leave it undefined, based on your application logic
+        }
+
         // Create Warehouse with location and coordinates
         const warehouse = await Warehouse.create({
             name,
@@ -97,7 +106,8 @@ exports.addWarehouse = async (req, res) => {
                 coordinates: {
                     latitude: warehouseAddress.latitude,
                     longitude: warehouseAddress.longitude
-                }
+                },
+                warehouseImage
             }
         });
     } catch (error) {
@@ -120,14 +130,25 @@ exports.updateWarehouse = async (req, res) => {
             return res.status(400).send('Invalid address or unable to find coordinates.');
         }
 
-        // Update Warehouse with location and coordinates
-        const warehouse = await Warehouse.update({
+        // Check if there is a new file uploaded
+        let warehouseImage;
+        if (req.file) {
+            warehouseImage = req.file.filename; // Path to the new uploaded file
+        }
+
+        // Update Warehouse with new data
+        const warehouseUpdate = {
             name,
-            location: address,
-        }, {
-            where: {
-                id
-            }
+            location: address
+        };
+
+        // If a new image is uploaded, include it in the update
+        if (warehouseImage) {
+            warehouseUpdate.warehouseImage = warehouseImage;
+        }
+
+        const warehouse = await Warehouse.update(warehouseUpdate, {
+            where: { id }
         });
 
         // Update WarehouseAddress
@@ -139,28 +160,22 @@ exports.updateWarehouse = async (req, res) => {
             longitude: coordinates.lon
         }, {
             where: {
-                id
+                id // Assuming this is the correct field to match
             }
         });
 
         // If coordinates not found, return error
-        if (warehouseAddress.latitude === null || warehouseAddress.longitude === null) {
-            return res.status(400).json({
-                ok: false,
-                message: 'Invalid address or unable to find coordinates.'
-            
-            })
-        };
+        if (!coordinates.lat || !coordinates.lon) {
+            return res.status(400).send('Invalid address or unable to find coordinates.');
+        }
 
         res.json({
             ok: true,
             data: {
                 name,
                 location: address,
-                coordinates: {
-                    latitude: coordinates.lat,
-                    longitude: coordinates.lon
-                }
+                coordinates,
+                warehouseImage: warehouseImage || 'Existing image path or default' // You can modify this as needed
             }
         });
     } catch (error) {
@@ -168,7 +183,7 @@ exports.updateWarehouse = async (req, res) => {
             message: "Error updating warehouse: " + error.message
         });
     }
-}
+};
 
 exports.deleteWarehouse = async (req, res) => {
     const { id } = req.params;
