@@ -98,9 +98,9 @@ function EditProductModal({ isOpen, isClose, data }) {
       productSubCategory: Yup.string().required("Please enter your product sub category"),
       productDescription: Yup.string().required("Please enter your description").min(10, "Product description must be at least 10 characters"),
       productPrice: Yup.string().required("Please enter your product price"),
-      productGender: Yup.string().when("productMainCategory", {
-        is: (productMainCategory) => !(productMainCategory === "Bags" || productMainCategory === "Accessories"),
-        then: Yup.string().required("Please select a gender"),
+      productGender: Yup.string().when('productMainCategory', {
+        is: (productMainCategory) => !(productMainCategory === 'Bags' || productMainCategory === 'Accessories'),
+        then: (productGender) => Yup.string().required('Please select a gender'),
       }),
     }),
     onSubmit: async (values) => {
