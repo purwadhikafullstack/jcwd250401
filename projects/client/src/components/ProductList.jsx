@@ -35,6 +35,7 @@ function ProductList() {
   const [openArchiveProductModal, setOpenArchiveProductModal] = useState(false);
   const [openDeleteProductModal, setOpenDeleteProductModal] = useState(false);
   const navigate = useNavigate();
+  // const isSuperAdmin = useSelector((state) => state.account?);
 
   const newProducts = useSelector((state) => state.product?.productList);
 
