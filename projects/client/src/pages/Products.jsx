@@ -11,6 +11,10 @@ import ProductList from "../components/ProductList";
 import { useEffect } from "react";
 import { useRef } from "react";
 import ArchivedProductList from "../components/ArchivedProductList";
+import { logoutAdmin } from "../slices/accountSlices";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { toast } from "sonner";
 
 function Product() {
   const navList = ["All Products", "Out of stock", "Category", "Archive"];
@@ -19,8 +23,11 @@ function Product() {
   const [selectedComponent, setSelectedComponent] = useState("All Products");
   const [pillWidth, setPillWidth] = useState(0); // State to store the width of the pill
   const handleSelectComponent = (nav) => setSelectedComponent(nav);
-
   const navRefs = useRef([]); // Refs to store references to each navigation item
+  const adminProfile = JSON.parse(localStorage.getItem("adminProfile"))
+  const token = adminProfile?.data?.token
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     // Calculate the width of the selected navigation item
@@ -43,14 +50,14 @@ function Product() {
         </div>
         <div className="flex flex-col mt-16 py-8 px-4 md:p-8">
           <div className="flex justify-end items-center gap-2">
-            <Button color="light" size="medium" className="md:p-2 w-52 shadow-md" onClick={openAddCategoryModal}>
+            <Button color="light" size="medium" className="md:p-2 w-52 shadow-sm" onClick={openAddCategoryModal}>
               Add Categories
             </Button>
-            <Button color="dark" size="medium" className="md:p-2 w-52 shadow-md" onClick={openAddProductModal}>
+            <Button color="dark" size="medium" className="md:p-2 w-52 shadow-sm" onClick={openAddProductModal}>
               Add Products
             </Button>
           </div>
-          <div className="flex items-center p-2 md:p-4 mt-4 bg-white rounded-lg shadow-md">
+          <div className="flex items-center p-2 md:p-4 mt-4 bg-white rounded-lg shadow-sm">
             <div className="hidden md:flex flex-wrap gap-3 lg:gap-14 mx-4">
               {navList.map((nav, index) => (
                 <span

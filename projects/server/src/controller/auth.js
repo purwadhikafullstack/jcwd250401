@@ -548,8 +548,10 @@ exports.handleAdminRegister = async (req, res) => {
   }
 };
 
+
+   
 exports.handleAdminLogin = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, remember } = req.body;
 
   try {
     const account = await Admin.findOne({
@@ -564,7 +566,7 @@ exports.handleAdminLogin = async (req, res) => {
     if (!account) {
       res.status(401).json({
         ok: false,
-        message: "Incorrect email or password",
+        message: 'Incorrect email or password',
       });
       return;
     }
@@ -573,13 +575,16 @@ exports.handleAdminLogin = async (req, res) => {
     if (!isValid) {
       res.status(401).json({
         ok: false,
-        message: "Incorrect email or password",
+        message: 'Incorrect email or password',
       });
       return;
     }
-    const payload = { id: account.id };
+
+    const payload = { id: account.id, isWarehouseAdmin: account.isWarehouseAdmin };
+    const expiresIn = remember ? '30d' : '2h'; // Set expiration to 1 month if remember is true, otherwise 2 hours
+
     const token = jwt.sign(payload, JWT_SECRET_KEY, {
-      expiresIn: "2h",
+      expiresIn,
     });
 
     const response = {
@@ -601,6 +606,7 @@ exports.handleAdminLogin = async (req, res) => {
     });
   }
 };
+
 
 exports.handleForgotPasswordAdmin = async (req, res) => {
   try {

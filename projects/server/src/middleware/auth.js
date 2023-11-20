@@ -10,6 +10,7 @@ exports.validateToken = (req, res, next) => {
     });
     return;
   }
+
   try {
     token = token.split(" ")[1];
     if (!token) {
@@ -31,34 +32,52 @@ exports.validateToken = (req, res, next) => {
     req.user = payload;
     next();
   } catch (error) {
-    res.status(403).json({
-      ok: false,
-      message: String(error),
-    });
+    if (error.name === "JsonWebTokenError") {
+      // JWT is malformed
+      res.status(403).json({
+        ok: false,
+        message: "Please login first.",
+      });
+    } else if (error.name === "TokenExpiredError") {
+      // JWT has expired
+      res.status(403).json({
+        ok: false,
+        message: "Your session has expired, please login again",
+      });
+    } else {
+      // Other errors
+      res.status(403).json({
+        ok: false,
+        message: String(error),
+      });
+    }
   }
 };
 
-// exports.checkRole = (req, res, next) => {
-//   if (req.user.isAdmin === true) {
-//     next();
-//     return;
-//   }
-//   res.status(401).json({
-//     ok: false,
-//     message: "Permission Denied",
-//   });
-// };
+exports.checkRoleSuperAdmin = (req, res, next) => {
+  if (req.user.isWarehouseAdmin === false) {
+    next();
+    return;
+  }
+  res.status(401).json({
+    ok: false,
+    message: "Permission Denied",
+  });
+};
+
+exports.checkRoleWarehouseAdmin = (req,res, next) => { 
+  if (req.user.isWarehouseAdmin === true) {
+    next();
+    return;
+  }
+  res.status(401).json({
+    ok: false,
+    message: "Permission Denied",
+  });
+}
+
 
 // exports.checkRoleUser = (req, res, next) => {
-//   if (req.user.isAdmin === false) {
-//     next();
-//     return;
-//   }
-//   res.status(401).json({
-//     ok: false,
-//     message: "Permission Denied",
-//   });
-// };
 
 exports.checkRoleUserVerify= (req, res, next) => {
   if (req.user.isVerify === true) {

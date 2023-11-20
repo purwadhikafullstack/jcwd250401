@@ -371,4 +371,47 @@ exports.handleArchiveProduct = async (req, res) => {
   }
 };
   
-  
+exports.handleDeleteProduct = async (req, res) => {
+  const productId = req.params.productId;
+
+  try {
+    // Find the product by ID
+    const product = await Product.findByPk(productId);
+
+    if (!product) {
+      return res.status(404).json({
+        ok: false,
+        message: 'Product not found',
+      });
+    }
+
+    // Delete associated product images
+    await ProductImage.destroy({
+      where: {
+        productId: product.id,
+      },
+    });
+
+    // Delete associated product categories
+    await ProductCategory.destroy({
+      where: {
+        productId: product.id,
+      },
+    });
+
+    // Delete the product itself
+    await product.destroy();
+
+    res.status(200).json({
+      ok: true,
+      message: 'Product deleted successfully',
+      product: product, // You can customize the response as needed
+    });
+  } catch (error) {
+    console.error('Error deleting product:', error);
+    res.status(500).json({
+      ok: false,
+      message: 'Internal server error',
+    });
+  }
+};
