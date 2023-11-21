@@ -5,8 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
 function Dashboard() {
-  const profile = JSON.parse(localStorage.getItem("profile"))
-  const token = profile?.data?.token
+  const adminProfile = JSON.parse(localStorage.getItem("adminProfile"))
+  const token = adminProfile?.data?.token
   const navigate = useNavigate();
 
   useEffect(() => {
