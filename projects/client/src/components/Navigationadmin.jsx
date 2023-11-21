@@ -1,4 +1,4 @@
-import React, {  useState } from "react";
+import React, { useState } from "react";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { Button } from "flowbite-react";
 import rains from "../assets/rains.png";
@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { PiBell, PiMagnifyingGlass } from "react-icons/pi";
+import { useEffect } from "react";
+import { setIsWarehouseAdmin} from "../slices/accountSlices";
 
 function Navigationadmin() {
   const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -19,7 +21,37 @@ function Navigationadmin() {
   const location = useLocation(); // Get the current location
   const photoProfile = false;
   const dispatch = useDispatch();
+  const adminProfile = JSON.parse(localStorage.getItem("adminProfile"));
+  const username = adminProfile?.data?.profile?.username;
+  const isLoggedInAdmin = JSON.parse(localStorage.getItem("isLoggedInAdmin"));
+  const [userData, setUserData] = useState([]);
 
+ 
+
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        if (isLoggedInAdmin) {
+          const response = await api.get(`/profile/admin/${username}`);
+          const userDetail = response.data.detail;
+          setUserData(userDetail); 
+
+          if (userDetail[0].isWarehouseAdmin === true) {
+            dispatch(setIsWarehouseAdmin(true));
+          } else 
+          if (userDetail[0].isWarehouseAdmin === false) {
+            dispatch(setIsWarehouseAdmin(false));
+          }
+        }
+      } catch (error) {
+        toast.error("Failed to get user data");
+        handleLogout();
+      }
+    };
+    getUserData();
+  }, []);
+
+  
   const handleIconClick = () => setDropdownVisible(!dropdownVisible);
   const handleLogout = () => {
     try {
@@ -44,28 +76,32 @@ function Navigationadmin() {
       <div className="hidden gap-4 lg:flex items-center mr-6">
         <PiMagnifyingGlass className="text-2xl cursor-pointer" />
         <PiBell className="text-2xl cursor-pointer" />
-        <img src={photoProfile ? `http://localhost:8000/public/${photoProfile}` : "https://via.placeholder.com/150"} alt="Profile" className="w-6 h-6 rounded-full cursor-pointer" onClick={handleIconClick} />
-        {dropdownVisible && (
-          <div className="absolute top-16 w-48 h-10 bg-white ring-1 ring-black ring-opacity-5 z-10" onMouseLeave={() => setDropdownVisible(false)}>
-            <p className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" onClick={handleLogout}>
-              Log Out
-            </p>
+        {userData?.map((data) => (
+          <div key={data.id} className="flex items-center gap-4">
+            <img src={data.photoProfile ? `http://localhost:8000/public/${data.photoProfile}` : "https://via.placeholder.com/150"} alt="Profile" className="w-6 h-6 rounded-full cursor-pointer" onClick={handleIconClick} />
+            {dropdownVisible && (
+              <div className="absolute top-16 right-8 w-40 h-10 bg-white ring-1 ring-black ring-opacity-5 z-10" onMouseLeave={() => setDropdownVisible(false)}>
+                <p className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" onClick={handleLogout}>
+                  Log Out
+                </p>
+              </div>
+            )}
+            <span className="text-gray-700 text-sm font-medium">{data.isWarehouseAdmin ? "Warehouse Admin" : "Super Admin"}</span>
           </div>
-        )}
-        <span className="text-gray-700 text-sm font-medium font-st">Super Admin</span>
-      </div>
+        ))}
 
-      {/* Mobile */}
-      <div className="flex lg:hidden gap-3 z-10">
-        {/* Category sm */}
-        <GiHamburgerMenu className="text-xl cursor-pointer flex lg:hidden" onClick={handleIconClick} />
-        {dropdownVisible && (
-          <div className="w-[50vw]">
-            <p className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" role="menuitem" onClick={handleLogout}>
-              Log Out
-            </p>
-          </div>
-        )}
+        {/* Mobile */}
+        <div className="flex lg:hidden gap-3 z-10">
+          {/* Category sm */}
+          <GiHamburgerMenu className="text-xl cursor-pointer flex lg:hidden" onClick={handleIconClick} />
+          {dropdownVisible && (
+            <div className="w-[50vw]">
+              <p className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" role="menuitem" onClick={handleLogout}>
+                Log Out
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

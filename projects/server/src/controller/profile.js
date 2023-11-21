@@ -1,4 +1,4 @@
-const { User } = require("../models");
+const { User, Admin } = require("../models");
 const bcrypt = require("bcrypt");
 
 exports.handleUpdateProfile = async (req, res) => {
@@ -147,6 +147,47 @@ exports.handleUpdatePassword = async (req, res) => {
       ok: true,
       message: "Password updated successfully",
       detail: account,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      msg: "Internal server error",
+      detail: String(error),
+    });
+  }
+};
+
+
+exports.handleGetSingleAdmin = async (req, res) => {
+  const { username } = req.params;
+
+  try {
+    const account = await Admin.findOne({
+      where: {
+        username,
+      },
+    });
+
+    if (!account) {
+      return res.status(404).json({
+        ok: false,
+        msg: "Account not found",
+      });
+    }
+
+    const response = [
+      {
+        email: account.email,
+        username: account.username,
+        photoProfile: account.photoProfile,
+        isWarehouseAdmin: account.isWarehouseAdmin,
+      },
+    ]
+    
+    res.status(200).json({
+      ok: true,
+      message: "Get admin profile successfully",
+      detail: response,
     });
   } catch (error) {
     return res.status(500).json({
