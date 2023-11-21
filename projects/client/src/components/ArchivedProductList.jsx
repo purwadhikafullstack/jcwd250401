@@ -8,14 +8,14 @@ import { PiCaretDown, PiEye, PiInfo, PiShoppingBag } from "react-icons/pi";
 import { Box, Button, Flex, Menu, MenuButton, MenuItem, MenuList, Text } from "@chakra-ui/react";
 import { setProductList } from "../slices/productSlices";
 import _debounce from "lodash/debounce";
-import UnarchiveProductModal from "./DeleteProductModal";
+import UnarchiveProductModal from "./UnarchiveProductModal";
 
 function ArchivedProductList() {
   const [sortCriteria, setSortCriteria] = useState("date-desc"); // Default sorting criteria that matches the backend;
   const [searchInput, setSearchInput] = useState(""); // Initialize with "All"
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedWarehouse, setSelectedWarehouse] = useState("All Warehouse");
-  const [selectedFilter, setSelectedFilter] = useState("All Gender");
+  const [selectedFilter, setSelectedFilter] = useState("All Genders");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalData, setTotalData] = useState(0);
@@ -111,8 +111,8 @@ function ArchivedProductList() {
   ];
 
   const sortingOptions = [
-    { label: "Date ASC", value: "date-asc" },
     { label: "Date DESC", value: "date-desc" },
+    { label: "Date ASC", value: "date-asc" },
     { label: "(A-Z)", value: "alphabetical-asc" },
     { label: "(Z-A)", value: "alphabetical-desc" },
     { label: "Price ASC", value: "price-asc" },
@@ -241,7 +241,7 @@ function ArchivedProductList() {
           ""
         )}
         {products.map((product) => (
-          <div key={product.id} className="bg-white items-center justify-between flex gap-6 h-36 w-full px-6 py-2 rounded-lg shadow-lg">
+          <div key={product.id} className="bg-white items-center justify-between flex gap-6 h-36 w-full px-6 py-2 rounded-lg shadow-sm">
             <div className="h-[100px] w-[100px] flex justify-center items-center">
               {product.productImages[0].imageUrl ? (
                 <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-lg" alt="Product Image" style={{ filter: "grayscale(100%)" }} />
@@ -355,7 +355,7 @@ function ArchivedProductList() {
           </Box>
         </Flex>
       </Box>
-      {<UnarchiveProductModal isOpen={openUnarchiveProductModal} data={selectedProduct} isClose={toggleUnarchiveModal} />}
+      {openUnarchiveProductModal && <UnarchiveProductModal isOpen={openUnarchiveProductModal} data={selectedProduct} isClose={toggleUnarchiveModal} />}
     </div>
   );
 }

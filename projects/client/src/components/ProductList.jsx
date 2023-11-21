@@ -37,7 +37,7 @@ function ProductList() {
   const navigate = useNavigate();
   const isWarehouseAdmin = useSelector((state) => state.account.isWarehouseAdmin);
   const newProducts = useSelector((state) => state.product?.productList);
-  
+  const categoryLists = useSelector((state) => state?.category?.categoryLists);
 
   const handleSearchInputChange = _debounce((e) => {
     setSearchInput(e.target.value);
@@ -109,7 +109,7 @@ function ProductList() {
     };
 
     fetchCategories();
-  }, []);
+  }, [categoryLists]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
