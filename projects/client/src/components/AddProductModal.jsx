@@ -75,7 +75,7 @@ function AddProductModal({ isOpen, isClose }) {
           });
         }
 
-        const response = await api.post("/product", data, {
+        const response = await api.admin.post("/product", data, {
           headers: {
             "Content-Type": "multipart/form-data",
           },

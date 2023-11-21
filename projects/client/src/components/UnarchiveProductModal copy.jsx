@@ -10,7 +10,7 @@ function UnarchiveProductModal({ isOpen, isClose, data }) {
   const dispatch = useDispatch();
   const handleUnarchive = async () => {
     try {
-      const response = await api.put(`/product/unarchive/${data.id}`);
+      const response = await api.admin.put(`/product/unarchive/${data.id}`);
 
       const responseData = response.data.details;
 
@@ -43,13 +43,16 @@ function UnarchiveProductModal({ isOpen, isClose, data }) {
         <ModalCloseButton />
         <ModalBody>
           <Text>Are you sure you want to unarchive this product?</Text>
-          <Flex mt={4} justifyContent="center">
-            <Img src={`http://localhost:8000/public/${data?.productImages[0]?.imageUrl}`} boxShadow="lg" w="40%" alt={data.name} />
-          </Flex>
-          <Flex mt={4} gap={2} flexDirection="column" justifyContent="center" alignItems="center">
-            <Text fontWeight="bold">{data.name}</Text>
-            <Text> SKU : {data.sku}</Text>
-          </Flex>
+          <div className="flex flex-col items-center justify-center mt-4">
+            <div
+              className="flex justify-center items-center h-[200px] w-[160px] shadow-lg"
+              style={{ backgroundImage: `url(http://localhost:8000/public/${data.productImages[0]?.imageUrl})`, backgroundSize: "cover", backgroundRepeat: "no-repeat" }}
+            ></div>
+            <Flex mt={4} gap={2} flexDirection="column" justifyContent="center" alignItems="center">
+              <Text fontWeight="bold">{data.name}</Text>
+              <Text> SKU : {data.sku}</Text>
+            </Flex>
+          </div>
         </ModalBody>
         <ModalFooter>
           <div className="flex gap-2">

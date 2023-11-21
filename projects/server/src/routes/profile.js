@@ -8,5 +8,6 @@ const authMiddleware = require("../middleware/auth");
 router.patch("/:username", multerUpload.single("photoProfile"), profileController.handleUpdateProfile);
 router.get("/:username", profileController.handleGetSingleUser);
 router.patch("/password/:username", profileController.handleUpdatePassword);
+router.get("/admin/:username", profileController.handleGetSingleAdmin);
 
 module.exports = router;
