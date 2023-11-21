@@ -8,7 +8,7 @@ import { useDispatch } from "react-redux";
 
 function DeleteProductModal({ isOpen, isClose, data }) {
   const dispatch = useDispatch();
-  const handleUnarchive = async () => {
+  const handleDelete = async () => {
     try {
       const response = await api.admin.delete(`/product/${data.id}`);
 
@@ -61,7 +61,7 @@ function DeleteProductModal({ isOpen, isClose, data }) {
             <Button px={4} py={2} bgColor="white" textColor="gray.900" size="medium" borderRadius="lg" boxShadow="lg" onClick={isClose}>
               Cancel
             </Button>
-            <Button px={4} py={2} bgColor="red.600" _hover={{ bgColor: "red.800" }} textColor="white" size="medium" borderRadius="lg" boxShadow="lg" onClick={handleUnarchive}>
+            <Button px={4} py={2} bgColor="red.600" _hover={{ bgColor: "red.800" }} textColor="white" size="medium" borderRadius="lg" boxShadow="lg" onClick={handleDelete}>
               Delete
             </Button>
           </div>

@@ -55,7 +55,7 @@ exports.getOrderLists = async (req, res) => {
         },
         {
           model: Product,
-          attributes: ["id", "name", "image"],
+          attributes: ["id", "name"],
         },
       ],
       where: {
