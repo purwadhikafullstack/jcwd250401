@@ -8,7 +8,7 @@ import { PiCaretDown, PiEye, PiInfo, PiShoppingBag } from "react-icons/pi";
 import { Box, Button, Flex, Menu, MenuButton, MenuItem, MenuList, Text } from "@chakra-ui/react";
 import { setProductList } from "../slices/productSlices";
 import _debounce from "lodash/debounce";
-import UnarchiveProductModal from "./DeleteProductModal";
+import UnarchiveProductModal from "./UnarchiveProductModal";
 
 function ArchivedProductList() {
   const [sortCriteria, setSortCriteria] = useState("date-desc"); // Default sorting criteria that matches the backend;
@@ -355,7 +355,7 @@ function ArchivedProductList() {
           </Box>
         </Flex>
       </Box>
-      {<UnarchiveProductModal isOpen={openUnarchiveProductModal} data={selectedProduct} isClose={toggleUnarchiveModal} />}
+      {openUnarchiveProductModal && <UnarchiveProductModal isOpen={openUnarchiveProductModal} data={selectedProduct} isClose={toggleUnarchiveModal} />}
     </div>
   );
 }
