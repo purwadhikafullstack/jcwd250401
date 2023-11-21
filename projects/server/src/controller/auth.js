@@ -220,7 +220,7 @@ exports.handleCreatePassword = async (req, res) => {
 };
 
 exports.handleLogin = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, remember } = req.body;
 
   try {
     const account = await User.findOne({
@@ -249,8 +249,10 @@ exports.handleLogin = async (req, res) => {
       return;
     }
     const payload = { id: account.id, isVerify: account.isVerify };
+    const expiresIn = remember ? '30d' : '2h'; // Set expiration to 1 month if remember is true, otherwise 2 hours
+
     const token = jwt.sign(payload, JWT_SECRET_KEY, {
-      expiresIn: "2h",
+      expiresIn,
     });
 
     const response = {
@@ -278,7 +280,7 @@ exports.handleLogin = async (req, res) => {
 };
 
 exports.handleLoginWithGoogle = async (req, res) => {
-  const { email } = req.body;
+  const { email, remember } = req.body;
 
   try {
     const account = await User.findOne({
@@ -298,8 +300,10 @@ exports.handleLoginWithGoogle = async (req, res) => {
     }
 
     const payload = { id: account.id, isVerify: account.isVerify };
+    const expiresIn = remember ? '30d' : '2h'; // Set expiration to 1 month if remember is true, otherwise 2 hours
+
     const token = jwt.sign(payload, JWT_SECRET_KEY, {
-      expiresIn: "2h",
+      expiresIn,
     });
 
     const response = {
