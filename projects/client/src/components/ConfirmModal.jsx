@@ -5,13 +5,18 @@ import { toast } from "sonner";
 import { removeAddress } from "../slices/addressSlices";
 import { useDispatch } from "react-redux";
 
-export const ConfirmModal = ({ isOpen, onClose, addressData, userId }) => {
+export const ConfirmModal = ({ isOpen, onClose, data, userId, deleteFor }) => {
   const dispatch = useDispatch();
-  const handleDeleteAddress = async () => {
+  const handleDelete = async () => {
     try {
-      const response = await api.delete(`/address/${userId}/${addressData?.id}`);
-      dispatch(removeAddress(addressData?.id));
-      toast.success(response.data.message);
+      if (deleteFor === "address") {
+        const response = await api.delete(`/address/${userId}/${data?.id}`);
+        dispatch(removeAddress(data?.id));
+        toast.success(response.data.message);
+      } else if (deleteFor === "admin") {
+        const response = await api.delete(`/users/admin/${userId}`);
+        toast.success(response.data.message);
+      }
       onClose();
     } catch (error) {
       toast.error(error.response.data.message);
@@ -26,17 +31,27 @@ export const ConfirmModal = ({ isOpen, onClose, addressData, userId }) => {
             <h2>Confirmation</h2>
           </ModalHeader>
           <ModalBody>
-            <p>Are you sure you want to delete this address?</p>
+            <p>Are you sure you want to delete this {deleteFor}?</p>
             <div className="border border-black rounded-md mt-2 p-2">
-              <p className="text-md text-gray-600">{`${addressData?.firstName} ${addressData?.lastName}`}</p>
-              <p className="text-md text-gray-600">{`${addressData?.street}, ${addressData?.district}, ${addressData?.subDistrict}, ${addressData?.city}, ${addressData?.province}, ${addressData?.phoneNumber}`}</p>
+              {deleteFor === "address" ? (
+                <>
+                  <p className="text-md text-gray-600">{`${data?.firstName} ${data?.lastName}`}</p>
+                  <p className="text-md text-gray-600">{`${data?.street}, ${data?.district}, ${data?.subDistrict}, ${data?.city}, ${data?.province}, ${data?.phoneNumber}`}</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-md text-gray-600">Username: {data?.username}</p>
+                  <p className="text-md text-gray-600">Email: {data?.email}</p>
+                  <p className="text-md text-gray-600">Role: {data?.isWarehouseAdmin ? "Warehouse Admin" : "Super Admin"}</p>
+                </>
+              )}
             </div>
           </ModalBody>
           <ModalFooter>
             <button className="bg-slate-900 hover:bg-slate-700 text-white p-2 rounded-md mr-2" onClick={onClose}>
               Cancel
             </button>
-            <button className="bg-red-700 hover:bg-red-800 p-2 text-white rounded-md" onClick={handleDeleteAddress}>
+            <button className="bg-red-700 hover:bg-red-800 p-2 text-white rounded-md" onClick={handleDelete}>
               Confirm
             </button>
           </ModalFooter>

@@ -70,7 +70,7 @@ export const CategoryLists = () => {
 
   return (
     <>
-      <div className="flex w-[90vw] h-[60vh] md:h-[62vh] overflow-y-auto">
+      <div className="flex w-[90vw] h-[60vh] md:h-[62vh] overflow-y-auto scrollbar-hide">
         <div className="flex flex-col gap-2 w-full h-auto">
           <h1 className="hidden md:flex text-2xl font-bold text-gray-900 dark:text-white">Category Lists</h1>
 
@@ -106,7 +106,7 @@ export const CategoryLists = () => {
           </div>
 
           <h2 className="text-sm font-semibold text-gray-900 dark:text-white mt-2">Sub Categories</h2>
-          <div className="h-auto w-full overflow-y-auto flex flex-col gap-2 py-2">
+          <div className="h-auto w-full overflow-y-auto scrollbar-hide flex flex-col gap-2 py-2">
               {subcategories ? (
                 subcategories.map((category, index) => (
                   <div className="flex justify-between items-center px-8 py-2 bg-white w-full h-[7vh] shadow-md rounded-md" key={index}>

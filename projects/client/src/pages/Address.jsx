@@ -277,7 +277,7 @@ export const Address = () => {
                           </div>
                         </div>
                       ))}
-                    <ConfirmModal isOpen={confirmModal} onClose={() => setConfirmModal(!confirmModal)} addressData={selectedAddress} userId={userId} />
+                    <ConfirmModal isOpen={confirmModal} onClose={() => setConfirmModal(!confirmModal)} data={selectedAddress} userId={userId} deleteFor={'address'} />
                     {selectedAddress && <EditAddressModal isOpen={editModal} onClose={handleCloseEditModal} addressData={selectedAddress} userId={userId} cityLists={cityLists} provinceLists={provinceLists} />}
                     {selectedAddress && <SetDefaultAddressModal isOpen={defaultAddressModal} onClose={() => setDefaultAddressModal(false)} addressData={selectedAddress} userId={userId} />}
                   </div>

@@ -17,6 +17,7 @@ const addressRouter = require("./routes/address");
 const categoryRouter = require("./routes/category");
 const orderRouter = require("./routes/order");
 const productRouter = require("./routes/product");
+const userRouter = require("./routes/user")
 
 //Routing
 app.use("/auth", authRouter);
@@ -25,6 +26,7 @@ app.use("/address", addressRouter);
 app.use("/category", categoryRouter);
 app.use("/order", orderRouter);
 app.use("/product", productRouter);
+app.use("/users", userRouter)
 
 app.use("/public", express.static(__dirname + "/public"));
 
