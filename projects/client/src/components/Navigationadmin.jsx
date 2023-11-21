@@ -19,7 +19,6 @@ function Navigationadmin() {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const navigate = useNavigate();
   const location = useLocation(); // Get the current location
-  const photoProfile = false;
   const dispatch = useDispatch();
   const adminProfile = JSON.parse(localStorage.getItem("adminProfile"));
   const username = adminProfile?.data?.profile?.username;
