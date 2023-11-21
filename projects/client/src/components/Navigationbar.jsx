@@ -76,7 +76,7 @@ function Navigationbar() {
         }
       } catch (error) {
         toast.error("Failed to get user data");
-        // handleLogout();
+        handleLogout();
       }
     };
     getUserData();
