@@ -243,9 +243,9 @@ exports.handleGetAllProducts = async (req, res) => {
       } else if (sort === "alphabetical-desc") {
         filter.order = [["name", "DESC"]];
       } else if (sort === "date-asc") {
-        filter.order = [["createdAt", "ASC"]];
+        filter.order = [["updatedAt", "ASC"]];
       } else if (sort === "date-desc") {
-        filter.order = [["createdAt", "DESC"]];
+        filter.order = [["updatedAt", "DESC"]];
       } else if (sort === "price-asc") {
         filter.order = [["price", "ASC"]];
       } else if (sort === "price-desc") {

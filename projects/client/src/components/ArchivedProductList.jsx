@@ -15,7 +15,7 @@ function ArchivedProductList() {
   const [searchInput, setSearchInput] = useState(""); // Initialize with "All"
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedWarehouse, setSelectedWarehouse] = useState("All Warehouse");
-  const [selectedFilter, setSelectedFilter] = useState("All Gender");
+  const [selectedFilter, setSelectedFilter] = useState("All Genders");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalData, setTotalData] = useState(0);
@@ -111,8 +111,8 @@ function ArchivedProductList() {
   ];
 
   const sortingOptions = [
-    { label: "Date ASC", value: "date-asc" },
     { label: "Date DESC", value: "date-desc" },
+    { label: "Date ASC", value: "date-asc" },
     { label: "(A-Z)", value: "alphabetical-asc" },
     { label: "(Z-A)", value: "alphabetical-desc" },
     { label: "Price ASC", value: "price-asc" },
