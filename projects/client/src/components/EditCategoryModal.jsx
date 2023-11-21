@@ -1,4 +1,4 @@
-import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Text } from "@chakra-ui/react";
+import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, Text } from "@chakra-ui/react";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { toast } from "sonner";
@@ -35,7 +35,7 @@ export const EditCategoryModal = ({ isOpen, onClose, data, mainCategories }) => 
           });
         }
       } catch (error) {
-        if ((error.response && (error.response.status === 400) || error.response.status === 403)) {
+        if (error.response && (error.response.status === 400 || error.response.status === 403)) {
           toast.error(error.response.data.message, {
             description: error.response.data.detail,
           });

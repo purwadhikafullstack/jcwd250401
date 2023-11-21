@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-const { Order, OrderItem, Product } = require("../models");
+const { Order, OrderItem, Product, ProductImage } = require("../models");
 
 exports.paymentProof = async (req, res) => {
   const { id, userId } = req.params;
@@ -86,10 +86,41 @@ exports.getOrderLists = async (req, res) => {
       });
     }
 
+    const orderListsWithImages = await Promise.all(
+      orderLists.map(async (orderItem) => {
+        const product = orderItem.Product;
+
+        const productImages = await ProductImage.findAll({
+          where: { productId: product.id },
+          attributes: ["id", "imageUrl"],
+        });
+
+        return {
+          id: orderItem.id,
+          productId: product.id,
+          orderId: orderItem.Order.id,
+          quantity: orderItem.quantity,
+          createdAt: orderItem.createdAt,
+          updatedAt: orderItem.updatedAt,
+          Order: {
+            id: orderItem.Order.id,
+            status: orderItem.Order.status,
+            totalPrice: orderItem.Order.totalPrice,
+            userId: orderItem.Order.userId,
+          },
+          Product: {
+            id: product.id,
+            productName: product.name,
+            productImages: productImages,
+          },
+        };
+      })
+    );
+
     return res.status(200).json({
       ok: true,
       message: "Get all order successfully",
-      detail: orderLists,
+      detail: orderListsWithImages,
     });
   } catch (error) {
     return res.status(500).json({
