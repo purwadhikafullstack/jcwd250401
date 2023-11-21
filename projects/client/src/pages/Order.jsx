@@ -148,10 +148,10 @@ export const Order = () => {
 
                         <div className="flex justify-between">
                           <div className="flex">
-                            <img src={orderItem.Product.image} alt={orderItem.Product.name} className="w-[30vw] h-[20vh] lg:w-[10vw] lg:h-[20vh] object-cover rounded-md" />
+                            <img src={`http://localhost:8000/public/${orderItem.Product.productImages[0].imageUrl}`} alt={orderItem.Product.name} className="w-[30vw] h-[20vh] lg:w-[10vw] lg:h-[20vh] object-cover rounded-md" />
                             <div className="flex justify-between w-full items-center ml-2">
                               <div className="w-[25vw] lg:w-[20vw]">
-                                <p className="font-bold">{orderItem.Product.name}</p>
+                                <p className="font-bold">{orderItem.Product.productName}</p>
                                 <p>Quantity: {orderItem.quantity}</p>
                               </div>
                               <p>

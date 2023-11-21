@@ -506,7 +506,7 @@ exports.handleSendVerifyEmail = async (req, res) => {
 };
 
 exports.handleAdminRegister = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, username="admin", isWarehouseAdmin=false } = req.body;
 
   try {
    existingAdmin = await Admin.findOne({
@@ -517,7 +517,7 @@ exports.handleAdminRegister = async (req, res) => {
 
   if (existingAdmin) {
     return res.status(400).send({
-      message: "Admin already exists",
+      message: "Admin with this email already exists",
     });
   
   }
@@ -528,10 +528,11 @@ exports.handleAdminRegister = async (req, res) => {
     username,
     email,
     password: hashPassword,
-    isWarehouseAdmin: false,
+    isWarehouseAdmin
   });
 
   const response = {
+    username,
     email: admin.email,
     isWarehouseAdmin: admin.isWarehouseAdmin,
   };
