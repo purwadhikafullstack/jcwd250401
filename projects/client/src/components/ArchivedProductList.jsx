@@ -241,7 +241,7 @@ function ArchivedProductList() {
           ""
         )}
         {products.map((product) => (
-          <div key={product.id} className="bg-white items-center justify-between flex gap-6 h-36 w-full px-6 py-2 rounded-lg shadow-lg">
+          <div key={product.id} className="bg-white items-center justify-between flex gap-6 h-36 w-full px-6 py-2 rounded-lg shadow-sm">
             <div className="h-[100px] w-[100px] flex justify-center items-center">
               {product.productImages[0].imageUrl ? (
                 <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-lg" alt="Product Image" style={{ filter: "grayscale(100%)" }} />
