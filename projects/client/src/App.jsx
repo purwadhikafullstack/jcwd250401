@@ -13,6 +13,8 @@ import { Order } from "./pages/Order";
 import { CartPage } from "./pages/CartPage";
 import { Customers } from "./pages/Customers";
 import { Staff } from "./pages/Staff";
+import Warehouse from "./pages/Warehouse";
+
 
 const routesConfig = [
   // USER ROUTES
@@ -31,6 +33,7 @@ const routesConfig = [
   { path: "/dashboard/products", component: <Products />, showNavigationbar: false },
   { path: "/dashboard/customers", component: <Customers />, showNavigationbar: false },
   { path: "/dashboard/staff", component: <Staff />, showNavigationbar: false },
+  { path: "/dashboard/warehouse", component: <Warehouse />, showNavigationbar: false },
   // Add more route configurations as needed
 ];
 

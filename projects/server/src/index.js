@@ -18,6 +18,8 @@ const categoryRouter = require("./routes/category");
 const orderRouter = require("./routes/order");
 const productRouter = require("./routes/product");
 const userRouter = require("./routes/user")
+const cartRoutes = require("./routes/cartRoutes");
+const WarehouseRoutes = require("./routes/warehouse");
 
 //Routing
 app.use("/auth", authRouter);
@@ -27,6 +29,8 @@ app.use("/category", categoryRouter);
 app.use("/order", orderRouter);
 app.use("/product", productRouter);
 app.use("/users", userRouter)
+app.use("/api/cart", cartRoutes);
+app.use("/api/warehouse", WarehouseRoutes);
 
 app.use("/public", express.static(__dirname + "/public"));
 
@@ -34,10 +38,6 @@ app.use("/public", express.static(__dirname + "/public"));
 
 // ===========================
 // NOTE : Add your routes here
-
-const cartRoutes = require("./routes/cartRoutes");
-
-app.use("/api/cart", cartRoutes);
 
 app.get("/api", (req, res) => {
   res.send(`Hello, this is my API`);

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import api from "../api";
 import { Box, Card, CardBody, Heading, Image, Stack, Text } from "@chakra-ui/react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 export const Customers = () => {
   const isMounted = useRef(true); // useRef to track whether the component is mounted
@@ -12,17 +13,23 @@ export const Customers = () => {
   const size = 5;
   const [sort, setSort] = useState("createdAt");
   const [order, setOrder] = useState("DESC");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const getCustomers = async () => {
       try {
-        const response = await api.get(`/users?page=${page}&size=${size}&sort=${sort}&order=${order}`);
+        const response = await api.admin.get(`/users?page=${page}&size=${size}&sort=${sort}&order=${order}`);
         setCustomers(response.data.detail);
       } catch (error) {
         if (error.response && error.response.status === 500) {
           toast.error(error.response.data.message, {
             description: error.response.data.detail,
           });
+        } else if (error.response && error.response.status === 403) {
+          toast.error(error.response.data.message, {
+            description: error.response.data.detail,
+          });
+          navigate("/adminlogin");
         }
       }
     };

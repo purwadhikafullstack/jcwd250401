@@ -8,6 +8,7 @@ import { BsFillTrash3Fill } from "react-icons/bs";
 import { FiEdit } from "react-icons/fi";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { AddEditAdminModal } from "../components/AddEditAdminModal";
+import { useNavigate } from "react-router-dom";
 
 export const Staff = () => {
   // Validate if user is admin or warehouse admin
@@ -21,6 +22,7 @@ export const Staff = () => {
   const [sort, setSort] = useState("createdAt");
   const [order, setOrder] = useState("DESC");
   const [isWarehouseAdmin, setIsWarehouseAdmin] = useState(null);
+  const navigate = useNavigate();
 
   const getAdmins = async () => {
     try {
@@ -31,7 +33,7 @@ export const Staff = () => {
         isWarehouseAdminValue = null;
       }
 
-      const response = await api.get(`/users/admin?page=${page}&size=${size}&sort=${sort}&order=${order}`, {
+      const response = await api.admin.get(`/users/admin?page=${page}&size=${size}&sort=${sort}&order=${order}`, {
         params: {
           isWarehouseAdmin: isWarehouseAdminValue,
         },
@@ -42,6 +44,11 @@ export const Staff = () => {
         toast.error(error.response.data.message, {
           description: error.response.data.detail,
         });
+      } else if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+        toast.error(error.response.data.message, {
+          description: error.response.data.detail,
+        });
+        navigate("/adminlogin");
       }
     }
   };

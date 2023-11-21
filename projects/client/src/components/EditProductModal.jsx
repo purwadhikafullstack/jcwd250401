@@ -22,8 +22,6 @@ function EditProductModal({ isOpen, isClose, data }) {
   const [dropzoneImages, setDropzoneImages] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
 
-  console.log(data);
-
   const handleInputChange = (event) => {
     const rawValue = event.target.value.replace(/[^\d]/g, ""); // Remove non-numeric characters
     const numericValue = parseInt(rawValue, 10); // Parse the numeric value
@@ -85,7 +83,7 @@ function EditProductModal({ isOpen, isClose, data }) {
   const formik = useFormik({
     initialValues: {
       productName: data?.name,
-      productGender: data?.gender,
+      productGender: data?.gender === "Unisex" ? "" : data?.gender,
       productMainCategory: data?.Categories[0]?.name,
       productSubCategory: data?.Categories[1]?.name,
       productDescription: data?.description,
@@ -94,11 +92,14 @@ function EditProductModal({ isOpen, isClose, data }) {
     },
     validationSchema: Yup.object({
       productName: Yup.string().required("Please enter your product name").min(6, "Product name must be at least 6 characters"),
-      productGender: Yup.string().required("Please enter your product gender"),
       productMainCategory: Yup.string().required("Please enter your product main category"),
       productSubCategory: Yup.string().required("Please enter your product sub category"),
       productDescription: Yup.string().required("Please enter your description").min(10, "Product description must be at least 10 characters"),
       productPrice: Yup.string().required("Please enter your product price"),
+      productGender: Yup.string().when('productMainCategory', {
+        is: (productMainCategory) => !(productMainCategory === 'Bags' || productMainCategory === 'Accessories'),
+        then: (productGender) => Yup.string().required('Please select a gender'),
+      }),
     }),
     onSubmit: async (values) => {
       try {
@@ -127,6 +128,7 @@ function EditProductModal({ isOpen, isClose, data }) {
         const responseData = response.data.details;
         if (response.status === 200) {
           setTimeout(() => {
+            isClose();
             setIsSubmitting(false);
             dispatch(addProduct(responseData));
             toast.success("Update product success", {
@@ -136,7 +138,6 @@ function EditProductModal({ isOpen, isClose, data }) {
                 setDropzoneImages([]);
                 setPreviewImages([]);
                 setFormattedValue("");
-                isClose();
               },
             });
           }, 3000);
@@ -266,7 +267,7 @@ function EditProductModal({ isOpen, isClose, data }) {
 
   return (
     <>
-      <Modal closeOnOverlayClick={false} isOpen={isOpen} size={{ lg: "6xl" }} scrollBehavior="inside" onClose={isClose} isCentered>
+      <Modal closeOnOverlayClick={false} isOpen={isOpen} size={{ lg: "6xl" }} motionPreset="slideInRight" scrollBehavior="inside" onClose={isClose} isCentered>
         <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(1px)" />
         <ModalContent>
           <ModalHeader py={0}>
@@ -275,7 +276,7 @@ function EditProductModal({ isOpen, isClose, data }) {
             </div>
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody>
+          <ModalBody className="scrollbar-hide">
             <form onSubmit={formik.handleSubmit}>
               <div className="space-y-4 lg:space-y-3 px-4 mb-6">
                 <div className="lg:flex flex lg:flex-row lg:space-x-20 lg:space-y-0 space-y-4 lg:justify-between lg:items-center flex-col">
@@ -472,7 +473,7 @@ function EditProductModal({ isOpen, isClose, data }) {
                       id="productDescription"
                       name="productDescription"
                       placeholder="Describe the product..."
-                      className="w-full h-56 px-4 py-2 border-2 border-gray-300 rounded-lg shadow-md shadow-gray-200 focus:ring-transparent resize-none focus:border-gray-500"
+                      className="w-full h-56 px-4 py-2 border-2 scrollbar-hide border-gray-300 rounded-lg shadow-md shadow-gray-200 focus:ring-transparent resize-none focus:border-gray-500"
                       {...formik.getFieldProps("productDescription")}
                     />
                     {formik.touched.productDescription && formik.errors.productDescription ? (
@@ -493,7 +494,7 @@ function EditProductModal({ isOpen, isClose, data }) {
                     {[0, 1, 2, 3, 4].map((index) => {
                       const previewImage = dropzoneImages.find((img) => img.index === index);
                       return (
-                        <div key={index} className="lg:w-[136px] lg:h-[200px] w-[80%] h-[250px] relative">
+                        <div key={index} className="lg:w-[139px] lg:h-[200px] w-[80%] h-[250px] relative">
                           <div
                             onClick={() => handleClick(index)}
                             className={`w-full h-full border-dashed border-2 border-gray-300 rounded-md flex shadow-md shadow-gray-200 focus:ring-transparent items-center justify-center bg-transparent ${
@@ -507,12 +508,12 @@ function EditProductModal({ isOpen, isClose, data }) {
                                 <>
                                   {index === 0 ? (
                                     <>
-                                      <PiImageThin className="text-gray-400" size={38} />
+                                      <PiImageThin className="text-gray-400" size={44} />
                                       <p className="text-gray-400">Main Photo</p>
                                     </>
                                   ) : (
                                     <>
-                                      <PiImageThin className="text-gray-400" size={38} />
+                                      <PiImageThin className="text-gray-400" size={44} />
                                       <p className="text-gray-400">Photo {index + 1}</p>
                                     </>
                                   )}

@@ -8,22 +8,28 @@ import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { store, persistor } from "./store";
 import { Toaster } from "sonner";
-import { ChakraProvider } from "@chakra-ui/react";
+import { ChakraProvider, extendTheme } from "@chakra-ui/react";
+
+const theme = extendTheme({
+  fonts: {
+    body: "Segoe UI, system-ui, sans-serif",
+    heading: "Segoe UI, system-ui, sans-serif",
+    mono: "Menlo, monospace",
+  },
+});
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <BrowserRouter>
-          <ChakraProvider>
-            <Toaster position="bottom-center" />
-            <App />
-          </ChakraProvider>
-        </BrowserRouter>
-      </PersistGate>
-    </Provider>
-  </React.StrictMode>
+  <Provider store={store}>
+    <PersistGate loading={null} persistor={persistor}>
+      <BrowserRouter>
+        <ChakraProvider theme={theme}>
+          <Toaster position="bottom-center" />
+          <App />
+        </ChakraProvider>
+      </BrowserRouter>
+    </PersistGate>
+  </Provider>
 );
 
 // If you want to start measuring performance in your app, pass a function

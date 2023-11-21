@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      Warehouse.belongsTo(models.Address, {  foreignKey: 'warehouseAddressId' });
+      Warehouse.belongsTo(models.WarehouseAddress, {  foreignKey: 'warehouseAddressId' });
       Warehouse.belongsTo(models.Admin, {  foreignKey: 'adminId' });
       
     }
@@ -19,7 +19,8 @@ module.exports = (sequelize, DataTypes) => {
     location: DataTypes.STRING,
     name: DataTypes.STRING,
     warehouseAddressId: DataTypes.INTEGER,
-    adminId: DataTypes.INTEGER
+    adminId: DataTypes.INTEGER,
+    warehouseImage: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Warehouse',

@@ -48,11 +48,14 @@ function AddProductModal({ isOpen, isClose }) {
     },
     validationSchema: Yup.object({
       productName: Yup.string().required("Please enter your product name").min(6, "Product name must be at least 6 characters"),
-      productGender: Yup.string().required("Please enter your product gender"),
       productMainCategory: Yup.string().required("Please enter your product main category"),
       productSubCategory: Yup.string().required("Please enter your product sub category"),
       productDescription: Yup.string().required("Please enter your description").min(10, "Product description must be at least 10 characters"),
       productPrice: Yup.string().required("Please enter your product price"),
+      productGender: Yup.string().when('productMainCategory', {
+        is: (productMainCategory) => !(productMainCategory === 'Bags' || productMainCategory === 'Accessories'),
+        then: (productGender) => Yup.string().required('Please select a gender'),
+      }),
     }),
     onSubmit: async (values) => {
       try {
@@ -81,6 +84,7 @@ function AddProductModal({ isOpen, isClose }) {
         const responseData = response.data.details;
         if (response.status === 201) {
           setTimeout(() => {
+            isClose();
             setIsSubmitting(false);
             dispatch(addProduct(responseData));
             toast.success("Successfully added new product", {
@@ -90,7 +94,6 @@ function AddProductModal({ isOpen, isClose }) {
                 setDropzoneImages([]);
                 setPreviewImages([]);
                 setFormattedValue("");
-                isClose();
               },
             });
           }, 3000);
@@ -230,7 +233,7 @@ function AddProductModal({ isOpen, isClose }) {
             </div>
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody>
+          <ModalBody className="scrollbar-hide">
             <form onSubmit={formik.handleSubmit}>
               <div className="space-y-4 lg:space-y-3 px-4 mb-6">
                 <div className="lg:flex flex lg:flex-row lg:space-x-20 lg:space-y-0 space-y-4 lg:justify-between lg:items-center flex-col">
@@ -449,7 +452,7 @@ function AddProductModal({ isOpen, isClose }) {
                       const previewImage = dropzoneImages.find((img) => img.index === index);
 
                       return (
-                        <div key={index} className="lg:w-[136px] lg:h-[200px] w-[80%] h-[250px] relative">
+                        <div key={index} className="lg:w-[139px] lg:h-[200px] w-[80%] h-[250px] relative">
                           <div
                             onClick={() => handleClick(index)}
                             className={`w-full h-full border-dashed border-2 border-gray-300 rounded-md flex shadow-md shadow-gray-200 focus:ring-transparent items-center justify-center bg-transparent ${
@@ -463,12 +466,12 @@ function AddProductModal({ isOpen, isClose }) {
                                 <>
                                   {index === 0 ? (
                                     <>
-                                      <PiImageThin className="text-gray-400" size={38} />
+                                      <PiImageThin className="text-gray-400" size={44} />
                                       <p className="text-gray-400">Main Photo</p>
                                     </>
                                   ) : (
                                     <>
-                                      <PiImageThin className="text-gray-400" size={38} />
+                                      <PiImageThin className="text-gray-400" size={44} />
                                       <p className="text-gray-400">Photo {index + 1}</p>
                                     </>
                                   )}

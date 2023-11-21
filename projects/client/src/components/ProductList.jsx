@@ -12,13 +12,17 @@ import { ChevronDownIcon } from "@chakra-ui/icons";
 import EditProductModal from "./EditProductModal";
 import { EditCategoryModal } from "./EditCategoryModal";
 import ArchiveProductModal from "./ArchiveProductModal";
+import DeleteProductModal from "./DeleteProductModal";
+import { logoutAdmin } from "../slices/accountSlices";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 function ProductList() {
   const [sortCriteria, setSortCriteria] = useState("date-desc"); // Default sorting criteria that matches the backend;
   const [searchInput, setSearchInput] = useState(""); // Initialize with "All"
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedWarehouse, setSelectedWarehouse] = useState("All Warehouse");
-  const [selectedFilter, setSelectedFilter] = useState("All Gender");
+  const [selectedFilter, setSelectedFilter] = useState("All Genders");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalData, setTotalData] = useState(0);
@@ -29,6 +33,9 @@ function ProductList() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [openEditProductModal, setOpenEditProductModal] = useState(false);
   const [openArchiveProductModal, setOpenArchiveProductModal] = useState(false);
+  const [openDeleteProductModal, setOpenDeleteProductModal] = useState(false);
+  const navigate = useNavigate();
+  // const isSuperAdmin = useSelector((state) => state.account?);
 
   const newProducts = useSelector((state) => state.product?.productList);
 
@@ -50,9 +57,7 @@ function ProductList() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        setCurrentPage(1);
-
-        const response = await api.get(`/product?page=${currentPage}&limit=${productsPerPage}&sort=${sortCriteria}&category=${selectedCategory}&search=${searchInput}&filterBy=${selectedFilter}`);
+        const response = await api.admin.get(`/product?page=${currentPage}&limit=${productsPerPage}&sort=${sortCriteria}&category=${selectedCategory}&search=${searchInput}&filterBy=${selectedFilter}`);
         const responseData = response.data.details;
         const totalData = response.data.pagination.totalData;
         const totalPages = Math.ceil(totalData / productsPerPage);
@@ -60,14 +65,35 @@ function ProductList() {
         setTotalPages(totalPages);
         setProducts(responseData);
       } catch (error) {
-        if (error?.response?.status == 404) {
+        if (error?.response?.status === 404) {
           setTotalData(0);
           setTotalPages(0);
           setProducts([]);
         }
+        if (error?.response?.status === 401) {
+          setTimeout(() => {
+            toast.error(error.response.data.message, {
+              autoClose: 1000,
+              onAutoClose: (t) => {
+                dispatch(logoutAdmin());
+                navigate("/adminlogin");
+              },
+            });
+          }, 600);
+        }
+        if (error?.response?.status === 403) {
+          setTimeout(() => {
+            toast.error(error.response.data.message, {
+              autoClose: 1000,
+              onAutoClose: (t) => {
+                dispatch(logoutAdmin());
+                navigate("/adminlogin");
+              },
+            });
+          }, 600);
+        }
       }
     };
-
     fetchProducts();
   }, [currentPage, sortCriteria, selectedCategory, searchInput, selectedFilter, totalPages, totalData, newProducts]);
 
@@ -114,8 +140,8 @@ function ProductList() {
   ];
 
   const sortingOptions = [
-    { label: "Date ASC", value: "date-asc" },
     { label: "Date DESC", value: "date-desc" },
+    { label: "Date ASC", value: "date-asc" },
     { label: "(A-Z)", value: "alphabetical-asc" },
     { label: "(Z-A)", value: "alphabetical-desc" },
     { label: "Price ASC", value: "price-asc" },
@@ -156,6 +182,11 @@ function ProductList() {
   const toggleArchiveModal = (product) => {
     setSelectedProduct(product);
     setOpenArchiveProductModal(!openArchiveProductModal);
+  };
+
+  const toggleDeleteModal = (product) => {
+    setSelectedProduct(product);
+    setOpenDeleteProductModal(!openDeleteProductModal);
   };
 
   return (
@@ -241,7 +272,7 @@ function ProductList() {
         </div>
       </div>
       <div className="space-y-6 overflow-y-scroll scrollbar-hide h-[56vh] ">
-        {products.length == 0 ? (
+        {products.length === 0 ? (
           <Text textAlign={"center"} fontStyle={"italic"}>
             No data matches.
           </Text>
@@ -249,10 +280,10 @@ function ProductList() {
           ""
         )}
         {products.map((product) => (
-          <div key={product.id} className="bg-white items-center justify-between flex gap-6 h-36 w-full px-6 py-2 rounded-lg shadow-md">
+          <div key={product.id} className="bg-white items-center justify-between flex gap-6 h-36 w-full px-6 py-2 rounded-lg shadow-sm">
             <div className="h-[100px] w-[100px] flex justify-center items-center">
               {product.productImages[0].imageUrl ? (
-                <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-2xl" alt="Product Image" />
+                <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" />
               ) : (
                 <div className="w-full h-full flex justify-center items-center bg-gray-200 text-gray-400">
                   <div className="flex flex-col items-center justify-center">
@@ -313,7 +344,7 @@ function ProductList() {
                   <MenuItem onClick={() => toggleEditModal(product)}>Edit product</MenuItem>
                   <MenuItem>Update stock</MenuItem>
                   <MenuItem onClick={() => toggleArchiveModal(product)}>Archive</MenuItem>
-                  <MenuItem>Delete</MenuItem>
+                  <MenuItem onClick={() => toggleDeleteModal(product)}>Delete</MenuItem>
                 </MenuList>
               </Menu>
             </div>
@@ -322,7 +353,10 @@ function ProductList() {
       </div>
       <Box display="flex" justifyContent="right" gap={2} textAlign="right" mr={4}>
         <Flex alignItems={"center"} gap={2}>
-          <Text mr={2} fontWeight={"bold"}> Page </Text>
+          <Text mr={2} fontWeight={"bold"}>
+            {" "}
+            Page{" "}
+          </Text>
           <Box>
             <Button
               boxShadow="md"
@@ -331,7 +365,6 @@ function ProductList() {
               w="30px"
               borderRadius="lg"
               onClick={() => handlePageChange(1)}
-            
               variant={currentPage === 1 ? "solid" : "outline"}
               bgColor={currentPage === 1 ? "white" : "gray.900"}
               textColor={currentPage === 1 ? "gray.900" : "white"}
@@ -361,8 +394,9 @@ function ProductList() {
           </Box>
         </Flex>
       </Box>
-      {selectedProduct && <ArchiveProductModal isOpen={openArchiveProductModal} data={selectedProduct} isClose={toggleArchiveModal} />}
-      {selectedProduct && <EditProductModal isOpen={openEditProductModal} data={selectedProduct} isClose={toggleEditModal} />}
+      {openArchiveProductModal && <ArchiveProductModal isOpen={openArchiveProductModal} data={selectedProduct} isClose={toggleArchiveModal} />}
+      {openEditProductModal && <EditProductModal isOpen={openEditProductModal} data={selectedProduct} isClose={toggleEditModal} />}
+      {openDeleteProductModal && <DeleteProductModal isOpen={openDeleteProductModal} data={selectedProduct} isClose={toggleDeleteModal} />}
     </div>
   );
 }
