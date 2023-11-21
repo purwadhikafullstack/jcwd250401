@@ -10,7 +10,7 @@ function DeleteProductModal({ isOpen, isClose, data }) {
   const dispatch = useDispatch();
   const handleUnarchive = async () => {
     try {
-      const response = await api.delete(`/product/${data.id}`);
+      const response = await api.admin.delete(`/product/${data.id}`);
 
       const responseData = response.data.details;
 
@@ -44,10 +44,11 @@ function DeleteProductModal({ isOpen, isClose, data }) {
         <ModalBody>
           <Text>Are you sure you want to delete this product?</Text>
           {data && data.productImages && data.productImages.length > 0 && (
-          <div className="flex flex-col items-center justify-center mt-4">
-              <div className="flex justify-center items-center h-[200px] w-[160px]">
-                <img src={`http://localhost:8000/public/${data.productImages[0]?.imageUrl}`} className="w-full h-full shadow-md" alt={data.name}  />
-              </div>
+            <div className="flex flex-col items-center justify-center mt-4">
+              <div
+                className="flex justify-center items-center h-[200px] w-[160px] shadow-lg"
+                style={{ backgroundImage: `url(http://localhost:8000/public/${data.productImages[0]?.imageUrl})`, backgroundSize: "cover", backgroundRepeat: "no-repeat" }}
+              ></div>
               <Flex mt={4} gap={2} flexDirection="column" justifyContent="center" alignItems="center">
                 <Text fontWeight="bold">{data.name}</Text>
                 <Text> SKU : {data.sku}</Text>

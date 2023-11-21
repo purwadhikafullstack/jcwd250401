@@ -19,6 +19,7 @@ export const Profile = () => {
   const email = useSelector((state) => state?.account?.profile?.data?.profile?.email);
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  
 
   useEffect(() => {
     const getUserData = async () => {

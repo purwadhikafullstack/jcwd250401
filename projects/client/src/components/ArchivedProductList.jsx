@@ -27,6 +27,7 @@ function ArchivedProductList() {
   const [openUnarchiveProductModal, setOpenUnarchiveProductModal] = useState(false);
 
   const newProducts = useSelector((state) => state.product?.productList);
+  const isWarehouseAdmin = useSelector((state) => state?.account?.isWarehouseAdmin);
 
   const handleSearchInputChange = _debounce((e) => {
     setSearchInput(e.target.value);
@@ -48,7 +49,7 @@ function ArchivedProductList() {
       try {
         setCurrentPage(1);
 
-        const response = await api.get(`/product?page=${currentPage}&limit=${productsPerPage}&sort=${sortCriteria}&category=${selectedCategory}&search=${searchInput}&filterBy=${selectedFilter}&isArchived=true`);
+        const response = await api.admin.get(`/product?page=${currentPage}&limit=${productsPerPage}&sort=${sortCriteria}&category=${selectedCategory}&search=${searchInput}&filterBy=${selectedFilter}&isArchived=true`);
         const responseData = response.data.details;
         const totalData = response.data.pagination.totalData;
         const totalPages = Math.ceil(totalData / productsPerPage);
@@ -231,7 +232,7 @@ function ArchivedProductList() {
           </div>
         </div>
       </div>
-      <div className="space-y-6 overflow-y-scroll scrollbar-hide h-[56vh]">
+      <div className={`space-y-6 overflow-y-scroll scrollbar-hide ${isWarehouseAdmin ? 'h-[62vh]' : 'h-[56vh]'}`}>
         {products.length == 0 ? (
           <Text textAlign={"center"} fontStyle={"italic"}>
             No data matches.
@@ -283,28 +284,30 @@ function ArchivedProductList() {
               <span>20</span>
             </div>
             <div>
-              <Menu>
-                <MenuButton
-                  px={2}
-                  py={2}
-                  transition="all 0.2s"
-                  borderRadius="lg"
-                  textColor="gray.600"
-                  boxShadow="md"
-                  borderColor="gray.500"
-                  borderWidth="2px"
-                  _hover={{ bg: "gray.900", textColor: "white" }}
-                  _expanded={{ bg: "gray.900", textColor: "white" }}
-                >
-                  <Flex justifyContent="between" gap={4} px={2} alignItems="center">
-                    <Text fontWeight="bold">Edit</Text>
-                    <PiCaretDown size="20px" />
-                  </Flex>
-                </MenuButton>
-                <MenuList>
-                  <MenuItem onClick={() => toggleUnarchiveModal(product)}>Unarchive</MenuItem>
-                </MenuList>
-              </Menu>
+              {!isWarehouseAdmin && (
+                <Menu>
+                  <MenuButton
+                    px={2}
+                    py={2}
+                    transition="all 0.2s"
+                    borderRadius="lg"
+                    textColor="gray.600"
+                    boxShadow="md"
+                    borderColor="gray.500"
+                    borderWidth="2px"
+                    _hover={{ bg: "gray.900", textColor: "white" }}
+                    _expanded={{ bg: "gray.900", textColor: "white" }}
+                  >
+                    <Flex justifyContent="between" gap={4} px={2} alignItems="center">
+                      <Text fontWeight="bold">Edit</Text>
+                      <PiCaretDown size="20px" />
+                    </Flex>
+                  </MenuButton>
+                  <MenuList>
+                    <MenuItem onClick={() => toggleUnarchiveModal(product)}>Unarchive</MenuItem>
+                  </MenuList>
+                </Menu>
+              )}
             </div>
           </div>
         ))}

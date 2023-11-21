@@ -35,9 +35,9 @@ function ProductList() {
   const [openArchiveProductModal, setOpenArchiveProductModal] = useState(false);
   const [openDeleteProductModal, setOpenDeleteProductModal] = useState(false);
   const navigate = useNavigate();
-  // const isSuperAdmin = useSelector((state) => state.account?);
-
+  const isWarehouseAdmin = useSelector((state) => state.account.isWarehouseAdmin);
   const newProducts = useSelector((state) => state.product?.productList);
+  
 
   const handleSearchInputChange = _debounce((e) => {
     setSearchInput(e.target.value);
@@ -271,7 +271,7 @@ function ProductList() {
           </div>
         </div>
       </div>
-      <div className="space-y-6 overflow-y-scroll scrollbar-hide h-[56vh] ">
+      <div className={`space-y-6 overflow-y-scroll scrollbar-hide ${isWarehouseAdmin ? 'h-[60vh]' : 'h-[56vh]'}`}>
         {products.length === 0 ? (
           <Text textAlign={"center"} fontStyle={"italic"}>
             No data matches.
@@ -321,33 +321,35 @@ function ProductList() {
               <span className="font-bold">Stock</span>
               <span>20</span>
             </div>
-            <div>
-              <Menu>
-                <MenuButton
-                  px={2}
-                  py={2}
-                  transition="all 0.2s"
-                  borderRadius="lg"
-                  textColor="gray.600"
-                  boxShadow="md"
-                  borderColor="gray.500"
-                  borderWidth="2px"
-                  _hover={{ bg: "gray.900", textColor: "white" }}
-                  _expanded={{ bg: "gray.900", textColor: "white" }}
-                >
-                  <Flex justifyContent="between" gap={4} px={2} alignItems="center">
-                    <Text fontWeight="bold">Edit</Text>
-                    <PiCaretDown size="20px" />
-                  </Flex>
-                </MenuButton>
-                <MenuList>
-                  <MenuItem onClick={() => toggleEditModal(product)}>Edit product</MenuItem>
-                  <MenuItem>Update stock</MenuItem>
-                  <MenuItem onClick={() => toggleArchiveModal(product)}>Archive</MenuItem>
-                  <MenuItem onClick={() => toggleDeleteModal(product)}>Delete</MenuItem>
-                </MenuList>
-              </Menu>
-            </div>
+            {!isWarehouseAdmin && (
+              <div>
+                <Menu>
+                  <MenuButton
+                    px={2}
+                    py={2}
+                    transition="all 0.2s"
+                    borderRadius="lg"
+                    textColor="gray.600"
+                    boxShadow="md"
+                    borderColor="gray.500"
+                    borderWidth="2px"
+                    _hover={{ bg: "gray.900", textColor: "white" }}
+                    _expanded={{ bg: "gray.900", textColor: "white" }}
+                  >
+                    <Flex justifyContent="between" gap={4} px={2} alignItems="center">
+                      <Text fontWeight="bold">Edit</Text>
+                      <PiCaretDown size="20px" />
+                    </Flex>
+                  </MenuButton>
+                  <MenuList>
+                    <MenuItem onClick={() => toggleEditModal(product)}>Edit product</MenuItem>
+                    <MenuItem>Update stock</MenuItem>
+                    <MenuItem onClick={() => toggleArchiveModal(product)}>Archive</MenuItem>
+                    <MenuItem onClick={() => toggleDeleteModal(product)}>Delete</MenuItem>
+                  </MenuList>
+                </Menu>
+              </div>
+            )}
           </div>
         ))}
       </div>

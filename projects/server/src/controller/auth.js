@@ -523,7 +523,9 @@ exports.handleAdminRegister = async (req, res) => {
   }
   const salt = await bcrypt.genSalt(10);
   const hashPassword = await bcrypt.hash(password, salt);
+  const username = email.split("@")[0];
   const admin = await Admin.create({
+    username,
     email,
     password: hashPassword,
     isWarehouseAdmin: false,
@@ -590,6 +592,7 @@ exports.handleAdminLogin = async (req, res) => {
     const response = {
       token,
       profile: {
+        username: account.username,
         email: account.email,
         isWarehouseAdmin: account.isWarehouseAdmin,
       },
