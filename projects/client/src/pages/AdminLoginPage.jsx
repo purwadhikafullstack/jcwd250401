@@ -57,7 +57,7 @@ function AdminLoginPage() {
               onAutoClose: (t) => {
                 setIsSubmitting(false);
                 // dispatch(loginAdmin(responseData));
-                dispatch(login(responseData));
+                dispatch(loginAdmin(responseData));
                 navigate("/dashboard");
               },
             });
