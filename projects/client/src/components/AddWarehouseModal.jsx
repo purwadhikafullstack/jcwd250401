@@ -22,8 +22,9 @@ import {
 import { FiCamera } from 'react-icons/fi';
 import api from '../api'; 
 import { useRef } from 'react';
+import { set } from 'lodash';
 
-const AddWarehouseModal = ({ isOpen, onClose }) => {
+const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
   const [name, setName] = useState('');
   const [province, setProvince] = useState('');
   const [provinces, setProvinces] = useState([]);
@@ -48,6 +49,8 @@ const AddWarehouseModal = ({ isOpen, onClose }) => {
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl); // Set the image preview URL state
     }
+
+    setWarehouseImage(file);
   };
 
   useEffect(() => {
@@ -71,6 +74,10 @@ const AddWarehouseModal = ({ isOpen, onClose }) => {
         setCities(response.data.detail);
       }
     });
+
+    // Set the province name
+    const province = provinces.find((province) => province.province_id === provinceId);
+    setProvince(province.province);
   };    
 
   const handleSubmit = async (e) => {
@@ -100,6 +107,7 @@ const AddWarehouseModal = ({ isOpen, onClose }) => {
           isClosable: true,
         });
         onClose(); // Close the modal after successful submission
+        onSuccess(); // Call the onSuccess prop to refetch the warehouses
         // Reset form
         setName('');
         setProvince('');
@@ -119,6 +127,8 @@ const AddWarehouseModal = ({ isOpen, onClose }) => {
       setIsSubmitting(false);
     }
   };
+
+  console.log(warehouseImage);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} isCentered size={{ base: 'full', md: 'xl' }}>
@@ -143,7 +153,7 @@ const AddWarehouseModal = ({ isOpen, onClose }) => {
             </Box>
             <FormControl id="warehouse-name">
               <FormLabel>Warehouse Name</FormLabel>
-              <Input placeholder="Enter warehouse name" />
+              <Input placeholder="Enter warehouse name" onChange={(e) => setName(e.target.value)} value={name} />
             </FormControl>
             <VStack spacing="2" width="full" alignItems="flex-start">
               <FormLabel htmlFor="location" fontSize="1rem">Warehouse Location</FormLabel>
@@ -156,9 +166,9 @@ const AddWarehouseModal = ({ isOpen, onClose }) => {
                   </Select>
                 </FormControl>
                 <FormControl id="city" flex="1">
-                  <Select placeholder='Select City' onChange={(e) => setSelectedCity(e.target.value)} value={selectedCity} disabled={!selectedProvince}>
+                  <Select placeholder='Select City' onChange={(e) => setCity(e.target.value)} value={city} disabled={!selectedProvince}>
                     {cities.map((city) => (
-                      <option key={city.city_id} value={city.city_id}>{city.city_name}</option>
+                      <option key={city.city_id} value={city.city_name}>{city.city_name}</option>
                     ))}
                   </Select>
                 </FormControl>
