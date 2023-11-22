@@ -12,15 +12,15 @@ export const Profile = () => {
   const [userData, setUserData] = useState(null);
   const listsMenu = ["Profile", "Address Book", "My Order", "Change Password"];
   const isLogin = JSON.parse(localStorage.getItem("isLoggedIn"));
-  const userName = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const userDetail = useSelector((state) => state?.account?.profile?.data?.profile);
+  const username = useSelector((state) => state?.account?.username)
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   useEffect(() => {
     const getUserData = async () => {
       try {
-        const response = await api.get(`/profile/${userName}`);
+        const response = await api.get(`/profile/${username}`);
         setUserData(response.data.detail);
       } catch (error) {
         if (error.response && (error.response.status === 401 || error.response.status === 403 || error.response.status === 404 || error.response.status === 500)) {
@@ -35,7 +35,7 @@ export const Profile = () => {
       }
     };
     getUserData();
-  }, [userName, userDetail]);
+  }, [username, userDetail]);
 
   const handleEdit = () => setOpenModal(true);
 

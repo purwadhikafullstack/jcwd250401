@@ -8,7 +8,7 @@ import rains from "../assets/rains.png";
 import AuthModal from "./AuthModal";
 import { useSelector, useDispatch } from "react-redux";
 import { showLoginModal, showSignUpModal } from "../slices/authModalSlices";
-import { logout } from "../slices/accountSlices";
+import { logout, setUsername } from "../slices/accountSlices";
 import { getAuth, signOut } from "firebase/auth";
 import api from "../api";
 import { toast } from "sonner";
@@ -71,6 +71,7 @@ function Navigationbar() {
         if (isLoggedIn) {
           const response = await api.get(`/profile/${username}`);
           setUserData(response.data.detail);
+          dispatch(setUsername(response.data.detail.username));
         }
       } catch (error) {
         toast.error("Failed to get user data");
