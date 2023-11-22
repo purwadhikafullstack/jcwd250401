@@ -11,32 +11,30 @@ export const Profile = () => {
   const [openModal, setOpenModal] = useState(false);
   const [userData, setUserData] = useState(null);
   const listsMenu = ["Profile", "Address Book", "My Order", "Change Password"];
-  const isLogin = useSelector((state) => state?.account?.isLogin);
+  const isLogin = JSON.parse(localStorage.getItem("isLoggedIn"));
   const userName = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const lastName = useSelector((state) => state?.account?.profile?.data?.profile?.lastName);
   const firstName = useSelector((state) => state?.account?.profile?.data?.profile?.firstName);
   const photoProfile = useSelector((state) => state?.account?.profile?.data?.profile?.photoProfile);
   const email = useSelector((state) => state?.account?.profile?.data?.profile?.email);
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
-  
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const getUserData = async () => {
       try {
-        if (isLogin) {
-          const response = await api.get(`/profile/${userName}`);
-          setUserData(response.data.detail);
-        } else {
-          toast.error("You are not logged in");
-          setTimeout(() => {
-            navigate("/")
-            dispatch(showLoginModal());
-          }, 2000)
-        }
+        const response = await api.get(`/profile/${userName}`);
+        setUserData(response.data.detail);
       } catch (error) {
-        toast.error("Failed to get user data");
-        console.error(String(error));
+        if (error.response && (error.response.status === 401 || error.response.status === 403 || error.response.status === 404 || error.response.status === 500)) {
+          toast.error(error.response.data.message);
+          if (error.response.status === 401 || error.response.status === 403) {
+            setTimeout(() => {
+              navigate("/");
+              dispatch(showLoginModal());
+            }, 2000);
+          }
+        }
       }
     };
     getUserData();

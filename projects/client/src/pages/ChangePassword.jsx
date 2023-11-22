@@ -19,17 +19,10 @@ export const ChangePassword = () => {
   const [userData, setUserData] = useState(null);
   const userRegistByGoogle = userData?.registBy === "google" ? true : false;
   const navigate = useNavigate();
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   const handleShowPassword = () => setShowPassword(!showPassword);
   const handleModalOpen = () => setOpenModal(true);
-
-  if(!isLogin) {
-    setTimeout(() => {
-      navigate("/")
-      dispatch(showLoginModal());
-    }, 2000)
-  }
 
   const formik = useFormik({
     initialValues: {
@@ -40,12 +33,11 @@ export const ChangePassword = () => {
     validationSchema: yup.object({
       currentPassword: yup
         .string()
-        .matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/, "Must contain 8 characters, at least 1 letter, 1 number, and 1 symbol")
-        .required("Required")
+        .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&-]{8,}$/, "Must contain 8 characters, at least 1 letter, and 1 number")
         .required("Required"),
       newPassword: yup
         .string()
-        .matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/, "Must contain 8 characters, at least 1 letter, 1 number, and 1 symbol")
+        .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&-]{8,}$/, "Must contain 8 characters, at least 1 letter, and 1 number")
         .required("Required"),
       confirmNewPassword: yup
         .string()
@@ -64,8 +56,16 @@ export const ChangePassword = () => {
           formik.resetForm();
         }
       } catch (error) {
-        if (error.response && error.response.status === 400) {
-          toast.error("Current password is incorrect");
+        if (error.response && (error.response.status === 400 || error.response.status === 401 || error.response.status === 403 || error.response.status === 404 || error.response.status === 500)) {
+          toast.error(error.response.data.message);
+          if (error.response.status === 401 || error.response.status === 403) {
+            setTimeout(() => {
+              navigate("/");
+              dispatch(showLoginModal());
+            }, 2000);
+          }
+
+          if (error.response.status === 500) console.error(error);
         } else {
           toast.error("Change password failed");
         }
@@ -79,7 +79,16 @@ export const ChangePassword = () => {
         const response = await api.get(`/profile/${username}`);
         setUserData(response.data.detail);
       } catch (error) {
-        toast.error("Failed to get user data");
+        if (error.response && (error.response.status === 404 || error.response.status === 401 || error.response.status === 403 || error.response.status === 500)) {
+          toast.error(error.response.data.message);
+          if (error.response.status === 500) console.error(error);
+          if (error.response.status === 401 || error.response.status === 403) {
+            setTimeout(() => {
+              navigate("/");
+              dispatch(showLoginModal());
+            }, 2000);
+          }
+        }
       }
     };
     getUsersProfile();
@@ -90,15 +99,15 @@ export const ChangePassword = () => {
       <div className="flex justify-center">
         <div className="min-h-[70vh] lg:h-[70vh] w-[90vw] lg:w-[76vw] flex flex-row overflow-y-auto lg:overflow-y-hidden">
           <div className="hidden lg:flex flex-col w-[20vw]">
-                {listsMenu.map((list, index) => {
-                  const joinedList = list.toLowerCase().replace(/\s/g, "-");
-                  const isChangePassword = list === "Change Password"; // Check if the current item is "Profile"
-                  return (
-                    <Link key={index} to={`/account/${joinedList}`} className={`block py-2 text-sm font-sagoe text-gray-700 hover:underline ${isChangePassword ? "font-black" : ""}`}>
-                      {list}
-                    </Link>
-                  );
-                })}
+            {listsMenu.map((list, index) => {
+              const joinedList = list.toLowerCase().replace(/\s/g, "-");
+              const isChangePassword = list === "Change Password"; // Check if the current item is "Profile"
+              return (
+                <Link key={index} to={`/account/${joinedList}`} className={`block py-2 text-sm font-sagoe text-gray-700 hover:underline ${isChangePassword ? "font-black" : ""}`}>
+                  {list}
+                </Link>
+              );
+            })}
           </div>
           <div className="w-[90vw] lg:w-[53vw] min-h-[70vh] flex flex-col px-0 lg:px-5 rounded-lg shadow-md">
             {isLogin && !userRegistByGoogle ? (

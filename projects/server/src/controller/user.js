@@ -1,13 +1,25 @@
+const { Op } = require("sequelize");
 const { User, Admin } = require("../models");
 const bcrypt = require("bcrypt");
 
 exports.getAllUser = async (req, res) => {
-  const { size = 5, page = 1, sort = "createdAt", order = "DESC" } = req.query;
+  const { size = 5, page = 1, sort = "createdAt", order = "DESC", search } = req.query;
   const limit = parseInt(size);
   const offset = (parseInt(page) - 1) * limit;
+
   try {
     const orderClause = [[sort, order]];
+    let whereClause = {};
+
+    if (search) {
+      whereClause = {
+        ...whereClause,
+        [Op.or]: [{ username: { [Op.like]: `%${search}%` } }, { email: { [Op.like]: `%${search}%` } }],
+      };
+    }
+
     const users = await User.findAll({
+      where: whereClause,
       order: orderClause,
       limit,
       offset,
@@ -29,15 +41,22 @@ exports.getAllUser = async (req, res) => {
 };
 
 exports.getAllAdmin = async (req, res) => {
-  const { size = 5, page = 1, sort = "createdAt", order = "desc", isWarehouseAdmin } = req.query;
+  const { size = 5, page = 1, sort = "createdAt", order = "desc", isWarehouseAdmin = null, search } = req.query;
   const limit = parseInt(size);
   const offset = (parseInt(page) - 1) * limit;
   try {
     const orderClause = [[sort, order]];
 
     let whereClause = {};
-    if (isWarehouseAdmin !== null) {
+    if (isWarehouseAdmin !== null && isWarehouseAdmin !== undefined && isWarehouseAdmin !== "") {
       whereClause = { isWarehouseAdmin: isWarehouseAdmin === "true" };
+    }
+
+    if (search) {
+      whereClause = {
+        ...whereClause,
+        [Op.or]: [{ username: { [Op.like]: `%${search}%` } }, { email: { [Op.like]: `%${search}%` } }],
+      };
     }
     const admins = await Admin.findAll({
       where: whereClause,
@@ -75,11 +94,11 @@ exports.updateAdmin = async (req, res) => {
     }
 
     if (email) {
-      const existingAdmin = await Admin.findOne({ where: { email, username } });
+      const existingAdmin = await Admin.findOne({ where: { username, isWarehouseAdmin } });
       if (existingAdmin) {
         return res.status(400).json({
           ok: false,
-          message: "Admin with this email & username already exists",
+          message: "Admin with this username & role already exists",
         });
       }
       admin.email = email;

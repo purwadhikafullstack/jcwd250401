@@ -14,7 +14,7 @@ export const ConfirmModal = ({ isOpen, onClose, data, userId, deleteFor }) => {
         dispatch(removeAddress(data?.id));
         toast.success(response.data.message);
       } else if (deleteFor === "admin") {
-        const response = await api.delete(`/users/admin/${userId}`);
+        const response = await api.admin.delete(`/users/admin/${userId}`);
         toast.success(response.data.message);
       }
       onClose();
@@ -32,7 +32,7 @@ export const ConfirmModal = ({ isOpen, onClose, data, userId, deleteFor }) => {
           </ModalHeader>
           <ModalBody>
             <p>Are you sure you want to delete this {deleteFor}?</p>
-            <div className="border border-black rounded-md mt-2 p-2">
+            <div className="font-bold rounded-md mt-2">
               {deleteFor === "address" ? (
                 <>
                   <p className="text-md text-gray-600">{`${data?.firstName} ${data?.lastName}`}</p>
@@ -48,10 +48,10 @@ export const ConfirmModal = ({ isOpen, onClose, data, userId, deleteFor }) => {
             </div>
           </ModalBody>
           <ModalFooter>
-            <button className="bg-slate-900 hover:bg-slate-700 text-white p-2 rounded-md mr-2" onClick={onClose}>
+            <button className="border border-[#40403F] text-[#40403F] p-2 rounded-md mr-2" onClick={onClose}>
               Cancel
             </button>
-            <button className="bg-red-700 hover:bg-red-800 p-2 text-white rounded-md" onClick={handleDelete}>
+            <button className="bg-[#40403F] hover:bg-[#515150] p-2 text-white rounded-md" onClick={handleDelete}>
               Confirm
             </button>
           </ModalFooter>
