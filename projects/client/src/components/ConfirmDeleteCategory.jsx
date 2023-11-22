@@ -29,16 +29,16 @@ export const ConfirmDeleteCategory = ({ isOpen, onClose, data }) => {
 
           <ModalBody>
             <p>Are you sure you want to delete this category?</p>
-            <div className="border border-black rounded-md mt-2 p-2">
+            <div className="font-bold rounded-md mt-2">
               <p className="text-md text-gray-600">{data?.name}</p>
             </div>
           </ModalBody>
 
           <ModalFooter>
-            <button className="bg-slate-900 hover:bg-slate-700 text-white p-2 rounded-md mr-2" onClick={onClose}>
+            <button className="border border-[#40403F] text-[#40403F] p-2 rounded-md mr-2" onClick={onClose}>
               Cancel
             </button>
-            <button className="bg-red-700 hover:bg-red-800 p-2 text-white rounded-md" onClick={handleDeleteCategory}>
+            <button className="bg-[#40403F] hover:bg-[#515150] p-2 text-white rounded-md" onClick={handleDeleteCategory}>
               Confirm
             </button>
           </ModalFooter>

@@ -2,9 +2,11 @@ import Sidebar from "../components/Sidebar";
 import Navigationadmin from "../components/Navigationadmin";
 import { useEffect, useRef, useState } from "react";
 import api from "../api";
-import { Box, Card, CardBody, Heading, Image, Stack, Text } from "@chakra-ui/react";
+import { Image, Input, InputGroup, InputLeftElement, Table, TableContainer, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import useDebounceValue from "../hooks/useDebounceValue";
+import { SearchIcon } from "@chakra-ui/icons";
 
 export const Customers = () => {
   const isMounted = useRef(true); // useRef to track whether the component is mounted
@@ -13,23 +15,28 @@ export const Customers = () => {
   const size = 5;
   const [sort, setSort] = useState("createdAt");
   const [order, setOrder] = useState("DESC");
+  const [searchInput, setSearchInput] = useState("");
+  const debouncedSearchInput = useDebounceValue(searchInput, 300);
   const navigate = useNavigate();
+
+  const handleSearchInputChange = (e) => setSearchInput(e.target.value);
 
   useEffect(() => {
     const getCustomers = async () => {
       try {
-        const response = await api.admin.get(`/users?page=${page}&size=${size}&sort=${sort}&order=${order}`);
+        const response = await api.admin.get(`/users?page=${page}&size=${size}&sort=${sort}&order=${order}&search=${debouncedSearchInput}`);
         setCustomers(response.data.detail);
       } catch (error) {
         if (error.response && error.response.status === 500) {
           toast.error(error.response.data.message, {
             description: error.response.data.detail,
           });
-        } else if (error.response && error.response.status === 403) {
+        } else if (error.response && (error.response.status === 403 || error.response.status === 401)) {
           toast.error(error.response.data.message, {
             description: error.response.data.detail,
           });
-          navigate("/adminlogin");
+          if (error.response.status === 403) navigate("/adminlogin");
+          if (error.response.status === 401) navigate("/dashboard");
         }
       }
     };
@@ -41,7 +48,7 @@ export const Customers = () => {
     //   isMounted.current = false;
     // };
     getCustomers();
-  }, [page, size, sort, order]);
+  }, [page, size, sort, order, debouncedSearchInput]);
   return (
     <div className="flex flex-row justify-between h-screen">
       <Sidebar />
@@ -50,9 +57,16 @@ export const Customers = () => {
           <Navigationadmin />
         </div>
 
-        <div className="flex mt-16 py-4 px-4 md:p-8 justify-between">
+        <div className="flex flex-col md:flex-row mt-16 py-8 px-4 md:p-8 justify-between gap-2">
+          <InputGroup className="self-end">
+            <InputLeftElement pointerEvents="none">
+              <SearchIcon color="#40403F" />
+            </InputLeftElement>
+            <Input type="text" placeholder="Search customers name" value={searchInput} onChange={handleSearchInputChange} bgColor={"white"} borderColor={"#40403F"} w={{ base: "100%", md: "300px" }} _hover={{ borderColor: "#40403F" }} />
+          </InputGroup>
+
           <div className="flex gap-2">
-            <select value={sort} onChange={(e) => setSort(e.target.value)} className="bg-black text-white py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none">
+            <select value={sort} onChange={(e) => setSort(e.target.value)} className="bg-white text-[#40403F] py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none">
               <option value={"createdAt"} disabled defaultChecked>
                 Select Sort
               </option>
@@ -60,7 +74,7 @@ export const Customers = () => {
               <option value={"email"}>Email</option>
             </select>
 
-            <select value={order} onChange={(e) => setOrder(e.target.value)} className="bg-black text-white py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none">
+            <select value={order} onChange={(e) => setOrder(e.target.value)} className="bg-white text-[#40403F] py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none">
               <option value={""} disabled defaultChecked>
                 Select Order
               </option>
@@ -70,42 +84,47 @@ export const Customers = () => {
           </div>
         </div>
         {customers.length > 0 ? (
-          <div className="flex flex-col px-4 md:px-8 gap-2 h-[65vh] overflow-y-auto scrollbar-hide">
-            {customers.map((customer, index) => (
-              <Box key={index}>
-                <Card direction={{ base: "column", sm: "row" }} overflow="hidden" variant="outline" size={"sm"}>
-                  <Image
-                    objectFit="cover"
-                    minW={{ base: "100%", sm: "150px" }}
-                    maxW={{ base: "100%", sm: "150px" }}
-                    src={customer.photoProfile ? `http://localhost:8000/public/${customer.photoProfile}` : "https://via.placeholder.com/150"}
-                    alt={customer.photoProfile ? customer.photoProfile : "Not yet"}
-                  />
-
-                  <Stack>
-                    <CardBody>
-                      <Heading size="md">{customer.firstName ? customer.firstName : "First name is not set"}</Heading>
-
-                      <Text>Username: {customer.username}</Text>
-                      <Text>Email: {customer.email}</Text>
-                      <Text>Status: {customer.isVerify ? "Verified" : "Not Verified"}</Text>
-                    </CardBody>
-                  </Stack>
-                </Card>
-              </Box>
-            ))}
+          <div className="flex flex-col px-4 md:px-8 gap-2 min-h-[57vh] md:min-h-[65vh] overflow-y-auto scrollbar-hide">
+            <TableContainer>
+              <Table variant="striped" colorScheme="blackAlpha">
+                <Thead>
+                  <Tr>
+                    <Th>PhotoProfile</Th>
+                    <Th>Username</Th>
+                    <Th>First Name</Th>
+                    <Th>Last Name</Th>
+                    <Th>Email</Th>
+                    <Th>Sign up date</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {customers.map((customer, index) => (
+                    <Tr key={index}>
+                      <Td>
+                        <Image borderRadius="full" boxSize="40px" src={customer.photoProfile ? `http://localhost:8000/public/${customer.photoProfile}` : "https://via.placeholder.com/150"} alt={customer.photoProfile} />
+                      </Td>
+                      <Td>{customer.username}</Td>
+                      <Td>{customer.firstName ? customer.firstName : "-"}</Td>
+                      <Td>{customer.lastName ? customer.lastName : "-"}</Td>
+                      <Td>{customer.email}</Td>
+                      <Td>{customer.createdAt.slice(0, 10)}</Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </TableContainer>
           </div>
         ) : (
-          <div className="flex flex-col mt-16 py-8 px-4 md:p-8 gap-2 h-[85vh]">
-            <h1 className="text-3xl font-semibold italic text-center">No customers found</h1>
+          <div className="flex flex-col mt-16 py-8 px-4 md:p-8 gap-2 h-[55vh]">
+            <h1 className="text-3xl font-semibold italic text-center">No data matches</h1>
           </div>
         )}
-        <div className="flex justify-between items-center px-8 mt-3">
-          <button disabled={page === 1} className="bg-black text-white py-2 px-4 rounded-md" onClick={() => setPage(page - 1)}>
-            Previous Page
+        <div className="flex justify-between items-center px-8 mt-3 font-bold">
+          <button disabled={page === 1} className="bg-[#40403F] text-white py-2 px-4 rounded-md" onClick={() => setPage(page - 1)}>
+            Prev Page
           </button>
-          <span>{page}</span>
-          <button disabled={customers.length < size} className="bg-black text-white py-2 px-4 rounded-md" onClick={() => setPage(page + 1)}>
+          <span className="text-[#40403F]">{page}</span>
+          <button disabled={customers.length < size} className="bg-[#40403F] text-white py-2 px-4 rounded-md" onClick={() => setPage(page + 1)}>
             Next Page
           </button>
         </div>

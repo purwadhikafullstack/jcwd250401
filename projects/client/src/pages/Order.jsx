@@ -23,12 +23,6 @@ export const Order = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  if (!isLogin) {
-    setTimeout(() => {
-      navigate("/");
-      dispatch(showLoginModal());
-    }, 2000);
-  }
   const handleStatusChange = (status) => setSelectedStatus(status);
   // const handleOpenModalProof = (orderId) => {
   //   setSelectedOrder(orderId);
@@ -36,32 +30,29 @@ export const Order = () => {
   // };
 
   useEffect(() => {
-    const getOrderLists = async (userId) => {
-      try {
+    try {
+      const getOrderLists = async (userId) => {
         const response = await api.get(`/order/${userId}?status=${selectedStatus}&page=${Number(page)}&size=${Number(size)}&sort=${sort}&order=${order}`);
         setOrderLists(response.data.detail);
-      } catch (error) {
-        if (error.response && (error.response.status === 404 || error.response.status === 500)) {
-          toast.error(error.response.data.message);
-          setOrderLists([]);
-          if (error.response.status === 500) console.error(error.response.data.detail);
-        }
-      }
-    };
-    const getUserData = async () => {
-      try {
+      };
+      const getUserData = async () => {
         const response = await api.get(`/profile/${userName}`);
-
         getOrderLists(response.data.detail.id);
-      } catch (error) {
-        if (error.response && (error.response.status === 404 || error.response.status === 500)) {
-          toast.error(error.response.data.message);
-          if (error.response.status === 500) console.error(error.response.data.detail);
-        }
-      }
-    };
+      };
 
-    getUserData();
+      getUserData();
+    } catch (error) {
+      if (error.response && (error.response.status === 400 || error.response.status === 401 || error.response.status === 403 || error.response.status === 404 || error.response.status === 500)) {
+        toast.error(error.response.data.message);
+        if (error.response.status === 401 || error.response.status === 403) {
+          setTimeout(() => {
+            navigate("/");
+            dispatch(showLoginModal());
+          }, 2000);
+        }
+        if (error.response.status === 500) console.error(error.response.data.detail);
+      }
+    }
   }, [userName, selectedStatus, page, size, sort, order]);
 
   return (
@@ -168,7 +159,7 @@ export const Order = () => {
                   })
                 ) : (
                   <div className="flex justify-center items-center h-full py-2 mx-2 border border-gray-100 rounded-md">
-                    <p className="text-xl font-bold font-sagoe">You have no order yet</p>
+                    <p className="text-xl font-bold font-sagoe">No data matches</p>
                   </div>
                 )}
               </div>

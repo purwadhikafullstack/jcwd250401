@@ -3,8 +3,9 @@ const router = express.Router();
 
 const orderController = require("../controller/order");
 const { multerUpload } = require("../lib/multer");
+const authMiddleware = require("../middleware/auth");
 
-router.get("/:userId",orderController.getOrderLists);
-router.put("/:userId/:id",multerUpload.single("paymentProofImage"), orderController.paymentProof);
+router.get("/:userId", authMiddleware.validateToken, orderController.getOrderLists);
+router.put("/:userId/:id", authMiddleware.validateToken, multerUpload.single("paymentProofImage"), orderController.paymentProof);
 
 module.exports = router;
