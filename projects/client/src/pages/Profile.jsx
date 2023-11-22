@@ -13,10 +13,7 @@ export const Profile = () => {
   const listsMenu = ["Profile", "Address Book", "My Order", "Change Password"];
   const isLogin = JSON.parse(localStorage.getItem("isLoggedIn"));
   const userName = useSelector((state) => state?.account?.profile?.data?.profile?.username);
-  const lastName = useSelector((state) => state?.account?.profile?.data?.profile?.lastName);
-  const firstName = useSelector((state) => state?.account?.profile?.data?.profile?.firstName);
-  const photoProfile = useSelector((state) => state?.account?.profile?.data?.profile?.photoProfile);
-  const email = useSelector((state) => state?.account?.profile?.data?.profile?.email);
+  const userDetail = useSelector((state) => state?.account?.profile?.data?.profile);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -38,7 +35,7 @@ export const Profile = () => {
       }
     };
     getUserData();
-  }, [userName, lastName, firstName, photoProfile, email]);
+  }, [userName, userDetail]);
 
   const handleEdit = () => setOpenModal(true);
 
@@ -70,27 +67,27 @@ export const Profile = () => {
                 </div>
                 <div className="p-3 flex flex-col items-center sm:items-start sm:flex-row w-[90%] ml-4 mt-4">
                   <div className="w-[80%] sm:w-[50%] min-h-[50vh] shadow-md flex flex-col justify-center rounded-lg mb-5 border">
-                    <img src={photoProfile ? `http://localhost:8000/public/${photoProfile}` : "https://via.placeholder.com/150"} alt={photoProfile} className="w-[250px] sm:w[60%] h-[250px] sm:h-[60%] mx-auto pt-2" />
+                    <img src={userData?.photoProfile ? `http://localhost:8000/public/${userData?.photoProfile}` : "https://via.placeholder.com/150"} alt={userData?.photoProfile} className="w-[250px] sm:w[60%] h-[250px] sm:h-[60%] mx-auto pt-2" />
                   </div>
                   <div className="ml-0 sm:ml-[2vw]">
                     <div className="flex gap-8 mb-3">
                       <p className="text-sm text-gray-500 min-w-[20vw] sm:min-w-[5vw]">Username</p>
-                      <p className="text-sm text-gray-500">{userName ? userData?.username : "Not yet"}</p>
+                      <p className="text-sm text-gray-500">{userDetail.username ? userData?.username : "Not yet"}</p>
                     </div>
 
                     <div className="flex gap-8 mb-3">
                       <p className="text-sm text-gray-500 min-w-[20vw] sm:min-w-[5vw]">First name</p>
-                      <p className="text-sm text-gray-500">{firstName ? userData?.firstName : "Not yet"}</p>
+                      <p className="text-sm text-gray-500">{userDetail.firstName ? userData?.firstName : "Not yet"}</p>
                     </div>
 
                     <div className="flex gap-8 mb-3">
                       <p className="text-sm text-gray-500 min-w-[20vw] sm:min-w-[5vw]">Last name</p>
-                      <p className="text-sm text-gray-500">{lastName ? userData?.lastName : "Not yet"}</p>
+                      <p className="text-sm text-gray-500">{userDetail.lastName ? userData?.lastName : "Not yet"}</p>
                     </div>
 
                     <div className="flex gap-8 mb-3">
                       <p className="text-sm text-gray-500 min-w-[20vw] sm:min-w-[5vw]">Email</p>
-                      <p className="text-sm text-gray-500">{email ? userData?.email : "Not yet"}</p>
+                      <p className="text-sm text-gray-500">{userDetail.email ? userData?.email : "Not yet"}</p>
                     </div>
                   </div>
                 </div>

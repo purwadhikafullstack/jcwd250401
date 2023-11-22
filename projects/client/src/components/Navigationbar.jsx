@@ -34,7 +34,7 @@ function Navigationbar() {
   const photoProfile = userData?.photoProfile;
   const navigate = useNavigate();
   const profile = JSON.parse(localStorage.getItem("profile"));
-  const username = profile.data?.profile?.username;
+  const username = profile?.data?.profile?.username;
   const isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
 
   const openAuthModal = () => {

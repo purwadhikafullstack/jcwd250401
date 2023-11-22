@@ -161,22 +161,8 @@ export const Staff = () => {
                       <Td>{admin.email}</Td>
                       <Td>{admin.isWarehouseAdmin ? "Warehouse Admin" : "Super Admin"}</Td>
                       <Td>{admin.warehouse?.name ? admin.warehouse?.name : "Not yet"}</Td>
-                      {isWarehouseAdminAcc ? null : (
+                      {!isWarehouseAdminAcc && (
                         <Td>
-                          {/* <select
-                            className="bg-white text-[#40403F] border boder-[#40403F]-1 rounded-md cursor-pointer focus:ring-0 focus:border-none w-[100px] h-[40px]"
-                            onChange={(e) => {
-                              if (e.target.value === "Delete") {
-                                handleDeleteModal(admin);
-                              } else if (e.target.value === "Edit") {
-                                handleEditModal(admin);
-                              }
-                            }}>
-                            <option value="Select">Select</option>
-                            <option value="Edit">Edit</option>
-                            <option value="Delete">Delete</option>
-                          </select> */}
-                          <div>
                             <Menu>
                               <MenuButton
                                 px={2}
@@ -200,7 +186,6 @@ export const Staff = () => {
                                 <MenuItem onClick={() => handleDeleteModal(admin)}>Delete</MenuItem>
                               </MenuList>
                             </Menu>
-                          </div>
                         </Td>
                       )}
                     </Tr>
@@ -214,7 +199,7 @@ export const Staff = () => {
             <h1 className="text-3xl font-semibold italic text-center">No data matches</h1>
           </div>
         )}
-        <div className="flex justify-between items-center px-8 mt-3">
+        <div className="flex justify-between items-center px-8 mt-3 mb-2">
           <button disabled={page === 1} className="bg-[#40403F] text-white py-2 px-4 rounded-md font-bold" onClick={() => setPage(page - 1)}>
             Prev Page
           </button>
