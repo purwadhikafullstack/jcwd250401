@@ -8,9 +8,9 @@ import { useDispatch } from "react-redux";
 
 function DeleteProductModal({ isOpen, isClose, data }) {
   const dispatch = useDispatch();
-  const handleUnarchive = async () => {
+  const handleDelete = async () => {
     try {
-      const response = await api.delete(`/product/${data.id}`);
+      const response = await api.admin.delete(`/product/${data.id}`);
 
       const responseData = response.data.details;
 
@@ -44,10 +44,11 @@ function DeleteProductModal({ isOpen, isClose, data }) {
         <ModalBody>
           <Text>Are you sure you want to delete this product?</Text>
           {data && data.productImages && data.productImages.length > 0 && (
-          <div className="flex flex-col items-center justify-center mt-4">
-              <div className="flex justify-center items-center h-[200px] w-[160px]">
-                <img src={`http://localhost:8000/public/${data.productImages[0]?.imageUrl}`} className="w-full h-full shadow-md" alt={data.name}  />
-              </div>
+            <div className="flex flex-col items-center justify-center mt-4">
+              <div
+                className="flex justify-center items-center h-[200px] w-[160px] shadow-lg"
+                style={{ backgroundImage: `url(http://localhost:8000/public/${data.productImages[0]?.imageUrl})`, backgroundSize: "cover", backgroundRepeat: "no-repeat" }}
+              ></div>
               <Flex mt={4} gap={2} flexDirection="column" justifyContent="center" alignItems="center">
                 <Text fontWeight="bold">{data.name}</Text>
                 <Text> SKU : {data.sku}</Text>
@@ -60,7 +61,7 @@ function DeleteProductModal({ isOpen, isClose, data }) {
             <Button px={4} py={2} bgColor="white" textColor="gray.900" size="medium" borderRadius="lg" boxShadow="lg" onClick={isClose}>
               Cancel
             </Button>
-            <Button px={4} py={2} bgColor="red.600" _hover={{ bgColor: "red.800" }} textColor="white" size="medium" borderRadius="lg" boxShadow="lg" onClick={handleUnarchive}>
+            <Button px={4} py={2} bgColor="red.600" _hover={{ bgColor: "red.800" }} textColor="white" size="medium" borderRadius="lg" boxShadow="lg" onClick={handleDelete}>
               Delete
             </Button>
           </div>

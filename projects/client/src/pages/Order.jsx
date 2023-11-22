@@ -30,29 +30,43 @@ export const Order = () => {
   // };
 
   useEffect(() => {
-    try {
-      const getOrderLists = async (userId) => {
+    const getOrderLists = async (userId) => {
+      try {
         const response = await api.get(`/order/${userId}?status=${selectedStatus}&page=${Number(page)}&size=${Number(size)}&sort=${sort}&order=${order}`);
         setOrderLists(response.data.detail);
-      };
-      const getUserData = async () => {
-        const response = await api.get(`/profile/${userName}`);
-        getOrderLists(response.data.detail.id);
-      };
-
-      getUserData();
-    } catch (error) {
-      if (error.response && (error.response.status === 400 || error.response.status === 401 || error.response.status === 403 || error.response.status === 404 || error.response.status === 500)) {
-        toast.error(error.response.data.message);
-        if (error.response.status === 401 || error.response.status === 403) {
-          setTimeout(() => {
-            navigate("/");
-            dispatch(showLoginModal());
-          }, 2000);
+      } catch (error) {
+        if (error.response && (error.response.status === 404 || error.response.status === 401 || error.response.status === 403 || error.response.status === 500)) {
+          toast.error(error.response.data.message);
+          setOrderLists([]);
+          if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+            setTimeout(() => {
+              navigate("/");
+              dispatch(showLoginModal());
+            }, 2000);
+          }
+          if (error.response.status === 500) console.error(error.response.data.detail);
         }
-        if (error.response.status === 500) console.error(error.response.data.detail);
       }
-    }
+    };
+    const getUserData = async () => {
+      try {
+        const response = await api.get(`/profile/${userName}`);
+
+        getOrderLists(response.data.detail.id);
+      } catch (error) {
+        if (error.response && (error.response.status === 404 || error.response.status === 401 || error.response.status === 403 || error.response.status === 500)) {
+          toast.error(error.response.data.message);
+          if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+            setTimeout(() => {
+              navigate("/");
+              dispatch(showLoginModal());
+            }, 2000);
+          }
+          if (error.response.status === 500) console.error(error.response.data.detail);
+        }
+      }
+    };
+    getUserData();
   }, [userName, selectedStatus, page, size, sort, order]);
 
   return (

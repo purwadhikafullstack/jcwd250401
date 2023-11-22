@@ -12,7 +12,7 @@ import useDebounceValue from "../hooks/useDebounceValue";
 import { SearchIcon } from "@chakra-ui/icons";
 
 export const Staff = () => {
-  const isWarehouseAdminAcc = useSelector((state) => state?.account?.adminProfile?.data?.profile?.isWarehouseAdmin);
+  const isWarehouseAdminAcc = useSelector((state) => state?.account?.isWarehouseAdmin);
   const [admins, setAdmins] = useState([]);
   const [deleteModal, setDeleteModal] = useState(false);
   const [editModal, setEditModal] = useState(false);

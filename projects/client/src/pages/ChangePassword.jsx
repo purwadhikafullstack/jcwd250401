@@ -33,12 +33,11 @@ export const ChangePassword = () => {
     validationSchema: yup.object({
       currentPassword: yup
         .string()
-        .matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&-])[A-Za-z\d@$!%*#?&-]{8,}$/, "Must contain 8 characters, at least 1 letter, 1 number, and 1 symbol")
-        .required("Required")
+        .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&-]{8,}$/, "Must contain 8 characters, at least 1 letter, and 1 number")
         .required("Required"),
       newPassword: yup
         .string()
-        .matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&-]{8,}$/, "Must contain 8 characters, at least 1 letter, 1 number, and 1 symbol")
+        .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&-]{8,}$/, "Must contain 8 characters, at least 1 letter, and 1 number")
         .required("Required"),
       confirmNewPassword: yup
         .string()

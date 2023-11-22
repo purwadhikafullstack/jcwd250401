@@ -9,6 +9,7 @@ const initialState = {
   showUnauthorizedModal: false,
   redirectTo: "",
   userPhotoProfile: "",
+  isWarehouseAdmin: false,
 };
 const accountSlices = createSlice({
   name: "account",
@@ -50,8 +51,11 @@ const accountSlices = createSlice({
     updateProfile(state, action) {
       state.profile = action.payload;
     },
+    setIsWarehouseAdmin(state, action) {
+      state.isWarehouseAdmin = action.payload;
+    }
   },
 });
 
-export const { login, logout, loginAdmin, logoutAdmin, showUnauthorizedModal, hideUnauthorizeModal, updateProfile } = accountSlices.actions;
+export const { login, logout, loginAdmin, logoutAdmin, showUnauthorizedModal, hideUnauthorizeModal, updateProfile, setIsWarehouseAdmin } = accountSlices.actions;
 export default accountSlices.reducer;

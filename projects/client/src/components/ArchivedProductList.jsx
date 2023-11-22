@@ -8,14 +8,14 @@ import { PiCaretDown, PiEye, PiInfo, PiShoppingBag } from "react-icons/pi";
 import { Box, Button, Flex, Menu, MenuButton, MenuItem, MenuList, Text } from "@chakra-ui/react";
 import { setProductList } from "../slices/productSlices";
 import _debounce from "lodash/debounce";
-import UnarchiveProductModal from "./DeleteProductModal";
+import UnarchiveProductModal from "./UnarchiveProductModal";
 
 function ArchivedProductList() {
   const [sortCriteria, setSortCriteria] = useState("date-desc"); // Default sorting criteria that matches the backend;
   const [searchInput, setSearchInput] = useState(""); // Initialize with "All"
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedWarehouse, setSelectedWarehouse] = useState("All Warehouse");
-  const [selectedFilter, setSelectedFilter] = useState("All Gender");
+  const [selectedFilter, setSelectedFilter] = useState("All Genders");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalData, setTotalData] = useState(0);
@@ -27,6 +27,7 @@ function ArchivedProductList() {
   const [openUnarchiveProductModal, setOpenUnarchiveProductModal] = useState(false);
 
   const newProducts = useSelector((state) => state.product?.productList);
+  const isWarehouseAdmin = useSelector((state) => state?.account?.isWarehouseAdmin);
 
   const handleSearchInputChange = _debounce((e) => {
     setSearchInput(e.target.value);
@@ -48,7 +49,7 @@ function ArchivedProductList() {
       try {
         setCurrentPage(1);
 
-        const response = await api.get(`/product?page=${currentPage}&limit=${productsPerPage}&sort=${sortCriteria}&category=${selectedCategory}&search=${searchInput}&filterBy=${selectedFilter}&isArchived=true`);
+        const response = await api.admin.get(`/product?page=${currentPage}&limit=${productsPerPage}&sort=${sortCriteria}&category=${selectedCategory}&search=${searchInput}&filterBy=${selectedFilter}&isArchived=true`);
         const responseData = response.data.details;
         const totalData = response.data.pagination.totalData;
         const totalPages = Math.ceil(totalData / productsPerPage);
@@ -110,8 +111,8 @@ function ArchivedProductList() {
   ];
 
   const sortingOptions = [
-    { label: "Date ASC", value: "date-asc" },
     { label: "Date DESC", value: "date-desc" },
+    { label: "Date ASC", value: "date-asc" },
     { label: "(A-Z)", value: "alphabetical-asc" },
     { label: "(Z-A)", value: "alphabetical-desc" },
     { label: "Price ASC", value: "price-asc" },
@@ -231,7 +232,7 @@ function ArchivedProductList() {
           </div>
         </div>
       </div>
-      <div className="space-y-6 overflow-y-scroll scrollbar-hide h-[56vh]">
+      <div className={`space-y-6 overflow-y-scroll scrollbar-hide ${isWarehouseAdmin ? 'h-[62vh]' : 'h-[56vh]'}`}>
         {products.length == 0 ? (
           <Text textAlign={"center"} fontStyle={"italic"}>
             No data matches.
@@ -240,7 +241,7 @@ function ArchivedProductList() {
           ""
         )}
         {products.map((product) => (
-          <div key={product.id} className="bg-white items-center justify-between flex gap-6 h-36 w-full px-6 py-2 rounded-lg shadow-lg">
+          <div key={product.id} className="bg-white items-center justify-between flex gap-6 h-36 w-full px-6 py-2 rounded-lg shadow-sm">
             <div className="h-[100px] w-[100px] flex justify-center items-center">
               {product.productImages[0].imageUrl ? (
                 <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-lg" alt="Product Image" style={{ filter: "grayscale(100%)" }} />
@@ -283,28 +284,30 @@ function ArchivedProductList() {
               <span>20</span>
             </div>
             <div>
-              <Menu>
-                <MenuButton
-                  px={2}
-                  py={2}
-                  transition="all 0.2s"
-                  borderRadius="lg"
-                  textColor="gray.600"
-                  boxShadow="md"
-                  borderColor="gray.500"
-                  borderWidth="2px"
-                  _hover={{ bg: "gray.900", textColor: "white" }}
-                  _expanded={{ bg: "gray.900", textColor: "white" }}
-                >
-                  <Flex justifyContent="between" gap={4} px={2} alignItems="center">
-                    <Text fontWeight="bold">Edit</Text>
-                    <PiCaretDown size="20px" />
-                  </Flex>
-                </MenuButton>
-                <MenuList>
-                  <MenuItem onClick={() => toggleUnarchiveModal(product)}>Unarchive</MenuItem>
-                </MenuList>
-              </Menu>
+              {!isWarehouseAdmin && (
+                <Menu>
+                  <MenuButton
+                    px={2}
+                    py={2}
+                    transition="all 0.2s"
+                    borderRadius="lg"
+                    textColor="gray.600"
+                    boxShadow="md"
+                    borderColor="gray.500"
+                    borderWidth="2px"
+                    _hover={{ bg: "gray.900", textColor: "white" }}
+                    _expanded={{ bg: "gray.900", textColor: "white" }}
+                  >
+                    <Flex justifyContent="between" gap={4} px={2} alignItems="center">
+                      <Text fontWeight="bold">Edit</Text>
+                      <PiCaretDown size="20px" />
+                    </Flex>
+                  </MenuButton>
+                  <MenuList>
+                    <MenuItem onClick={() => toggleUnarchiveModal(product)}>Unarchive</MenuItem>
+                  </MenuList>
+                </Menu>
+              )}
             </div>
           </div>
         ))}
@@ -352,7 +355,7 @@ function ArchivedProductList() {
           </Box>
         </Flex>
       </Box>
-      {<UnarchiveProductModal isOpen={openUnarchiveProductModal} data={selectedProduct} isClose={toggleUnarchiveModal} />}
+      {openUnarchiveProductModal && <UnarchiveProductModal isOpen={openUnarchiveProductModal} data={selectedProduct} isClose={toggleUnarchiveModal} />}
     </div>
   );
 }

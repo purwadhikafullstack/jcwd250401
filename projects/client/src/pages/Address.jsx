@@ -139,6 +139,26 @@ export const Address = () => {
 
   useEffect(() => {
     try {
+      const getUsersProfile = async () => {
+        try {
+          const response = await api.get(`/profile/${username}`);
+          setUserData(response.data.detail);
+  
+          const responseLists = await api.get(`/address/${response.data.detail.id}`);
+          setUserAddressLists(responseLists.data.detail);
+        } catch (error) {
+          if (error.response) {
+            if (error.response.status === 401 || error.response.status === 403) {
+              toast.error(error.response.data.message);
+              setTimeout(() => {
+                navigate("/");
+                dispatch(showLoginModal());
+              }, 2000);
+            }
+          }
+        }
+      };
+      
       const getProvinceLists = async () => {
         const response = await api.get("/address/province");
         setProvinceLists(response.data.detail);
@@ -149,28 +169,13 @@ export const Address = () => {
         setCityLists(response.data.detail);
       };
 
-      const getUsersProfile = async () => {
-        const response = await api.get(`/profile/${username}`);
-        setUserData(response.data.detail);
-
-        const responseLists = await api.get(`/address/${response.data.detail.id}`);
-        setUserAddressLists(responseLists.data.detail);
-      };
 
       getUsersProfile();
       getProvinceLists();
       getCityLists();
     } catch (error) {
-      if (error.response && (error.response.status === 400 || error.response.status === 401 || error.response.status === 403 || error.response.status === 404 || error.response.status === 500)) {
-        toast.error(error.response.data.message, {
-          description: error.response.data.detail,
-        });
-        if (error.response.status === 401 || error.response.status === 403) {
-          setTimeout(() => {
-            navigate("/");
-            dispatch(showLoginModal());
-          }, 2000);
-        }
+      if (error.response && (error.response.status === 400 || error.response.status === 404 || error.response.status === 500)) {
+        toast.error(error.response.data.message);
         if (error.response.status === 500) console.error(error);
       }
     }

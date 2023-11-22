@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons
 import { Button, Checkbox } from "flowbite-react";
@@ -15,6 +15,7 @@ import { login } from "../slices/accountSlices";
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from "@chakra-ui/react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBM35r6DuH1V6QUWcw-J8UkNarOEQ6Sg9w",
@@ -36,7 +37,8 @@ function LoginModal({ isOpen, isClose }) {
   const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const navigate = useNavigate();
+  const location = useLocation(); // Get the current location
   // Function to toggle password visibility
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -59,6 +61,7 @@ function LoginModal({ isOpen, isClose }) {
       const user = result.user;
       const response = await api.post("/auth/google", {
         email: user.email,
+        remember: true,
       });
 
       // NOTE : pisahkan API dari JSX
@@ -72,6 +75,7 @@ function LoginModal({ isOpen, isClose }) {
               dispatch(hideLoginModal());
               setIsSubmitting(false);
               dispatch(login(responseData));
+              navigate(location.pathname);
             },
           });
         }, 600);
@@ -116,6 +120,7 @@ function LoginModal({ isOpen, isClose }) {
         const response = await api.post("/auth", {
           email: values.email,
           password: values.password,
+          remember: values.remember || false,
         });
 
         if (response.status === 200) {
@@ -127,6 +132,7 @@ function LoginModal({ isOpen, isClose }) {
                 dispatch(hideLoginModal());
                 setIsSubmitting(false);
                 dispatch(login(responseData));
+                navigate(location.pathname);
               },
             });
           }, 600);
@@ -156,7 +162,7 @@ function LoginModal({ isOpen, isClose }) {
   });
 
   return (
-    <Modal closeOnOverlayClick={false} isOpen={isOpen} size="md" onClose={isClose} motionPreset='slideInBottom' isCentered>
+    <Modal closeOnOverlayClick={false} isOpen={isOpen} size="md" onClose={isClose} motionPreset="slideInBottom" isCentered>
       <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(2px)" />
       <ModalContent>
         <ModalHeader />
@@ -173,7 +179,7 @@ function LoginModal({ isOpen, isClose }) {
                   <h4 className="text-sm text-gray-900 dark:text-white">Email</h4>
                 </div>
                 <input type="email" id="email" name="email" placeholder="Enter your email" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm" {...formik.getFieldProps("email")} />
-                {formik.touched.email && formik.errors.email && <div className="text-red-500">{formik.errors.email}</div> }
+                {formik.touched.email && formik.errors.email && <div className="text-red-500">{formik.errors.email}</div>}
               </div>
               <div>
                 <div className="mb-2 block">
@@ -195,7 +201,7 @@ function LoginModal({ isOpen, isClose }) {
                 {formik.touched.password && formik.errors.password ? <div className="text-red-500">{formik.errors.password}</div> : null}
               </div>
               <div className="flex items-center gap-2">
-                <Checkbox />
+                <Checkbox id="remember" {...formik.getFieldProps("remember")} />
                 <span className="text-sm text-gray-900 dark:text-white">Remember me</span>
               </div>
               <div>

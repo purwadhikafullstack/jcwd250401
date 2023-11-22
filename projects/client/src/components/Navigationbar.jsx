@@ -16,8 +16,6 @@ import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
 function Navigationbar() {
-  const isLogin = useSelector((state) => state?.account?.isLogin);
-  const userName = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [dropdownSubcategory, setDropdownSubcategory] = useState(null);
   const [isDropdownTransitioning, setIsDropdownTransitioning] = useState(false);
@@ -35,6 +33,9 @@ function Navigationbar() {
   const [userData, setUserData] = useState(null);
   const photoProfile = userData?.photoProfile;
   const navigate = useNavigate();
+  const profile = JSON.parse(localStorage.getItem("profile"));
+  const username = profile.data?.profile?.username;
+  const isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
 
   const openAuthModal = () => {
     dispatch(showLoginModal());
@@ -67,17 +68,17 @@ function Navigationbar() {
   useEffect(() => {
     const getUserData = async () => {
       try {
-        if (isLogin) {
-          const response = await api.get(`/profile/${userName}`);
+        if (isLoggedIn) {
+          const response = await api.get(`/profile/${username}`);
           setUserData(response.data.detail);
         }
       } catch (error) {
         toast.error("Failed to get user data");
-        handleLogout();
+        // handleLogout();
       }
     };
     getUserData();
-  }, [userName]);
+  }, [username, photoProfile]);
 
   useEffect(() => {
     const resetTransition = () => {
@@ -150,7 +151,7 @@ function Navigationbar() {
           })}
         </div>
       </div>
-      {isLogin ? (
+      {isLoggedIn ? (
         <>
           <div className="hidden gap-8 lg:flex items-center">
             <BsSearch className="text-xl cursor-pointer" />
