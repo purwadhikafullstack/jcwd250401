@@ -37,8 +37,6 @@ function Navigationbar() {
   const username = profile.data?.profile?.username;
   const isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
 
-  console.log(isLoggedIn, username)
-
   const openAuthModal = () => {
     dispatch(showLoginModal());
   };

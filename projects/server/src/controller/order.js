@@ -82,7 +82,7 @@ exports.getOrderLists = async (req, res) => {
     if (orderLists.length === 0) {
       return res.status(404).json({
         ok: false,
-        message: "There is no order yet",
+        message: "No Data matches",
       });
     }
 

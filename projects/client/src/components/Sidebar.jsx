@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FiSettings, FiHome, FiTrendingUp, FiChevronUp, FiChevronsDown, FiChevronDown } from "react-icons/fi";
 import { BiMessageSquareAdd, BiSolidFoodMenu } from "react-icons/bi";
 import { FaFileInvoiceDollar } from "react-icons/fa";
-import {PiChartLine, PiChartLineBold, PiHouse, PiHouseBold, PiPackage, PiPackageBold, PiReceipt, PiReceiptBold, PiUserRectangle, PiUserRectangleBold, PiUsersThree, PiUsersThreeBold, PiWarehouse, PiWarehouseBold } from "react-icons/pi";
+import { PiChartLine, PiChartLineBold, PiHouse, PiHouseBold, PiPackage, PiPackageBold, PiReceipt, PiReceiptBold, PiUserRectangle, PiUserRectangleBold, PiUsersThree, PiUsersThreeBold, PiWarehouse, PiWarehouseBold } from "react-icons/pi";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { MdFastfood } from "react-icons/md";
 import { logout } from "../slices/accountSlices";
@@ -72,6 +72,7 @@ const Sidebar = () => {
   const [activeMenu, setActiveMenu] = useState(null);
   const [isExpanded, setIsExpanded] = useState(Array(menuList.length).fill(false));
   const location = useLocation();
+  const isWarehouseAdminAcc = useSelector((state) => state?.account?.adminProfile?.data?.profile?.isWarehouseAdmin);
 
   const handleAccordionClick = (index) => {
     // If the clicked accordion is already open, close it
@@ -99,39 +100,41 @@ const Sidebar = () => {
         <div>
           {menuList.map((item, index) => (
             <div key={index}>
-              {item.subItems ? (
-                <div
-                  onClick={() => handleAccordionClick(index)}
-                  className={`flex items-center justify-start text-white hover:text-black hover:bg-white px-4 py-2 rounded mb-2 mx-2 cursor-pointer gap-2 ${currentPage === item.name.toLowerCase() ? "!text-black bg-white" : ""}`}
-                >
-                  <div className="mr-6 ">{item.icon}</div>
-                  <div className="">{item.name}</div>
-                  <div className="ml-auto">{isExpanded[index] ? <FiChevronUp size={18} /> : <FiChevronDown size={18} />}</div>
-                </div>
-              ) : (
-                <Link
-                  key={index}
-                  to={item.link}
-                  className={`flex items-center justify-start text-white hover:text-black hover:bg-white px-4 py-2 rounded mb-2 mx-2 ${currentPage === item.name.toLowerCase() ? "!text-black bg-white" : ""}`}
-                >
-                  <div className="mr-8">{item.icon}</div>
-                  {item.name}
-                </Link>
-              )}
-
-              {item.subItems && activeMenu === index && (
-                <div className="ml-6">
-                  {item.subItems.map((subItem, subIndex) => (
+              {/* Add a condition to check if the item should be rendered */}
+              {(!isWarehouseAdminAcc || (item.name !== "Customers" && item.name !== "Staff")) && (
+                <>
+                  {item.subItems ? (
+                    <div
+                      onClick={() => handleAccordionClick(index)}
+                      className={`flex items-center justify-start text-white hover:text-black hover:bg-white px-4 py-2 rounded mb-2 mx-2 cursor-pointer gap-2 ${currentPage === item.name.toLowerCase() ? "!text-black bg-white" : ""}`}>
+                      <div className="mr-6 ">{item.icon}</div>
+                      <div className="">{item.name}</div>
+                      <div className="ml-auto">{isExpanded[index] ? <FiChevronUp size={18} /> : <FiChevronDown size={18} />}</div>
+                    </div>
+                  ) : (
                     <Link
-                      key={subIndex}
-                      to={subItem.link}
-                      className={`flex items-center justify-start text-white hover:text-black hover:bg-white px-4 py-2 rounded mb-2 mx-2 ${currentPage === subItem.name.toLowerCase() ? "!text-black bg-white" : ""}`}
-                    >
-                      <div className="mr-8 ml-2">{subItem.icon}</div>
-                      {subItem.name}
+                      key={index}
+                      to={item.link}
+                      className={`flex items-center justify-start text-white hover:text-black hover:bg-white px-4 py-2 rounded mb-2 mx-2 ${currentPage === item.name.toLowerCase() ? "!text-black bg-white" : ""}`}>
+                      <div className="mr-8">{item.icon}</div>
+                      {item.name}
                     </Link>
-                  ))}
-                </div>
+                  )}
+
+                  {item.subItems && activeMenu === index && (
+                    <div className="ml-6">
+                      {item.subItems.map((subItem, subIndex) => (
+                        <Link
+                          key={subIndex}
+                          to={subItem.link}
+                          className={`flex items-center justify-start text-white hover:text-black hover:bg-white px-4 py-2 rounded mb-2 mx-2 ${currentPage === subItem.name.toLowerCase() ? "!text-black bg-white" : ""}`}>
+                          <div className="mr-8 ml-2">{subItem.icon}</div>
+                          {subItem.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           ))}

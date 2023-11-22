@@ -33,7 +33,7 @@ export const Address = () => {
   const defaultAddress = userAddressLists.find((address) => address.setAsDefault);
   const provinceIdToName = provinceLists.filter((province) => province.province_id === selectedProvince)[0]?.province;
   const dispatch = useDispatch();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const userId = userData?.id;
   const addressLists = useSelector((state) => state?.address?.addressLists);
@@ -123,61 +123,61 @@ export const Address = () => {
           formik.resetForm();
         }
       } catch (error) {
-        if (error.response && error.response.status === 400) {
-          toast.error("Register address failed", {
-            description: error.response.data.message,
-          });
-        } else if (error.response && error.response.status === 500) {
-          toast.error("Server error", {
-            description: error.response.data.message,
-          });
-          console.error(error);
+        if (error.response && (error.response.status === 400 || error.response.status === 401 || error.response.status === 403 || error.response.status === 500)) {
+          toast.error(error.response.data.message);
+          if (error.response.status === 500) console.error(error);
+          if (error.response.status === 401 || error.response.status === 403) {
+            setTimeout(() => {
+              navigate("/");
+              dispatch(showLoginModal());
+            }, 2000);
+          }
         }
       }
     },
   });
 
   useEffect(() => {
-    if (isLogin) {
-      const getProvinceLists = async () => {
-        try {
-          const response = await api.get("/address/province");
-          setProvinceLists(response.data.detail);
-        } catch (error) {
-          toast.error("Get address lists failed");
-        }
-      };
-
-      const getCityLists = async () => {
-        try {
-          const response = await api.get("/address/city");
-          setCityLists(response.data.detail);
-        } catch (error) {
-          toast.error("Get city lists failed");
-        }
-      };
-
+    try {
       const getUsersProfile = async () => {
         try {
           const response = await api.get(`/profile/${username}`);
           setUserData(response.data.detail);
-
+  
           const responseLists = await api.get(`/address/${response.data.detail.id}`);
           setUserAddressLists(responseLists.data.detail);
         } catch (error) {
-          toast.error("Failed to get user data");
+          if (error.response) {
+            if (error.response.status === 401 || error.response.status === 403) {
+              toast.error(error.response.data.message);
+              setTimeout(() => {
+                navigate("/");
+                dispatch(showLoginModal());
+              }, 2000);
+            }
+          }
         }
       };
+      
+      const getProvinceLists = async () => {
+        const response = await api.get("/address/province");
+        setProvinceLists(response.data.detail);
+      };
+
+      const getCityLists = async () => {
+        const response = await api.get("/address/city");
+        setCityLists(response.data.detail);
+      };
+
 
       getUsersProfile();
       getProvinceLists();
       getCityLists();
-    } else {
-      toast.error("You are not logged in");
-      setTimeout(() => {
-        navigate("/")
-        dispatch(showLoginModal());
-      }, 2000)
+    } catch (error) {
+      if (error.response && (error.response.status === 400 || error.response.status === 404 || error.response.status === 500)) {
+        toast.error(error.response.data.message);
+        if (error.response.status === 500) console.error(error);
+      }
     }
   }, [addressLists]);
 
@@ -277,7 +277,7 @@ export const Address = () => {
                           </div>
                         </div>
                       ))}
-                    <ConfirmModal isOpen={confirmModal} onClose={() => setConfirmModal(!confirmModal)} data={selectedAddress} userId={userId} deleteFor={'address'} />
+                    <ConfirmModal isOpen={confirmModal} onClose={() => setConfirmModal(!confirmModal)} data={selectedAddress} userId={userId} deleteFor={"address"} />
                     {selectedAddress && <EditAddressModal isOpen={editModal} onClose={handleCloseEditModal} addressData={selectedAddress} userId={userId} cityLists={cityLists} provinceLists={provinceLists} />}
                     {selectedAddress && <SetDefaultAddressModal isOpen={defaultAddressModal} onClose={() => setDefaultAddressModal(false)} addressData={selectedAddress} userId={userId} />}
                   </div>
