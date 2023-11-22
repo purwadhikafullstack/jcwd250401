@@ -130,7 +130,7 @@ const AddWarehouseModal = ({ isOpen, onClose }) => {
           <VStack spacing="4">
             <Box className="w-24 h-24 bg-gray-200 rounded flex items-center justify-center mx-auto" onClick={handlePhotoIconClick}>
               {imagePreview ? (
-                <Image src={imagePreview} alt="Warehouse image" className="w-full h-full rounded-full" />
+                <Image src={imagePreview} alt="Warehouse image" className="w-full h-full rounded" />
               ) : (
                 <FiCamera className="h-12 w-12 text-gray-400" />
               )}
