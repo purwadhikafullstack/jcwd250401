@@ -142,7 +142,9 @@ function AddProductModal({ isOpen, isClose }) {
       }
     };
 
-    fetchSubCategories();
+    if (formik.values.productMainCategory) {
+      fetchSubCategories();
+    }
   }, [formik.values.productMainCategory]);
 
   // React Dropzone Configuration
