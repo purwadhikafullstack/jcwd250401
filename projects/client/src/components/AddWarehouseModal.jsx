@@ -13,12 +13,15 @@ import {
   Select,
   Button,
   Image,
+  VStack,
+  HStack,
+  Box,
   useToast,
+  Textarea,
 } from '@chakra-ui/react';
-import { CameraIcon } from '@heroicons/react/solid'; 
+import { FiCamera } from 'react-icons/fi';
 import api from '../api'; 
 import { useRef } from 'react';
-
 
 const AddWarehouseModal = ({ isOpen, onClose }) => {
   const [name, setName] = useState('');
@@ -49,7 +52,7 @@ const AddWarehouseModal = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     // Fetch provinces
-    api.get('/address/province').then(response => {
+    api.admin.get('/address/province').then(response => {
       if (response.data.ok) {
         setProvinces(response.data.detail);
       }
@@ -63,7 +66,7 @@ const AddWarehouseModal = ({ isOpen, onClose }) => {
     setSelectedCity(''); // Clear selected city when province changes
 
     // Fetch cities based on the selected province
-    api.get(`/address/city/${provinceId}`).then(response => {
+    api.admin.get(`/address/city/${provinceId}`).then(response => {
       if (response.data.ok) {
         setCities(response.data.detail);
       }
@@ -82,7 +85,7 @@ const AddWarehouseModal = ({ isOpen, onClose }) => {
     formData.append('warehouseImage', warehouseImage);
 
     try {
-      const response = await api.post('/api/warehouse/', formData, {
+      const response = await api.admin.post('/api/warehouse/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -118,58 +121,67 @@ const AddWarehouseModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered size="xl">
+    <Modal isOpen={isOpen} onClose={onClose} isCentered size={{ base: 'full', md: 'xl' }}>
       <ModalOverlay />
-      <ModalContent className="bg-white">
-        <ModalHeader className="font-bold text-lg">New Staff</ModalHeader>
+      <ModalContent mx={{ base: '4', md: '12' }} my="auto" rounded="lg" overflow="hidden">
+        <ModalHeader className="font-bold text-lg text-center">New Warehouse</ModalHeader>
         <ModalCloseButton />
-        <ModalBody className="px-6 py-4">
-          <div className="flex items-start space-x-6">
-            <div className="shrink-0">
-              <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer" onClick={handlePhotoIconClick} >
-                {imagePreview ? (
-                  <Image src={imagePreview} alt="Uploaded image preview" className="w-full h-full object-cover" />
-                ) : (
-                  <CameraIcon className="h-10 w-10 text-gray-400" />
-                )}
-              </div>
+        <ModalBody className="p-4">
+          <VStack spacing="4">
+            <Box className="w-24 h-24 bg-gray-200 rounded flex items-center justify-center mx-auto" onClick={handlePhotoIconClick}>
+              {imagePreview ? (
+                <Image src={imagePreview} alt="Warehouse image" className="w-full h-full rounded" />
+              ) : (
+                <FiCamera className="h-12 w-12 text-gray-400" />
+              )}
               <input
                 type="file"
                 ref={fileInputRef}
                 onChange={handleFileChange}
-                className="hidden" // Hide the actual file input
+                className="hidden"
               />
-              <span className="block text-center text-sm text-gray-500 mt-2">Click to add your photo</span>
-            </div>
-            <div className="flex-1 space-y-4">
-              <FormControl>
-                <FormLabel>Warehouse Name</FormLabel>
-                <Input placeholder="Enter warehouse name" />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Location</FormLabel>
-                <div className="flex space-x-2 space-y-0">
-                <Select placeholder='Select Province' onChange={handleProvinceChange} value={selectedProvince}>
+            </Box>
+            <FormControl id="warehouse-name">
+              <FormLabel>Warehouse Name</FormLabel>
+              <Input placeholder="Enter warehouse name" />
+            </FormControl>
+            <VStack spacing="2" width="full" alignItems="flex-start">
+              <FormLabel htmlFor="location" fontSize="1rem">Warehouse Location</FormLabel>
+              <HStack spacing="2" width="full">
+                <FormControl id="province" flex="1">
+                  <Select placeholder='Select Province' onChange={handleProvinceChange} value={selectedProvince}>
                     {provinces.map((province) => (
-                    <option key={province.province_id} value={province.province_id}>{province.province}</option>
+                      <option key={province.province_id} value={province.province_id}>{province.province}</option>
                     ))}
-                </Select>
-                <Select placeholder='Select City' onChange={(e) => setSelectedCity(e.target.value)} value={selectedCity} disabled={!selectedProvince}>
+                  </Select>
+                </FormControl>
+                <FormControl id="city" flex="1">
+                  <Select placeholder='Select City' onChange={(e) => setSelectedCity(e.target.value)} value={selectedCity} disabled={!selectedProvince}>
                     {cities.map((city) => (
-                    <option key={city.city_id} value={city.city_id}>{city.city_name}</option>
+                      <option key={city.city_id} value={city.city_id}>{city.city_name}</option>
                     ))}
-                </Select>
-                </div>
-                <Input placeholder="Street/building/number/block" className="mt-2" />
-              </FormControl>
-            </div>
-          </div>
+                  </Select>
+                </FormControl>
+              </HStack>
+            </VStack>
+            <FormControl id="street">
+              <Textarea placeholder="Enter street" onChange={(e) => setStreet(e.target.value)} value={street} />
+            </FormControl>
+          </VStack>
         </ModalBody>
-        <ModalFooter className="px-6 py-4">
-          <Button variant="outline" mr={3} onClick={onClose} className="border-gray-300 text-black">
+        <ModalFooter flexDirection={{ base: 'column', md: 'row' }} className="gap-2">
+          <Button variant="outline" onClick={onClose} flex="1" className="border-gray-300 text-black">
             Discard
           </Button>
-          <Button colorScheme="blue" onClick={handleSubmit} isLoading={isSubmitting}>
+          <Button
+            color="white"
+            bg="black"
+            onClick={handleSubmit}
+            isLoading={isSubmitting}
+            flex="1"
+            mt={{ base: '2', md: '0' }}
+            _hover={{ bg: 'gray' }} // Add hover effect to change background color to gray
+          >
             Save
           </Button>
         </ModalFooter>
