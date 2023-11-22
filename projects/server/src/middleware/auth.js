@@ -6,7 +6,7 @@ exports.validateToken = (req, res, next) => {
   if (!token) {
     res.status(401).json({
       ok: false,
-      message: "Token is not found",
+      message: "Please login first",
     });
     return;
   }
@@ -16,7 +16,7 @@ exports.validateToken = (req, res, next) => {
     if (!token) {
       res.status(401).json({
         ok: false,
-        message: "Token is not found",
+        message: "Please login first",
       });
       return;
     }
