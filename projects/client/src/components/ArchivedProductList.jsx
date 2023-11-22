@@ -9,6 +9,7 @@ import { Box, Button, Flex, Menu, MenuButton, MenuItem, MenuList, Text } from "@
 import { setProductList } from "../slices/productSlices";
 import _debounce from "lodash/debounce";
 import UnarchiveProductModal from "./UnarchiveProductModal";
+import { toast } from "sonner";
 
 function ArchivedProductList() {
   const [sortCriteria, setSortCriteria] = useState("date-desc"); // Default sorting criteria that matches the backend;
@@ -61,7 +62,12 @@ function ArchivedProductList() {
           setTotalData(0);
           setTotalPages(0);
           setProducts([]);
-        }
+        } else if (error.request) {
+          // Handle request errors
+          setTimeout(() => {
+            toast.error("Network error, please try again later");
+          }, 2000);
+        } 
       }
     };
 
@@ -71,11 +77,16 @@ function ArchivedProductList() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await api.get("/category/child-categories");
+        const response = await api.admin.get("/category/child-categories");
         const categoryData = response.data.details;
         setCategories(categoryData);
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        if (error.request) {
+          // Handle request errors
+          setTimeout(() => {
+            toast.error("Network error, please try again later");
+          }, 2000);
+        } 
       }
     };
 
@@ -103,12 +114,12 @@ function ArchivedProductList() {
     setSelectedFilter(selectedFilterValue);
   };
 
-  const warehouse = [
-    { label: "All Warehouse", value: "All" },
-    { label: "Jakarta", value: "Jakarta" },
-    { label: "Bandung", value: "Bandung" },
-    { label: "Medan", value: "Medan" },
-  ];
+  // const warehouse = [
+  //   { label: "All Warehouse", value: "All" },
+  //   { label: "Jakarta", value: "Jakarta" },
+  //   { label: "Bandung", value: "Bandung" },
+  //   { label: "Medan", value: "Medan" },
+  // ];
 
   const sortingOptions = [
     { label: "Date DESC", value: "date-desc" },
@@ -167,7 +178,7 @@ function ArchivedProductList() {
           </div>
         </div>
         <div className="flex gap-4 w-full">
-          <div className="w-full">
+          {/* <div className="w-full">
             <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent">
               <option value="" disabled className="text-gray-400">
                 Warehouse
@@ -178,7 +189,7 @@ function ArchivedProductList() {
                 </option>
               ))}
             </select>
-          </div>
+          </div> */}
           <div className="w-full">
             <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent " onChange={handleFilterChange}>
               <option value="" disabled className="text-gray-400">

@@ -49,20 +49,18 @@ function AdminLoginPage() {
           remember: values.remember,
         });
 
-        if (response.status === 200) {
-          const responseData = response.data;
-          setTimeout(() => {
-            toast.success("Login success", {
-              autoClose: 1000,
-              onAutoClose: (t) => {
-                setIsSubmitting(false);
-                // dispatch(loginAdmin(responseData));
-                dispatch(loginAdmin(responseData));
-                navigate("/dashboard");
-              },
-            });
-          }, 600);
-        }
+        const responseData = response.data;
+        setTimeout(() => {
+          toast.success("Login success", {
+            autoClose: 1000,
+            onAutoClose: (t) => {
+              setIsSubmitting(false);
+              // dispatch(loginAdmin(responseData));
+              dispatch(loginAdmin(responseData));
+              navigate("/dashboard");
+            },
+          });
+        }, 600);
       } catch (error) {
         if (error.response) {
           if (error.response.status === 401) {

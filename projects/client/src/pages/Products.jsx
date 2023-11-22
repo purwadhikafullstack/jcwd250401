@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 import { useSelector } from "react-redux";
+import OutOfStockProductList from "../components/OutOfStockProductList";
 
 function Product() {
   const navList = ["All Products", "Out of stock", "Category", "Archive"];
@@ -87,7 +88,7 @@ function Product() {
           </div>
           <div className="flex items-center mt-4">
             {selectedComponent === "All Products" && <ProductList />}
-            {selectedComponent === "Out of stock" && "Out of stock"}
+            {selectedComponent === "Out of stock" && <OutOfStockProductList />}
             {selectedComponent === "Category" && <CategoryLists />}
             {selectedComponent === "Archive" && <ArchivedProductList />}
           </div>
