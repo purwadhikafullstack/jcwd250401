@@ -149,10 +149,17 @@ function EditProductModal({ isOpen, isClose, data }) {
             toast.error("Please upload at least one photo of the product.");
           }, 3000);
         }
-        if (error.response.status === 404) {
+        else if (error.response.status === 404) {
           setTimeout(() => {
             setIsSubmitting(false);
             toast.error("Product not found.");
+          }, 3000);
+        }
+        else if (error.request) {
+          // Handle request errors
+          setTimeout(() => {
+            setIsSubmitting(false);
+            toast.error("Network error, please try again later");
           }, 3000);
         }
       } finally {

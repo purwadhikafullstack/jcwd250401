@@ -9,6 +9,7 @@ import { Box, Button, Flex, Menu, MenuButton, MenuItem, MenuList, Text } from "@
 import { setProductList } from "../slices/productSlices";
 import _debounce from "lodash/debounce";
 import UnarchiveProductModal from "./UnarchiveProductModal";
+import { toast } from "sonner";
 
 function ArchivedProductList() {
   const [sortCriteria, setSortCriteria] = useState("date-desc"); // Default sorting criteria that matches the backend;
@@ -61,7 +62,12 @@ function ArchivedProductList() {
           setTotalData(0);
           setTotalPages(0);
           setProducts([]);
-        }
+        } else if (error.request) {
+          // Handle request errors
+          setTimeout(() => {
+            toast.error("Network error, please try again later");
+          }, 2000);
+        } 
       }
     };
 
@@ -75,7 +81,12 @@ function ArchivedProductList() {
         const categoryData = response.data.details;
         setCategories(categoryData);
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        if (error.request) {
+          // Handle request errors
+          setTimeout(() => {
+            toast.error("Network error, please try again later");
+          }, 2000);
+        } 
       }
     };
 

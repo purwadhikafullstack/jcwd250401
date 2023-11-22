@@ -69,8 +69,7 @@ function ProductList() {
           setTotalData(0);
           setTotalPages(0);
           setProducts([]);
-        }
-        if (error?.response?.status === 401) {
+        } else if (error?.response?.status === 401) {
           setTimeout(() => {
             toast.error(error.response.data.message, {
               autoClose: 1000,
@@ -80,8 +79,7 @@ function ProductList() {
               },
             });
           }, 600);
-        }
-        if (error?.response?.status === 403) {
+        } else if (error?.response?.status === 403) {
           setTimeout(() => {
             toast.error(error.response.data.message, {
               autoClose: 1000,
@@ -91,7 +89,12 @@ function ProductList() {
               },
             });
           }, 600);
-        }
+        } else if (error.request) {
+          // Handle request errors
+          setTimeout(() => {
+            toast.error("Network error, please try again later");
+          }, 2000);
+        } 
       }
     };
     fetchProducts();
@@ -104,7 +107,12 @@ function ProductList() {
         const categoryData = response.data.details;
         setCategories(categoryData);
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        if (error.request) {
+          // Handle request errors
+          setTimeout(() => {
+            toast.error("Network error, please try again later");
+          }, 2000);
+        } 
       }
     };
 

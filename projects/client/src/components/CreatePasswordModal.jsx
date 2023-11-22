@@ -50,8 +50,6 @@ function CreatePasswordModal({ isOpen, isClose }) {
           email: email,
           password: values.password,
         });
-
-        if (response.data) {
           setTimeout(() => {
             toast.success("Password has been created, Directing you to login page...", {
               autoClose: 3000,
@@ -62,7 +60,7 @@ function CreatePasswordModal({ isOpen, isClose }) {
             });
             dispatch(setEmail(""));
           }, 3000);
-        }
+        
       } catch (error) {
         if (error.response) {
           if (error.response.status === 401) {
@@ -75,13 +73,15 @@ function CreatePasswordModal({ isOpen, isClose }) {
               toast.error("Invalid email!");
               setIsSubmitting(false);
             }, 2000);
-          } else {
-          }
-        } else if (error.request) {
-          // Handle network errors (request was made but no response received)
-        } else {
-          // Handle other non-network, non-HTTP-related errors
+          } 
         }
+        if (error.request) {
+          // Handle request errors
+          setTimeout(() => {
+            toast.error("Network error, please try again later");
+            setIsSubmitting(false);
+          }, 2000);
+        } 
       } finally {
         // Add a 1-second delay before closing the modal
         setTimeout(() => {
