@@ -17,7 +17,7 @@ import { logoutAdmin } from "../slices/accountSlices";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-function ProductList() {
+function OutOfStockProductList() {
   const [sortCriteria, setSortCriteria] = useState("date-desc"); // Default sorting criteria that matches the backend;
   const [searchInput, setSearchInput] = useState(""); // Initialize with "All"
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -283,7 +283,7 @@ function ProductList() {
           <div key={product.id} className="bg-white items-center justify-between flex gap-6 h-36 w-full px-6 py-2 rounded-lg shadow-sm">
             <div className="h-[100px] w-[100px] flex justify-center items-center">
               {product.productImages[0].imageUrl ? (
-                <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" />
+                <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" style={{ filter: "grayscale(100%)" }} />
               ) : (
                 <div className="w-full h-full flex justify-center items-center bg-gray-200 text-gray-400">
                   <div className="flex flex-col items-center justify-center">
@@ -295,6 +295,7 @@ function ProductList() {
             </div>
 
             <div className="flex w-60 flex-col">
+              <span className="font-bold">(Out of stock) </span>
               <span className="font-bold">{product.name} </span>
               <span>
                 SKU : {product.sku} ({product.gender}){" "}
@@ -319,7 +320,7 @@ function ProductList() {
             </div>
             <div className="flex flex-col w-44">
               <span className="font-bold">Stock</span>
-              <span>20</span>
+              <span>0</span>
             </div>
             {!isWarehouseAdmin ? (
               <div>
@@ -428,4 +429,4 @@ function ProductList() {
   );
 }
 
-export default ProductList;
+export default OutOfStockProductList;
