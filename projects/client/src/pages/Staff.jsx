@@ -3,13 +3,14 @@ import Navigationadmin from "../components/Navigationadmin";
 import { useEffect, useState } from "react";
 import api from "../api";
 import { toast } from "sonner";
-import { Input, InputGroup, InputLeftElement, Table, TableContainer, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/react";
+import { Flex, Input, InputGroup, InputLeftElement, Menu, MenuButton, MenuItem, MenuList, Table, TableContainer, Tbody, Td, Text, Th, Thead, Tr } from "@chakra-ui/react";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { AddEditAdminModal } from "../components/AddEditAdminModal";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import useDebounceValue from "../hooks/useDebounceValue";
 import { SearchIcon } from "@chakra-ui/icons";
+import { PiCaretDown } from "react-icons/pi";
 
 export const Staff = () => {
   const isWarehouseAdminAcc = useSelector((state) => state?.account?.isWarehouseAdmin);
@@ -162,7 +163,7 @@ export const Staff = () => {
                       <Td>{admin.warehouse?.name ? admin.warehouse?.name : "Not yet"}</Td>
                       {isWarehouseAdminAcc ? null : (
                         <Td>
-                          <select
+                          {/* <select
                             className="bg-white text-[#40403F] border boder-[#40403F]-1 rounded-md cursor-pointer focus:ring-0 focus:border-none w-[100px] h-[40px]"
                             onChange={(e) => {
                               if (e.target.value === "Delete") {
@@ -174,7 +175,32 @@ export const Staff = () => {
                             <option value="Select">Select</option>
                             <option value="Edit">Edit</option>
                             <option value="Delete">Delete</option>
-                          </select>
+                          </select> */}
+                          <div>
+                            <Menu>
+                              <MenuButton
+                                px={2}
+                                py={2}
+                                transition="all 0.2s"
+                                borderRadius="lg"
+                                textColor="gray.600"
+                                boxShadow="md"
+                                borderColor="gray.500"
+                                borderWidth="2px"
+                                _hover={{ bg: "gray.900", textColor: "white" }}
+                                _expanded={{ bg: "gray.900", textColor: "white" }}
+                              >
+                                <Flex justifyContent="between" gap={4} px={2} alignItems="center">
+                                  <Text fontWeight="bold">Edit</Text>
+                                  <PiCaretDown size="20px" />
+                                </Flex>
+                              </MenuButton>
+                              <MenuList>
+                                <MenuItem onClick={() => handleEditModal(admin)}>Edit</MenuItem>
+                                <MenuItem onClick={() => handleDeleteModal(admin)}>Delete</MenuItem>
+                              </MenuList>
+                            </Menu>
+                          </div>
                         </Td>
                       )}
                     </Tr>
