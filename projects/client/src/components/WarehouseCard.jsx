@@ -1,20 +1,24 @@
 import React from 'react';
-import { Box, Text, Flex, Image, Button } from '@chakra-ui/react';
+import { Box, Text, Flex, Image, Button, Card } from '@chakra-ui/react';
 import { FaPhone, FaClock, FaMapMarkerAlt, FaUser } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
 
 const WarehouseCard = ({ warehouse }) => {
+
+  const isWarehouseAdmin = useSelector((state) => state?.account?.isWarehouseAdmin);
+
   return (
-    <Flex
-      borderWidth="1px"
+    <Card
+      borderWidth="1wv"
       borderRadius="lg"
-      overflow="hidden"
       direction={{ base: 'column', md: 'row' }}
+      overflow="hidden"
       className="bg-white shadow-md mb-4"
     >
       <Image
         src={`http://localhost:8000/public/${warehouse.warehouseImage}`}
         alt={`Image of ${warehouse.name}`}
-        className="w-full md:w-1/3 object-cover"
+        className="w-full md:w-1/3 object-cover rounded-lg"
       />
       <Box p={6} className="flex-1">
         <Text fontSize="2xl" fontWeight="bold" className="text-gray-800">
@@ -36,11 +40,13 @@ const WarehouseCard = ({ warehouse }) => {
           <FaMapMarkerAlt className="mr-2" />
           <Text>{warehouse.WarehouseAddress.street}, {warehouse.WarehouseAddress.city}</Text>
         </Flex>
+        {isWarehouseAdmin === false && (
         <Button mt={4} colorScheme="gray" size="sm">
           Edit
         </Button>
+        )}
       </Box>
-    </Flex>
+    </Card>
   );
 };
 
