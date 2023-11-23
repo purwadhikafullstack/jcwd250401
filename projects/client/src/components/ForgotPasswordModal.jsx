@@ -31,7 +31,7 @@ function ForgotPasswordModal({ isOpen, isClose, userType="user" }) {
           email: values.email,
         });
 
-        if (response.status === 200) {
+     
           setTimeout(() => {
             toast.success("Reset password link has been send to your email", {
               autoClose: 1000,
@@ -41,7 +41,7 @@ function ForgotPasswordModal({ isOpen, isClose, userType="user" }) {
               },
             });
           }, 1000);
-        }
+        
       } catch (error) {
         if (error.response) {
           if (error.response.status === 400) {
@@ -80,11 +80,14 @@ function ForgotPasswordModal({ isOpen, isClose, userType="user" }) {
             }, 1000);
             // Handle other HTTP errors
           }
-        } else if (error.request) {
-          // Handle network errors (request was made but no response received)
-        } else {
-          // Handle other non-network, non-HTTP-related errors
         }
+        if (error.request) {
+          // Handle request errors
+          setTimeout(() => {
+            toast.error("Network error, please try again later");
+            setIsSubmitting(false);
+          }, 2000);
+        } 
       } finally {
         // Add a 1-second delay before closing the modal
         setTimeout(() => {

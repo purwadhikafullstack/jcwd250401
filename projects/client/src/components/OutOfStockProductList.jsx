@@ -8,10 +8,16 @@ import { PiCaretDown, PiEye, PiInfo, PiShoppingBag } from "react-icons/pi";
 import { Box, Button, Flex, Menu, MenuButton, MenuItem, MenuList, Text } from "@chakra-ui/react";
 import { setProductList } from "../slices/productSlices";
 import _debounce from "lodash/debounce";
-import UnarchiveProductModal from "./UnarchiveProductModal";
+import { ChevronDownIcon } from "@chakra-ui/icons";
+import EditProductModal from "./EditProductModal";
+import { EditCategoryModal } from "./EditCategoryModal";
+import ArchiveProductModal from "./ArchiveProductModal";
+import DeleteProductModal from "./DeleteProductModal";
+import { logoutAdmin } from "../slices/accountSlices";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-function ArchivedProductList() {
+function OutOfStockProductList() {
   const [sortCriteria, setSortCriteria] = useState("date-desc"); // Default sorting criteria that matches the backend;
   const [searchInput, setSearchInput] = useState(""); // Initialize with "All"
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -25,10 +31,13 @@ function ArchivedProductList() {
   const [categories, setCategories] = useState([]); // Initialize with empty array
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [openUnarchiveProductModal, setOpenUnarchiveProductModal] = useState(false);
-
+  const [openEditProductModal, setOpenEditProductModal] = useState(false);
+  const [openArchiveProductModal, setOpenArchiveProductModal] = useState(false);
+  const [openDeleteProductModal, setOpenDeleteProductModal] = useState(false);
+  const navigate = useNavigate();
+  const isWarehouseAdmin = useSelector((state) => state.account.isWarehouseAdmin);
   const newProducts = useSelector((state) => state.product?.productList);
-  const isWarehouseAdmin = useSelector((state) => state?.account?.isWarehouseAdmin);
+  const categoryLists = useSelector((state) => state?.category?.categoryLists);
 
   const handleSearchInputChange = _debounce((e) => {
     setSearchInput(e.target.value);
@@ -48,9 +57,7 @@ function ArchivedProductList() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        setCurrentPage(1);
-
-        const response = await api.admin.get(`/product?page=${currentPage}&limit=${productsPerPage}&sort=${sortCriteria}&category=${selectedCategory}&search=${searchInput}&filterBy=${selectedFilter}&isArchived=true`);
+        const response = await api.admin.get(`/product?page=${currentPage}&limit=${productsPerPage}&sort=${sortCriteria}&category=${selectedCategory}&search=${searchInput}&filterBy=${selectedFilter}`);
         const responseData = response.data.details;
         const totalData = response.data.pagination.totalData;
         const totalPages = Math.ceil(totalData / productsPerPage);
@@ -58,11 +65,34 @@ function ArchivedProductList() {
         setTotalPages(totalPages);
         setProducts(responseData);
       } catch (error) {
-        if (error?.response?.status == 404) {
+        if (error?.response?.status === 404) {
           setTotalData(0);
           setTotalPages(0);
           setProducts([]);
-        } else if (error.request) {
+        }
+        else if (error?.response?.status === 401) {
+          setTimeout(() => {
+            toast.error(error.response.data.message, {
+              autoClose: 1000,
+              onAutoClose: (t) => {
+                dispatch(logoutAdmin());
+                navigate("/adminlogin");
+              },
+            });
+          }, 600);
+        }
+        else if (error?.response?.status === 403) {
+          setTimeout(() => {
+            toast.error(error.response.data.message, {
+              autoClose: 1000,
+              onAutoClose: (t) => {
+                dispatch(logoutAdmin());
+                navigate("/adminlogin");
+              },
+            });
+          }, 600);
+        }
+        else if (error.request) {
           // Handle request errors
           setTimeout(() => {
             toast.error("Network error, please try again later");
@@ -70,7 +100,6 @@ function ArchivedProductList() {
         } 
       }
     };
-
     fetchProducts();
   }, [currentPage, sortCriteria, selectedCategory, searchInput, selectedFilter, totalPages, totalData, newProducts]);
 
@@ -91,7 +120,7 @@ function ArchivedProductList() {
     };
 
     fetchCategories();
-  }, []);
+  }, [categoryLists]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -156,9 +185,19 @@ function ArchivedProductList() {
     }),
   ];
 
-  const toggleUnarchiveModal = (product) => {
+  const toggleEditModal = (product) => {
     setSelectedProduct(product);
-    setOpenUnarchiveProductModal(!openUnarchiveProductModal);
+    setOpenEditProductModal(!openEditProductModal);
+  };
+
+  const toggleArchiveModal = (product) => {
+    setSelectedProduct(product);
+    setOpenArchiveProductModal(!openArchiveProductModal);
+  };
+
+  const toggleDeleteModal = (product) => {
+    setSelectedProduct(product);
+    setOpenDeleteProductModal(!openDeleteProductModal);
   };
 
   return (
@@ -243,8 +282,8 @@ function ArchivedProductList() {
           </div>
         </div>
       </div>
-      <div className={`space-y-6 overflow-y-scroll scrollbar-hide ${isWarehouseAdmin ? 'h-[62vh]' : 'h-[56vh]'}`}>
-        {products.length == 0 ? (
+      <div className={`space-y-6 overflow-y-scroll scrollbar-hide ${isWarehouseAdmin ? "h-[60vh]" : "h-[56vh]"}`}>
+        {products.length === 0 ? (
           <Text textAlign={"center"} fontStyle={"italic"}>
             No data matches.
           </Text>
@@ -255,7 +294,7 @@ function ArchivedProductList() {
           <div key={product.id} className="bg-white items-center justify-between flex gap-6 h-36 w-full px-6 py-2 rounded-lg shadow-sm">
             <div className="h-[100px] w-[100px] flex justify-center items-center">
               {product.productImages[0].imageUrl ? (
-                <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-lg" alt="Product Image" style={{ filter: "grayscale(100%)" }} />
+                <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" style={{ filter: "grayscale(100%)" }} />
               ) : (
                 <div className="w-full h-full flex justify-center items-center bg-gray-200 text-gray-400">
                   <div className="flex flex-col items-center justify-center">
@@ -267,8 +306,8 @@ function ArchivedProductList() {
             </div>
 
             <div className="flex w-60 flex-col">
-              <span className="font-bold">(Archived)</span>
-              <span className="font-bold">{product.name}</span>
+              <span className="font-bold">(Out of stock) </span>
+              <span className="font-bold">{product.name} </span>
               <span>
                 SKU : {product.sku} ({product.gender}){" "}
               </span>
@@ -292,10 +331,10 @@ function ArchivedProductList() {
             </div>
             <div className="flex flex-col w-44">
               <span className="font-bold">Stock</span>
-              <span>20</span>
+              <span>0</span>
             </div>
-            <div>
-              {!isWarehouseAdmin && (
+            {!isWarehouseAdmin ? (
+              <div>
                 <Menu>
                   <MenuButton
                     px={2}
@@ -315,11 +354,39 @@ function ArchivedProductList() {
                     </Flex>
                   </MenuButton>
                   <MenuList>
-                    <MenuItem onClick={() => toggleUnarchiveModal(product)}>Unarchive</MenuItem>
+                    <MenuItem onClick={() => toggleEditModal(product)}>Edit product</MenuItem>
+                    <MenuItem>Update stock</MenuItem>
+                    <MenuItem onClick={() => toggleArchiveModal(product)}>Archive</MenuItem>
+                    <MenuItem onClick={() => toggleDeleteModal(product)}>Delete</MenuItem>
                   </MenuList>
                 </Menu>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div>
+                <Menu>
+                  <MenuButton
+                    px={2}
+                    py={2}
+                    transition="all 0.2s"
+                    borderRadius="lg"
+                    textColor="gray.600"
+                    boxShadow="md"
+                    borderColor="gray.500"
+                    borderWidth="2px"
+                    _hover={{ bg: "gray.900", textColor: "white" }}
+                    _expanded={{ bg: "gray.900", textColor: "white" }}
+                  >
+                    <Flex justifyContent="between" gap={4} px={2} alignItems="center">
+                      <Text fontWeight="bold">Update</Text>
+                      <PiCaretDown size="20px" />
+                    </Flex>
+                  </MenuButton>
+                  <MenuList>
+                    <MenuItem>Update stock</MenuItem>
+                  </MenuList>
+                </Menu>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -366,9 +433,11 @@ function ArchivedProductList() {
           </Box>
         </Flex>
       </Box>
-      {openUnarchiveProductModal && <UnarchiveProductModal isOpen={openUnarchiveProductModal} data={selectedProduct} isClose={toggleUnarchiveModal} />}
+      {openArchiveProductModal && <ArchiveProductModal isOpen={openArchiveProductModal} data={selectedProduct} isClose={toggleArchiveModal} />}
+      {openEditProductModal && <EditProductModal isOpen={openEditProductModal} data={selectedProduct} isClose={toggleEditModal} />}
+      {openDeleteProductModal && <DeleteProductModal isOpen={openDeleteProductModal} data={selectedProduct} isClose={toggleDeleteModal} />}
     </div>
   );
 }
 
-export default ArchivedProductList;
+export default OutOfStockProductList;

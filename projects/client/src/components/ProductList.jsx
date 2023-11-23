@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { addProduct } from "../slices/productSlices";
@@ -53,63 +53,74 @@ function ProductList() {
       currency: "IDR",
     }).format(number);
   };
+  
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await api.admin.get(`/product?page=${currentPage}&limit=${productsPerPage}&sort=${sortCriteria}&category=${selectedCategory}&search=${searchInput}&filterBy=${selectedFilter}`);
-        const responseData = response.data.details;
-        const totalData = response.data.pagination.totalData;
-        const totalPages = Math.ceil(totalData / productsPerPage);
-        setTotalData(totalData);
-        setTotalPages(totalPages);
-        setProducts(responseData);
-      } catch (error) {
-        if (error?.response?.status === 404) {
-          setTotalData(0);
-          setTotalPages(0);
-          setProducts([]);
-        }
-        if (error?.response?.status === 401) {
-          setTimeout(() => {
-            toast.error(error.response.data.message, {
-              autoClose: 1000,
-              onAutoClose: (t) => {
-                dispatch(logoutAdmin());
-                navigate("/adminlogin");
-              },
-            });
-          }, 600);
-        }
-        if (error?.response?.status === 403) {
-          setTimeout(() => {
-            toast.error(error.response.data.message, {
-              autoClose: 1000,
-              onAutoClose: (t) => {
-                dispatch(logoutAdmin());
-                navigate("/adminlogin");
-              },
-            });
-          }, 600);
-        }
-      }
-    };
-    fetchProducts();
+  const fetchProducts = useCallback(async () => {
+    try {
+      const response = await api.admin.get(`/product?page=${currentPage}&limit=${productsPerPage}&sort=${sortCriteria}&category=${selectedCategory}&search=${searchInput}&filterBy=${selectedFilter}`);
+      const responseData = response.data.details;
+      const totalData = response.data.pagination.totalData;
+      const totalPages = Math.ceil(totalData / productsPerPage);
+      setTotalData(totalData);
+      setTotalPages(totalPages);
+      setProducts(responseData);
+    } catch (error) {
+      if (error?.response?.status === 404) {
+        setTotalData(0);
+        setTotalPages(0);
+        setProducts([]);
+      } else if (error?.response?.status === 401) {
+        setTimeout(() => {
+          toast.error(error.response.data.message, {
+            autoClose: 1000,
+            onAutoClose: (t) => {
+              dispatch(logoutAdmin());
+              navigate("/adminlogin");
+            },
+          });
+        }, 600);
+      } else if (error?.response?.status === 403) {
+        setTimeout(() => {
+          toast.error(error.response.data.message, {
+            autoClose: 1000,
+            onAutoClose: (t) => {
+              dispatch(logoutAdmin());
+              navigate("/adminlogin");
+            },
+          });
+        }, 600);
+      } else if (error.request) {
+        // Handle request errors
+        setTimeout(() => {
+          toast.error("Network error, please try again later");
+        }, 2000);
+      } 
+    }
   }, [currentPage, sortCriteria, selectedCategory, searchInput, selectedFilter, totalPages, totalData, newProducts]);
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await api.get("/category/child-categories");
-        const categoryData = response.data.details;
-        setCategories(categoryData);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-      }
-    };
 
-    fetchCategories();
+  const fetchCategories = useCallback(async () => {
+    try {
+      const response = await api.admin.get("/category/child-categories");
+      const categoryData = response.data.details;
+      setCategories(categoryData);
+    } catch (error) {
+      if (error.request) {
+        // Handle request errors
+        setTimeout(() => {
+          toast.error("Network error, please try again later");
+        }, 2000);
+      } 
+    }
   }, [categoryLists]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+  
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories])
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -132,12 +143,12 @@ function ProductList() {
     setSelectedFilter(selectedFilterValue);
   };
 
-  const warehouse = [
-    { label: "All Warehouse", value: "All" },
-    { label: "Jakarta", value: "Jakarta" },
-    { label: "Bandung", value: "Bandung" },
-    { label: "Medan", value: "Medan" },
-  ];
+  // const warehouse = [
+  //   { label: "All Warehouse", value: "All" },
+  //   { label: "Jakarta", value: "Jakarta" },
+  //   { label: "Bandung", value: "Bandung" },
+  //   { label: "Medan", value: "Medan" },
+  // ];
 
   const sortingOptions = [
     { label: "Date DESC", value: "date-desc" },
@@ -206,7 +217,7 @@ function ProductList() {
           </div>
         </div>
         <div className="flex gap-4 w-full">
-          <div className="w-full">
+          {/* <div className="w-full">
             <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent">
               <option value="" disabled className="text-gray-400">
                 Warehouse
@@ -217,7 +228,7 @@ function ProductList() {
                 </option>
               ))}
             </select>
-          </div>
+          </div> */}
           <div className="w-full">
             <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent " onChange={handleFilterChange}>
               <option value="" disabled className="text-gray-400">
@@ -271,7 +282,7 @@ function ProductList() {
           </div>
         </div>
       </div>
-      <div className={`space-y-6 overflow-y-scroll scrollbar-hide ${isWarehouseAdmin ? 'h-[60vh]' : 'h-[56vh]'}`}>
+      <div className={`space-y-6 overflow-y-scroll scrollbar-hide ${isWarehouseAdmin ? "h-[60vh]" : "h-[56vh]"}`}>
         {products.length === 0 ? (
           <Text textAlign={"center"} fontStyle={"italic"}>
             No data matches.
@@ -321,7 +332,7 @@ function ProductList() {
               <span className="font-bold">Stock</span>
               <span>20</span>
             </div>
-            {!isWarehouseAdmin && (
+            {!isWarehouseAdmin ? (
               <div>
                 <Menu>
                   <MenuButton
@@ -346,6 +357,31 @@ function ProductList() {
                     <MenuItem>Update stock</MenuItem>
                     <MenuItem onClick={() => toggleArchiveModal(product)}>Archive</MenuItem>
                     <MenuItem onClick={() => toggleDeleteModal(product)}>Delete</MenuItem>
+                  </MenuList>
+                </Menu>
+              </div>
+            ) : (
+              <div>
+                <Menu>
+                  <MenuButton
+                    px={2}
+                    py={2}
+                    transition="all 0.2s"
+                    borderRadius="lg"
+                    textColor="gray.600"
+                    boxShadow="md"
+                    borderColor="gray.500"
+                    borderWidth="2px"
+                    _hover={{ bg: "gray.900", textColor: "white" }}
+                    _expanded={{ bg: "gray.900", textColor: "white" }}
+                  >
+                    <Flex justifyContent="between" gap={4} px={2} alignItems="center">
+                      <Text fontWeight="bold">Update</Text>
+                      <PiCaretDown size="20px" />
+                    </Flex>
+                  </MenuButton>
+                  <MenuList>
+                    <MenuItem>Update stock</MenuItem>
                   </MenuList>
                 </Menu>
               </div>

@@ -95,33 +95,30 @@ function SignUpModal({ isOpen, isClose }) {
           email: values.email,
         });
 
-        if (response.status === 201) {
-          setTimeout(() => {
-            toast.success("Verification code has been send to your email", {
-              autoClose: 1000,
-              onAutoClose: (t) => {
-                dispatch(showVerifyModal());
-                dispatch(hideSignUpModal());
-                setIsSubmitting(false);
-              },
-            });
-            dispatch(setEmail(response.data.user.email));
-          }, 1000);
-        }
-      } catch (error) {
-        if (error.response) {
-          if (error.response.status === 400) {
-            setTimeout(() => {
-              toast.error("Email already exists");
+        setTimeout(() => {
+          toast.success("Verification code has been send to your email", {
+            autoClose: 1000,
+            onAutoClose: (t) => {
+              dispatch(showVerifyModal());
+              dispatch(hideSignUpModal());
               setIsSubmitting(false);
-            }, 2000);
-          } else {
-            // Handle other HTTP errors
-          }
-        } else if (error.request) {
-          // Handle network errors (request was made but no response received)
-        } else {
-          // Handle other non-network, non-HTTP-related errors
+            },
+          });
+          dispatch(setEmail(response.data.user.email));
+        }, 1000);
+      } catch (error) {
+        if (error.response.status === 400) {
+          setTimeout(() => {
+            toast.error("Email already exists");
+            setIsSubmitting(false);
+          }, 2000);
+        }
+        if (error.request) {
+          // Handle request errors
+          setTimeout(() => {
+            toast.error("Network error, please try again later");
+            setIsSubmitting(false);
+          }, 2000);
         }
       } finally {
         // Add a 1-second delay before closing the modal
@@ -133,7 +130,7 @@ function SignUpModal({ isOpen, isClose }) {
   });
   return (
     <>
-      <Modal closeOnOverlayClick={false} isOpen={isOpen} size="md" onClose={isClose} motionPreset='slideInBottom' isCentered>
+      <Modal closeOnOverlayClick={false} isOpen={isOpen} size="md" onClose={isClose} motionPreset="slideInBottom" isCentered>
         <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(2px)" />
         <ModalContent>
           <ModalHeader />

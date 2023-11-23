@@ -13,16 +13,17 @@ function Warehouse() {
 
   const isWarehouseAdmin = useSelector((state) => state?.account?.isWarehouseAdmin);
 
+  const fetchWarehouse = async () => {
+    try {
+      const result = await api.admin.get('/api/warehouse')
+      setWarehouses(result.data.data);
+    } catch (error) {
+      console.log(error)
+    }
+  };
+
   useEffect(() => {
-    api.admin.get('/api/warehouse')
-      .then(response => {
-        if (response.data.ok) {
-          setWarehouses(response.data.data); // Set the warehouses data
-        }
-      })
-      .catch(error => {
-        // Handle error here, e.g., set an error state
-      });
+    fetchWarehouse();
   }, []);
 
   // Handler to open the AddWarehouseModal
@@ -61,7 +62,7 @@ function Warehouse() {
         </div>
       </div>
       {/* AddWarehouseModal component */}
-      <AddWarehouseModal isOpen={isAddModalOpen} onClose={closeAddModal} />
+      <AddWarehouseModal isOpen={isAddModalOpen} onClose={closeAddModal} onSuccess={() => fetchWarehouse()}/>
     </div>
   );
 }

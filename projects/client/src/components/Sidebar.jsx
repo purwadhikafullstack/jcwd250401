@@ -88,8 +88,8 @@ const Sidebar = () => {
     }
   };
 
-  const segments = location.pathname.split("/");
-  const currentPage = segments[segments.length - 1];
+  const segments = location.pathname;
+ 
 
   return (
     <div className="w-[16vw] bg-black h-screen">
@@ -106,7 +106,7 @@ const Sidebar = () => {
                   {item.subItems ? (
                     <div
                       onClick={() => handleAccordionClick(index)}
-                      className={`flex items-center justify-start text-white hover:text-black hover:bg-white px-4 py-2 rounded mb-2 mx-2 cursor-pointer gap-2 ${currentPage === item.name.toLowerCase() ? "!text-black bg-white" : ""}`}>
+                      className={`flex items-center justify-start text-white hover:text-black hover:bg-white px-4 py-2 rounded mb-2 mx-2 cursor-pointer gap-2 ${segments === item.link ? "!text-black bg-white" : ""}`}>
                       <div className="mr-6 ">{item.icon}</div>
                       <div className="">{item.name}</div>
                       <div className="ml-auto">{isExpanded[index] ? <FiChevronUp size={18} /> : <FiChevronDown size={18} />}</div>
@@ -115,7 +115,7 @@ const Sidebar = () => {
                     <Link
                       key={index}
                       to={item.link}
-                      className={`flex items-center justify-start text-white hover:text-black hover:bg-white px-4 py-2 rounded mb-2 mx-2 ${currentPage === item.name.toLowerCase() ? "!text-black bg-white" : ""}`}>
+                      className={`flex items-center justify-start text-white hover:text-black hover:bg-white px-4 py-2 rounded mb-2 mx-2 ${segments === item.link ? "!text-black bg-white" : ""}`}>
                       <div className="mr-8">{item.icon}</div>
                       {item.name}
                     </Link>
@@ -127,7 +127,7 @@ const Sidebar = () => {
                         <Link
                           key={subIndex}
                           to={subItem.link}
-                          className={`flex items-center justify-start text-white hover:text-black hover:bg-white px-4 py-2 rounded mb-2 mx-2 ${currentPage === subItem.name.toLowerCase() ? "!text-black bg-white" : ""}`}>
+                          className={`flex items-center justify-start text-white hover:text-black hover:bg-white px-4 py-2 rounded mb-2 mx-2 ${segments === subItem.link ? "!text-black bg-white" : ""}`}>
                           <div className="mr-8 ml-2">{subItem.icon}</div>
                           {subItem.name}
                         </Link>
