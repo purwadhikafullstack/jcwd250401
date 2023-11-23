@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { addProduct } from "../slices/productSlices";
@@ -16,6 +16,7 @@ import DeleteProductModal from "./DeleteProductModal";
 import { logoutAdmin } from "../slices/accountSlices";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import getProducts from "../api/products/getProducts";
 
 function OutOfStockProductList() {
   const [sortCriteria, setSortCriteria] = useState("date-desc"); // Default sorting criteria that matches the backend;
@@ -54,73 +55,73 @@ function OutOfStockProductList() {
     }).format(number);
   };
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await api.admin.get(`/product?page=${currentPage}&limit=${productsPerPage}&sort=${sortCriteria}&category=${selectedCategory}&search=${searchInput}&filterBy=${selectedFilter}`);
-        const responseData = response.data.details;
-        const totalData = response.data.pagination.totalData;
-        const totalPages = Math.ceil(totalData / productsPerPage);
-        setTotalData(totalData);
-        setTotalPages(totalPages);
-        setProducts(responseData);
-      } catch (error) {
-        if (error?.response?.status === 404) {
-          setTotalData(0);
-          setTotalPages(0);
-          setProducts([]);
-        }
-        else if (error?.response?.status === 401) {
-          setTimeout(() => {
-            toast.error(error.response.data.message, {
-              autoClose: 1000,
-              onAutoClose: (t) => {
-                dispatch(logoutAdmin());
-                navigate("/adminlogin");
-              },
-            });
-          }, 600);
-        }
-        else if (error?.response?.status === 403) {
-          setTimeout(() => {
-            toast.error(error.response.data.message, {
-              autoClose: 1000,
-              onAutoClose: (t) => {
-                dispatch(logoutAdmin());
-                navigate("/adminlogin");
-              },
-            });
-          }, 600);
-        }
-        else if (error.request) {
-          // Handle request errors
-          setTimeout(() => {
-            toast.error("Network error, please try again later");
-          }, 2000);
-        } 
+  const fetchProducts = useCallback(async () => {
+    try {
+      const result = await getProducts({
+        page: currentPage,
+        limit: productsPerPage,
+        sort: sortCriteria,
+        category: selectedCategory,
+        search: searchInput,
+        filterBy: selectedFilter,
+      });
+      const totalData = result.pagination.totalData;
+      const totalPages = Math.ceil(totalData / productsPerPage);
+      console.log(totalData, totalPages);
+
+      setTotalData(totalData);
+      setTotalPages(totalPages);
+      setProducts(result.details);
+    } catch (error) {
+      if (error?.response?.status === 404) {
+        setTotalData(0);
+        setTotalPages(0);
+        setProducts([]);
+      } else if (error?.response?.status === 401) {
+        setTimeout(() => {
+          toast.error(error.response.data.message, {
+            autoClose: 1000,
+            onAutoClose: (t) => {
+              dispatch(logoutAdmin());
+              navigate("/adminlogin");
+            },
+          });
+        }, 600);
+      } else if (error?.response?.status === 403) {
+        setTimeout(() => {
+          toast.error(error.response.data.message, {
+            autoClose: 1000,
+            onAutoClose: (t) => {
+              dispatch(logoutAdmin());
+              navigate("/adminlogin");
+            },
+          });
+        }, 600);
+      } else if (error.request) {
+        // Handle request errors
+        setTimeout(() => {
+          toast.error("Network error, please try again later");
+        }, 2000);
       }
-    };
-    fetchProducts();
+    }
   }, [currentPage, sortCriteria, selectedCategory, searchInput, selectedFilter, totalPages, totalData, newProducts]);
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await api.admin.get("/category/child-categories");
-        const categoryData = response.data.details;
-        setCategories(categoryData);
-      } catch (error) {
-        if (error.request) {
-          // Handle request errors
-          setTimeout(() => {
-            toast.error("Network error, please try again later");
-          }, 2000);
-        } 
+  const fetchCategories = useCallback(async () => {
+    try {
+      const response = await api.admin.get("/category/child-categories");
+      const categoryData = response.data.details;
+      setCategories(categoryData);
+    } catch (error) {
+      if (error.response === 404) {
+        setCategories([]);
       }
-    };
-
-    fetchCategories();
+    }
   }, [categoryLists]);
+
+  useEffect(() => {
+    fetchProducts();
+    fetchCategories();
+  }, [fetchProducts, fetchCategories]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {

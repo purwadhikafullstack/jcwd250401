@@ -88,29 +88,24 @@ function VerifyModal({ isOpen, isClose }) {
             },
           });
         }, 3000);
-
       } catch (error) {
-        if (error.response) {
-          if (error.response.status === 401) {
-            setTimeout(() => {
-              toast.error("Invalid verification code");
-              setIsSubmitting(false);
-            }, 2000);
-          } else if (error.response.status === 400) {
-            setTimeout(() => {
-              toast.error("This account is already verified");
-              setIsSubmitting(false);
-            }, 2000);
-          }
-        } 
-        if (error.request) {
+        if (error.response.status === 401) {
+          setTimeout(() => {
+            toast.error("Invalid verification code");
+            setIsSubmitting(false);
+          }, 2000);
+        } else if (error.response.status === 400) {
+          setTimeout(() => {
+            toast.error("This account is already verified");
+            setIsSubmitting(false);
+          }, 2000);
+        } else if (error.request) {
           // Handle request errors
           setTimeout(() => {
             toast.error("Network error, please try again later");
             setIsSubmitting(false);
           }, 2000);
-        } 
-        
+        }
       } finally {
         // Add a 1-second delay before closing the modal
         setTimeout(() => {

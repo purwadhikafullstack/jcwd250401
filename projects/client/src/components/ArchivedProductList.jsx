@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { addProduct } from "../slices/productSlices";
@@ -10,6 +10,9 @@ import { setProductList } from "../slices/productSlices";
 import _debounce from "lodash/debounce";
 import UnarchiveProductModal from "./UnarchiveProductModal";
 import { toast } from "sonner";
+import { logoutAdmin } from "../slices/accountSlices";
+import { useNavigate } from "react-router-dom";
+import getProducts from "../api/products/getProducts";
 
 function ArchivedProductList() {
   const [sortCriteria, setSortCriteria] = useState("date-desc"); // Default sorting criteria that matches the backend;
@@ -29,6 +32,8 @@ function ArchivedProductList() {
 
   const newProducts = useSelector((state) => state.product?.productList);
   const isWarehouseAdmin = useSelector((state) => state?.account?.isWarehouseAdmin);
+  const navigate = useNavigate();
+  const categoryLists = useSelector((state) => state.category?.categoryList);
 
   const handleSearchInputChange = _debounce((e) => {
     setSearchInput(e.target.value);
@@ -45,53 +50,74 @@ function ArchivedProductList() {
     }).format(number);
   };
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setCurrentPage(1);
+  const fetchProducts = useCallback(async () => {
+    try {
+      const result = await getProducts({
+        page: currentPage,
+        limit: productsPerPage,
+        sort: sortCriteria,
+        category: selectedCategory,
+        search: searchInput,
+        filterBy: selectedFilter,
+        isArchived: true,
+      });
+      const totalData = result.pagination.totalData;
+      const totalPages = Math.ceil(totalData / productsPerPage);
+      console.log(totalData, totalPages);
 
-        const response = await api.admin.get(`/product?page=${currentPage}&limit=${productsPerPage}&sort=${sortCriteria}&category=${selectedCategory}&search=${searchInput}&filterBy=${selectedFilter}&isArchived=true`);
-        const responseData = response.data.details;
-        const totalData = response.data.pagination.totalData;
-        const totalPages = Math.ceil(totalData / productsPerPage);
-        setTotalData(totalData);
-        setTotalPages(totalPages);
-        setProducts(responseData);
-      } catch (error) {
-        if (error?.response?.status == 404) {
-          setTotalData(0);
-          setTotalPages(0);
-          setProducts([]);
-        } else if (error.request) {
-          // Handle request errors
-          setTimeout(() => {
-            toast.error("Network error, please try again later");
-          }, 2000);
-        } 
+      setTotalData(totalData);
+      setTotalPages(totalPages);
+      setProducts(result.details);
+    } catch (error) {
+      if (error?.response?.status === 404) {
+        setTotalData(0);
+        setTotalPages(0);
+        setProducts([]);
+      } else if (error?.response?.status === 401) {
+        setTimeout(() => {
+          toast.error(error.response.data.message, {
+            autoClose: 1000,
+            onAutoClose: (t) => {
+              dispatch(logoutAdmin());
+              navigate("/adminlogin");
+            },
+          });
+        }, 600);
+      } else if (error?.response?.status === 403) {
+        setTimeout(() => {
+          toast.error(error.response.data.message, {
+            autoClose: 1000,
+            onAutoClose: (t) => {
+              dispatch(logoutAdmin());
+              navigate("/adminlogin");
+            },
+          });
+        }, 600);
+      } else if (error.request) {
+        // Handle request errors
+        setTimeout(() => {
+          toast.error("Network error, please try again later");
+        }, 2000);
       }
-    };
-
-    fetchProducts();
+    }
   }, [currentPage, sortCriteria, selectedCategory, searchInput, selectedFilter, totalPages, totalData, newProducts]);
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await api.admin.get("/category/child-categories");
-        const categoryData = response.data.details;
-        setCategories(categoryData);
-      } catch (error) {
-        if (error.request) {
-          // Handle request errors
-          setTimeout(() => {
-            toast.error("Network error, please try again later");
-          }, 2000);
-        } 
+  const fetchCategories = useCallback(async () => {
+    try {
+      const response = await api.admin.get("/category/child-categories");
+      const categoryData = response.data.details;
+      setCategories(categoryData);
+    } catch (error) {
+      if (error?.response?.status === 404) {
+        setCategories([]);
       }
-    };
+    }
+  }, [categoryLists]);
 
+  useEffect(() => {
+    fetchProducts();
     fetchCategories();
-  }, []);
+  }, [fetchProducts, fetchCategories]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -243,7 +269,7 @@ function ArchivedProductList() {
           </div>
         </div>
       </div>
-      <div className={`space-y-6 overflow-y-scroll scrollbar-hide ${isWarehouseAdmin ? 'h-[62vh]' : 'h-[56vh]'}`}>
+      <div className={`space-y-6 overflow-y-scroll scrollbar-hide ${isWarehouseAdmin ? "h-[62vh]" : "h-[56vh]"}`}>
         {products.length == 0 ? (
           <Text textAlign={"center"} fontStyle={"italic"}>
             No data matches.

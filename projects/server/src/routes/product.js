@@ -18,4 +18,8 @@ router.put("/unarchive/:productId", authMiddleware.validateToken, authMiddleware
 
 router.delete("/:productId", authMiddleware.validateToken, authMiddleware.checkRoleSuperAdmin, productController.handleDeleteProduct);
 
+// for client side
+router.get("/user", productController.handleGetAllProducts);
+
+
 module.exports = router;
