@@ -19,7 +19,13 @@ export const ConfirmModal = ({ isOpen, onClose, data, userId, deleteFor }) => {
       }
       onClose();
     } catch (error) {
-      toast.error(error.response.data.message);
+      if (error.response && (error.response.status === 400 || error.response.status === 404 || error.response.status === 500 || error.response.status === 401 || error.response.status === 403)) {
+        toast.error(error.response.data.message, {
+          description: error.response.data.detail,
+        });
+        if (error.response.status === 401 || error.response.status === 403) navigate("/adminlogin");
+        if (error.response.status === 500) console.error(error);
+      }
     }
   };
   return (

@@ -144,6 +144,14 @@ exports.deleteAdmin = async (req, res) => {
       });
     }
 
+    const warehouseAssigned = await Warehouse.findOne({ where: { adminId: id } });
+    if (warehouseAssigned) {
+      return res.status(400).json({
+        ok: false,
+        message: "Cannot delete admin who is assigned to a warehouse, please unassign first",
+      });
+    }
+    
     await admin.destroy();
     return res.status(200).json({
       ok: true,
