@@ -113,7 +113,7 @@ function SignUpModal({ isOpen, isClose }) {
             setIsSubmitting(false);
           }, 2000);
         }
-        if (error.request) {
+        else if (error.request) {
           // Handle request errors
           setTimeout(() => {
             toast.error("Network error, please try again later");
