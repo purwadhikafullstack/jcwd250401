@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-const { User, Admin } = require("../models");
+const { User, Admin, Warehouse } = require("../models");
 const bcrypt = require("bcrypt");
 
 exports.getAllUser = async (req, res) => {
@@ -63,6 +63,12 @@ exports.getAllAdmin = async (req, res) => {
       order: orderClause,
       limit,
       offset,
+      include: [
+        {
+          model: Warehouse,
+          attributes: ["id", "name", "adminId"],
+        },
+      ],
     });
 
     return res.status(200).json({
