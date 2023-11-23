@@ -147,12 +147,6 @@ function AddProductModal({ isOpen, isClose }) {
     }
   }, [formik.values.productMainCategory]);
 
-  // React Dropzone Configuration
-
-  useEffect(() => {
-    // Update component or perform actions after state changes
-    console.log("State updated:", dropzoneImages);
-  }, [dropzoneImages]);
 
   const fileInputRef = useRef(null);
 

@@ -16,6 +16,7 @@ import DeleteProductModal from "./DeleteProductModal";
 import { logoutAdmin } from "../slices/accountSlices";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import getProducts from "../api/products/getProducts";
 
 function ProductList() {
   const [sortCriteria, setSortCriteria] = useState("date-desc"); // Default sorting criteria that matches the backend;
@@ -53,17 +54,24 @@ function ProductList() {
       currency: "IDR",
     }).format(number);
   };
-  
 
   const fetchProducts = useCallback(async () => {
     try {
-      const response = await api.admin.get(`/product?page=${currentPage}&limit=${productsPerPage}&sort=${sortCriteria}&category=${selectedCategory}&search=${searchInput}&filterBy=${selectedFilter}`);
-      const responseData = response.data.details;
-      const totalData = response.data.pagination.totalData;
+      const result = await getProducts({
+        page: currentPage,
+        limit: productsPerPage,
+        sort: sortCriteria,
+        category: selectedCategory,
+        search: searchInput,
+        filterBy: selectedFilter,
+      });
+      const totalData = result.pagination.totalData;
       const totalPages = Math.ceil(totalData / productsPerPage);
+      console.log(totalData, totalPages);
+
       setTotalData(totalData);
       setTotalPages(totalPages);
-      setProducts(responseData);
+      setProducts(result.details);
     } catch (error) {
       if (error?.response?.status === 404) {
         setTotalData(0);
@@ -94,10 +102,9 @@ function ProductList() {
         setTimeout(() => {
           toast.error("Network error, please try again later");
         }, 2000);
-      } 
+      }
     }
   }, [currentPage, sortCriteria, selectedCategory, searchInput, selectedFilter, totalPages, totalData, newProducts]);
-
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -105,12 +112,9 @@ function ProductList() {
       const categoryData = response.data.details;
       setCategories(categoryData);
     } catch (error) {
-      if (error.request) {
-        // Handle request errors
-        setTimeout(() => {
-          toast.error("Network error, please try again later");
-        }, 2000);
-      } 
+      if (error?.response?.status === 404) {
+        setCategories([]);
+      }
     }
   }, [categoryLists]);
 
@@ -118,7 +122,6 @@ function ProductList() {
     fetchProducts();
     fetchCategories();
   }, [fetchProducts, fetchCategories]);
-  
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {

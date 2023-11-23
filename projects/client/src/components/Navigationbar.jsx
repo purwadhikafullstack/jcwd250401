@@ -100,11 +100,13 @@ function Navigationbar() {
         <div className="hidden space-x-4 lg:flex">
           {categories.map((category, index) => {
             const joinedCategories = category.toLowerCase().replace(" ", "-");
+            const finalCategory = joinedCategories === "bags" || joinedCategories === "accessories" ? `unisex/${joinedCategories}` : joinedCategories;
 
             const renderSubcategory = (subcategory, index) => {
               const joinedSubcategory = subcategory.toLowerCase().replace(/\s/g, "-");
+              const finalSubcategory = joinedSubcategory === "all-bags" || joinedSubcategory === "all-accessories" ? "" : `/${joinedSubcategory}`;
               return (
-                <Link key={index} to={`/${joinedCategories}/${joinedSubcategory}`}>
+                <Link key={index} to={`${finalCategory}${finalSubcategory}`}>
                   <p className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm">{subcategory}</p>
                 </Link>
               );
@@ -112,9 +114,9 @@ function Navigationbar() {
 
             return (
               <>
-                <Link to={`/${joinedCategories}`} key={index} className="text-md font-semibold cursor-pointer underline-on-hover " onMouseEnter={() => handleSubcategoryClick(category)}>
+                <span key={index} className="text-md font-semibold cursor-pointer underline-on-hover " onMouseEnter={() => handleSubcategoryClick(category)}>
                   {category}
-                </Link>
+                </span>
                 {dropdownSubcategory === category && (
                   <div
                     className={`absolute top-20 w-full right-0 h-50 bg-white ring-1 ring-black ring-opacity-5 z-10 flex-wrap transition-dropdown ${isDropdownTransitioning ? "dropdown-hidden" : "dropdown-visible"}`}
