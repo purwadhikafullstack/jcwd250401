@@ -4,8 +4,10 @@ import api from "../api";
 import { toast } from "sonner";
 import { removeAddress } from "../slices/addressSlices";
 import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 export const ConfirmModal = ({ isOpen, onClose, data, userId, deleteFor }) => {
+  const navigate = useNavigate()
   const dispatch = useDispatch();
   const handleDelete = async () => {
     try {

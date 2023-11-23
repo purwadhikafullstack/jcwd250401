@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "../api";
 import { toast } from "sonner";
 import { BsTrash3Fill } from "react-icons/bs";
@@ -7,6 +7,7 @@ import { ConfirmDeleteCategory } from "./ConfirmDeleteCategory";
 import { EditCategoryModal } from "./EditCategoryModal";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import getCategories from "../api/categories/getCategories";
 
 export const CategoryLists = () => {
   const isWarehouseAdmin = useSelector((state) => state?.account?.isWarehouseAdmin);
@@ -22,14 +23,14 @@ export const CategoryLists = () => {
   const size = 5;
   const navigate = useNavigate();
 
-  const getCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
-      const mainCategoryResponse = await api.admin.get("/category?maxId=5");
-      const subCategoryResponse = await api.admin.get(`/category?minId=6&page=${page}&size=${size}&parentCategoryId=${selectedMainCategory}`);
+      const mainCategoryResponse = await getCategories({ minId: 1, maxId: 5 });
+      const subCategoryResponse = await getCategories({ minId: 6, page, size, parentCategoryId: selectedMainCategory });
 
-      setCategories(mainCategoryResponse.data.detail);
-      setSubcategories(subCategoryResponse.data.detail);
-      setHasMore(subCategoryResponse.data.detail?.length === size); // if the length of the response is equal to the size, then there are more data to be fetched
+      setCategories(mainCategoryResponse.detail);
+      setSubcategories(subCategoryResponse.detail);
+      setHasMore(subCategoryResponse.detail?.length === size); // if the length of the response is equal to the size, then there are more data to be fetched
     } catch (error) {
       if (error.response && (error.response.status === 500 || error.response.status === 400)) {
         toast.error(error.response.data.message, {
@@ -42,7 +43,7 @@ export const CategoryLists = () => {
         navigate("/adminlogin");
       }
     }
-  };
+  });
 
   const handleSelectMainCategory = (category) => setSelectedMainCategory(category.id);
   const handleOptionChange = (e) => {
@@ -53,7 +54,7 @@ export const CategoryLists = () => {
   const toggleDeleteModal = (category) => {
     setSelectedCategory(category);
     setOpenDeleteModal(!openDeleteModal);
-    getCategories();
+    fetchCategories();
   };
 
   const toggleEditModal = (category) => {
@@ -64,11 +65,11 @@ export const CategoryLists = () => {
   const closeEditModal = () => {
     setOpenEditModal(!openEditModal);
     setSelectedCategory(null);
-    getCategories();
+    fetchCategories();
   };
 
   useEffect(() => {
-    getCategories();
+    fetchCategories();
   }, [categoryLists, page, size, selectedMainCategory]);
 
   return (
