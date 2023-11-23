@@ -11,6 +11,7 @@ import { useSelector } from "react-redux";
 import useDebounceValue from "../hooks/useDebounceValue";
 import { SearchIcon } from "@chakra-ui/icons";
 import { PiCaretDown } from "react-icons/pi";
+import { AdminAssignmentModal } from "../components/AdminAssignmentModal";
 
 export const Staff = () => {
   const isWarehouseAdminAcc = useSelector((state) => state?.account?.isWarehouseAdmin);
@@ -18,7 +19,9 @@ export const Staff = () => {
   const [deleteModal, setDeleteModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
   const [createAdminModal, setCreateAdminModal] = useState(false);
+  const [assignmentModal, setAssignmentModal] = useState(false);
   const [selectedAdmin, setSelectedAdmin] = useState(null);
+  const [assignmentMode, setAssignmentMode] = useState(null);
   const [page, setPage] = useState(1);
   const size = 5;
   const [sort, setSort] = useState("createdAt");
@@ -70,6 +73,14 @@ export const Staff = () => {
     setSelectedAdmin(data);
   };
 
+  const handleAdminAssignmentModal = (data, mode) => {
+    setAssignmentModal(true);
+    setSelectedAdmin(data);
+    setAssignmentMode(mode);
+  };
+
+  const handleCreateAdminModal = () => setCreateAdminModal(!createAdminModal);
+
   const handleCloseDeleteModal = () => {
     setDeleteModal(false);
     setSelectedAdmin(null);
@@ -82,9 +93,15 @@ export const Staff = () => {
     getAdmins();
   };
 
-  const handleCreateAdminModal = () => setCreateAdminModal(!createAdminModal);
   const handleCloseCreateAdminModal = () => {
     setCreateAdminModal(false);
+    getAdmins();
+  };
+
+  const handleCloseAssignmentModal = () => {
+    setAssignmentModal(false);
+    setSelectedAdmin(null);
+    setAssignmentMode(null);
     getAdmins();
   };
 
@@ -160,32 +177,33 @@ export const Staff = () => {
                       <Td>{admin.username}</Td>
                       <Td>{admin.email}</Td>
                       <Td>{admin.isWarehouseAdmin ? "Warehouse Admin" : "Super Admin"}</Td>
-                      <Td>{admin.warehouse?.name ? admin.warehouse?.name : "Not yet"}</Td>
+                      <Td>{admin?.Warehouse?.name ? admin.Warehouse.name : "Not yet"}</Td>
                       {!isWarehouseAdminAcc && (
                         <Td>
-                            <Menu>
-                              <MenuButton
-                                px={2}
-                                py={2}
-                                transition="all 0.2s"
-                                borderRadius="lg"
-                                textColor="gray.600"
-                                boxShadow="md"
-                                borderColor="gray.500"
-                                borderWidth="2px"
-                                _hover={{ bg: "gray.900", textColor: "white" }}
-                                _expanded={{ bg: "gray.900", textColor: "white" }}
-                              >
-                                <Flex justifyContent="between" gap={4} px={2} alignItems="center">
-                                  <Text fontWeight="bold">Edit</Text>
-                                  <PiCaretDown size="20px" />
-                                </Flex>
-                              </MenuButton>
-                              <MenuList>
-                                <MenuItem onClick={() => handleEditModal(admin)}>Edit</MenuItem>
-                                <MenuItem onClick={() => handleDeleteModal(admin)}>Delete</MenuItem>
-                              </MenuList>
-                            </Menu>
+                          <Menu>
+                            <MenuButton
+                              px={2}
+                              py={2}
+                              transition="all 0.2s"
+                              borderRadius="lg"
+                              textColor="gray.600"
+                              boxShadow="md"
+                              borderColor="gray.500"
+                              borderWidth="2px"
+                              _hover={{ bg: "gray.900", textColor: "white" }}
+                              _expanded={{ bg: "gray.900", textColor: "white" }}>
+                              <Flex justifyContent="between" gap={4} px={2} alignItems="center">
+                                <Text fontWeight="bold">Edit</Text>
+                                <PiCaretDown size="20px" />
+                              </Flex>
+                            </MenuButton>
+                            <MenuList>
+                              <MenuItem onClick={() => handleEditModal(admin)}>Edit</MenuItem>
+                              {!admin.Warehouse?.adminId && <MenuItem onClick={() => handleDeleteModal(admin)}>Delete</MenuItem>}
+                              {admin.isWarehouseAdmin && <MenuItem onClick={() => handleAdminAssignmentModal(admin, "assign")}>Assign</MenuItem>}
+                              {admin.Warehouse?.adminId && <MenuItem onClick={() => handleAdminAssignmentModal(admin, "unassign")}>Unassign</MenuItem>}
+                            </MenuList>
+                          </Menu>
                         </Td>
                       )}
                     </Tr>
@@ -212,6 +230,7 @@ export const Staff = () => {
       <ConfirmModal isOpen={deleteModal} onClose={handleCloseDeleteModal} data={selectedAdmin} userId={selectedAdmin?.id} deleteFor="admin" />
       {selectedAdmin && <AddEditAdminModal isOpen={editModal} onClose={handleCloseEditModal} data={selectedAdmin} modalFor={"Edit"} />}
       <AddEditAdminModal isOpen={createAdminModal} onClose={handleCloseCreateAdminModal} data={null} modalFor={"Create"} />
+      <AdminAssignmentModal isOpen={assignmentModal} onClose={handleCloseAssignmentModal} data={selectedAdmin} userId={selectedAdmin?.id} mode={assignmentMode} />
     </div>
   );
 };
