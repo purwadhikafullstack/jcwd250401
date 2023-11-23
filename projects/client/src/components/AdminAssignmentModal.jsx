@@ -82,13 +82,19 @@ export const AdminAssignmentModal = ({ isOpen, onClose, data = null, userId = nu
               <MenuButton bgColor={"white"} _hover={{ bgColor: "white" }} border={"1px solid #40403F"} color={"#40403F"} borderRadius={"5px"} p={2} w={"50%"}>
                 {selectedWarehouse ? warehouseList.find((warehouse) => warehouse.id === selectedWarehouse)?.name : "Select Warehouse"}
               </MenuButton>
-              <MenuList>
-                {warehouseList?.map((warehouse) => (
-                  <MenuItem key={warehouse.id} onClick={() => setSelectedWarehouse(warehouse.id)}>
-                    {warehouse.name}
-                  </MenuItem>
-                ))}
-              </MenuList>
+              {warehouseList?.length > 0 ? (
+                <MenuList>
+                  {warehouseList?.map((warehouse) => (
+                    <MenuItem key={warehouse.id} onClick={() => setSelectedWarehouse(warehouse.id)}>
+                      {warehouse.name}
+                    </MenuItem>
+                  ))}
+                </MenuList>
+              ) : (
+                <MenuList>
+                  <MenuItem>No warehouse found</MenuItem>
+                </MenuList>
+              )}
             </Menu>
           </Box>
         </ModalBody>
