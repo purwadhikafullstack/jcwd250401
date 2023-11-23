@@ -14,11 +14,9 @@ function ArchiveProductModal({ isOpen, isClose, data }) {
       const response = await api.admin.put(`/product/archive/${data.id}`);
       const responseData = response.data.details;
 
-      if (response.status === 200) {
-        dispatch(addProduct(responseData));
-        isClose();
-        toast.success(response.data.message);
-      }
+      dispatch(addProduct(responseData));
+      isClose();
+      toast.success(response.data.message);
     } catch (error) {
       if (error.response && error.response.status === 400) {
         toast.error(error.response.data.message, {
@@ -28,7 +26,12 @@ function ArchiveProductModal({ isOpen, isClose, data }) {
         toast.error(error.response.data.message, {
           description: error.response.data.detail,
         });
-        console.error(error);
+      }
+      else if (error.request) {
+        // Handle request errors
+        setTimeout(() => {
+          toast.error("Network error, please try again later");
+        }, 2000);
       }
     }
   };
@@ -44,15 +47,15 @@ function ArchiveProductModal({ isOpen, isClose, data }) {
         <ModalBody>
           <Text>Are you sure you want to Archive this product?</Text>
           <div className="flex flex-col items-center justify-center mt-4">
-              <div
-                className="flex justify-center items-center h-[200px] w-[160px] shadow-lg"
-                style={{ backgroundImage: `url(http://localhost:8000/public/${data.productImages[0]?.imageUrl})`, backgroundSize: "cover", backgroundRepeat: "no-repeat" }}
-              ></div>
-              <Flex mt={4} gap={2} flexDirection="column" justifyContent="center" alignItems="center">
-                <Text fontWeight="bold">{data.name}</Text>
-                <Text> SKU : {data.sku}</Text>
-              </Flex>
-            </div>
+            <div
+              className="flex justify-center items-center h-[200px] w-[160px] shadow-lg"
+              style={{ backgroundImage: `url(http://localhost:8000/public/${data.productImages[0]?.imageUrl})`, backgroundSize: "cover", backgroundRepeat: "no-repeat" }}
+            ></div>
+            <Flex mt={4} gap={2} flexDirection="column" justifyContent="center" alignItems="center">
+              <Text fontWeight="bold">{data.name}</Text>
+              <Text> SKU : {data.sku}</Text>
+            </Flex>
+          </div>
         </ModalBody>
         <ModalFooter>
           <div className="flex gap-2 mb-4">

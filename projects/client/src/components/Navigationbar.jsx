@@ -8,7 +8,7 @@ import rains from "../assets/rains.png";
 import AuthModal from "./AuthModal";
 import { useSelector, useDispatch } from "react-redux";
 import { showLoginModal, showSignUpModal } from "../slices/authModalSlices";
-import { logout } from "../slices/accountSlices";
+import { logout, setUsername } from "../slices/accountSlices";
 import { getAuth, signOut } from "firebase/auth";
 import api from "../api";
 import { toast } from "sonner";
@@ -34,7 +34,7 @@ function Navigationbar() {
   const photoProfile = userData?.photoProfile;
   const navigate = useNavigate();
   const profile = JSON.parse(localStorage.getItem("profile"));
-  const username = profile.data?.profile?.username;
+  const username = profile?.data?.profile?.username;
   const isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
 
   const openAuthModal = () => {
@@ -71,6 +71,7 @@ function Navigationbar() {
         if (isLoggedIn) {
           const response = await api.get(`/profile/${username}`);
           setUserData(response.data.detail);
+          dispatch(setUsername(response.data.detail.username));
         }
       } catch (error) {
         toast.error("Failed to get user data");
@@ -99,11 +100,13 @@ function Navigationbar() {
         <div className="hidden space-x-4 lg:flex">
           {categories.map((category, index) => {
             const joinedCategories = category.toLowerCase().replace(" ", "-");
+            const finalCategory = joinedCategories === "bags" || joinedCategories === "accessories" ? `unisex/${joinedCategories}` : joinedCategories;
 
             const renderSubcategory = (subcategory, index) => {
               const joinedSubcategory = subcategory.toLowerCase().replace(/\s/g, "-");
+              const finalSubcategory = joinedSubcategory === "all-bags" || joinedSubcategory === "all-accessories" ? "" : `/${joinedSubcategory}`;
               return (
-                <Link key={index} to={`/${joinedCategories}/${joinedSubcategory}`}>
+                <Link key={index} to={`${finalCategory}${finalSubcategory}`}>
                   <p className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm">{subcategory}</p>
                 </Link>
               );
@@ -111,9 +114,9 @@ function Navigationbar() {
 
             return (
               <>
-                <Link to={`/${joinedCategories}`} key={index} className="text-md font-semibold cursor-pointer underline-on-hover " onMouseEnter={() => handleSubcategoryClick(category)}>
+                <span key={index} className="text-md font-semibold cursor-pointer underline-on-hover " onMouseEnter={() => handleSubcategoryClick(category)}>
                   {category}
-                </Link>
+                </span>
                 {dropdownSubcategory === category && (
                   <div
                     className={`absolute top-20 w-full right-0 h-50 bg-white ring-1 ring-black ring-opacity-5 z-10 flex-wrap transition-dropdown ${isDropdownTransitioning ? "dropdown-hidden" : "dropdown-visible"}`}

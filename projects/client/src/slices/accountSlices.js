@@ -6,6 +6,7 @@ const initialState = {
   isLoginAdmin: window.localStorage.getItem("isLoggedInAdmin") === "true",
   profile: window.localStorage.getItem("profile") ? JSON.parse(window.localStorage.getItem("profile")) : {},
   adminProfile: window.localStorage.getItem("adminProfile") ? JSON.parse(window.localStorage.getItem("adminProfile")) : {},
+  username: "",
   showUnauthorizedModal: false,
   redirectTo: "",
   userPhotoProfile: "",
@@ -53,9 +54,12 @@ const accountSlices = createSlice({
     },
     setIsWarehouseAdmin(state, action) {
       state.isWarehouseAdmin = action.payload;
-    }
+    },
+    setUsername(state, action) {
+      state.username = action.payload;
+    },
   },
 });
 
-export const { login, logout, loginAdmin, logoutAdmin, showUnauthorizedModal, hideUnauthorizeModal, updateProfile, setIsWarehouseAdmin } = accountSlices.actions;
+export const { login, logout, loginAdmin, logoutAdmin, showUnauthorizedModal, hideUnauthorizeModal, updateProfile, setIsWarehouseAdmin, setUsername } = accountSlices.actions;
 export default accountSlices.reducer;

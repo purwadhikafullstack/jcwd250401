@@ -52,9 +52,9 @@ function AddProductModal({ isOpen, isClose }) {
       productSubCategory: Yup.string().required("Please enter your product sub category"),
       productDescription: Yup.string().required("Please enter your description").min(10, "Product description must be at least 10 characters"),
       productPrice: Yup.string().required("Please enter your product price"),
-      productGender: Yup.string().when('productMainCategory', {
-        is: (productMainCategory) => !(productMainCategory === 'Bags' || productMainCategory === 'Accessories'),
-        then: (productGender) => Yup.string().required('Please select a gender'),
+      productGender: Yup.string().when("productMainCategory", {
+        is: (productMainCategory) => !(productMainCategory === "Bags" || productMainCategory === "Accessories"),
+        then: (productGender) => Yup.string().required("Please select a gender"),
       }),
     }),
     onSubmit: async (values) => {
@@ -104,11 +104,15 @@ function AddProductModal({ isOpen, isClose }) {
             setIsSubmitting(false);
             toast.error("Please upload at least one photo of the product.");
           }, 3000);
-        }
-        if (error.response.status === 404) {
+        } else if (error.response.status === 404) {
           setTimeout(() => {
             setIsSubmitting(false);
             toast.error("Product already exist, please add a new one.");
+          }, 3000);
+        } else if (error.request) {
+          setTimeout(() => {
+            setIsSubmitting(false);
+            toast.error("Network error, please try again later.");
           }, 3000);
         }
       } finally {
@@ -122,33 +126,27 @@ function AddProductModal({ isOpen, isClose }) {
   useEffect(() => {
     const fetchSubCategories = async () => {
       try {
-        const response = await api.get("/category/sub-categories", {
+        const response = await api.admin.get("/category/sub-categories", {
           params: {
             mainCategory: formik.values.productMainCategory,
           },
         });
-
-        if (response.data.ok) {
-          setSubCategories(response.data.detail);
-        } else {
-          toast.error(response.data.message, {
-            description: response.data.detail,
-          });
-        }
+        setSubCategories(response.data.detail);
       } catch (error) {
-        // Handle different error scenarios based on the HTTP status code
+        if (error.request) {
+          // Handle request errors
+          setTimeout(() => {
+            toast.error("Network error, please try again later");
+          }, 2000);
+        }
       }
     };
 
-    fetchSubCategories();
+    if (formik.values.productMainCategory) {
+      fetchSubCategories();
+    }
   }, [formik.values.productMainCategory]);
 
-  // React Dropzone Configuration
-
-  useEffect(() => {
-    // Update component or perform actions after state changes
-    console.log("State updated:", dropzoneImages);
-  }, [dropzoneImages]);
 
   const fileInputRef = useRef(null);
 

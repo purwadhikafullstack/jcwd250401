@@ -14,6 +14,7 @@ import { CartPage } from "./pages/CartPage";
 import { Customers } from "./pages/Customers";
 import { Staff } from "./pages/Staff";
 import Warehouse from "./pages/Warehouse";
+import HomeProducts from "./pages/HomeProducts";
 
 
 const routesConfig = [
@@ -25,6 +26,7 @@ const routesConfig = [
   { path: "/account/address-book", component: <Address />, showNavigationbar: true },
   { path: "/account/change-password", component: <ChangePassword />, showNavigationbar: true },
   { path: "/account/cart", component: <CartPage />, showNavigationbar: true },
+  { path: "/:gender?/:category?/:subCategory?/:productName?", component: <HomeProducts />, showNavigationbar: true },
 
   // ADMIN ROUTES
   { path: "/adminlogin", component: <AdminLoginPage />, showNavigationbar: false },
@@ -40,7 +42,7 @@ const routesConfig = [
 export default function App() {
   const location = useLocation();
 
-  const currentRoute = routesConfig.find((route) => route.path === location.pathname);
+    const currentRoute = routesConfig.find((route) => location.pathname.startsWith(route.path));
 
   // Show Navigationbar only if the current route exists and showNavigationbar is true
   const showNavigationbar = currentRoute ? currentRoute.showNavigationbar : false;

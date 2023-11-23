@@ -11,14 +11,11 @@ function UnarchiveProductModal({ isOpen, isClose, data }) {
   const handleUnarchive = async () => {
     try {
       const response = await api.admin.put(`/product/unarchive/${data.id}`);
-
       const responseData = response.data.details;
 
-      if (response.status === 200) {
-        dispatch(addProduct(responseData));
-        isClose();
-        toast.success(response.data.message);
-      }
+      dispatch(addProduct(responseData));
+      isClose();
+      toast.success(response.data.message);
     } catch (error) {
       if (error.response && error.response.status === 400) {
         toast.error(error.response.data.message, {
@@ -28,7 +25,12 @@ function UnarchiveProductModal({ isOpen, isClose, data }) {
         toast.error(error.response.data.message, {
           description: error.response.data.detail,
         });
-        console.error(error);
+      }
+      if (error.request) {
+        // Handle request errors
+        setTimeout(() => {
+          toast.error("Network error, please try again later");
+        }, 2000);
       }
     }
   };
