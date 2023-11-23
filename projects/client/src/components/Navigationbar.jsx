@@ -92,7 +92,7 @@ function Navigationbar() {
   }, [dropdownSubcategory]);
 
   return (
-    <div className="w-full bg-white h-20 flex items-center justify-around font-sagoe ">
+    <div className="w-full bg-white h-20 flex items-center justify-between font-sagoe lg:px-32 px-6 ">
       <div className="flex items-center gap-16">
         <Link to="/">
           <img src={rains} alt="Logo" className="w-26 h-10 hover:cursor-pointer" />
