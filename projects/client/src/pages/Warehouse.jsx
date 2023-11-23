@@ -56,7 +56,7 @@ function Warehouse() {
               </div>
             )} 
               {warehouses.map((warehouse) => (
-                <WarehouseCard key={warehouse.id} warehouse={warehouse} />
+                <WarehouseCard key={warehouse.id} warehouse={warehouse} onSuccess={() => fetchWarehouse()}/>
               ))}
           </div>
         </div>

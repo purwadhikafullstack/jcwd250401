@@ -23,8 +23,6 @@ router.patch(
     "/:id",
     authMiddleware.validateToken,
     multerUpload.single("warehouseImage"),
-    warehouseValidation.WarehouseValidationRules,
-    warehouseValidation.applyWarehouseValidation,
     warehouseController.updateWarehouse);
 
 router.delete(

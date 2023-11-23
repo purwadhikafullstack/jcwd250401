@@ -1,11 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Text, Flex, Image, Button, Card } from '@chakra-ui/react';
 import { FaPhone, FaClock, FaMapMarkerAlt, FaUser } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
+import EditWarehouseModal from './EditWarehouseModal';
 
-const WarehouseCard = ({ warehouse }) => {
-
+const WarehouseCard = ({ warehouse, onSuccess }) => {
   const isWarehouseAdmin = useSelector((state) => state?.account?.isWarehouseAdmin);
+  // State to manage the visibility of the modal
+  const [isModalOpen, setModalOpen] = useState(false);
+
+  // Function to open the modal
+  const handleOpenModal = () => {
+    setModalOpen(true);
+  };
+  
+  // Function to close the modal
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+  
+  // Function to handle actions after successful edit
+  const handleSuccess = () => {
+    // Implement any actions that need to be taken after successful edit
+    handleCloseModal();
+    // You can also refresh the data by calling the API again
+    onSuccess();
+  };  
 
   return (
     <Card
@@ -41,11 +61,17 @@ const WarehouseCard = ({ warehouse }) => {
           <Text>{warehouse.WarehouseAddress.street}, {warehouse.WarehouseAddress.city}</Text>
         </Flex>
         {isWarehouseAdmin === false && (
-        <Button mt={4} colorScheme="gray" size="sm">
+        <Button mt={4} colorScheme="gray" size="sm" onClick={handleOpenModal}>
           Edit
         </Button>
         )}
       </Box>
+      <EditWarehouseModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSuccess={handleSuccess}
+        warehouseId={warehouse.id} // Assuming warehouse object has an id
+      />
     </Card>
   );
 };
