@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 import getProductsCountsUser from "../api/products/getProductsCountsUser";
 
 export const ProductNavPage = () => {
-  const { gender, category, subCategory, productName } = useParams();
+  const { gender, mainCategory, subCategory, productName } = useParams();
   const [categories, setCategories] = useState([]);
   const [totalData, setTotalData] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -18,7 +18,7 @@ export const ProductNavPage = () => {
   const fetchProducts = useCallback(async () => {
     try {
       const result = await getProductsCountsUser({
-        category: category,
+        category: mainCategory,
         filterBy: gender,
       });
       const totalData = result.pagination.totalData;
@@ -33,11 +33,11 @@ export const ProductNavPage = () => {
         }, 2000);
       }
     }
-  }, [currentPage, totalData, gender, category]);
+  }, [currentPage, totalData, gender, mainCategory]);
 
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await api.get(`/category/user/sub-categories?mainCategory=${category}`);
+      const response = await api.get(`/category/user/sub-categories?mainCategory=${mainCategory}`);
       const categoryData = response.data.detail;
       setCategories(categoryData);
       console.log(categoryData);
@@ -46,7 +46,7 @@ export const ProductNavPage = () => {
         setCategories([]);
       }
     }
-  }, [gender, category]);
+  }, [gender, mainCategory]);
 
   useEffect(() => {
     fetchProducts();
@@ -78,11 +78,11 @@ export const ProductNavPage = () => {
         </div>
         <div className="flex flex-col space-y-6">
           <div>
-            <span className="font-bold text-xl">{category.charAt(0).toUpperCase() + category.slice(1)}</span>
+            <span className="font-bold text-xl">{mainCategory.charAt(0).toUpperCase() + mainCategory.slice(1)}</span>
           </div>
           <div className="flex flex-col space-y-4">
             {categories.map((category, index) => (
-              <span key={index}>{category.name}</span>
+              <Link to={`/${gender}/${mainCategory}/${category.name.replace(/\s+/g, "-").toLowerCase()}`} key={index}>{category.name}</Link>
             ))}
           </div>
         </div>
