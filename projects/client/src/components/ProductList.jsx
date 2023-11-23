@@ -116,11 +116,9 @@ function ProductList() {
 
   useEffect(() => {
     fetchProducts();
-  }, [fetchProducts]);
-  
-  useEffect(() => {
     fetchCategories();
-  }, [fetchCategories])
+  }, [fetchProducts, fetchCategories]);
+  
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
