@@ -13,7 +13,7 @@ const HomeProducts = () => {
       <div className="px-32 pt-4">
         <Breadcrumbs />
       </div>
-      <div className="px-32 flex gap-28">
+      <div className="px-32 flex justify-between">
         <ProductNavPage />
         <div className="mt-16">
           <ProductGrid />
