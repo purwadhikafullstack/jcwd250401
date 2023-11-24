@@ -10,7 +10,11 @@ router.get("/", authMiddleware.validateToken, warehouseController.getAllWarehous
 
 router.post("/", authMiddleware.validateToken, multerUpload.single("warehouseImage"), warehouseValidation.WarehouseValidationRules, warehouseValidation.applyWarehouseValidation, warehouseController.addWarehouse);
 
-router.patch("/:id", authMiddleware.validateToken, multerUpload.single("warehouseImage"), warehouseValidation.WarehouseValidationRules, warehouseValidation.applyWarehouseValidation, warehouseController.updateWarehouse);
+router.patch(
+    "/:id",
+    authMiddleware.validateToken,
+    multerUpload.single("warehouseImage"),
+    warehouseController.updateWarehouse);
 
 router.delete("/:id", authMiddleware.validateToken, warehouseController.deleteWarehouse);
 

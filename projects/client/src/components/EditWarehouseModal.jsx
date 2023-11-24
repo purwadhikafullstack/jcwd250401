@@ -23,7 +23,7 @@ import { FiCamera } from 'react-icons/fi';
 import api from '../api'; 
 import { useRef } from 'react';
 
-const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
+const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
   const [name, setName] = useState('');
   const [province, setProvince] = useState('');
   const [provinces, setProvinces] = useState([]);
@@ -91,7 +91,7 @@ const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
     formData.append('warehouseImage', warehouseImage);
 
     try {
-      const response = await api.admin.post('/api/warehouse/', formData, {
+      const response = await api.admin.patch(`/api/warehouse/${warehouseId}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -100,7 +100,7 @@ const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
       if (response.data.ok) {
         toast({
           title: 'Success!',
-          description: 'New warehouse has been added.',
+          description: 'Warehouse has been updated.',
           status: 'success',
           duration: 5000,
           isClosable: true,
@@ -128,13 +128,11 @@ const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
     }
   };
 
-  console.log(warehouseImage);
-
   return (
     <Modal isOpen={isOpen} onClose={onClose} isCentered size={{ base: 'full', md: 'xl' }}>
       <ModalOverlay />
       <ModalContent mx={{ base: '4', md: '12' }} my="auto" rounded="lg" overflow="hidden">
-        <ModalHeader className="font-bold text-lg text-center">New Warehouse</ModalHeader>
+        <ModalHeader className="font-bold text-lg text-center">Edit Warehouse</ModalHeader>
         <ModalCloseButton />
         <ModalBody className="p-4">
           <VStack spacing="4">
@@ -200,4 +198,4 @@ const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
   );
 };
 
-export default AddWarehouseModal;
+export default EditWarehouseModal;
