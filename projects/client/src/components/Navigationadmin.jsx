@@ -13,7 +13,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { PiBell, PiMagnifyingGlass } from "react-icons/pi";
 import { useEffect } from "react";
-import { setIsWarehouseAdmin} from "../slices/accountSlices";
+import { setIsWarehouseAdmin } from "../slices/accountSlices";
 
 function Navigationadmin() {
   const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -25,32 +25,52 @@ function Navigationadmin() {
   const isLoggedInAdmin = JSON.parse(localStorage.getItem("isLoggedInAdmin"));
   const [userData, setUserData] = useState([]);
 
- 
-
   useEffect(() => {
     const getUserData = async () => {
       try {
         if (isLoggedInAdmin) {
           const response = await api.get(`/profile/admin/${username}`);
           const userDetail = response.data.detail;
-          setUserData(userDetail); 
+          setUserData(userDetail);
 
           if (userDetail[0].isWarehouseAdmin === true) {
             dispatch(setIsWarehouseAdmin(true));
-          } else 
-          if (userDetail[0].isWarehouseAdmin === false) {
+          } else if (userDetail[0].isWarehouseAdmin === false) {
             dispatch(setIsWarehouseAdmin(false));
           }
         }
       } catch (error) {
-        toast.error("Failed to get user data");
-        handleLogout();
+        if (error?.response?.status === 401) {
+          setTimeout(() => {
+            toast.error(error.response.data.message, {
+              autoClose: 1000,
+              onAutoClose: (t) => {
+                dispatch(logoutAdmin());
+                navigate("/adminlogin");
+              },
+            });
+          }, 600);
+        } else if (error?.response?.status === 403) {
+          setTimeout(() => {
+            toast.error(error.response.data.message, {
+              autoClose: 1000,
+              onAutoClose: (t) => {
+                dispatch(logoutAdmin());
+                navigate("/adminlogin");
+              },
+            });
+          }, 600);
+        } else if (error.request) {
+          // Handle request errors
+          setTimeout(() => {
+            toast.error("Network error, please try again later");
+          }, 2000);
+        }
       }
     };
     getUserData();
   }, []);
 
-  
   const handleIconClick = () => setDropdownVisible(!dropdownVisible);
   const handleLogout = () => {
     try {

@@ -56,7 +56,6 @@ function Navigationbar() {
     navigate("/");
     signOut(auth)
       .then(() => {
-        dispatch(showLoginModal());
         setDropdownVisible(false);
         dispatch(logout());
       })
@@ -73,6 +72,10 @@ function Navigationbar() {
     } catch (error) {
       if (error.response && (error.response.status === 401 || error.response.status === 403 || error.response.status === 404 || error.response.status === 500)) {
         toast.error(error.response.data.message);
+        setTimeout(() => {
+          handleLogout();
+        }, 1000);
+        
       }
     }
   };
