@@ -8,9 +8,9 @@ const authMiddleware = require("../middleware/auth");
 router.post("/", authMiddleware.validateToken, categoryValidation.validateCategory, categoryController.createCategory);
 router.put("/:id", authMiddleware.validateToken, categoryValidation.validateCategory, categoryController.editCategory);
 router.delete("/:id", authMiddleware.validateToken, categoryController.deleteCategory);
-router.get("/", authMiddleware.validateToken, categoryController.getCategories);
-router.get("/sub-categories", authMiddleware.validateToken, categoryController.handleGetSubCategory);
-router.get("/child-categories", authMiddleware.validateToken, categoryController.handleGetCategoriesWithSubcategories);
+router.get("/", categoryController.getCategories);
+router.get("/sub-categories", categoryController.handleGetSubCategory);
+router.get("/child-categories", categoryController.handleGetCategoriesWithSubcategories);
 
 // for client side
 router.get("/user", categoryController.getCategories);
