@@ -9,6 +9,8 @@ import api from "../api";
 import { toast } from "sonner";
 import ForgotPasswordModal from "../components/ForgotPasswordModal";
 import { showLoginModal } from "../slices/authModalSlices";
+import getProfile from "../api/profile/getProfile";
+import updatePassword from "../api/profile/updatePassword";
 
 export const ChangePassword = () => {
   const isLogin = useSelector((state) => state?.account?.isLogin);
@@ -46,12 +48,13 @@ export const ChangePassword = () => {
     }),
     onSubmit: async (values) => {
       try {
-        const response = await api.patch(`/profile/password/${username}`, {
+        const response = await updatePassword({
+          username,
           password: values.currentPassword,
           newPassword: values.newPassword,
         });
 
-        if (response.data.ok) {
+        if (response.ok) {
           toast.success("Change password success");
           formik.resetForm();
         }
@@ -73,25 +76,26 @@ export const ChangePassword = () => {
     },
   });
 
-  useEffect(() => {
-    const getUsersProfile = async () => {
-      try {
-        const response = await api.get(`/profile/${username}`);
-        setUserData(response.data.detail);
-      } catch (error) {
-        if (error.response && (error.response.status === 404 || error.response.status === 401 || error.response.status === 403 || error.response.status === 500)) {
-          toast.error(error.response.data.message);
-          if (error.response.status === 500) console.error(error);
-          if (error.response.status === 401 || error.response.status === 403) {
-            setTimeout(() => {
-              navigate("/");
-              dispatch(showLoginModal());
-            }, 2000);
-          }
+  const fetchUserProfile = async () => {
+    try {
+      const response = await getProfile({ username });
+      setUserData(response.detail);
+    } catch (error) {
+      if (error.response && (error.response.status === 404 || error.response.status === 401 || error.response.status === 403 || error.response.status === 500)) {
+        toast.error(error.response.data.message);
+        if (error.response.status === 500) console.error(error);
+        if (error.response.status === 401 || error.response.status === 403) {
+          setTimeout(() => {
+            navigate("/");
+            dispatch(showLoginModal());
+          }, 2000);
         }
       }
-    };
-    getUsersProfile();
+    }
+  };
+
+  useEffect(() => {
+    fetchUserProfile();
   }, []);
   return (
     <>
@@ -101,7 +105,7 @@ export const ChangePassword = () => {
           <div className="hidden lg:flex flex-col w-[20vw]">
             {listsMenu.map((list, index) => {
               const joinedList = list.toLowerCase().replace(/\s/g, "-");
-              const isChangePassword = list === "Change Password"; // Check if the current item is "Profile"
+              const isChangePassword = list === "Change Password"; // Check if the list is "Change Password"
               return (
                 <Link key={index} to={`/account/${joinedList}`} className={`block py-2 text-sm font-sagoe text-gray-700 hover:underline ${isChangePassword ? "font-black" : ""}`}>
                   {list}

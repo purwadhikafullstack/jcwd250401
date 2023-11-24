@@ -1,6 +1,6 @@
 import api from "../../api";
 
-const getCategories = async ({ minId, maxId, page, size, parentCategoryId } = {}) => {
+ const getCategories = async ({ minId, maxId, page, size, parentCategoryId } = {}) => {
   try {
     const url = `/category?` + 
     (minId ? `minId=${minId}` : "") + 
@@ -11,9 +11,9 @@ const getCategories = async ({ minId, maxId, page, size, parentCategoryId } = {}
     const response = await api.admin.get(url);
     return response.data;
   } catch (error) {
-    console.error("Error in useGetCategories:", error);
+    console.error("Error in getCategories:", error);
     throw error;
   }
 };
 
-export default getCategories;
+export default getCategories

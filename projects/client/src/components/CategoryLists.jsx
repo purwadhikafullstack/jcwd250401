@@ -43,7 +43,7 @@ export const CategoryLists = () => {
         navigate("/adminlogin");
       }
     }
-  });
+  }, [categoryLists, page, size, selectedMainCategory]);
 
   const handleSelectMainCategory = (category) => setSelectedMainCategory(category.id);
   const handleOptionChange = (e) => {
@@ -70,7 +70,7 @@ export const CategoryLists = () => {
 
   useEffect(() => {
     fetchCategories();
-  }, [categoryLists, page, size, selectedMainCategory]);
+  }, [fetchCategories]);
 
   return (
     <>

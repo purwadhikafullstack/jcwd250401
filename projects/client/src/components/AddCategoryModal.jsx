@@ -9,6 +9,7 @@ import { showLoginModal } from "../slices/authModalSlices";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton } from "@chakra-ui/react";
 import { addCategory } from "../slices/categorySlices";
 import { useDispatch } from "react-redux";
+import addNewCategory from "../api/categories/addNewCategory";
 
 function AddCategoryModal({ isOpen, isClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,14 +30,14 @@ function AddCategoryModal({ isOpen, isClose }) {
       try {
         setIsSubmitting(true);
 
-        const response = await api.post("/category", {
+        const response = await addNewCategory({
           name: values.name,
           mainCategory: values.mainCategory,
         });
 
-        dispatch(addCategory(response.data.detail));
+        dispatch(addCategory(response.detail));
 
-        if (response.status === 201) {
+        if (response.ok) {
           setTimeout(() => {
             toast.success("Category added successfully", {
               duration: 700,
