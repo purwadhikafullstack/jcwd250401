@@ -100,11 +100,11 @@ exports.updateAdmin = async (req, res) => {
     }
 
     if (email) {
-      const existingAdmin = await Admin.findOne({ where: { username, isWarehouseAdmin } });
+      const existingAdmin = await Admin.findOne({ where: { username, email, isWarehouseAdmin } });
       if (existingAdmin) {
         return res.status(400).json({
           ok: false,
-          message: "Admin with this username & role already exists",
+          message: "Admin with this username, email and role already exists",
         });
       }
       admin.email = email;
@@ -144,6 +144,14 @@ exports.deleteAdmin = async (req, res) => {
       });
     }
 
+    const warehouseAssigned = await Warehouse.findOne({ where: { adminId: id } });
+    if (warehouseAssigned) {
+      return res.status(400).json({
+        ok: false,
+        message: "Cannot delete admin who is assigned to a warehouse, please unassign first",
+      });
+    }
+    
     await admin.destroy();
     return res.status(200).json({
       ok: true,

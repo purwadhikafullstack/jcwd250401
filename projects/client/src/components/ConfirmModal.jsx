@@ -1,25 +1,34 @@
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalOverlay } from "@chakra-ui/react";
 import React from "react";
-import api from "../api";
 import { toast } from "sonner";
 import { removeAddress } from "../slices/addressSlices";
 import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import deleteAddress from "../api/Address/deleteAddress";
+import deleteAdmin from "../api/users/deleteAdmin";
 
 export const ConfirmModal = ({ isOpen, onClose, data, userId, deleteFor }) => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const handleDelete = async () => {
     try {
       if (deleteFor === "address") {
-        const response = await api.delete(`/address/${userId}/${data?.id}`);
+        const response = await deleteAddress({ userId, addressId: data?.id });
         dispatch(removeAddress(data?.id));
-        toast.success(response.data.message);
+        toast.success(response.message);
       } else if (deleteFor === "admin") {
-        const response = await api.admin.delete(`/users/admin/${userId}`);
-        toast.success(response.data.message);
+        const response = await deleteAdmin({ userId });
+        toast.success(response.message);
       }
       onClose();
     } catch (error) {
-      toast.error(error.response.data.message);
+      if (error.response && (error.response.status === 400 || error.response.status === 404 || error.response.status === 500 || error.response.status === 401 || error.response.status === 403)) {
+        toast.error(error.response.data.message, {
+          description: error.response.data.detail,
+        });
+        if (error.response.status === 401 || error.response.status === 403) navigate("/adminlogin");
+        if (error.response.status === 500) console.error(error);
+      }
     }
   };
   return (

@@ -3,6 +3,7 @@ import { useFormik } from "formik";
 import * as yup from "yup";
 import { toast } from "sonner";
 import api from "../api";
+import updateCategory from "../api/categories/updateCategory";
 
 export const EditCategoryModal = ({ isOpen, onClose, data, mainCategories }) => {
   const categories = mainCategories;
@@ -23,15 +24,21 @@ export const EditCategoryModal = ({ isOpen, onClose, data, mainCategories }) => 
     }),
     onSubmit: async (values) => {
       try {
-        const response = await api.put(`/category/${data.id}`, {
+        const response = await updateCategory({
+          id: data?.id,
           name: values.name,
           mainCategory: values.mainCategory,
-        });
+        })
 
-        if (response.data.ok) {
-          toast.success(response.data.message, {
-            description: response.data.detail.name,
-            onAutoClose: () => onClose(),
+        if (response.ok) {
+          toast.success(response.message, {
+            duration: 1000,
+            autoClose: 500,
+            description: response.detail,
+            onAutoClose: () => {
+              formik.resetForm();
+              onClose();
+            }
           });
         }
       } catch (error) {

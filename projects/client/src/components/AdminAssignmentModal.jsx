@@ -1,8 +1,10 @@
 import { Box, Button, Heading, Menu, MenuButton, MenuItem, MenuList, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Text } from "@chakra-ui/react";
-import api from "../api";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import assignAdmin from "../api/users/assignAdmin";
+import unAssignAdmin from "../api/users/unAssignAdmin";
+import getWarehouses from "../api/warehouse/getWarehouses";
 export const AdminAssignmentModal = ({ isOpen, onClose, data = null, userId = null, mode }) => {
   const [warehouseList, setWarehouseList] = useState([]);
   const [selectedWarehouse, setSelectedWarehouse] = useState(null);
@@ -11,17 +13,22 @@ export const AdminAssignmentModal = ({ isOpen, onClose, data = null, userId = nu
   const handleAssignment = async () => {
     try {
       if (mode === "assign") {
-        const response = await api.admin.patch(`/api/warehouse/admin/${selectedWarehouse}`, { adminId: userId });
+        const response = await assignAdmin({
+          userId,
+          warehouseId: selectedWarehouse,
+        });
 
-        if (response.data.ok) {
+        if (response.ok) {
           toast.success("Assign admin success");
           setSelectedWarehouse(null);
           onClose();
         }
       } else if (mode === "unassign") {
-        const response = await api.admin.patch(`/api/warehouse/unassign-admin/${selectedWarehouse}`);
+        const response = await unAssignAdmin({
+          warehouseId: selectedWarehouse,
+        });
 
-        if (response.data.ok) {
+        if (response.ok) {
           toast.success("Unassign admin success");
           setSelectedWarehouse(null);
           onClose();
@@ -43,16 +50,13 @@ export const AdminAssignmentModal = ({ isOpen, onClose, data = null, userId = nu
     onClose();
   };
 
-  const getWarehouses = async () => {
+  const fetchWarehouses = async () => {
     try {
-      let endpoint = "/api/warehouse";
-
-      if (mode === "unassign") {
-        endpoint += `?adminId=${userId}`;
-      }
-
-      const response = await api.admin.get(endpoint);
-      setWarehouseList(response.data.data);
+      const response = await getWarehouses({
+        mode,
+        userId,
+      });
+      setWarehouseList(response.data);
     } catch (error) {
       if (error.response && (error.response.status === 401 || error.response.status === 403 || error.response.status === 404 || error.response.status === 500)) {
         toast.error(error.response.data.message);
@@ -62,7 +66,7 @@ export const AdminAssignmentModal = ({ isOpen, onClose, data = null, userId = nu
     }
   };
   useEffect(() => {
-    getWarehouses();
+    fetchWarehouses();
   }, [userId]);
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={"md"} isCentered>

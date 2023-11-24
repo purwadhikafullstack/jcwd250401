@@ -1,15 +1,16 @@
 import { useFormik } from "formik";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Button } from "flowbite-react";
-import api from "../api";
 import * as yup from "yup";
 import { toast } from "sonner";
 import { useSelector, useDispatch } from "react-redux";
-import { updateProfile } from "../slices/accountSlices";
+import { setUsername, updateProfile } from "../slices/accountSlices";
 import { FiUpload } from "react-icons/fi";
 import { AiOutlineLoading } from "react-icons/ai";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from "@chakra-ui/react";
+import getProfile from "../api/profile/getProfile";
+import updateUserProfile from "../api/profile/updateUserProfile";
 
 export const UpdateProfileModal = ({ isOpen, onClose }) => {
   const username = useSelector((state) => state?.account?.profile?.data?.profile?.username);
@@ -70,13 +71,9 @@ export const UpdateProfileModal = ({ isOpen, onClose }) => {
           data.append("photoProfile", values.photoProfile);
         }
 
-        const response = await api.patch(`/profile/${username}`, data, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        const response = await updateUserProfile({ username, data });
 
-        if (response.data.ok) {
+        if (response.ok) {
           setTimeout(() => {
             toast.success("Update profile success", {
               autoClose: 2000,
@@ -84,7 +81,8 @@ export const UpdateProfileModal = ({ isOpen, onClose }) => {
                 setSelectedImage(null);
                 setPreview(null);
                 setIsSubmitting(false);
-                dispatch(updateProfile(response.data));
+                dispatch(updateProfile(response));
+                dispatch(setUsername(values.userName));
                 onClose();
               },
             });
@@ -119,7 +117,6 @@ export const UpdateProfileModal = ({ isOpen, onClose }) => {
           });
         }
       } finally {
-      
         setTimeout(() => {
           setIsSubmitting(false);
         }, 8000);
@@ -127,45 +124,46 @@ export const UpdateProfileModal = ({ isOpen, onClose }) => {
     },
   });
 
-  useEffect(() => {
-    const getProfileDetail = async () => {
-      try {
-        const response = await api.get(`/profile/${username}`);
-        const profile = response.data.detail;
+  const fetchProfileDetail = useCallback(async () => {
+    try {
+      const response = await getProfile({ username });
+      const profile = response.detail;
 
-        const values = {
-          userName: profile.username,
-          email: profile.email,
-          photoProfile: profile.photoProfile,
-        };
+      const values = {
+        userName: profile.username,
+        email: profile.email,
+        photoProfile: profile.photoProfile,
+      };
 
-        if (profile.firstName !== null) {
-          values.firstName = profile.firstName;
-        }
-
-        if (profile.lastName !== null) {
-          values.lastName = profile.lastName;
-        }
-
-        formik.setValues(values);
-      } catch (error) {
-        if (error?.response?.status === 401) {
-          toast.error("You are not authorized to access this page. Please login first.", {
-            duration: 1500,
-          });
-        } else {
-          toast.error("An error occurred while fetching your profile. Please try again later.", {
-            duration: 1500,
-          });
-        }
+      if (profile.firstName !== null) {
+        values.firstName = profile.firstName;
       }
-    };
-    getProfileDetail();
-  }, []);
+
+      if (profile.lastName !== null) {
+        values.lastName = profile.lastName;
+      }
+
+      formik.setValues(values);
+    } catch (error) {
+      if (error?.response?.status === 401) {
+        toast.error("You are not authorized to access this page. Please login first.", {
+          duration: 1500,
+        });
+      } else {
+        toast.error("An error occurred while fetching your profile. Please try again later.", {
+          duration: 1500,
+        });
+      }
+    }
+  }, [username]);
+
+  useEffect(() => {
+    fetchProfileDetail();
+  }, [fetchProfileDetail]);
 
   return (
     <>
-      <Modal closeOnOverlayClick={false} isOpen={isOpen} size="md" onClose={onClose} scrollBehavior="inside"  isCentered>
+      <Modal closeOnOverlayClick={false} isOpen={isOpen} size="md" onClose={onClose} scrollBehavior="inside" isCentered>
         <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(2px)" />
         <ModalContent>
           <ModalHeader>

@@ -14,6 +14,7 @@ import api from "../api";
 import { toast } from "sonner";
 import { Switch } from "@chakra-ui/react";
 import ForgotPasswordModal from "../components/ForgotPasswordModal";
+import adminLogin from "../api/login/adminLogin";
 
 function AdminLoginPage() {
   const navigate = useNavigate();
@@ -43,20 +44,19 @@ function AdminLoginPage() {
     onSubmit: async (values) => {
       try {
         setIsSubmitting(true);
-        const response = await api.post("/auth/admin", {
+        const response = await adminLogin({
           email: values.email,
           password: values.password,
           remember: values.remember,
         });
 
-        const responseData = response.data;
         setTimeout(() => {
           toast.success("Login success", {
             autoClose: 1000,
             onAutoClose: (t) => {
               setIsSubmitting(false);
               // dispatch(loginAdmin(responseData));
-              dispatch(loginAdmin(responseData));
+              dispatch(loginAdmin(response));
               navigate("/dashboard");
             },
           });
