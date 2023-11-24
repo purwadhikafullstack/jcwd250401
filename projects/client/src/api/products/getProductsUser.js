@@ -1,6 +1,6 @@
 import api from "../../api";
 
-const getProducts = async ({ page = 1, limit, sort, category, search, filterBy, isArchived = false } = {}) => {
+const getProductsUser = async ({ page = 1, limit, sort, category, search, filterBy, isArchived = false } = {}) => {
   try {
     const url =
       `/product?page=${page}&isArchived=${isArchived}` +
@@ -10,7 +10,7 @@ const getProducts = async ({ page = 1, limit, sort, category, search, filterBy, 
       (search ? `&search=${search}` : "") +
       (filterBy ? `&filterBy=${filterBy}` : "");
 
-    const response = await api.admin.get(url);
+    const response = await api.get(url);
     return response.data;
   } catch (error) {
     console.error("Error in useGetProduct:", error);
@@ -18,4 +18,4 @@ const getProducts = async ({ page = 1, limit, sort, category, search, filterBy, 
   }
 };
 
-export default getProducts;
+export default getProductsUser;

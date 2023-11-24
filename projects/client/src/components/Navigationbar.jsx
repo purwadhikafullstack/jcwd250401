@@ -10,10 +10,10 @@ import { useSelector, useDispatch } from "react-redux";
 import { showLoginModal, showSignUpModal } from "../slices/authModalSlices";
 import { logout, setUsername } from "../slices/accountSlices";
 import { getAuth, signOut } from "firebase/auth";
-import api from "../api";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import getProfile from "../api/profile/getProfile";
 
 function Navigationbar() {
   const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -65,19 +65,19 @@ function Navigationbar() {
       });
   };
 
-  useEffect(() => {
-    const getUserData = async () => {
-      try {
-        if (isLoggedIn) {
-          const response = await api.get(`/profile/${username}`);
-          setUserData(response.data.detail);
-          dispatch(setUsername(response.data.detail.username));
-        }
-      } catch (error) {
-        toast.error("Failed to get user data");
-        handleLogout();
+  const getUserData = async () => {
+    try {
+      const response = await getProfile({ username });
+      setUserData(response.detail);
+      dispatch(setUsername(response.detail.username));
+    } catch (error) {
+      if (error.response && (error.response.status === 401 || error.response.status === 403 || error.response.status === 404 || error.response.status === 500)) {
+        toast.error(error.response.data.message);
       }
-    };
+    }
+  };
+
+  useEffect(() => {
     getUserData();
   }, [username, photoProfile]);
 
@@ -92,7 +92,7 @@ function Navigationbar() {
   }, [dropdownSubcategory]);
 
   return (
-    <div className="w-full bg-white h-20 flex items-center justify-around font-sagoe ">
+    <div className="w-full bg-white h-20 flex items-center justify-between font-sagoe lg:px-32 px-6 ">
       <div className="flex items-center gap-16">
         <Link to="/">
           <img src={rains} alt="Logo" className="w-26 h-10 hover:cursor-pointer" />
@@ -120,8 +120,7 @@ function Navigationbar() {
                 {dropdownSubcategory === category && (
                   <div
                     className={`absolute top-20 w-full right-0 h-50 bg-white ring-1 ring-black ring-opacity-5 z-10 flex-wrap transition-dropdown ${isDropdownTransitioning ? "dropdown-hidden" : "dropdown-visible"}`}
-                    onMouseLeave={() => setDropdownSubcategory(null)}
-                  >
+                    onMouseLeave={() => setDropdownSubcategory(null)}>
                     <div className="flex flex-row h-full px-44">
                       <div className="flex flex-col flex-wrap">
                         {(() => {
@@ -176,9 +175,7 @@ function Navigationbar() {
             )}
 
             <MdFavoriteBorder className="text-xl cursor-pointer" />
-            <BsCart className="text-xl cursor-pointer" 
-              onClick={() => navigate("/account/cart")}
-            />
+            <BsCart className="text-xl cursor-pointer" onClick={() => navigate("/account/cart")} />
           </div>
 
           {/* Mobile */}

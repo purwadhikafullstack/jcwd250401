@@ -1,10 +1,11 @@
-import api from "../api";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { toast } from "sonner";
 import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Text } from "@chakra-ui/react";
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import editAdmin from "../api/users/editAdmin";
+import createAdmin from "../api/users/createAdmin";
 
 export const AddEditAdminModal = ({ isOpen, onClose, data, modalFor }) => {
   const [toggleInput, setToggleInput] = useState(false);
@@ -34,25 +35,26 @@ export const AddEditAdminModal = ({ isOpen, onClose, data, modalFor }) => {
     onSubmit: async (values) => {
       try {
         if (modalFor === "Edit") {
-          const response = await api.admin.patch(`/users/admin/${data.id}`, {
+          const response = await editAdmin({
+            id: data.id,
             username: values.username,
             email: values.email,
+            password: values.password,
             isWarehouseAdmin: values.role,
-            password: values.password ? values.password : data?.password,
           });
-          if (response.data.ok) {
+          if (response.ok) {
             toast.success("Update admin success");
             formik.resetForm();
             onClose();
           }
         } else if (modalFor === "Create") {
-          const response = await api.admin.post("/users", {
+          const response = await createAdmin({
             username: values.username,
             email: values.email,
-            isWarehouseAdmin: values.role,
             password: values.password,
+            isWarehouseAdmin: values.role,
           });
-          if (response.data.ok) {
+          if (response.ok) {
             toast.success("Add admin success");
             formik.resetForm();
             onClose();

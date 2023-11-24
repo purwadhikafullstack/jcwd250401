@@ -10,6 +10,6 @@ router.get("/", authMiddleware.validateToken, authMiddleware.checkRoleSuperAdmin
 router.get("/admin", authMiddleware.validateToken, authMiddleware.checkRoleSuperAdmin, userController.getAllAdmin);
 router.patch("/admin/:id", authMiddleware.validateToken, authMiddleware.checkRoleSuperAdmin, userController.updateAdmin);
 router.delete("/admin/:id", authMiddleware.validateToken, authMiddleware.checkRoleSuperAdmin, userController.deleteAdmin);
-router.post("/", authMiddleware.validateToken, authMiddleware.checkRoleSuperAdmin, registerValidator.registerValidationRules, registerValidator.applyRegisterValidation, authController.handleAdminRegister);
+router.post("/admin", authMiddleware.validateToken, authMiddleware.checkRoleSuperAdmin, registerValidator.registerValidationRules, registerValidator.applyRegisterValidation, authController.handleAdminRegister);
 
 module.exports = router;

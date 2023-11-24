@@ -9,23 +9,37 @@ import { useDispatch, useSelector } from "react-redux";
 
 import getProductsCountsUser from "../api/products/getProductsCountsUser";
 
+const formatSubCategory = (subCategory) => {
+  // Split the subCategory into words
+  const words = subCategory.split("-");
+
+  // Capitalize each word and join them back
+  const formattedSubCategory = words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
+
+  return formattedSubCategory;
+};
+
 export const ProductNavPage = () => {
-  const { gender, category, subCategory, productName } = useParams();
+  const { gender, mainCategory, subCategory, productName } = useParams();
   const [categories, setCategories] = useState([]);
   const [totalData, setTotalData] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
 
   const fetchProducts = useCallback(async () => {
     try {
+      const category = subCategory ? formatSubCategory(subCategory) : mainCategory;
       const result = await getProductsCountsUser({
-        category: category,
+        category,
         filterBy: gender,
       });
+      
       const totalData = result.pagination.totalData;
+
       setTotalData(totalData);
     } catch (error) {
       if (error?.response?.status === 404) {
         setTotalData(0);
+       
       } else if (error.request) {
         // Handle request errors
         setTimeout(() => {
@@ -33,11 +47,11 @@ export const ProductNavPage = () => {
         }, 2000);
       }
     }
-  }, [currentPage, totalData, gender, category]);
+  }, [currentPage, totalData, gender, mainCategory, subCategory]);
 
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await api.get(`/category/user/sub-categories?mainCategory=${category}`);
+      const response = await api.get(`/category/user/sub-categories?mainCategory=${mainCategory}`);
       const categoryData = response.data.detail;
       setCategories(categoryData);
       console.log(categoryData);
@@ -46,7 +60,7 @@ export const ProductNavPage = () => {
         setCategories([]);
       }
     }
-  }, [gender, category]);
+  }, [gender, mainCategory]);
 
   useEffect(() => {
     fetchProducts();
@@ -57,34 +71,21 @@ export const ProductNavPage = () => {
   const pathSegments = location.pathname.split("/").filter((segment) => segment !== "");
 
   return (
-    <div>
-      <Breadcrumb>
-        <BreadcrumbItem>
-          <BreadcrumbLink as={Link} to="/">
-            Home
-          </BreadcrumbLink>
-        </BreadcrumbItem>
-        {pathSegments.map((segment, index, array) => (
-          <BreadcrumbItem key={index} isCurrentPage={index === array.length - 1}>
-            <span>{segment.charAt(0).toUpperCase() + segment.slice(1)}</span>
-          </BreadcrumbItem>
-        ))}
-      </Breadcrumb>
-
-      <div className="space-y-16 mt-16">
-        <div className="flex flex-col space-y-2">
-          <span className="font-bold"> Result</span>
-          <span> {totalData} items </span>
+    <div className="space-y-16 mt-16">
+      <div className="flex flex-col space-y-2">
+        <span className="font-bold"> Result</span>
+        <span> {totalData} items </span>
+      </div>
+      <div className="flex flex-col space-y-6">
+        <div>
+          <span className="font-bold text-xl">{mainCategory.charAt(0).toUpperCase() + mainCategory.slice(1)}</span>
         </div>
-        <div className="flex flex-col space-y-6">
-          <div>
-            <span className="font-bold text-xl">{category.charAt(0).toUpperCase() + category.slice(1)}</span>
-          </div>
-          <div className="flex flex-col space-y-4">
-            {categories.map((category, index) => (
-              <span key={index}>{category.name}</span>
-            ))}
-          </div>
+        <div className="flex flex-col space-y-4">
+          {categories.map((category, index) => (
+            <Link className="hover:underline cursor-pointer" to={`/${gender}/${mainCategory}/${category.name.replace(/\s+/g, "-").toLowerCase()}`} key={index}>
+              {category.name}
+            </Link>
+          ))}
         </div>
       </div>
     </div>
