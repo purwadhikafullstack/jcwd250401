@@ -6,6 +6,8 @@ import { showLoginModal } from "../slices/authModalSlices";
 import api from "../api";
 import { toast } from "sonner";
 import { PaymentProofModal } from "./PaymentProofModal";
+import getProfile from "../api/profile/getProfile";
+import getUserOrder from "../api/order/getUserOrder";
 
 export const Order = () => {
   const isLogin = useSelector((state) => state?.account?.isLogin);
@@ -29,43 +31,52 @@ export const Order = () => {
   //   setOpenModalProof(true);
   // };
 
-  useEffect(() => {
-    const getOrderLists = async (userId) => {
-      try {
-        const response = await api.get(`/order/${userId}?status=${selectedStatus}&page=${Number(page)}&size=${Number(size)}&sort=${sort}&order=${order}`);
-        setOrderLists(response.data.detail);
-      } catch (error) {
-        if (error.response && (error.response.status === 404 || error.response.status === 401 || error.response.status === 403 || error.response.status === 500)) {
-          toast.error(error.response.data.message);
-          setOrderLists([]);
-          if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-            setTimeout(() => {
-              navigate("/");
-              dispatch(showLoginModal());
-            }, 2000);
-          }
-          if (error.response.status === 500) console.error(error.response.data.detail);
+  const getOrderLists = async (userId) => {
+    try {
+      const response = await getUserOrder({
+        userId,
+        status: selectedStatus,
+        page,
+        size,
+        sort,
+        order,
+      });
+      setOrderLists(response.detail);
+    } catch (error) {
+      if (error.response && (error.response.status === 404 || error.response.status === 401 || error.response.status === 403 || error.response.status === 500)) {
+        toast.error(error.response.data.message);
+        setOrderLists([]);
+        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+          setTimeout(() => {
+            navigate("/");
+            dispatch(showLoginModal());
+          }, 2000);
         }
+        if (error.response.status === 500) console.error(error.response.data.detail);
       }
-    };
-    const getUserData = async () => {
-      try {
-        const response = await api.get(`/profile/${userName}`);
+    }
+  };
 
-        getOrderLists(response.data.detail.id);
-      } catch (error) {
-        if (error.response && (error.response.status === 404 || error.response.status === 401 || error.response.status === 403 || error.response.status === 500)) {
-          toast.error(error.response.data.message);
-          if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-            setTimeout(() => {
-              navigate("/");
-              dispatch(showLoginModal());
-            }, 2000);
-          }
-          if (error.response.status === 500) console.error(error.response.data.detail);
+  const getUserData = async () => {
+    try {
+      const response = await getProfile({ username: userName });
+
+      getOrderLists(response.detail.id);
+    } catch (error) {
+      if (error.response && (error.response.status === 404 || error.response.status === 401 || error.response.status === 403 || error.response.status === 500)) {
+        toast.error(error.response.data.message);
+        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+          setTimeout(() => {
+            navigate("/");
+            dispatch(showLoginModal());
+          }, 2000);
         }
+        if (error.response.status === 500) console.error(error.response.data.detail);
       }
-    };
+    }
+  };
+
+  useEffect(() => {
     getUserData();
   }, [userName, selectedStatus, page, size, sort, order]);
 

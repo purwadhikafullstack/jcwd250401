@@ -1,6 +1,6 @@
 import Sidebar from "../components/Sidebar";
 import Navigationadmin from "../components/Navigationadmin";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "../api";
 import { toast } from "sonner";
 import { Flex, Input, InputGroup, InputLeftElement, Menu, MenuButton, MenuItem, MenuList, Table, TableContainer, Tbody, Td, Text, Th, Thead, Tr } from "@chakra-ui/react";
@@ -12,6 +12,7 @@ import useDebounceValue from "../hooks/useDebounceValue";
 import { SearchIcon } from "@chakra-ui/icons";
 import { PiCaretDown } from "react-icons/pi";
 import { AdminAssignmentModal } from "../components/AdminAssignmentModal";
+import  getAdmin  from "../api/users/getAdmin";
 
 export const Staff = () => {
   const isWarehouseAdminAcc = useSelector((state) => state?.account?.isWarehouseAdmin);
@@ -33,7 +34,7 @@ export const Staff = () => {
 
   const handleSearchInputChange = (e) => setSearchInput(e.target.value);
 
-  const getAdmins = async () => {
+  const fetchAdmins = useCallback( async () => {
     try {
       let isWarehouseAdminValue = isWarehouseAdmin;
 
@@ -42,12 +43,16 @@ export const Staff = () => {
         isWarehouseAdminValue = "";
       }
 
-      const response = await api.admin.get(`/users/admin?page=${page}&size=${size}&sort=${sort}&order=${order}&search=${debouncedSearchInput}`, {
-        params: {
-          isWarehouseAdmin: isWarehouseAdminValue,
-        },
-      });
-      setAdmins(response.data.detail);
+      const response = await getAdmin({
+        page,
+        size,
+        sort,
+        order,
+        search: debouncedSearchInput,
+        isWarehouseAdmin: isWarehouseAdminValue
+      },[page, size, sort, order, isWarehouseAdmin, debouncedSearchInput])
+
+      setAdmins(response.detail);
     } catch (error) {
       if (error.response && error.response.status === 500) {
         toast.error(error.response.data.message, {
@@ -61,7 +66,7 @@ export const Staff = () => {
         if (error.response.status === 401) navigate("/dashboard");
       }
     }
-  };
+  },[page, size, sort, order, debouncedSearchInput]);
 
   const handleDeleteModal = (data) => {
     setDeleteModal(true);
@@ -84,30 +89,30 @@ export const Staff = () => {
   const handleCloseDeleteModal = () => {
     setDeleteModal(false);
     setSelectedAdmin(null);
-    getAdmins();
+    fetchAdmins();
   };
 
   const handleCloseEditModal = () => {
     setEditModal(false);
     setSelectedAdmin(null);
-    getAdmins();
+    fetchAdmins();
   };
 
   const handleCloseCreateAdminModal = () => {
     setCreateAdminModal(false);
-    getAdmins();
+    fetchAdmins();
   };
 
   const handleCloseAssignmentModal = () => {
     setAssignmentModal(false);
     setSelectedAdmin(null);
     setAssignmentMode(null);
-    getAdmins();
+    fetchAdmins();
   };
 
   useEffect(() => {
-    getAdmins();
-  }, [page, size, sort, order, isWarehouseAdmin, debouncedSearchInput]);
+    fetchAdmins();
+  }, [fetchAdmins]);
 
   return (
     <div className="flex flex-row justify-between h-screen">

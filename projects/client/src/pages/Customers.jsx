@@ -1,12 +1,12 @@
 import Sidebar from "../components/Sidebar";
 import Navigationadmin from "../components/Navigationadmin";
-import { useEffect, useRef, useState } from "react";
-import api from "../api";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Image, Input, InputGroup, InputLeftElement, Table, TableContainer, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import useDebounceValue from "../hooks/useDebounceValue";
 import { SearchIcon } from "@chakra-ui/icons";
+import getCustomers from "../api/users/getCustomers";
 
 export const Customers = () => {
   const isMounted = useRef(true); // useRef to track whether the component is mounted
@@ -20,35 +20,41 @@ export const Customers = () => {
   const navigate = useNavigate();
 
   const handleSearchInputChange = (e) => setSearchInput(e.target.value);
-
-  useEffect(() => {
-    const getCustomers = async () => {
-      try {
-        const response = await api.admin.get(`/users?page=${page}&size=${size}&sort=${sort}&order=${order}&search=${debouncedSearchInput}`);
-        setCustomers(response.data.detail);
-      } catch (error) {
-        if (error.response && error.response.status === 500) {
-          toast.error(error.response.data.message, {
-            description: error.response.data.detail,
-          });
-        } else if (error.response && (error.response.status === 403 || error.response.status === 401)) {
-          toast.error(error.response.data.message, {
-            description: error.response.data.detail,
-          });
-          if (error.response.status === 403) navigate("/adminlogin");
-          if (error.response.status === 401) navigate("/dashboard");
-        }
+  const fetchCustomers = useCallback( async () => {
+    try {
+      const response = await getCustomers({
+        page,
+        size,
+        sort,
+        order,
+        search: debouncedSearchInput
+      })
+      setCustomers(response.detail);
+    } catch (error) {
+      if (error.response && error.response.status === 500) {
+        toast.error(error.response.data.message, {
+          description: error.response.data.detail,
+        });
+      } else if (error.response && (error.response.status === 403 || error.response.status === 401)) {
+        toast.error(error.response.data.message, {
+          description: error.response.data.detail,
+        });
+        if (error.response.status === 403) navigate("/adminlogin");
+        if (error.response.status === 401) navigate("/dashboard");
       }
-    };
+    }
+  },[page, size, sort, order, debouncedSearchInput]);
+  
+  useEffect(() => {
 
     // if (isMounted.current) {
-    //   getCustomers();
+    //   fetchCustomers();
     // }
     // return () => {
     //   isMounted.current = false;
     // };
-    getCustomers();
-  }, [page, size, sort, order, debouncedSearchInput]);
+    fetchCustomers();
+  }, [fetchCustomers]);
   return (
     <div className="flex flex-row justify-between h-screen">
       <Sidebar />
