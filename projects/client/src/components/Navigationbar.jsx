@@ -11,7 +11,7 @@ import { showLoginModal, showSignUpModal } from "../slices/authModalSlices";
 import { logout, setUsername } from "../slices/accountSlices";
 import { getAuth, signOut } from "firebase/auth";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import getProfile from "../api/profile/getProfile";
 
@@ -36,6 +36,7 @@ function Navigationbar() {
   const profile = JSON.parse(localStorage.getItem("profile"));
   const username = profile?.data?.profile?.username;
   const isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
+  const location = useLocation();
 
   const openAuthModal = () => {
     dispatch(showLoginModal());
@@ -70,12 +71,12 @@ function Navigationbar() {
       setUserData(response.detail);
       dispatch(setUsername(response.detail.username));
     } catch (error) {
-      if (error.response && (error.response.status === 401 || error.response.status === 403 || error.response.status === 404 || error.response.status === 500)) {
+      if (error.response.status === 404 || error.response.status === 500) {
         toast.error(error.response.data.message);
         setTimeout(() => {
           handleLogout();
+          navigate(location.pathname);
         }, 1000);
-        
       }
     }
   };
