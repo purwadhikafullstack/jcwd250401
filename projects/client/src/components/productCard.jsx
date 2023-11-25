@@ -122,7 +122,7 @@ function ProductCard() {
 
   const handleAddToCart = () => {
     if (!isLoggedIn) {
-      toast.error("Please login first to perform this action", {
+      toast.info("Please login first to perform this action", {
         duration: 1700,
         onAutoClose: (t) => {
           dispatch(showLoginModal());
@@ -135,7 +135,7 @@ function ProductCard() {
 
   const handleAddToWishlist = () => {
     if (!isLoggedIn) {
-      toast.error("Please login first to perform this action", {
+      toast.info("Please login first to perform this action", {
         duration: 1700,
         onAutoClose: (t) => {
           dispatch(showLoginModal());
@@ -199,7 +199,7 @@ function ProductCard() {
                     </div>
                     <div className="w-full space-y-4">
                       <span className="font-bold text-xl">Quantity</span>
-                      <NumberInput defaultValue={0} min={0} max={20}>
+                      <NumberInput defaultValue={1} min={1} max={20}>
                         <NumberInputField />
                         <NumberInputStepper>
                           <NumberIncrementStepper />
