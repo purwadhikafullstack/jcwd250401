@@ -10,9 +10,11 @@ import { Button } from "flowbite-react";
 import { useDispatch } from "react-redux";
 import { showLoginModal } from "../slices/authModalSlices";
 import { PiCaretLeft, PiCaretRight } from "react-icons/pi";
+import ImagePopup from "./ImagePopup";
 
 function ProductCard() {
   const { gender, mainCategory, subCategory, productName } = useParams();
+  const [showPopup, setShowPopup] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState([]);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const sliderRef = useRef(null);
@@ -84,7 +86,7 @@ function ProductCard() {
           ...style,
           display: "block",
           marginRight: "44px",
-          zIndex: "1",
+          zIndex: "20",
           transform: "scale(2)",
         }}
         onClick={onClick}
@@ -101,7 +103,7 @@ function ProductCard() {
           ...style,
           display: "block",
           marginLeft: "44px",
-          zIndex: "1",
+          zIndex: "20",
           transform: "scale(2)",
         }}
         onClick={onClick}
@@ -145,11 +147,13 @@ function ProductCard() {
     console.log("add to wishlist");
   };
 
+  console.log(showPopup);
   return (
-    <div className="flex flex-col px-32 space-y-16 h-screen overflow-y scrollbar-hide">
+    <div className="flex flex-col px-32 space-y-14 h-screen overflow-y scrollbar-hide">
       {selectedProduct.length !== 0 ? (
         <>
-          <div className="flex w-full mt-10 gap-5">
+          {showPopup && <ImagePopup images={selectedProduct[0].productImages} activeIndex={activeImageIndex} onClose={() => setShowPopup(false)} />}
+          <div className="flex w-full mt-14 gap-5">
             <div>
               {selectedProduct.map((product) => (
                 <SimpleGrid columns={2} spacing={5} key={product.id}>
@@ -162,7 +166,7 @@ function ProductCard() {
               ))}
             </div>
             {selectedProduct.map((product) => (
-              <div className="flex flex-col space-y-10 cursor-pointer">
+              <div className="flex flex-col space-y-10 cursor-zoom-in">
                 <Slider {...settings} className="w-[500px] h-[500px] shadow-xl" ref={sliderRef}>
                   {product.productImages.map((image, idx) => (
                     <div key={idx} className="w-[500px] h-[500px]">
@@ -170,7 +174,7 @@ function ProductCard() {
                         src={`http://localhost:8000/public/${image.imageUrl}`}
                         className={`w-full h-full object-cover ${idx === activeImageIndex ? "border border-black" : ""}`}
                         alt={`Product Image ${idx}`}
-                        onClick={() => handleImageClick(idx)}
+                        onClick={() => setShowPopup(true)}
                       />
                     </div>
                   ))}
@@ -179,21 +183,21 @@ function ProductCard() {
             ))}
             {selectedProduct.map((product) => (
               <div className="flex flex-col justify-between ml-28 w-[25vw]">
-                <div className="flex flex-col space-y-4">
+                <div className="flex flex-col space-y-5">
                   <div className="flex flex-col space-y-2">
                     <span className="font-bold text-2xl">{product.name}</span>
-                    <span className="text-md">{product.description.split(".").slice(0, 2).join(".") + "."}</span>
+                    <span className="text-md leading-snug">{product.description.split(".").slice(0, 2).join(".") + "."}</span>
                   </div>
                   <div>
                     <span className="font-bold text-2xl">{formatToRupiah(product.price)}</span>
-                    <div className="mt-8 border-t border border-gray-200"></div>
+                    <div className="mt-6 border-t border border-gray-200"></div>
                   </div>
                 </div>
                 <div className="space-y-8">
                   <div className="flex space-x-4 justify-between">
                     <div className="w-full space-y-4">
                       <span className="font-bold text-xl">Size</span>
-                      <select className="w-full rounded-md border-gray-200">
+                      <select className="w-full h-10 rounded-md border-gray-200 focus:outline-transparent transition-all ease-in-out duration-500">
                         <option>All Size</option>
                       </select>
                     </div>
@@ -220,13 +224,13 @@ function ProductCard() {
               </div>
             ))}
           </div>
-          <div className="pb-10 flex-col space-y-10">
+          <div className="pb-10 flex-col space-y-8">
             <div>
               <span className="font-bold text-2xl">Description</span>
             </div>
             <div>
               {selectedProduct[0]?.description.split("\n").map((paragraph, index) => (
-                <p key={index} className="text-md mb-2">
+                <p key={index} className="text-md mb-2 leading-snug">
                   {paragraph.trim()}
                 </p>
               ))}
