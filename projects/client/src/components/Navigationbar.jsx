@@ -54,11 +54,11 @@ function Navigationbar() {
   };
 
   const handleLogout = () => {
-    navigate("/");
     signOut(auth)
-      .then(() => {
-        setDropdownVisible(false);
-        dispatch(logout());
+    .then(() => {
+      setDropdownVisible(false);
+      dispatch(logout());
+      navigate(location.pathname);
       })
       .catch((error) => {
         console.error("Error signing out:", error);
@@ -67,9 +67,11 @@ function Navigationbar() {
 
   const getUserData = async () => {
     try {
-      const response = await getProfile({ username });
-      setUserData(response.detail);
-      dispatch(setUsername(response.detail.username));
+      if (isLoggedIn) {
+        const response = await getProfile({ username });
+        setUserData(response.detail);
+        dispatch(setUsername(response.detail.username));
+      }
     } catch (error) {
       if (error.response.status === 404 || error.response.status === 500) {
         toast.error(error.response.data.message);
@@ -124,7 +126,8 @@ function Navigationbar() {
                 {dropdownSubcategory === category && (
                   <div
                     className={`absolute top-20 w-full right-0 h-50 bg-white ring-1 ring-black ring-opacity-5 z-10 flex-wrap transition-dropdown ${isDropdownTransitioning ? "dropdown-hidden" : "dropdown-visible"}`}
-                    onMouseLeave={() => setDropdownSubcategory(null)}>
+                    onMouseLeave={() => setDropdownSubcategory(null)}
+                  >
                     <div className="flex flex-row h-full px-44">
                       <div className="flex flex-col flex-wrap">
                         {(() => {
