@@ -20,7 +20,7 @@ const formatSubCategory = (subCategory) => {
 };
 
 export const ProductNavPage = () => {
-  const { gender, mainCategory, subCategory, productName } = useParams();
+  const { gender, mainCategory, subCategory } = useParams();
   const [categories, setCategories] = useState([]);
   const [totalData, setTotalData] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -32,14 +32,13 @@ export const ProductNavPage = () => {
         category,
         filterBy: gender,
       });
-      
+
       const totalData = result.pagination.totalData;
 
       setTotalData(totalData);
     } catch (error) {
       if (error?.response?.status === 404) {
         setTotalData(0);
-       
       } else if (error.request) {
         // Handle request errors
         setTimeout(() => {

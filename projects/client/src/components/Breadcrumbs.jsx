@@ -19,20 +19,22 @@ const Breadcrumbs = () => {
   return (
     <Breadcrumb>
       <BreadcrumbItem>
-        <Link to={"/"} className="hover:underline">
-          Home
-        </Link>
+        <BreadcrumbLink>
+          <Link to={"/"} className="hover:underline">
+            Home
+          </Link>
+        </BreadcrumbLink>
       </BreadcrumbItem>
       {pathSegments.map((segment, index, array) => (
         <BreadcrumbItem key={index} isCurrentPage={index === array.length - 1}>
-          {index === 0 ? (
+          {index === 0 || index === array.length - 1 ? (
             <span>{formatSegment(segment)}</span>
           ) : (
-            <BreadcrumbItem>
+            <BreadcrumbLink>
               <Link className="hover:underline" to={`/${array.slice(0, index + 1).join("/")}`}>
                 {formatSegment(segment)}
               </Link>
-            </BreadcrumbItem>
+            </BreadcrumbLink>
           )}
         </BreadcrumbItem>
       ))}

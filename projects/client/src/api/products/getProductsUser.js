@@ -1,13 +1,13 @@
 import api from "../../api";
 
-const getProductsUser = async ({ page = 1, limit, sort, category, search, filterBy, isArchived = false } = {}) => {
+const getProductsUser = async ({ page = 1, limit, sort, category, productName, filterBy, isArchived = false } = {}) => {
   try {
     const url =
       `/product/user?page=${page}&isArchived=${isArchived}` +
       (limit ? `&limit=${limit}` : "") +
       (sort ? `&sort=${sort}` : "") +
       (category ? `&category=${category}` : "") +
-      (search ? `&search=${search}` : "") +
+      (productName ? `&search=${productName}` : "") +
       (filterBy ? `&filterBy=${filterBy}` : "");
 
     const response = await api.get(url);

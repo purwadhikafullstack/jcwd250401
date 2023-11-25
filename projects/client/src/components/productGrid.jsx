@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import getProductsUser from "../api/products/getProductsUser";
 import { SimpleGrid } from "@chakra-ui/react";
 import { toast } from "sonner";
@@ -17,6 +17,7 @@ function ProductGrid() {
   const [sortCriteria, setSortCriteria] = useState("date-desc");
   const [currentImageIndexes, setCurrentImageIndexes] = useState({});
   const [sliderIntervals, setSliderIntervals] = useState({});
+  const location = useLocation();
 
   useEffect(() => {
     // Initialize currentImageIndexes with default value 0 for each product ID
@@ -129,43 +130,51 @@ function ProductGrid() {
 
   return (
     <div>
-      <div className="flex justify-between">
-        <div>&nbsp;</div>
-        <div className="w-[168px] space-y-2">
-          <span className="font-bold"> Sort by</span>
-          <select className="py-2 border-1 rounded-lg w-full text-sm shadow-sm focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" onChange={handleSortChange}>
-            <option value="" disabled className="text-gray-400">
-              Sort
-            </option>
-            {sortingOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+      {products.length === 0 && (
+        <div className="flex justify-between">
+          <span className="text-xl ">No products found. </span>
+          <span className="text-xl w-[34vw]">&nbsp; </span>
         </div>
-      </div>
+      )}
+      {products.length !== 0 && (
+        <div className="flex justify-between">
+          <div>&nbsp;</div>
+          <div className="w-[168px] space-y-2">
+            <span className="font-bold"> Sort by</span>
+            <select className="py-2 border-1 rounded-lg w-full text-sm shadow-sm focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" onChange={handleSortChange}>
+              <option value="" disabled className="text-gray-400">
+                Sort
+              </option>
+              {sortingOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
       <div className="mt-6">
         <SimpleGrid columns={4} spacing={4} h="63vh" overflowY="auto" className="scrollbar-hide">
-          {products.length === 0 && (
-            <div className="flex justify-center items-center">
-              <span className="text-xl font-bold ">No products found</span>
-            </div>
-          )}
           {products.map((product) => (
-            <div key={product.id} className="flex flex-col space-y-10 cursor-pointer">
-              <Slider {...settings} className="w-[230px] h-[280px]">
-                {product.productImages.map((image, idx) => (
-                  <div key={idx} className="w-[230px] h-[310px]">
-                    <img src={`http://localhost:8000/public/${image.imageUrl}`} className="w-full h-full object-cover shadow-md" alt={`Product Image ${idx}`} />
-                  </div>
-                ))}
-              </Slider>
-              <div className="text-md flex flex-col">
-                <span>{product.name}</span>
-                <span className="font-bold">{formatToRupiah(product.price)}</span>
+            <Link
+              key={product.id}
+              to={`/${product.gender.toLowerCase()}/${product.categories[0].name.replace(/\s+/g, "-").toLowerCase()}/${product.categories[1].name.replace(/\s+/g, "-").toLowerCase()}/${product.name.replace(/\s+/g, "-").toLowerCase()}`}
+            >
+              <div className="flex flex-col space-y-10 cursor-pointer">
+                <Slider {...settings} className="w-[230px] h-[280px]">
+                  {product.productImages.map((image, idx) => (
+                    <div key={idx} className="w-[230px] h-[310px]">
+                      <img src={`http://localhost:8000/public/${image.imageUrl}`} className="w-full h-full object-cover shadow-md" alt={`Product Image ${idx}`} />
+                    </div>
+                  ))}
+                </Slider>
+                <div className="text-md flex flex-col">
+                  <span>{product.name}</span>
+                  <span className="font-bold">{formatToRupiah(product.price)}</span>
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </SimpleGrid>
       </div>

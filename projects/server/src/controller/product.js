@@ -208,6 +208,8 @@ exports.handleUpdateProduct = async (req, res) => {
   }
 };
 
+
+
 exports.handleGetAllProducts = async (req, res) => {
   const limit = parseInt(req.query.limit) || 100;
   const page = parseInt(req.query.page) || 1;
@@ -219,21 +221,15 @@ exports.handleGetAllProducts = async (req, res) => {
 
   try {
     const filter = {
-      include: [
-        { model: ProductImage, as: "productImages" },
-        { model: Category, as: "Categories", through: { attributes: [] } },
-      ],
       where: {},
     };
 
-    // Apply category filter
-    if (category && category !== "All") {
-      filter.include[1].where = { name: category };
-    }
-
     // Apply search query filter using Sequelize's Op.like
     if (search) {
-      filter.where[Op.or] = [{ name: { [Op.like]: `%${search}%` } }, { sku: { [Op.like]: `%${search}%` } }];
+      filter.where[Op.or] = [
+        { name: { [Op.like]: `%${search}%` } },
+        { sku: { [Op.like]: `%${search}%` } },
+      ];
     }
 
     // Include sorting options
@@ -270,6 +266,31 @@ exports.handleGetAllProducts = async (req, res) => {
       filter.where.isArchived = false;
     }
 
+    // Include category filter
+    if (category && category !== "All") {
+      filter.include = [
+        { model: ProductImage, as: "productImages" },
+        {
+          model: Category,
+          as: "Categories",
+          through: { model: ProductCategory, attributes: [] },
+          attributes: ["id", "name"],
+          where: { name: category }, // Filter categories based on the queried category
+        },
+      ];
+    } else {
+      // Include without category filter
+      filter.include = [
+        { model: ProductImage, as: "productImages" },
+        {
+          model: Category,
+          as: "Categories",
+          through: { model: ProductCategory, attributes: [] },
+          attributes: ["id", "name"],
+        },
+      ];
+    }
+
     // Retrieve products without pagination to get the total count
     const totalData = await Product.count({
       ...filter,
@@ -277,9 +298,11 @@ exports.handleGetAllProducts = async (req, res) => {
       col: "id",
     });
 
-    // Retrieve products with pagination
+    // Query to fetch products with primary details
     const products = await Product.findAll({
-      ...filter,
+      where: filter.where,
+      include: filter.include,
+      order: filter.order,
       limit,
       offset: (page - 1) * limit,
     });
@@ -291,6 +314,35 @@ exports.handleGetAllProducts = async (req, res) => {
       });
     }
 
+    // Extract product IDs for the next query
+    const productIds = products.map((product) => product.id);
+
+    // Query to fetch all categories associated with the products
+    const allCategories = await ProductCategory.findAll({
+      where: { productId: productIds },
+      include: [
+        { model: Category, as: "Category", attributes: ["id", "name"] },
+      ],
+    });
+
+    // Organize categories by product ID for efficient mapping
+    const categoriesByProductId = {};
+    allCategories.forEach((productCategory) => {
+      const { productId, Category } = productCategory;
+      if (!categoriesByProductId[productId]) {
+        categoriesByProductId[productId] = [];
+      }
+      categoriesByProductId[productId].push(Category);
+    });
+
+    // Map categories to the corresponding products
+    products.forEach((product) => {
+      const productId = product.id;
+      product.dataValues.categories = categoriesByProductId[productId] || [];
+      delete product.dataValues.Categories; // Remove unnecessary attribute
+    });
+
+    // Send the response
     res.status(200).json({
       ok: true,
       pagination: {
@@ -307,7 +359,6 @@ exports.handleGetAllProducts = async (req, res) => {
     });
   }
 };
-
 
 exports.handleUnarchiveProduct = async (req, res) => {
   const productId = req.params.productId; // Assuming you're passing the product ID in the request parameters
