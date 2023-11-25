@@ -131,7 +131,7 @@ const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
   console.log(warehouseImage);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered size={{ base: 'full', md: 'xl' }}>
+    <Modal isOpen={isOpen} onClose={onClose} isCentered size={{ base: 'xl', md: 'xl' }}>
       <ModalOverlay />
       <ModalContent mx={{ base: '4', md: '12' }} my="auto" rounded="lg" overflow="hidden">
         <ModalHeader className="font-bold text-lg text-center">New Warehouse</ModalHeader>
@@ -179,7 +179,7 @@ const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
             </FormControl>
           </VStack>
         </ModalBody>
-        <ModalFooter flexDirection={{ base: 'column', md: 'row' }} className="gap-2">
+        <ModalFooter className="gap-2">
           <Button variant="outline" onClick={onClose} flex="1" className="border-gray-300 text-black">
             Discard
           </Button>
@@ -189,7 +189,6 @@ const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
             onClick={handleSubmit}
             isLoading={isSubmitting}
             flex="1"
-            mt={{ base: '2', md: '1' }}
             _hover={{ bg: 'gray' }} // Add hover effect to change background color to gray
           >
             Save
