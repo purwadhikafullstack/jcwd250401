@@ -36,12 +36,12 @@ export const CartProductMeta = ({ item, onQuantityChange }) => {
         width="120px"
         height="120px"
         fit="cover"
-        src={item.Product.image}
+        src={`http://localhost:8000/public/${item.Product.productImages[0].imageUrl}`}
         alt={item.Product.name}
       />
       <VStack alignItems="start" spacing="1">
         <Text fontWeight="bold" fontSize="lg">{item.Product.name}</Text>
-        <Text color={mode('gray.600', 'gray.400')} fontSize="sm">SKU: {item.Product.id}</Text>
+        <Text color={mode('gray.600', 'gray.400')} fontSize="sm">SKU: {item.Product.sku}</Text>
         <Text color={mode('gray.600', 'gray.400')} fontSize="sm">Desc: {item.Product.description}</Text>
         <PriceTag price={item.Product.price} currency="IDR" />
         <HStack>
