@@ -122,8 +122,8 @@ function ProductCard() {
 
   const handleAddToCart = () => {
     if (!isLoggedIn) {
-      toast.error("Please login first to perform this action", {
-        duration: 1500,
+      toast.info("Please login first to perform this action", {
+        duration: 1700,
         onAutoClose: (t) => {
           dispatch(showLoginModal());
         },
@@ -135,8 +135,8 @@ function ProductCard() {
 
   const handleAddToWishlist = () => {
     if (!isLoggedIn) {
-      toast.error("Please login first to perform this action", {
-        duration: 1500,
+      toast.info("Please login first to perform this action", {
+        duration: 1700,
         onAutoClose: (t) => {
           dispatch(showLoginModal());
         },
@@ -154,7 +154,7 @@ function ProductCard() {
               {selectedProduct.map((product) => (
                 <SimpleGrid columns={2} spacing={5} key={product.id}>
                   {product.productImages.map((image, idx) => (
-                    <div key={idx} className={`w-[100px] h-[100px] object-cover shadow-xl ${idx === activeImageIndex ? "border-2 border-black" : ""}`} onClick={() => handleImageClick(image.id)}>
+                    <div key={idx} className={`w-[100px] h-[100px] object-cover shadow-xl cursor-pointer ${idx === activeImageIndex ? "border-2 border-black" : ""}`} onClick={() => handleImageClick(image.id)}>
                       <img src={`http://localhost:8000/public/${image.imageUrl}`} alt={`Product Image ${idx}`} className="w-full h-full object-cover" />
                     </div>
                   ))}
@@ -199,7 +199,7 @@ function ProductCard() {
                     </div>
                     <div className="w-full space-y-4">
                       <span className="font-bold text-xl">Quantity</span>
-                      <NumberInput defaultValue={0} min={0} max={20}>
+                      <NumberInput defaultValue={1} min={1} max={20}>
                         <NumberInputField />
                         <NumberInputStepper>
                           <NumberIncrementStepper />
