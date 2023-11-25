@@ -13,7 +13,7 @@ import image from "../assets/image-4.jpg";
 import imagemobile from "../assets/image-1.jpg";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from "@chakra-ui/react";
 
-function ResetPassword() {
+function ResetPassword({ userType }) {
   const [searchParams] = useSearchParams();
   const [isOpen, setIsOpen] = useState(true);
   const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
@@ -62,7 +62,8 @@ function ResetPassword() {
       try {
         setIsSubmitting(true);
 
-        const response = await api.post("/auth/resetpassword", {
+        const endpoint = userType === "admin" ? "/auth/reset-password-admin" : "/auth/resetpassword";
+        const response = await api.post(endpoint, {
           uniqueCode: searchParams.get("code"),
           password: values.password,
         });
@@ -72,14 +73,13 @@ function ResetPassword() {
             toast.success("New password has been created, Directing you to login page...", {
               autoClose: 3000,
               onAutoClose: (t) => {
-                navigate("/");
+                userType === "admin" ? navigate("/adminlogin") : navigate("/"); 
                 dispatch(showLoginModal());
               },
             });
           }, 3000);
         }
       } catch (error) {
-        if (error.response) {
           if (error.response.status === 401) {
             setTimeout(() => {
               toast.error("User already has password!");
@@ -96,13 +96,12 @@ function ResetPassword() {
                 },
               });
             }, 1000);
-          } else {
+          } else if (error.request) {
+            setTimeout(() => {
+              toast.error("Network error, please try again later");
+              setIsSubmitting(false);
+            }, 2000);
           }
-        } else if (error.request) {
-          // Handle network errors (request was made but no response received)
-        } else {
-          // Handle other non-network, non-HTTP-related errors
-        }
       } finally {
         // Add a 1-second delay before closing the modal
         setTimeout(() => {
@@ -121,16 +120,14 @@ function ResetPassword() {
           backgroundPosition: "center",
           minHeight: "100vh",
         }}
-        className="hidden lg:block"
-      ></div>
+        className="hidden lg:block"></div>
       <div
         style={{
           backgroundImage: `url(${imagemobile})`,
           backgroundSize: "cover",
           minHeight: "100vh",
         }}
-        className="block lg:hidden"
-      ></div>
+        className="block lg:hidden"></div>
 
       <Modal closeOnOverlayClick={false} isOpen={isOpen} size="md" onClose={isClose} motionPreset="slideInBottom" isCentered>
         <ModalOverlay bg="blackAlpha.300" />

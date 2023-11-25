@@ -1,47 +1,69 @@
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalOverlay } from "@chakra-ui/react";
 import React from "react";
-import api from "../api";
 import { toast } from "sonner";
 import { removeAddress } from "../slices/addressSlices";
 import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import deleteAddress from "../api/Address/deleteAddress";
+import deleteAdmin from "../api/users/deleteAdmin";
 
-export const ConfirmModal = ({ isOpen, onClose, addressData, userId }) => {
+export const ConfirmModal = ({ isOpen, onClose, data, userId, deleteFor }) => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
-  const handleDeleteAddress = async () => {
+  const handleDelete = async () => {
     try {
-      const response = await api.delete(`/address/${userId}/${addressData?.id}`);
-      dispatch(removeAddress(addressData?.id));
-      toast.success(response.data.message);
+      if (deleteFor === "address") {
+        const response = await deleteAddress({ userId, addressId: data?.id });
+        dispatch(removeAddress(data?.id));
+        toast.success(response.message);
+      } else if (deleteFor === "admin") {
+        const response = await deleteAdmin({ userId });
+        toast.success(response.message);
+      }
       onClose();
     } catch (error) {
-      toast.error(error.response.data.message);
+      if (error.response && (error.response.status === 400 || error.response.status === 404 || error.response.status === 500 || error.response.status === 401 || error.response.status === 403)) {
+        toast.error(error.response.data.message, {
+          description: error.response.data.detail,
+        });
+        if (error.response.status === 401 || error.response.status === 403) navigate("/adminlogin");
+        if (error.response.status === 500) console.error(error);
+      }
     }
   };
   return (
-    <>
-      <Modal isOpen={isOpen} onClose={onClose} size={"md"} isCentered>
-        <ModalOverlay bg="none" backdropFilter="auto" backdropBlur="2px" />
-        <ModalContent>
-          <ModalHeader>
-            <h2>Confirmation</h2>
-          </ModalHeader>
-          <ModalBody>
-            <p>Are you sure you want to delete this address?</p>
-            <div className="border border-black rounded-md mt-2 p-2">
-              <p className="text-md text-gray-600">{`${addressData?.firstName} ${addressData?.lastName}`}</p>
-              <p className="text-md text-gray-600">{`${addressData?.street}, ${addressData?.district}, ${addressData?.subDistrict}, ${addressData?.city}, ${addressData?.province}, ${addressData?.phoneNumber}`}</p>
-            </div>
-          </ModalBody>
-          <ModalFooter>
-            <button className="bg-slate-900 hover:bg-slate-700 text-white p-2 rounded-md mr-2" onClick={onClose}>
-              Cancel
-            </button>
-            <button className="bg-red-700 hover:bg-red-800 p-2 text-white rounded-md" onClick={handleDeleteAddress}>
-              Confirm
-            </button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    </>
+    <Modal isOpen={isOpen} onClose={onClose} size={"md"} isCentered>
+      <ModalOverlay bg="none" backdropFilter="auto" backdropBlur="2px" />
+      <ModalContent>
+        <ModalHeader>
+          <h2>Confirmation</h2>
+        </ModalHeader>
+        <ModalBody>
+          <p>Are you sure you want to delete this {deleteFor}?</p>
+          <div className="font-bold rounded-md mt-2">
+            {deleteFor === "address" ? (
+              <>
+                <p className="text-md text-gray-600">{`${data?.firstName} ${data?.lastName}`}</p>
+                <p className="text-md text-gray-600">{`${data?.street}, ${data?.district}, ${data?.subDistrict}, ${data?.city}, ${data?.province}, ${data?.phoneNumber}`}</p>
+              </>
+            ) : (
+              <>
+                <p className="text-md text-gray-600">Username: {data?.username}</p>
+                <p className="text-md text-gray-600">Email: {data?.email}</p>
+                <p className="text-md text-gray-600">Role: {data?.isWarehouseAdmin ? "Warehouse Admin" : "Super Admin"}</p>
+              </>
+            )}
+          </div>
+        </ModalBody>
+        <ModalFooter>
+          <button className="border border-[#40403F] text-[#40403F] p-2 rounded-md mr-2" onClick={onClose}>
+            Cancel
+          </button>
+          <button className="bg-[#40403F] hover:bg-[#515150] p-2 text-white rounded-md" onClick={handleDelete}>
+            Confirm
+          </button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
   );
 };

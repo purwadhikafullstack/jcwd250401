@@ -50,37 +50,33 @@ function CreatePasswordModal({ isOpen, isClose }) {
           email: email,
           password: values.password,
         });
-
-        if (response.data) {
-          setTimeout(() => {
-            toast.success("Password has been created, Directing you to login page...", {
-              autoClose: 3000,
-              onAutoClose: (t) => {
-                dispatch(showLoginModal());
-                dispatch(hideCreatePasswordModal());
-              },
-            });
-            dispatch(setEmail(""));
-          }, 3000);
-        }
+        setTimeout(() => {
+          toast.success("Password has been created, Directing you to login page...", {
+            autoClose: 3000,
+            onAutoClose: (t) => {
+              dispatch(showLoginModal());
+              dispatch(hideCreatePasswordModal());
+            },
+          });
+          dispatch(setEmail(""));
+        }, 3000);
       } catch (error) {
-        if (error.response) {
-          if (error.response.status === 401) {
-            setTimeout(() => {
-              toast.error("User already has password!");
-              setIsSubmitting(false);
-            }, 2000);
-          } else if (error.response.status === 400) {
-            setTimeout(() => {
-              toast.error("Invalid email!");
-              setIsSubmitting(false);
-            }, 2000);
-          } else {
-          }
+        if (error.response.status === 401) {
+          setTimeout(() => {
+            toast.error("User already has password!");
+            setIsSubmitting(false);
+          }, 2000);
+        } else if (error.response.status === 400) {
+          setTimeout(() => {
+            toast.error("Invalid email!");
+            setIsSubmitting(false);
+          }, 2000);
         } else if (error.request) {
-          // Handle network errors (request was made but no response received)
-        } else {
-          // Handle other non-network, non-HTTP-related errors
+          // Handle request errors
+          setTimeout(() => {
+            toast.error("Network error, please try again later");
+            setIsSubmitting(false);
+          }, 2000);
         }
       } finally {
         // Add a 1-second delay before closing the modal

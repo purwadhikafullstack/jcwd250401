@@ -8,16 +8,14 @@ import rains from "../assets/rains.png";
 import AuthModal from "./AuthModal";
 import { useSelector, useDispatch } from "react-redux";
 import { showLoginModal, showSignUpModal } from "../slices/authModalSlices";
-import { logout } from "../slices/accountSlices";
+import { logout, setUsername } from "../slices/accountSlices";
 import { getAuth, signOut } from "firebase/auth";
-import api from "../api";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import getProfile from "../api/profile/getProfile";
 
 function Navigationbar() {
-  const isLogin = useSelector((state) => state?.account?.isLogin);
-  const userName = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [dropdownSubcategory, setDropdownSubcategory] = useState(null);
   const [isDropdownTransitioning, setIsDropdownTransitioning] = useState(false);
@@ -28,13 +26,17 @@ function Navigationbar() {
   const bags = ["Shop all bags", "New arrivals", "Texel travel series", "Color Story: Grey"];
   const bagsSubCategory = ["All bags", "Backpacks", "Totes Bags", "Travel Bags", "Laptop Bags", "Crossbody & Bum bags", "Wash bags"];
   const accessories = ["Caps", "Bags", "Accessories"];
-  const accounts = ["Profile", "Address Book", "My Order", "Change My Password"];
-  const accountsDropdown = ["Profile", "Address Book", "My Order", "Change My Password", "Search", "Cart", "Favorites"];
+  const accounts = ["Profile", "Address Book", "My Order", "Change Password"];
+  const accountsDropdown = ["Profile", "Address Book", "My Order", "Change Password", "Search", "Cart", "Favorites"];
   const dispatch = useDispatch();
   const auth = getAuth();
   const [userData, setUserData] = useState(null);
   const photoProfile = userData?.photoProfile;
   const navigate = useNavigate();
+  const profile = JSON.parse(localStorage.getItem("profile"));
+  const username = profile?.data?.profile?.username;
+  const isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
+  const location = useLocation();
 
   const openAuthModal = () => {
     dispatch(showLoginModal());
@@ -52,31 +54,38 @@ function Navigationbar() {
   };
 
   const handleLogout = () => {
-    navigate("/");
     signOut(auth)
-      .then(() => {
-        dispatch(showLoginModal());
-        setDropdownVisible(false);
-        dispatch(logout());
+    .then(() => {
+      setDropdownVisible(false);
+      dispatch(logout());
+      navigate(location.pathname);
       })
       .catch((error) => {
         console.error("Error signing out:", error);
       });
   };
 
-  useEffect(() => {
-    const getUserData = async () => {
-      try {
-        if (isLogin) {
-          const response = await api.get(`/profile/${userName}`);
-          setUserData(response.data.detail);
-        }
-      } catch (error) {
-        toast.error("Failed to get user data");
+  const getUserData = async () => {
+    try {
+      if (isLoggedIn) {
+        const response = await getProfile({ username });
+        setUserData(response.detail);
+        dispatch(setUsername(response.detail.username));
       }
-    };
+    } catch (error) {
+      if (error.response.status === 404 || error.response.status === 500) {
+        toast.error(error.response.data.message);
+        setTimeout(() => {
+          handleLogout();
+          navigate(location.pathname);
+        }, 1000);
+      }
+    }
+  };
+
+  useEffect(() => {
     getUserData();
-  }, [userName]);
+  }, [username, photoProfile]);
 
   useEffect(() => {
     const resetTransition = () => {
@@ -89,7 +98,7 @@ function Navigationbar() {
   }, [dropdownSubcategory]);
 
   return (
-    <div className="w-full bg-white h-20 flex items-center justify-around font-sagoe ">
+    <div className="w-full bg-white h-20 flex items-center justify-between font-sagoe lg:px-32 px-6 ">
       <div className="flex items-center gap-16">
         <Link to="/">
           <img src={rains} alt="Logo" className="w-26 h-10 hover:cursor-pointer" />
@@ -97,11 +106,13 @@ function Navigationbar() {
         <div className="hidden space-x-4 lg:flex">
           {categories.map((category, index) => {
             const joinedCategories = category.toLowerCase().replace(" ", "-");
+            const finalCategory = joinedCategories === "bags" || joinedCategories === "accessories" ? `unisex/${joinedCategories}` : joinedCategories;
 
             const renderSubcategory = (subcategory, index) => {
               const joinedSubcategory = subcategory.toLowerCase().replace(/\s/g, "-");
+              const finalSubcategory = joinedSubcategory === "all-bags" || joinedSubcategory === "all-accessories" ? "" : `/${joinedSubcategory}`;
               return (
-                <Link key={index} to={`/${joinedCategories}/${joinedSubcategory}`}>
+                <Link key={index} to={`${finalCategory}${finalSubcategory}`}>
                   <p className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm">{subcategory}</p>
                 </Link>
               );
@@ -109,9 +120,9 @@ function Navigationbar() {
 
             return (
               <>
-                <Link to={`/${joinedCategories}`} key={index} className="text-md font-semibold cursor-pointer underline-on-hover " onMouseEnter={() => handleSubcategoryClick(category)}>
+                <span key={index} className="text-md font-semibold cursor-pointer underline-on-hover " onMouseEnter={() => handleSubcategoryClick(category)}>
                   {category}
-                </Link>
+                </span>
                 {dropdownSubcategory === category && (
                   <div
                     className={`absolute top-20 w-full right-0 h-50 bg-white ring-1 ring-black ring-opacity-5 z-10 flex-wrap transition-dropdown ${isDropdownTransitioning ? "dropdown-hidden" : "dropdown-visible"}`}
@@ -149,7 +160,7 @@ function Navigationbar() {
           })}
         </div>
       </div>
-      {isLogin ? (
+      {isLoggedIn ? (
         <>
           <div className="hidden gap-8 lg:flex items-center">
             <BsSearch className="text-xl cursor-pointer" />
@@ -171,9 +182,7 @@ function Navigationbar() {
             )}
 
             <MdFavoriteBorder className="text-xl cursor-pointer" />
-            <BsCart className="text-xl cursor-pointer" 
-              onClick={() => navigate("/account/cart")}
-            />
+            <BsCart className="text-xl cursor-pointer" onClick={() => navigate("/account/cart")} />
           </div>
 
           {/* Mobile */}

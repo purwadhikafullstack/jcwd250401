@@ -50,7 +50,7 @@ export const AddAddressModal = ({ isOpen, onClose }) => {
           city: values.city,
           district: values.district,
           subDistrict: values.subDistrict,
-          phoneNumber: values.phoneNumber.toString(),
+          phoneNumber: 0 + values.phoneNumber.toString(),
           setAsdefault: values.setAsdefault,
         });
 
@@ -288,7 +288,7 @@ export const AddAddressModal = ({ isOpen, onClose }) => {
 
                 <div className="flex flex-row items-center mt-5">
                   <button type="submit" className="w-[25%] sm:w-[35%] h-[7vh] border bg-[#40403F] hover:bg-[#555554] text-white rounded-md font-semibold mb-3">
-                    Register
+                    Save
                   </button>
                 </div>
               </form>

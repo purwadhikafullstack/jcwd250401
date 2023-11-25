@@ -1,10 +1,9 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { NavPage } from "../components/NavPage";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { useDispatch, useSelector } from "react-redux";
-import api from "../api";
 import { toast } from "sonner";
 import { AddAddressModal } from "../components/AddAddressModal";
 import { ConfirmModal } from "../components/ConfirmModal";
@@ -12,6 +11,12 @@ import { EditAddressModal } from "../components/EditAddressModal";
 import { addAddress } from "../slices/addressSlices";
 import { BsFillPinAngleFill, BsFillTrash3Fill } from "react-icons/bs";
 import { SetDefaultAddressModal } from "../components/SetDefaultAddressModal";
+import { showLoginModal } from "../slices/authModalSlices";
+import getProfile from "../api/profile/getProfile";
+import getUserAddress from "../api/Address/getUserAddress";
+import addNewAddress from "../api/Address/addNewAddress";
+import getProvince from "../api/Address/getProvince";
+import getCity from "../api/Address/getCity";
 
 export const Address = () => {
   const isLogin = useSelector((state) => state?.account?.isLogin);
@@ -32,6 +37,7 @@ export const Address = () => {
   const defaultAddress = userAddressLists.find((address) => address.setAsDefault);
   const provinceIdToName = provinceLists.filter((province) => province.province_id === selectedProvince)[0]?.province;
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const userId = userData?.id;
   const addressLists = useSelector((state) => state?.address?.addressLists);
@@ -103,73 +109,82 @@ export const Address = () => {
     }),
     onSubmit: async (values) => {
       try {
-        const response = await api.post(`/address/${userId}`, {
-          street: values.street,
-          firstName: values.firstName,
-          lastName: values.lastName,
-          province: provinceIdToName,
-          city: values.city,
-          district: values.district,
-          subDistrict: values.subDistrict,
-          phoneNumber: values.phoneNumber.toString(),
-          setAsDefault: values.setAsDefault,
-        });
-
-        if (response.data.ok) {
+        const response = await addNewAddress(
+          { userId },
+          {
+            street: values.street,
+            firstName: values.firstName,
+            lastName: values.lastName,
+            province: provinceIdToName,
+            city: values.city,
+            district: values.district,
+            subDistrict: values.subDistrict,
+            phoneNumber: 0 + values.phoneNumber.toString(),
+            setAsDefault: values.setAsDefault,
+          }
+        );
+        if (response.ok) {
           toast.success("Register address success");
-          dispatch(addAddress(response.data.detail));
+          dispatch(addAddress(response.detail));
           formik.resetForm();
         }
       } catch (error) {
-        if (error.response && error.response.status === 400) {
-          toast.error("Register address failed", {
-            description: error.response.data.message,
-          });
-        } else if (error.response && error.response.status === 500) {
-          toast.error("Server error", {
-            description: error.response.data.message,
-          });
-          console.error(error);
+        if (error.response && (error.response.status === 400 || error.response.status === 401 || error.response.status === 403 || error.response.status === 500)) {
+          toast.error(error.response.data.message);
+          if (error.response.status === 500) console.error(error);
+          if (error.response.status === 401 || error.response.status === 403) {
+            setTimeout(() => {
+              navigate("/");
+              dispatch(showLoginModal());
+            }, 2000);
+          }
         }
       }
     },
   });
 
+  const fetchUserData = useCallback(async () => {
+    try {
+      const response = await getProfile({ username });
+      setUserData(response.detail);
+
+      const responseLists = await getUserAddress({ userId: response.detail.id });
+      setUserAddressLists(responseLists.detail);
+    } catch (error) {
+      if (error.response) {
+        if (error.response.status === 401 || error.response.status === 403) {
+          toast.error(error.response.data.message);
+          setTimeout(() => {
+            navigate("/");
+            dispatch(showLoginModal());
+          }, 2000);
+        }
+      }
+    }
+  }, [username]);
+
+  const fetchProvinceList = useCallback(async () => {
+    const response = await getProvince()
+    setProvinceLists(response.detail);
+  },[]);
+
+  const fetchCityList = useCallback(async () => {
+    const response = await getCity()
+    setCityLists(response.detail);
+  },[]);
+
   useEffect(() => {
-    const getProvinceLists = async () => {
-      try {
-        const response = await api.get("/address/province");
-        setProvinceLists(response.data.detail);
-      } catch (error) {
-        toast.error("Get address lists failed");
+    try {
+      fetchUserData();
+      fetchProvinceList();
+      fetchCityList();
+    } catch (error) {
+      if (error.response && (error.response.status === 400 || error.response.status === 404 || error.response.status === 500)) {
+        toast.error(error.response.data.message);
+        if (error.response.status === 500) console.error(error);
       }
-    };
-
-    const getCityLists = async () => {
-      try {
-        const response = await api.get("/address/city");
-        setCityLists(response.data.detail);
-      } catch (error) {
-        toast.error("Get city lists failed");
-      }
-    };
-
-    const getUsersProfile = async () => {
-      try {
-        const response = await api.get(`/profile/${username}`);
-        setUserData(response.data.detail);
-
-        const responseLists = await api.get(`/address/${response.data.detail.id}`);
-        setUserAddressLists(responseLists.data.detail);
-      } catch (error) {
-        toast.error("Failed to get user data");
-      }
-    };
-
-    getUsersProfile();
-    getProvinceLists();
-    getCityLists();
-  }, [addressLists]);
+    }
+  }, [addressLists, fetchUserData, fetchProvinceList, fetchCityList]);
 
   return (
     <>
@@ -267,7 +282,7 @@ export const Address = () => {
                           </div>
                         </div>
                       ))}
-                    <ConfirmModal isOpen={confirmModal} onClose={() => setConfirmModal(!confirmModal)} addressData={selectedAddress} userId={userId} />
+                    <ConfirmModal isOpen={confirmModal} onClose={() => setConfirmModal(!confirmModal)} data={selectedAddress} userId={userId} deleteFor={"address"} />
                     {selectedAddress && <EditAddressModal isOpen={editModal} onClose={handleCloseEditModal} addressData={selectedAddress} userId={userId} cityLists={cityLists} provinceLists={provinceLists} />}
                     {selectedAddress && <SetDefaultAddressModal isOpen={defaultAddressModal} onClose={() => setDefaultAddressModal(false)} addressData={selectedAddress} userId={userId} />}
                   </div>

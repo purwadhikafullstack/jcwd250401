@@ -12,7 +12,7 @@ import { showLoginModal } from "../slices/authModalSlices";
 import { showVerifyModal } from "../slices/authModalSlices";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from "@chakra-ui/react";
 
-function ForgotPasswordModal({ isOpen, isClose }) {
+function ForgotPasswordModal({ isOpen, isClose, userType="user" }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const dispatch = useDispatch();
   const formik = useFormik({
@@ -26,11 +26,12 @@ function ForgotPasswordModal({ isOpen, isClose }) {
       try {
         setIsSubmitting(true);
 
-        const response = await api.post("/auth/forgotpassword", {
+        const endpoint = userType === "admin" ? "/auth/forgot-password-admin": "/auth/forgotpassword"
+        const response = await api.post(endpoint, {
           email: values.email,
         });
 
-        if (response.status === 200) {
+     
           setTimeout(() => {
             toast.success("Reset password link has been send to your email", {
               autoClose: 1000,
@@ -40,7 +41,7 @@ function ForgotPasswordModal({ isOpen, isClose }) {
               },
             });
           }, 1000);
-        }
+        
       } catch (error) {
         if (error.response) {
           if (error.response.status === 400) {
@@ -79,11 +80,14 @@ function ForgotPasswordModal({ isOpen, isClose }) {
             }, 1000);
             // Handle other HTTP errors
           }
-        } else if (error.request) {
-          // Handle network errors (request was made but no response received)
-        } else {
-          // Handle other non-network, non-HTTP-related errors
         }
+        if (error.request) {
+          // Handle request errors
+          setTimeout(() => {
+            toast.error("Network error, please try again later");
+            setIsSubmitting(false);
+          }, 2000);
+        } 
       } finally {
         // Add a 1-second delay before closing the modal
         setTimeout(() => {

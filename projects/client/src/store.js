@@ -5,6 +5,8 @@ import authModalReducer from "./slices/authModalSlices";
 import accountReducer from "./slices/accountSlices";
 import addressReducer from "./slices/addressSlices";
 import cartReducer from "./slices/cartSlices"; // Adjust the path to where your cartSlice is defined
+import categoryReducer from "./slices/categorySlices";
+import productReducer from "./slices/productSlices";
 
 const persistConfig = {
   key: "root", // The key to use for storing data in local storage
@@ -18,6 +20,8 @@ const persistedRootReducer = persistReducer(
     account: accountReducer,
     address: addressReducer,
     cart: cartReducer, // Add your cart reducer here
+    category: categoryReducer,
+    product: productReducer,
   })
 );
 
