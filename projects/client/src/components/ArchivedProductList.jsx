@@ -356,7 +356,7 @@ function ArchivedProductList() {
             Page{" "}
           </Text>
           <Box>
-            <Button
+          <Button
               boxShadow="md"
               key={1}
               size="xs"
@@ -364,10 +364,11 @@ function ArchivedProductList() {
               borderRadius="lg"
               onClick={() => handlePageChange(1)}
               variant={currentPage === 1 ? "solid" : "outline"}
-              bgColor={currentPage === 1 ? "white" : "gray.900"}
-              textColor={currentPage === 1 ? "gray.900" : "white"}
-              _hover={{ bgColor: "white", textColor: "gray.900" }}
+              bgColor={currentPage === 1 ? "gray.900" : "white"}
+              textColor={currentPage === 1 ? "white" : "gray.900"}
+              _hover={{ bgColor: "gray.900", textColor: "white" }}
               mr="5px"
+              transition={"ease-in-out 0.3s"}
             >
               1
             </Button>
@@ -381,10 +382,11 @@ function ArchivedProductList() {
                   borderRadius="lg"
                   onClick={() => handlePageChange(index + 2)}
                   variant={currentPage === index + 2 ? "solid" : "outline"}
-                  bgColor={currentPage === index + 2 ? "white" : "gray.900"}
-                  textColor={currentPage === index + 2 ? "gray.900" : "white"}
-                  _hover={{ bgColor: "white", textColor: "gray.900" }}
+                  bgColor={currentPage === index + 2 ? "gray.900" : "gray.white"}
+                  textColor={currentPage === index + 2 ? "white" : "gray.900"}
+                  _hover={{ bgColor: "gray.900", textColor: "white" }}
                   mr="5px"
+                  transition={"ease-in-out 0.3s"}
                 >
                   {index + 2}
                 </Button>

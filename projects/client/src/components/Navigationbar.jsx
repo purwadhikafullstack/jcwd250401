@@ -112,7 +112,7 @@ function Navigationbar() {
               const joinedSubcategory = subcategory.toLowerCase().replace(/\s/g, "-");
               const finalSubcategory = joinedSubcategory === "all-bags" || joinedSubcategory === "all-accessories" ? "" : `/${joinedSubcategory}`;
               return (
-                <Link key={index} to={`${finalCategory}${finalSubcategory}`}>
+                <Link key={index} to={`/products/${finalCategory}${finalSubcategory}`}>
                   <p className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm">{subcategory}</p>
                 </Link>
               );
