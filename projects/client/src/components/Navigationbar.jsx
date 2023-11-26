@@ -48,11 +48,11 @@ function Navigationbar() {
 
   const handleIconClick = () => setDropdownVisible(!dropdownVisible);
 
-  const handleSubcategoryClick = (subcategory) => {
-    setIsDropdownTransitioning(true);
-    setDropdownSubcategory(subcategory);
-  };
-
+ const handleSubcategoryClick = (subcategory) => {
+  setIsDropdownTransitioning(true);
+  setDropdownSubcategory((prevSubcategory) => (prevSubcategory === subcategory ? null : subcategory));
+  
+};
   const handleLogout = () => {
     signOut(auth)
     .then(() => {
@@ -91,10 +91,7 @@ function Navigationbar() {
     const resetTransition = () => {
       setIsDropdownTransitioning(false);
     };
-
-    const timeoutId = setTimeout(resetTransition, 200);
-
-    return () => clearTimeout(timeoutId);
+    const timeout = setTimeout(resetTransition, 300);
   }, [dropdownSubcategory]);
 
   return (
@@ -103,7 +100,7 @@ function Navigationbar() {
         <Link to="/">
           <img src={rains} alt="Logo" className="w-26 h-10 hover:cursor-pointer" />
         </Link>
-        <div className="hidden space-x-4 lg:flex">
+        <div className="hidden space-x-6 lg:flex">
           {categories.map((category, index) => {
             const joinedCategories = category.toLowerCase().replace(" ", "-");
             const finalCategory = joinedCategories === "bags" || joinedCategories === "accessories" ? `unisex/${joinedCategories}` : joinedCategories;
@@ -112,7 +109,7 @@ function Navigationbar() {
               const joinedSubcategory = subcategory.toLowerCase().replace(/\s/g, "-");
               const finalSubcategory = joinedSubcategory === "all-bags" || joinedSubcategory === "all-accessories" ? "" : `/${joinedSubcategory}`;
               return (
-                <Link key={index} to={`${finalCategory}${finalSubcategory}`}>
+                <Link key={index} to={`/products/${finalCategory}${finalSubcategory}`}>
                   <p className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm">{subcategory}</p>
                 </Link>
               );
@@ -120,9 +117,10 @@ function Navigationbar() {
 
             return (
               <>
-                <span key={index} className="text-md font-semibold cursor-pointer underline-on-hover " onMouseEnter={() => handleSubcategoryClick(category)}>
+                <span key={index} className="text-md font-semibold cursor-pointer underline-on-hover " onMouseEnter={() => dropdownSubcategory !== category && handleSubcategoryClick(category)} >
                   {category}
                 </span>
+
                 {dropdownSubcategory === category && (
                   <div
                     className={`absolute top-20 w-full right-0 h-50 bg-white ring-1 ring-black ring-opacity-5 z-10 flex-wrap transition-dropdown ${isDropdownTransitioning ? "dropdown-hidden" : "dropdown-visible"}`}

@@ -81,7 +81,7 @@ export const ProductNavPage = () => {
         </div>
         <div className="flex flex-col space-y-4">
           {categories.map((category, index) => (
-            <Link className="hover:underline cursor-pointer" to={`/${gender}/${mainCategory}/${category.name.replace(/\s+/g, "-").toLowerCase()}`} key={index}>
+            <Link className="hover:underline cursor-pointer" to={`/products/${gender}/${mainCategory}/${category.name.replace(/\s+/g, "-").toLowerCase()}`} key={index}>
               {category.name}
             </Link>
           ))}

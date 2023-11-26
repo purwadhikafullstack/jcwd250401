@@ -16,6 +16,10 @@ const Breadcrumbs = () => {
   const location = useLocation();
   const pathSegments = location.pathname.split("/").filter((segment) => segment !== "");
 
+  // Check if the URL contains "products", and if so, skip the first segment
+  const skipProducts = pathSegments[0] === "products";
+  const segmentsToRender = skipProducts ? pathSegments.slice(1) : pathSegments;
+
   return (
     <Breadcrumb>
       <BreadcrumbItem>
@@ -25,13 +29,13 @@ const Breadcrumbs = () => {
           </Link>
         </BreadcrumbLink>
       </BreadcrumbItem>
-      {pathSegments.map((segment, index, array) => (
+      {segmentsToRender.map((segment, index, array) => (
         <BreadcrumbItem key={index} isCurrentPage={index === array.length - 1}>
           {index === 0 || index === array.length - 1 ? (
             <span>{formatSegment(segment)}</span>
           ) : (
             <BreadcrumbLink>
-              <Link className="hover:underline" to={`/${array.slice(0, index + 1).join("/")}`}>
+              <Link className="hover:underline" to={`/products/${array.slice(0, index + 1).join("/")}`}>
                 {formatSegment(segment)}
               </Link>
             </BreadcrumbLink>
