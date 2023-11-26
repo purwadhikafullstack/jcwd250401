@@ -158,7 +158,7 @@ function ProductCard() {
               {selectedProduct.map((product) => (
                 <SimpleGrid columns={2} spacing={5} key={product.id}>
                   {product.productImages.map((image, idx) => (
-                    <div key={idx} className={`w-[100px] h-[100px] object-cover shadow-xl cursor-pointer ${idx === activeImageIndex ? "border-2 border-black" : ""}`} onClick={() => handleImageClick(image.id)}>
+                    <div key={idx} className={`w-[82px] h-[82px] object-cover shadow-xl cursor-pointer ${idx === activeImageIndex ? "border-2 border-[#777777]" : ""}`} onClick={() => handleImageClick(image.id)}>
                       <img src={`http://localhost:8000/public/${image.imageUrl}`} alt={`Product Image ${idx}`} className="w-full h-full object-cover" />
                     </div>
                   ))}
@@ -167,9 +167,9 @@ function ProductCard() {
             </div>
             {selectedProduct.map((product) => (
               <div className="flex flex-col space-y-10 cursor-zoom-in">
-                <Slider {...settings} className="w-[500px] h-[500px] shadow-xl" ref={sliderRef}>
+                <Slider {...settings} className="w-[480px] h-[480px] shadow-xl" ref={sliderRef}>
                   {product.productImages.map((image, idx) => (
-                    <div key={idx} className="w-[500px] h-[500px]">
+                    <div key={idx} className="w-[480px] h-[480px]">
                       <img
                         src={`http://localhost:8000/public/${image.imageUrl}`}
                         className={`w-full h-full object-cover ${idx === activeImageIndex ? "border border-black" : ""}`}

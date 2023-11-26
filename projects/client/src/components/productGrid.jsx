@@ -159,7 +159,7 @@ function ProductGrid() {
           {products.map((product) => (
             <Link
               key={product.id}
-              to={`/${product.gender.toLowerCase()}/${product.categories[0].name.replace(/\s+/g, "-").toLowerCase()}/${product.categories[1].name.replace(/\s+/g, "-").toLowerCase()}/${product.name.replace(/\s+/g, "-").toLowerCase()}`}
+              to={`/products/${product.gender.toLowerCase()}/${product.categories[0].name.replace(/\s+/g, "-").toLowerCase()}/${product.categories[1].name.replace(/\s+/g, "-").toLowerCase()}/${product.name.replace(/\s+/g, "-").toLowerCase()}`}
             >
               <div className="flex flex-col space-y-10 cursor-pointer">
                 <Slider {...settings} className="w-[230px] h-[280px]">

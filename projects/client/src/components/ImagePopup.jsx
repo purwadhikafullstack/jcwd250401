@@ -15,14 +15,14 @@ function ImagePopup({ images, activeIndex, onClose }) {
   };
 
   return (
-    <Modal isOpen onClose={onClose} size="4xl" isCentered motionPreset="slideInTop">
-      <ModalOverlay />
+    <Modal isOpen onClose={onClose} size="4xl" isCentered motionPreset="slideInLeft">
+      <ModalOverlay backdropFilter="blur(1px)" />
       <ModalContent>
         <ModalCloseButton />
-        <ModalBody>
+        <ModalBody style={{margin:0, padding:3}}>
           <Flex flexDirection={"row"} overflowY="auto" >
             {images.map((image, idx) => (
-              <Image src={`http://localhost:8000/public/${image.imageUrl}`} alt={`Popup Image ${idx}`} w="500px" boxShadow="md" />
+              <Image src={`http://localhost:8000/public/${image.imageUrl}`} alt={`Popup Image ${idx}`} w="480px" boxShadow="md" />
             ))}
           </Flex>
         </ModalBody>

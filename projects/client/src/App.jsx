@@ -49,15 +49,6 @@ export default function App() {
       <div className={showNavigationbar ? "mt-20" : ""}>
         {/* Add some top margin to create space for the fixed navigation bar */}
         <Routes>
-          {/* client routes */}
-          <Route path="/" element={<Homepage />} />
-          <Route path="/reset-password" element={<ResetPassword userType={"user"} />} />
-          <Route path="/account/profile" element={<Profile />} />
-          <Route path="/account/my-order" element={<Order />} />
-          <Route path="/account/address-book" element={<Address />} />
-          <Route path="/account/change-password" element={<ChangePassword />} />
-          <Route path="/account/cart" element={<CartPage />} />
-          <Route path="/:gender?/:mainCategory?/:subCategory?/:productName?" element={<HomeProducts />} />
           {/* admin routes */}
           <Route path="/adminlogin" element={<AdminLoginPage />} />
           <Route path="/reset-password-admin" element={<ResetPassword userType={"admin"} />} />
@@ -66,6 +57,15 @@ export default function App() {
           <Route path="/dashboard/customers" element={<Customers />} />
           <Route path="/dashboard/staff" element={<Staff />} />
           <Route path="/dashboard/warehouse" element={<Warehouse />} />
+          {/* client routes */}
+          <Route path="/" element={<Homepage />} />
+          <Route path="/reset-password" element={<ResetPassword userType={"user"} />} />
+          <Route path="/account/profile" element={<Profile />} />
+          <Route path="/account/my-order" element={<Order />} />
+          <Route path="/account/address-book" element={<Address />} />
+          <Route path="/account/change-password" element={<ChangePassword />} />
+          <Route path="/account/cart" element={<CartPage />} />
+          <Route path="/products/:gender/:mainCategory?/:subCategory?/:productName?" element={<HomeProducts />} />
           {/* Add more route configurations as needed */}
           <Route path="*" element={<NotFound />} />
         </Routes>
