@@ -35,7 +35,7 @@ const Breadcrumbs = () => {
             <span>{formatSegment(segment)}</span>
           ) : (
             <BreadcrumbLink>
-              <Link className="hover:underline" to={`/${array.slice(0, index + 1).join("/")}`}>
+              <Link className="hover:underline" to={`/products/${array.slice(0, index + 1).join("/")}`}>
                 {formatSegment(segment)}
               </Link>
             </BreadcrumbLink>

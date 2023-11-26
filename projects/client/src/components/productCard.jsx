@@ -9,8 +9,7 @@ import "slick-carousel/slick/slick-theme.css";
 import { Button } from "flowbite-react";
 import { useDispatch } from "react-redux";
 import { showLoginModal } from "../slices/authModalSlices";
-import { PiCaretLeft, PiCaretRight } from "react-icons/pi";
-import ImagePopup from "./ImagePopup";
+import ZoomableImage from "./ZoomableImage";
 
 function ProductCard() {
   const { gender, mainCategory, subCategory, productName } = useParams();
@@ -152,7 +151,6 @@ function ProductCard() {
     <div className="flex flex-col px-32 space-y-14 h-screen overflow-y scrollbar-hide">
       {selectedProduct.length !== 0 ? (
         <>
-          {showPopup && <ImagePopup images={selectedProduct[0].productImages} activeIndex={activeImageIndex} onClose={() => setShowPopup(false)} />}
           <div className="flex w-full mt-14 gap-5">
             <div>
               {selectedProduct.map((product) => (
@@ -166,17 +164,10 @@ function ProductCard() {
               ))}
             </div>
             {selectedProduct.map((product) => (
-              <div className="flex flex-col space-y-10 cursor-zoom-in">
+              <div className="flex flex-col space-y-10 cursor-zoom-in" key={product.id}>
                 <Slider {...settings} className="w-[480px] h-[480px] shadow-xl" ref={sliderRef}>
                   {product.productImages.map((image, idx) => (
-                    <div key={idx} className="w-[480px] h-[480px]">
-                      <img
-                        src={`http://localhost:8000/public/${image.imageUrl}`}
-                        className={`w-full h-full object-cover ${idx === activeImageIndex ? "border border-black" : ""}`}
-                        alt={`Product Image ${idx}`}
-                        onClick={() => setShowPopup(true)}
-                      />
-                    </div>
+                    <ZoomableImage imageUrl={`http://localhost:8000/public/${image.imageUrl}`} alt={`Product Image ${idx}`} images={selectedProduct[0].productImages} />
                   ))}
                 </Slider>
               </div>
