@@ -1,32 +1,27 @@
+import React from 'react';
 import { Flex, useBreakpointValue, Box, Spacer, IconButton } from '@chakra-ui/react';
 import { CartProductMeta } from './CartProductMeta';
-import { DeleteIcon } from '@chakra-ui/icons'; // Importing DeleteIcon from Chakra UI
-import { useState } from 'react';
+import { DeleteIcon } from '@chakra-ui/icons';
+import { useDispatch } from 'react-redux';
+import { removeItemFromCart, updateCartItem } from '../slices/cartSlices';
 
 export const CartItem = (props) => {
   const {
-    name,
-    imageUrl,
-    price,
-    sku,
-    color,
-    size,
-    stock,
-    quantity: initialQuantity,
-    onQuantityChange,
+    item, // Assume item prop contains cart item details
     onDelete
   } = props;
 
-  // Local state to manage the selected quantity
-  const [quantity, setQuantity] = useState(initialQuantity);
+  const dispatch = useDispatch();
 
-  // Handle quantity changes
-  const handleQuantityChange = (newQuantity) => {
-    setQuantity(newQuantity);
-    if (onQuantityChange) {
-      onQuantityChange(newQuantity);
-    }
+  const handleDelete = () => {
+    dispatch(removeItemFromCart({ id: item.Product.id }));
+    if (onDelete) onDelete(); // If additional delete handling is needed
   };
+  // Handle quantity changes
+  const handleQuantityChange = (itemId, newQuantity) => {
+    dispatch(updateCartItem({ ...item, quantity: newQuantity }));
+  };
+
 
   // Responsive layout adjustments
   const flexDirection = useBreakpointValue({ base: 'column', md: 'row' });
@@ -36,23 +31,13 @@ export const CartItem = (props) => {
       <IconButton
         icon={<DeleteIcon />}
         aria-label="Delete item"
-        onClick={onDelete}
+        onClick={handleDelete}
         position="absolute"
         top="2"
         right="2"
       />
       <Flex direction={flexDirection}>
-        <CartProductMeta
-          image={imageUrl}
-          name={name}
-          sku={sku}
-          color={color}
-          size={size}
-          price={price}
-          quantity={quantity}
-          stock={stock}
-          onQuantityChange={handleQuantityChange}
-        />
+        <CartProductMeta item={item} onQuantityChange={handleQuantityChange} />
         <Spacer />
       </Flex>
     </Box>
