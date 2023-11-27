@@ -149,9 +149,41 @@ function ProductGrid() {
   return (
     <div>
       {products.length === 0 && (
-        <div className="flex justify-between">
-          <span className="text-xl ">No products found. </span>
-          <span className="text-xl w-[34vw]">&nbsp; </span>
+        <div className="flex flex-col space-y-10 lg:space-y-0">
+          <div className="lg:hidden flex w-full space-x-2 items-center justify-between">
+            <div className="w-[200px]">
+              <select className="h-9 border-1 rounded-lg w-full text-sm shadow-sm focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" onChange={handleSortChange}>
+                <option value="" disabled className="text-gray-400">
+                  Sort
+                </option>
+                {sortingOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex w-full overflow-x-auto lg:hidden scrollbar-hide">
+              <div className="flex space-x-2">
+                <Button color="light" size="sm" className="w-32">
+                  <Link className="hover:underline cursor-pointer" to={`/products/${gender}/${mainCategory}`}>
+                    All {mainCategory.charAt(0).toUpperCase() + mainCategory.slice(1)}
+                  </Link>
+                </Button>
+                {categoriesData.map((category, index) => (
+                  <Button color="light" size="sm" className="w-32" key={index}>
+                    <Link className="hover:underline cursor-pointer" to={`/products/${gender}/${mainCategory}/${category.name.replace(/\s+/g, "-").toLowerCase()}`}>
+                      {category.name}
+                    </Link>
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-xl ">No products found. </span>
+            <span className="text-xl w-[34vw]">&nbsp; </span>
+          </div>
         </div>
       )}
       {products.length !== 0 && (
@@ -187,7 +219,7 @@ function ProductGrid() {
               <div className="flex space-x-2">
                 <Button color="light" size="sm" className="w-32">
                   <Link className="hover:underline cursor-pointer" to={`/products/${gender}/${mainCategory}`}>
-                    All Jackets
+                    All {mainCategory.charAt(0).toUpperCase() + mainCategory.slice(1)}
                   </Link>
                 </Button>
                 {categoriesData.map((category, index) => (
