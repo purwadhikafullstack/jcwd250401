@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import getProductsUser from "../api/products/getProductsUser";
 import { SimpleGrid } from "@chakra-ui/react";
 import { toast } from "sonner";
@@ -21,6 +21,7 @@ function ProductGrid() {
   const [sliderIntervals, setSliderIntervals] = useState({});
   const location = useLocation();
   const [categoriesData, setCategoriesData] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Initialize currentImageIndexes with default value 0 for each product ID
@@ -202,28 +203,31 @@ function ProductGrid() {
         </div>
       )}
       <div className="mt-6">
-        <SimpleGrid columns={{ base: 2, lg: 4 }} spacing={{ base: 3, lg: 4 }} h={{ base: "73vh", lg: "69vh" }} borderRadius={{base:"xl", lg:"none"}} overflowY="auto" className="scrollbar-hide">
+        <SimpleGrid columns={{ base: 2, lg: 4 }} spacing={{ base: 3, lg: 4 }} h={{ base: "73vh", lg: "69vh" }} borderRadius={{ base: "xl", lg: "none" }} overflowY="auto" className="scrollbar-hide">
           {products.map((product) => (
-            <Link
-              key={product.id}
-              to={`/products/${product.gender.toLowerCase()}/${product.categories[0].name.replace(/\s+/g, "-").toLowerCase()}/${product.categories[1].name.replace(/\s+/g, "-").toLowerCase()}/${product.name
-                .replace(/\s+/g, "-")
-                .toLowerCase()}`}
-            >
-              <div className="flex flex-col justify-center items-center lg:justify-normal lg:items-start space-y-8 lg:space-y-10 cursor-pointer">
-                <Slider {...settings} className="w-[180px] h-[260px] lg:w-[230px] lg:h-[280px]">
-                  {product.productImages.map((image, idx) => (
-                    <div key={idx} className="w-[180px] h-[250px] lg:w-[230px] lg:h-[310px]">
-                      <img src={`http://localhost:8000/public/${image.imageUrl}`} className="w-full h-full object-cover shadow-md rounded-lg lg:rounded-none" alt={`Product Image ${idx}`} />
-                    </div>
-                  ))}
-                </Slider>
-                <div className="text-md flex flex-col">
-                  <span>{product.name}</span>
-                  <span className="font-bold">{formatToRupiah(product.price)}</span>
-                </div>
+            <div className="flex flex-col items-center lg:justify-normal lg:items-start space-y-6 lg:space-y-10">
+              <Slider {...settings} className="w-[180px] h-[260px] lg:w-[230px] lg:h-[280px]">
+                {product.productImages.map((image, idx) => (
+                  <div
+                    key={idx}
+                    className="w-[180px] h-[250px] lg:w-[230px] lg:h-[310px] cursor-pointer"
+                    onClick={() =>
+                      navigate(
+                        `/products/${product.gender.toLowerCase()}/${product.categories[0].name.replace(/\s+/g, "-").toLowerCase()}/${product.categories[1].name.replace(/\s+/g, "-").toLowerCase()}/${product.name
+                          .replace(/\s+/g, "-")
+                          .toLowerCase()}`
+                      )
+                    }
+                  >
+                    <img src={`http://localhost:8000/public/${image.imageUrl}`} className="w-full h-full object-cover shadow-md rounded-lg lg:rounded-none" alt={`Product Image ${idx}`} />
+                  </div>
+                ))}
+              </Slider>
+              <div className="text-md flex flex-col">
+                <span>{product.name}</span>
+                <span className="font-bold">{formatToRupiah(product.price)}</span>
               </div>
-            </Link>
+            </div>
           ))}
         </SimpleGrid>
       </div>
