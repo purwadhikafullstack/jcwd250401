@@ -20,5 +20,6 @@ router.delete("/:id", authMiddleware.validateToken, warehouseController.deleteWa
 
 router.patch("/admin/:warehouseId", authMiddleware.validateToken, authMiddleware.checkRoleSuperAdmin, warehouseController.assignWarehouseAdmin);
 router.patch("/unassign-admin/:warehouseId", authMiddleware.validateToken, authMiddleware.checkRoleSuperAdmin, warehouseController.unassignWarehouseAdmin);
+router.get("/:adminId", authMiddleware.validateToken, warehouseController.getWarehouseByAdmin);
 
 module.exports = router;

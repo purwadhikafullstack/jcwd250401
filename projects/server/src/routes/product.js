@@ -16,6 +16,10 @@ router.put("/archive/:productId", authMiddleware.validateToken, authMiddleware.c
 
 router.put("/unarchive/:productId", authMiddleware.validateToken, authMiddleware.checkRoleSuperAdmin, productController.handleUnarchiveProduct);
 
+router.post("/update-product-stock", authMiddleware.validateToken, productController.updateProductStock)
+
+router.delete("/remove-product-stock",authMiddleware.validateToken, productController.handleRemoveProductStock)
+
 router.delete("/:productId", authMiddleware.validateToken, authMiddleware.checkRoleSuperAdmin, productController.handleDeleteProduct);
 
 // for client side

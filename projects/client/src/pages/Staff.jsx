@@ -1,7 +1,6 @@
 import Sidebar from "../components/Sidebar";
 import Navigationadmin from "../components/Navigationadmin";
 import { useCallback, useEffect, useState } from "react";
-import api from "../api";
 import { toast } from "sonner";
 import { Flex, Input, InputGroup, InputLeftElement, Menu, MenuButton, MenuItem, MenuList, Table, TableContainer, Tbody, Td, Text, Th, Thead, Tr } from "@chakra-ui/react";
 import { ConfirmModal } from "../components/ConfirmModal";

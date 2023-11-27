@@ -31,7 +31,7 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       mutationType: {
-        type: Sequelize.ENUM("in","out")
+        type: Sequelize.ENUM("add","subtract")
       },
       adminId: {
         type: Sequelize.INTEGER,

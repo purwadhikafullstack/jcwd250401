@@ -17,6 +17,8 @@ import { logoutAdmin } from "../slices/accountSlices";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import getProducts from "../api/products/getProducts";
+import { UpdateStockModal } from "./UpdateStockModal";
+import { DeleteProductStockModal } from "./DeleteProductStockModal";
 
 function ProductList() {
   const [sortCriteria, setSortCriteria] = useState("date-desc"); // Default sorting criteria that matches the backend;
@@ -33,6 +35,8 @@ function ProductList() {
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [openEditProductModal, setOpenEditProductModal] = useState(false);
+  const [openUpdateProductStockModal, setOpenUpdateProductStockModal] = useState(false);
+  const [openDeleteProductStockModal, setOpenDeleteProductStockModal] = useState(false);
   const [openArchiveProductModal, setOpenArchiveProductModal] = useState(false);
   const [openDeleteProductModal, setOpenDeleteProductModal] = useState(false);
   const navigate = useNavigate();
@@ -191,6 +195,26 @@ function ProductList() {
     setOpenEditProductModal(!openEditProductModal);
   };
 
+  const toggleUpdateProductStockModal = (product) => {
+    setSelectedProduct(product);
+    setOpenUpdateProductStockModal(!openUpdateProductStockModal);
+  };
+
+  const handleCloseUpdateProductStockModal = () => {
+    setOpenUpdateProductStockModal(false);
+    fetchProducts();
+  };
+
+  const toggleDeleteProductStockModal = (product) => {
+    setSelectedProduct(product);
+    setOpenDeleteProductStockModal(!openUpdateProductStockModal);
+  };
+
+  const handleCloseDeleteProductStockModal = () => {
+    setOpenDeleteProductStockModal(false);
+    fetchProducts();
+  };
+
   const toggleArchiveModal = (product) => {
     setSelectedProduct(product);
     setOpenArchiveProductModal(!openArchiveProductModal);
@@ -254,8 +278,7 @@ function ProductList() {
                     disabled={opt.subOpts}
                     style={{
                       fontWeight: opt.subOpts ? "bold" : "normal",
-                    }}
-                  >
+                    }}>
                     {opt.label}
                   </option>
                   {opt.subOpts &&
@@ -331,7 +354,7 @@ function ProductList() {
             </div>
             <div className="flex flex-col w-44">
               <span className="font-bold">Stock</span>
-              <span>20</span>
+              <span>{product.totalStockAllWarehouses}</span>
             </div>
             {!isWarehouseAdmin ? (
               <div>
@@ -346,8 +369,7 @@ function ProductList() {
                     borderColor="gray.500"
                     borderWidth="2px"
                     _hover={{ bg: "gray.900", textColor: "white" }}
-                    _expanded={{ bg: "gray.900", textColor: "white" }}
-                  >
+                    _expanded={{ bg: "gray.900", textColor: "white" }}>
                     <Flex justifyContent="between" gap={4} px={2} alignItems="center">
                       <Text fontWeight="bold">Edit</Text>
                       <PiCaretDown size="20px" />
@@ -355,7 +377,8 @@ function ProductList() {
                   </MenuButton>
                   <MenuList>
                     <MenuItem onClick={() => toggleEditModal(product)}>Edit product</MenuItem>
-                    <MenuItem>Update stock</MenuItem>
+                    <MenuItem onClick={() => toggleUpdateProductStockModal(product)}>Update / Add stock</MenuItem>
+                    <MenuItem onClick={() => toggleDeleteProductStockModal(product)}>Delete stock</MenuItem>
                     <MenuItem onClick={() => toggleArchiveModal(product)}>Archive</MenuItem>
                     <MenuItem onClick={() => toggleDeleteModal(product)}>Delete</MenuItem>
                   </MenuList>
@@ -374,15 +397,15 @@ function ProductList() {
                     borderColor="gray.500"
                     borderWidth="2px"
                     _hover={{ bg: "gray.900", textColor: "white" }}
-                    _expanded={{ bg: "gray.900", textColor: "white" }}
-                  >
+                    _expanded={{ bg: "gray.900", textColor: "white" }}>
                     <Flex justifyContent="between" gap={4} px={2} alignItems="center">
                       <Text fontWeight="bold">Update</Text>
                       <PiCaretDown size="20px" />
                     </Flex>
                   </MenuButton>
                   <MenuList>
-                    <MenuItem>Update stock</MenuItem>
+                    <MenuItem onClick={() => toggleUpdateProductStockModal(product)}>Update / Add stock</MenuItem>
+                    <MenuItem onClick={() => toggleDeleteProductStockModal(product)}>Delete stock</MenuItem>
                   </MenuList>
                 </Menu>
               </div>
@@ -408,8 +431,7 @@ function ProductList() {
               bgColor={currentPage === 1 ? "white" : "gray.900"}
               textColor={currentPage === 1 ? "gray.900" : "white"}
               _hover={{ bgColor: "white", textColor: "gray.900" }}
-              mr="5px"
-            >
+              mr="5px">
               1
             </Button>
             {totalPages > 1 &&
@@ -425,8 +447,7 @@ function ProductList() {
                   bgColor={currentPage === index + 2 ? "white" : "gray.900"}
                   textColor={currentPage === index + 2 ? "gray.900" : "white"}
                   _hover={{ bgColor: "white", textColor: "gray.900" }}
-                  mr="5px"
-                >
+                  mr="5px">
                   {index + 2}
                 </Button>
               ))}
@@ -436,6 +457,8 @@ function ProductList() {
       {openArchiveProductModal && <ArchiveProductModal isOpen={openArchiveProductModal} data={selectedProduct} isClose={toggleArchiveModal} />}
       {openEditProductModal && <EditProductModal isOpen={openEditProductModal} data={selectedProduct} isClose={toggleEditModal} />}
       {openDeleteProductModal && <DeleteProductModal isOpen={openDeleteProductModal} data={selectedProduct} isClose={toggleDeleteModal} />}
+      {openUpdateProductStockModal && <UpdateStockModal isOpen={openUpdateProductStockModal} data={selectedProduct} onClose={handleCloseUpdateProductStockModal} />}
+      {openDeleteProductStockModal && <DeleteProductStockModal isOpen={openDeleteProductStockModal} data={selectedProduct} onClose={handleCloseDeleteProductStockModal} />}
     </div>
   );
 }

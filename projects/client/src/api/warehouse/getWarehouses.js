@@ -1,6 +1,6 @@
 import api from "../../api";
 
-const getWarehouses = async ({ mode, userId }) => {
+const getWarehouses = async ({ mode, userId } = {}) => {
   try {
     let endpoint = "/api/warehouse";
 
