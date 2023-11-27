@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 
 import getProductsCountsUser from "../api/products/getProductsCountsUser";
+import { Button } from "flowbite-react";
 
 const formatSubCategory = (subCategory) => {
   // Split the subCategory into words
@@ -70,16 +71,16 @@ export const ProductNavPage = () => {
   const pathSegments = location.pathname.split("/").filter((segment) => segment !== "");
 
   return (
-    <div className="space-y-16 mt-16">
-      <div className="flex flex-col space-y-2">
+    <div className="space-y-0 lg:space-y-10 mt-2 lg:mt-8">
+      <div className="flex lg:flex-col space-x-2 lg:space-x-0 lg:space-y-2 ">
         <span className="font-bold"> Result</span>
         <span> {totalData} items </span>
       </div>
-      <div className="flex flex-col space-y-6">
-        <div>
+      <div className="flex flex-col space-y-0 lg:space-y-4">
+        <div className="hidden lg:block">
           <span className="font-bold text-xl">{mainCategory.charAt(0).toUpperCase() + mainCategory.slice(1)}</span>
         </div>
-        <div className="flex flex-col space-y-4">
+        <div className="hidden lg:flex flex-col space-y-4">
           {categories.map((category, index) => (
             <Link className="hover:underline cursor-pointer" to={`/products/${gender}/${mainCategory}/${category.name.replace(/\s+/g, "-").toLowerCase()}`} key={index}>
               {category.name}

@@ -22,7 +22,7 @@ const Breadcrumbs = () => {
 
   return (
     <Breadcrumb>
-      <BreadcrumbItem>
+      <BreadcrumbItem >
         <BreadcrumbLink>
           <Link to={"/"} className="hover:underline">
             Home
