@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import getProductsUser from "../api/products/getProductsUser";
 import { SimpleGrid } from "@chakra-ui/react";
 import { toast } from "sonner";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { Button } from "flowbite-react";
+import api from "../api";
 
 function ProductGrid() {
   const { gender, mainCategory, subCategory } = useParams();
@@ -18,6 +20,8 @@ function ProductGrid() {
   const [currentImageIndexes, setCurrentImageIndexes] = useState({});
   const [sliderIntervals, setSliderIntervals] = useState({});
   const location = useLocation();
+  const [categoriesData, setCategoriesData] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Initialize currentImageIndexes with default value 0 for each product ID
@@ -66,9 +70,23 @@ function ProductGrid() {
     }
   }, [currentPage, totalData, gender, mainCategory, sortCriteria, subCategory]);
 
+  const fetchCategories = useCallback(async () => {
+    try {
+      const response = await api.get(`/category/user/sub-categories?mainCategory=${mainCategory}`);
+      const categoryData = response.data.detail;
+      setCategoriesData(categoryData);
+      console.log(categoryData);
+    } catch (error) {
+      if (error?.response?.status === 404) {
+        setCategoriesData([]);
+      }
+    }
+  }, [gender, mainCategory]);
+
   useEffect(() => {
     fetchProducts();
-  }, [fetchProducts]);
+    fetchCategories();
+  }, [fetchProducts, fetchCategories]);
 
   const formatToRupiah = (number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -137,9 +155,9 @@ function ProductGrid() {
         </div>
       )}
       {products.length !== 0 && (
-        <div className="flex justify-between">
-          <div>&nbsp;</div>
-          <div className="w-[168px] space-y-2">
+        <div className="flex lg:justify-between">
+          <div className="hidden lg:block">&nbsp;</div>
+          <div className="hidden lg:block w-full lg:w-[168px] space-y-2">
             <span className="font-bold"> Sort by</span>
             <select className="py-2 border-1 rounded-lg w-full text-sm shadow-sm focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" onChange={handleSortChange}>
               <option value="" disabled className="text-gray-400">
@@ -152,29 +170,64 @@ function ProductGrid() {
               ))}
             </select>
           </div>
+          <div className="lg:hidden flex w-full space-x-2 items-center justify-between">
+            <div className="w-[200px]">
+              <select className="h-9 border-1 rounded-lg w-full text-sm shadow-sm focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" onChange={handleSortChange}>
+                <option value="" disabled className="text-gray-400">
+                  Sort
+                </option>
+                {sortingOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex w-full overflow-x-auto lg:hidden scrollbar-hide">
+              <div className="flex space-x-2">
+                <Button color="light" size="sm" className="w-32">
+                  <Link className="hover:underline cursor-pointer" to={`/products/${gender}/${mainCategory}`}>
+                    All Jackets
+                  </Link>
+                </Button>
+                {categoriesData.map((category, index) => (
+                  <Button color="light" size="sm" className="w-32" key={index}>
+                    <Link className="hover:underline cursor-pointer" to={`/products/${gender}/${mainCategory}/${category.name.replace(/\s+/g, "-").toLowerCase()}`}>
+                      {category.name}
+                    </Link>
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       )}
       <div className="mt-6">
-        <SimpleGrid columns={4} spacing={4} h="63vh" overflowY="auto" className="scrollbar-hide">
+        <SimpleGrid columns={{ base: 2, lg: 4 }} spacing={{ base: 3, lg: 4 }} h={{ base: "73vh", lg: "69vh" }} borderRadius={{ base: "xl", lg: "none" }} overflowY="auto" className="scrollbar-hide">
           {products.map((product) => (
-            <Link
-              key={product.id}
-              to={`/products/${product.gender.toLowerCase()}/${product.categories[0].name.replace(/\s+/g, "-").toLowerCase()}/${product.categories[1].name.replace(/\s+/g, "-").toLowerCase()}/${product.name.replace(/\s+/g, "-").toLowerCase()}`}
-            >
-              <div className="flex flex-col space-y-10 cursor-pointer">
-                <Slider {...settings} className="w-[230px] h-[280px]">
-                  {product.productImages.map((image, idx) => (
-                    <div key={idx} className="w-[230px] h-[310px]">
-                      <img src={`http://localhost:8000/public/${image.imageUrl}`} className="w-full h-full object-cover shadow-md" alt={`Product Image ${idx}`} />
-                    </div>
-                  ))}
-                </Slider>
-                <div className="text-md flex flex-col">
-                  <span>{product.name}</span>
-                  <span className="font-bold">{formatToRupiah(product.price)}</span>
-                </div>
+            <div className="flex flex-col items-center lg:justify-normal lg:items-start space-y-6 lg:space-y-10">
+              <Slider {...settings} className="w-[180px] h-[260px] lg:w-[230px] lg:h-[280px]">
+                {product.productImages.map((image, idx) => (
+                  <div
+                    key={idx}
+                    className="w-[180px] h-[250px] lg:w-[230px] lg:h-[310px] cursor-pointer"
+                    onClick={() =>
+                      navigate(
+                        `/products/${product.gender.toLowerCase()}/${product.categories[0].name.replace(/\s+/g, "-").toLowerCase()}/${product.categories[1].name.replace(/\s+/g, "-").toLowerCase()}/${product.name
+                          .replace(/\s+/g, "-")
+                          .toLowerCase()}`
+                      )
+                    }
+                  >
+                    <img src={`http://localhost:8000/public/${image.imageUrl}`} className="w-full h-full object-cover shadow-md rounded-lg lg:rounded-none" alt={`Product Image ${idx}`} />
+                  </div>
+                ))}
+              </Slider>
+              <div className="text-md flex flex-col">
+                <span>{product.name}</span>
+                <span className="font-bold">{formatToRupiah(product.price)}</span>
               </div>
-            </Link>
+            </div>
           ))}
         </SimpleGrid>
       </div>

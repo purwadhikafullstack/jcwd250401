@@ -13,13 +13,13 @@ const HomeProducts = () => {
 
   return (
     <div className="w-full">
-      <div className="px-32 pt-4">
+      <div className="px-6 lg:px-32 pt-4">
         <Breadcrumbs />
       </div>
       {!productName ? (
-        <div className="px-32 flex justify-between">
+        <div className="px-6 lg:px-32 flex flex-col lg:flex-row justify-between">
           <ProductNavPage />
-          <div className="mt-16">
+          <div className="mt-4 lg:mt-4">
             <ProductGrid />
           </div>
         </div>

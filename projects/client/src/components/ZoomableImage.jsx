@@ -24,7 +24,7 @@ const ZoomableImage = ({ imageUrl, alt, images }) => {
         className={`h-full w-full object-cover transition-transform duration-500 ${isHovered ? "hovered" : ""}`}
         style={{
           transformOrigin: `${position.x}px ${position.y}px`,
-          transform: isHovered ? "scale(1.5)" : "scale(1)",
+          transform: isHovered ? "scale(2)" : "scale(1)",
         }}
         onClick={() => {
           setShowPopup(true);
