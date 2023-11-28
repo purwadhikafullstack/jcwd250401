@@ -148,10 +148,10 @@ function ProductCard() {
 
   console.log(showPopup);
   return (
-    <div className="flex flex-col px-32 space-y-14 h-screen overflow-y scrollbar-hide">
+    <div className="flex flex-col px-6 lg:px-32 space-y-6 lg:space-y-20 h-screen overflow-y scrollbar-hide">
       {selectedProduct.length !== 0 ? (
         <>
-          <div className="flex w-full mt-14 gap-5">
+          <div className="hidden lg:flex w-full mt-14 gap-5">
             <div>
               {selectedProduct.map((product) => (
                 <SimpleGrid columns={2} spacing={5} key={product.id}>
@@ -215,7 +215,74 @@ function ProductCard() {
               </div>
             ))}
           </div>
-          <div className="pb-10 flex-col space-y-8">
+          {/* Mobile */}
+          <div className="flex flex-col w-full mt-14 gap-5 lg:hidden">
+            {selectedProduct.map((product) => (
+              <div className="flex flex-col justify-center items-center space-y-10 cursor-zoom-in" key={product.id}>
+                <Slider {...settings} className="w-[350px] h-[480px] shadow-xl" ref={sliderRef}>
+                  {product.productImages.map((image, idx) => (
+                    <ZoomableImage imageUrl={`http://localhost:8000/public/${image.imageUrl}`} alt={`Product Image ${idx}`} images={selectedProduct[0].productImages} />
+                  ))}
+                </Slider>
+              </div>
+            ))}
+            <div className="flex justify-center">
+              {selectedProduct.map((product) => (
+                <div classname>
+                  <SimpleGrid columns={5} spacing={2} key={product.id}>
+                    {product.productImages.map((image, idx) => (
+                      <div key={idx} className={`w-[62px] h-[82px] object-cover shadow-xl cursor-pointer ${idx === activeImageIndex ? "border-2 border-[#777777]" : ""}`} onClick={() => handleImageClick(image.id)}>
+                        <img src={`http://localhost:8000/public/${image.imageUrl}`} alt={`Product Image ${idx}`} className="w-full h-full object-cover" />
+                      </div>
+                    ))}
+                  </SimpleGrid>
+                </div>
+              ))}
+            </div>
+            {selectedProduct.map((product) => (
+              <div className="flex flex-col justify-between">
+                <div className="flex flex-col space-y-5">
+                  <div className="flex flex-col space-y-2">
+                    <span className="font-bold text-2xl">{product.name}</span>
+                    <span className="text-md leading-snug">{product.description.split(".").slice(0, 2).join(".") + "."}</span>
+                  </div>
+                  <div>
+                    <span className="font-bold text-2xl">{formatToRupiah(product.price)}</span>
+                    <div className="mt-6 border-t border border-gray-200"></div>
+                  </div>
+                </div>
+                <div className="space-y-4 mt-4">
+                  <div className="flex space-x-4 justify-between">
+                    <div className="w-full space-y-4">
+                      <span className="font-bold text-xl">Size</span>
+                      <select className="w-full h-10 rounded-md border-gray-200 focus:outline-transparent transition-all ease-in-out duration-500">
+                        <option>All Size</option>
+                      </select>
+                    </div>
+                    <div className="w-full space-y-4">
+                      <span className="font-bold text-xl">Quantity</span>
+                      <NumberInput defaultValue={1} min={1} max={20}>
+                        <NumberInputField />
+                        <NumberInputStepper>
+                          <NumberIncrementStepper />
+                          <NumberDecrementStepper />
+                        </NumberInputStepper>
+                      </NumberInput>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Button className="w-full shadow-md" color="light" size="lg" onClick={handleAddToWishlist}>
+                      Add To Wishlist
+                    </Button>
+                    <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777] shadow-md" size="lg" onClick={handleAddToCart}>
+                      Add To Cart
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="pb-10 flex-col space-y-4 lg:space-y-8">
             <div>
               <span className="font-bold text-2xl">Description</span>
             </div>
