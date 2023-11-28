@@ -151,12 +151,46 @@ exports.deleteAdmin = async (req, res) => {
         message: "Cannot delete admin who is assigned to a warehouse, please unassign first",
       });
     }
-    
+
     await admin.destroy();
     return res.status(200).json({
       ok: true,
       message: "Delete admin successfully",
     });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+      detail: String(error),
+    });
+  }
+};
+
+exports.getSingleAdminWarehouse = async (req, res) => {
+  const { username, email } = req.params;
+
+  try {
+    const admin = await Admin.findOne({
+      where: {
+        username,
+        email,
+        isWarehouseAdmin : true
+      },
+    });
+
+    if (!admin) {
+      return res.status(404).json({
+        ok: false,
+        message: "Admin Warehouse not found",
+      });
+    }
+
+    return res.status(200).json({
+      ok: true,
+      message: "Get admin warehouse successfully",
+      detail: admin,
+    })
   } catch (error) {
     console.error(error);
     return res.status(500).json({

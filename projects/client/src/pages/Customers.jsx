@@ -129,7 +129,7 @@ export const Customers = () => {
           <button disabled={page === 1} className="bg-[#40403F] text-white py-2 px-4 rounded-md" onClick={() => setPage(page - 1)}>
             Prev Page
           </button>
-          <span className="text-[#40403F]">{page}</span>
+          <span className="text-[#40403F]">Page {page}</span>
           <button disabled={customers.length < size} className="bg-[#40403F] text-white py-2 px-4 rounded-md" onClick={() => setPage(page + 1)}>
             Next Page
           </button>
