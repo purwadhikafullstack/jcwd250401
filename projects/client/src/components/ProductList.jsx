@@ -278,7 +278,8 @@ function ProductList() {
                     disabled={opt.subOpts}
                     style={{
                       fontWeight: opt.subOpts ? "bold" : "normal",
-                    }}>
+                    }}
+                  >
                     {opt.label}
                   </option>
                   {opt.subOpts &&
@@ -318,7 +319,11 @@ function ProductList() {
           <div key={product.id} className="bg-white items-center justify-between flex gap-6 h-36 w-full px-6 py-2 rounded-lg shadow-sm">
             <div className="h-[100px] w-[100px] flex justify-center items-center">
               {product.productImages[0].imageUrl ? (
-                <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" />
+                product.totalStockAllWarehouses !== 0 ? (
+                  <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" />
+                ) : (
+                  <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" style={{ filter: "grayscale(100%)" }} />
+                )
               ) : (
                 <div className="w-full h-full flex justify-center items-center bg-gray-200 text-gray-400">
                   <div className="flex flex-col items-center justify-center">
@@ -330,7 +335,7 @@ function ProductList() {
             </div>
 
             <div className="flex w-60 flex-col">
-              <span className="font-bold">{product.name} </span>
+              {product.totalStockAllWarehouses !== 0 ? <span className="font-bold">{product.name}</span> : <span className="font-bold">(Out of stock) {product.name}</span>}
               <span>
                 SKU : {product.sku} ({product.gender}){" "}
               </span>
@@ -369,7 +374,8 @@ function ProductList() {
                     borderColor="gray.500"
                     borderWidth="2px"
                     _hover={{ bg: "gray.900", textColor: "white" }}
-                    _expanded={{ bg: "gray.900", textColor: "white" }}>
+                    _expanded={{ bg: "gray.900", textColor: "white" }}
+                  >
                     <Flex justifyContent="between" gap={4} px={2} alignItems="center">
                       <Text fontWeight="bold">Edit</Text>
                       <PiCaretDown size="20px" />
@@ -397,7 +403,8 @@ function ProductList() {
                     borderColor="gray.500"
                     borderWidth="2px"
                     _hover={{ bg: "gray.900", textColor: "white" }}
-                    _expanded={{ bg: "gray.900", textColor: "white" }}>
+                    _expanded={{ bg: "gray.900", textColor: "white" }}
+                  >
                     <Flex justifyContent="between" gap={4} px={2} alignItems="center">
                       <Text fontWeight="bold">Update</Text>
                       <PiCaretDown size="20px" />

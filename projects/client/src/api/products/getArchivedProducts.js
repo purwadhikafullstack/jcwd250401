@@ -1,15 +1,14 @@
 import api from "../../api";
 
-const getProducts = async ({ page = 1, limit, sort, category, search, filterBy, isArchived = false } = {}) => {
+const getArchivedProducts = async ({ page = 1, limit, sort, category, productName, filterBy } = {}) => {
   try {
     const url =
-      `/product?page=${page}&isArchived=${isArchived}` +
+      `/product/archived?page=${page}` +
       (limit ? `&limit=${limit}` : "") +
       (sort ? `&sort=${sort}` : "") +
       (category ? `&category=${category}` : "") +
-      (search ? `&search=${search}` : "") +
+      (productName ? `&search=${productName}` : "") +
       (filterBy ? `&filterBy=${filterBy}` : "");
-
 
     const response = await api.admin.get(url);
     return response.data;
@@ -19,4 +18,4 @@ const getProducts = async ({ page = 1, limit, sort, category, search, filterBy, 
   }
 };
 
-export default getProducts;
+export default getArchivedProducts;

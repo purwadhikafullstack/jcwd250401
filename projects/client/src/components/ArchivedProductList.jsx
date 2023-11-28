@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { logoutAdmin } from "../slices/accountSlices";
 import { useNavigate } from "react-router-dom";
 import getProducts from "../api/products/getProducts";
+import getArchivedProducts from "../api/products/getArchivedProducts";
 
 function ArchivedProductList() {
   const [sortCriteria, setSortCriteria] = useState("date-desc"); // Default sorting criteria that matches the backend;
@@ -52,14 +53,13 @@ function ArchivedProductList() {
 
   const fetchProducts = useCallback(async () => {
     try {
-      const result = await getProducts({
+      const result = await getArchivedProducts({
         page: currentPage,
         limit: productsPerPage,
         sort: sortCriteria,
         category: selectedCategory,
         search: searchInput,
         filterBy: selectedFilter,
-        isArchived: true,
       });
       const totalData = result.pagination.totalData;
       const totalPages = Math.ceil(totalData / productsPerPage);
@@ -318,7 +318,7 @@ function ArchivedProductList() {
             </div>
             <div className="flex flex-col w-44">
               <span className="font-bold">Stock</span>
-              <span>20</span>
+             <span>{product.totalStockAllWarehouses}</span>
             </div>
             <div>
               {!isWarehouseAdmin && (

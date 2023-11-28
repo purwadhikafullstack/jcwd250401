@@ -179,22 +179,31 @@ function ProductCard() {
                     <span className="font-bold text-2xl">{product.name}</span>
                     <span className="text-md leading-snug">{product.description.split(".").slice(0, 2).join(".") + "."}</span>
                   </div>
-                  <div>
+                  <div className="flex flex-col">
                     <span className="font-bold text-2xl">{formatToRupiah(product.price)}</span>
-                    <div className="mt-6 border-t border border-gray-200"></div>
+                    <div className="mt-2 mb-1 border-t border border-gray-200"></div>
+                    {product.totalStockAllWarehouses > 0 ? (
+                      product.totalStockAllWarehouses >= 10 ? (
+                        <span className="font-medium text-md">In Stock</span>
+                      ) : (
+                        <span className="font-medium text-md">Only {product.totalStockAllWarehouses} left</span>
+                      )
+                    ) : (
+                      <span className="font-medium text-md">Out of Stock</span>
+                    )}
                   </div>
                 </div>
-                <div className="space-y-8">
+                <div className="space-y-6 flex flex-col justify-end">
                   <div className="flex space-x-4 justify-between">
                     <div className="w-full space-y-4">
                       <span className="font-bold text-xl">Size</span>
-                      <select className="w-full h-10 rounded-md border-gray-200 focus:outline-transparent transition-all ease-in-out duration-500">
+                      <select className="w-full h-10 rounded-md border-gray-200 focus:outline-transparent transition-all ease-in-out duration-500" disabled={product.totalStockAllWarehouses === 0}>
                         <option>All Size</option>
                       </select>
                     </div>
                     <div className="w-full space-y-4">
                       <span className="font-bold text-xl">Quantity</span>
-                      <NumberInput defaultValue={1} min={1} max={20}>
+                      <NumberInput defaultValue={product.totalStockAllWarehouses === 0 ? 0 : 1} min={product.totalStockAllWarehouses === 0 ? 0 : 1} max={product.totalStockAllWarehouses} isDisabled={product.totalStockAllWarehouses === 0}>
                         <NumberInputField />
                         <NumberInputStepper>
                           <NumberIncrementStepper />
@@ -207,9 +216,15 @@ function ProductCard() {
                     <Button className="w-full shadow-md" color="light" size="lg" onClick={handleAddToWishlist}>
                       Add To Wishlist
                     </Button>
-                    <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777] shadow-md" size="lg" onClick={handleAddToCart}>
-                      Add To Cart
-                    </Button>
+                    {product.totalStockAllWarehouses !== 0 ? (
+                      <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777] shadow-md" size="lg" onClick={handleAddToCart}>
+                        Add To Cart
+                      </Button>
+                    ) : (
+                      <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777] shadow-md" size="lg" disabled>
+                        Out Of Stock
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -246,22 +261,31 @@ function ProductCard() {
                     <span className="font-bold text-2xl">{product.name}</span>
                     <span className="text-md leading-snug">{product.description.split(".").slice(0, 2).join(".") + "."}</span>
                   </div>
-                  <div>
+                  <div className="flex flex-col">
                     <span className="font-bold text-2xl">{formatToRupiah(product.price)}</span>
-                    <div className="mt-6 border-t border border-gray-200"></div>
+                    <div className="mt-2 mb-1 border-t border border-gray-200"></div>
+                    {product.totalStockAllWarehouses > 0 ? (
+                      product.totalStockAllWarehouses >= 10 ? (
+                        <span className="font-medium text-md">In Stock</span>
+                      ) : (
+                        <span className="font-medium text-md">Only {product.totalStockAllWarehouses} left</span>
+                      )
+                    ) : (
+                      <span className="font-medium text-md">Out of Stock</span>
+                    )}
                   </div>
                 </div>
-                <div className="space-y-4 mt-4">
+                <div className="mt-4 space-y-6">
                   <div className="flex space-x-4 justify-between">
                     <div className="w-full space-y-4">
                       <span className="font-bold text-xl">Size</span>
-                      <select className="w-full h-10 rounded-md border-gray-200 focus:outline-transparent transition-all ease-in-out duration-500">
+                      <select className="w-full h-10 rounded-md border-gray-200 focus:outline-transparent transition-all ease-in-out duration-500" disabled={product.totalStockAllWarehouses === 0}>
                         <option>All Size</option>
                       </select>
                     </div>
                     <div className="w-full space-y-4">
                       <span className="font-bold text-xl">Quantity</span>
-                      <NumberInput defaultValue={1} min={1} max={20}>
+                      <NumberInput defaultValue={product.totalStockAllWarehouses === 0 ? 0 : 1} min={product.totalStockAllWarehouses === 0 ? 0 : 1} max={product.totalStockAllWarehouses} isDisabled={product.totalStockAllWarehouses === 0}>
                         <NumberInputField />
                         <NumberInputStepper>
                           <NumberIncrementStepper />
@@ -274,9 +298,15 @@ function ProductCard() {
                     <Button className="w-full shadow-md" color="light" size="lg" onClick={handleAddToWishlist}>
                       Add To Wishlist
                     </Button>
-                    <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777] shadow-md" size="lg" onClick={handleAddToCart}>
-                      Add To Cart
-                    </Button>
+                    {product.totalStockAllWarehouses !== 0 ? (
+                      <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777] shadow-md" size="lg" onClick={handleAddToCart}>
+                        Add To Cart
+                      </Button>
+                    ) : (
+                      <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777] shadow-md" size="lg" disabled>
+                        Out Of Stock
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>

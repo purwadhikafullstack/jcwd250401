@@ -12,6 +12,8 @@ router.put("/:productId", authMiddleware.validateToken, authMiddleware.checkRole
 
 router.get("/", authMiddleware.validateToken, productController.handleGetAllProducts)
 
+router.get("/archived", authMiddleware.validateToken, productController.handleGetAllArchivedProducts);
+
 router.put("/archive/:productId", authMiddleware.validateToken, authMiddleware.checkRoleSuperAdmin, productController.handleArchiveProduct);
 
 router.put("/unarchive/:productId", authMiddleware.validateToken, authMiddleware.checkRoleSuperAdmin, productController.handleUnarchiveProduct);
