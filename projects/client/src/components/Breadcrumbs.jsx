@@ -30,25 +30,39 @@ const Breadcrumbs = () => {
   // Define the maximum index to render based on the screen size
   const maxIndexToRender = isLargeScreen ? segmentsToRender.length : 3; // Show till the third segment in mobile view
 
+  const unclickableSegments = ["men", "women", "unisex"];
+
   return (
     <Breadcrumb style={containerStyle}>
       <BreadcrumbItem>
-        <BreadcrumbLink>
-          <Link to={"/"} className="hover:underline">
+        <BreadcrumbLink isCurrentPage>
+          <span className="hover:underline">
             Home
-          </Link>
+          </span>
         </BreadcrumbLink>
       </BreadcrumbItem>
       {segmentsToRender.slice(0, maxIndexToRender).map((segment, index, array) => (
         <React.Fragment key={index}>
           <BreadcrumbItem>
-            <BreadcrumbLink>
-              <Link className="hover:underline" to={`/products/${array.slice(0, index + 1).join("/")}`}>
-                {formatSegment(segment)}
-              </Link>
-            </BreadcrumbLink>
+            {index === array.length - 1 ? (
+              <BreadcrumbLink isCurrentPage>
+                <span>{formatSegment(segment)}</span>
+              </BreadcrumbLink>
+            ) : (
+              <React.Fragment>
+                {unclickableSegments.includes(segment.toLowerCase()) ? (
+                  <span>{formatSegment(segment)}</span>
+                ) : (
+                  <BreadcrumbLink>
+                    <Link className="hover:underline" to={`/products/${array.slice(0, index + 1).join("/")}`}>
+                      {formatSegment(segment)}
+                    </Link>
+                  </BreadcrumbLink>
+                )}
+                <span style={{ margin: '0 6px' }}>/</span>
+              </React.Fragment>
+            )}
           </BreadcrumbItem>
-          {index < array.length - 1 && <span style={{ margin: '0 4px' }}>/</span>}
         </React.Fragment>
       ))}
     </Breadcrumb>
