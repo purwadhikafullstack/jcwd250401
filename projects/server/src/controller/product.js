@@ -388,9 +388,8 @@ exports.handleUpdateProduct = async (req, res) => {
 //           }
 //         }
 //       })
-    
-//     );
 
+//     );
 
 //     // Remove null values from the productStock array
 //     const filteredProductStock = productStock.filter((product) => product !== null);
@@ -728,7 +727,6 @@ exports.handleRemoveProductStock = async (req, res) => {
   }
 };
 
-
 exports.handleGetAllProducts = async (req, res) => {
   const limit = parseInt(req.query.limit) || 100;
   const page = parseInt(req.query.page) || 1;
@@ -737,22 +735,16 @@ exports.handleGetAllProducts = async (req, res) => {
   const search = req.query.search;
   const filterBy = req.query.filterBy;
   const isArchived = req.query.isArchived || false; // New query parameter
-  
- 
+
   try {
     const filter = {
-      include: [
-        { model: Mutation, attributes: ["stock"], order: [["createdAt", "DESC"]], limit: 1 },
-      ],
+      include: [{ model: Mutation, attributes: ["stock"], order: [["createdAt", "DESC"]], limit: 1 }],
       where: {},
     };
 
     // Apply search query filter using Sequelize's Op.like
     if (search) {
-      filter.where[Op.or] = [
-        { name: { [Op.like]: `%${search}%` } },
-        { sku: { [Op.like]: `%${search}%` } },
-      ];
+      filter.where[Op.or] = [{ name: { [Op.like]: `%${search}%` } }, { sku: { [Op.like]: `%${search}%` } }];
     }
 
     // Include sorting options
@@ -769,7 +761,7 @@ exports.handleGetAllProducts = async (req, res) => {
         filter.order = [["price", "ASC"]];
       } else if (sort === "price-desc") {
         filter.order = [["price", "DESC"]];
-      }
+      } 
     }
 
     if (filterBy && filterBy.toLowerCase() !== "all genders") {
@@ -837,15 +829,15 @@ exports.handleGetAllProducts = async (req, res) => {
       });
     }
 
+    
+
     // Extract product IDs for the next query
     const productIds = products.map((product) => product.id);
 
     // Query to fetch all categories associated with the products
     const allCategories = await ProductCategory.findAll({
       where: { productId: productIds },
-      include: [
-        { model: Category, as: "Category", attributes: ["id", "name"] },
-      ],
+      include: [{ model: Category, as: "Category", attributes: ["id", "name"] }],
     });
 
     // Organize categories by product ID for efficient mapping
@@ -925,24 +917,18 @@ exports.handleGetAllArchivedProducts = async (req, res) => {
   const category = req.query.category;
   const search = req.query.search;
   const filterBy = req.query.filterBy; // New query parameter
-  
- 
+
   try {
     const filter = {
-      include: [
-        { model: Mutation, attributes: ["stock"], order: [["createdAt", "DESC"]], limit: 1 },
-      ],
+      include: [{ model: Mutation, attributes: ["stock"], order: [["createdAt", "DESC"]], limit: 1 }],
       where: {
-        isArchived: true
+        isArchived: true,
       },
     };
 
     // Apply search query filter using Sequelize's Op.like
     if (search) {
-      filter.where[Op.or] = [
-        { name: { [Op.like]: `%${search}%` } },
-        { sku: { [Op.like]: `%${search}%` } },
-      ];
+      filter.where[Op.or] = [{ name: { [Op.like]: `%${search}%` } }, { sku: { [Op.like]: `%${search}%` } }];
     }
 
     // Include sorting options
@@ -973,7 +959,6 @@ exports.handleGetAllArchivedProducts = async (req, res) => {
     }
 
     // Add condition for isArchived
-   
 
     // Include category filter
     if (category && category !== "All") {
@@ -1029,9 +1014,7 @@ exports.handleGetAllArchivedProducts = async (req, res) => {
     // Query to fetch all categories associated with the products
     const allCategories = await ProductCategory.findAll({
       where: { productId: productIds },
-      include: [
-        { model: Category, as: "Category", attributes: ["id", "name"] },
-      ],
+      include: [{ model: Category, as: "Category", attributes: ["id", "name"] }],
     });
 
     // Organize categories by product ID for efficient mapping
