@@ -1,4 +1,4 @@
-const { Order, OrderItem, Product, Mutation } = require('../models'); // Import Mutation model
+const { Order, OrderItem, Product, Mutation, ProductImage } = require('../models'); // Import Mutation model
 const jwt = require('jsonwebtoken');
 
 exports.getCartItems = async (req, res) => {
@@ -19,7 +19,7 @@ exports.getCartItems = async (req, res) => {
     // Retrieve all cart items for the order, including product details
     const cartItems = await OrderItem.findAll({
       where: { orderId: order.id },
-      include: [{ model: Product }]
+      include: [{ model: Product, include: [{ model: ProductImage, as: "productImages" }] }]
     });
 
     // Fetch the current stock for each product in the cart

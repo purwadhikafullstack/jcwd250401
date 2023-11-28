@@ -1,7 +1,6 @@
 import Sidebar from "../components/Sidebar";
 import Navigationadmin from "../components/Navigationadmin";
 import { useCallback, useEffect, useState } from "react";
-import api from "../api";
 import { toast } from "sonner";
 import { Flex, Input, InputGroup, InputLeftElement, Menu, MenuButton, MenuItem, MenuList, Table, TableContainer, Tbody, Td, Text, Th, Thead, Tr } from "@chakra-ui/react";
 import { ConfirmModal } from "../components/ConfirmModal";
@@ -50,7 +49,7 @@ export const Staff = () => {
         order,
         search: debouncedSearchInput,
         isWarehouseAdmin: isWarehouseAdminValue
-      },[page, size, sort, order, isWarehouseAdmin, debouncedSearchInput])
+      })
 
       setAdmins(response.detail);
     } catch (error) {
@@ -66,7 +65,7 @@ export const Staff = () => {
         if (error.response.status === 401) navigate("/dashboard");
       }
     }
-  },[page, size, sort, order, debouncedSearchInput]);
+  },[page, size, sort, order, isWarehouseAdmin, debouncedSearchInput]);
 
   const handleDeleteModal = (data) => {
     setDeleteModal(true);
@@ -226,7 +225,7 @@ export const Staff = () => {
           <button disabled={page === 1} className="bg-[#40403F] text-white py-2 px-4 rounded-md font-bold" onClick={() => setPage(page - 1)}>
             Prev Page
           </button>
-          <span className="text-[#40403F] font-bold">{page}</span>
+          <span className="text-[#40403F] font-bold">Page {page}</span>
           <button disabled={admins.length < size} className="bg-[#40403F] text-white py-2 px-4 rounded-md font-bold" onClick={() => setPage(page + 1)}>
             Next Page
           </button>

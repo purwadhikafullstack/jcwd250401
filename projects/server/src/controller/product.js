@@ -1,4 +1,4 @@
-const { Product, ProductImage, ProductCategory, Category } = require("../models");
+const { Product, ProductImage, ProductCategory, Category, Mutation, Warehouse, sequelize } = require("../models");
 const { Op } = require("sequelize");
 
 exports.handleAddProduct = async (req, res) => {
@@ -221,6 +221,9 @@ exports.handleGetAllProducts = async (req, res) => {
 
   try {
     const filter = {
+      include: [
+        { model: Mutation, attributes: ["stock"], order: [["createdAt", "DESC"]], limit: 1 },
+      ],
       where: {},
     };
 
@@ -342,6 +345,41 @@ exports.handleGetAllProducts = async (req, res) => {
       delete product.dataValues.Categories; // Remove unnecessary attribute
     });
 
+    const productStock = await Promise.all(
+      products.map(async (product) => {
+        const warehouses = await Warehouse.findAll();
+
+        const mutations = await Promise.all(
+          warehouses.map(async (warehouse) => {
+            const latestMutation = await Mutation.findOne({
+              attributes: ["stock"],
+              where: {
+                productId: product.id,
+                warehouseId: warehouse.id,
+              },
+              order: [["createdAt", "DESC"]],
+              limit: 1,
+            });
+
+            return {
+              warehouseId: warehouse.id,
+              warehouseName: warehouse.name,
+              totalStock: latestMutation ? latestMutation.stock : 0,
+            };
+          })
+        );
+
+        // Calculate the total stock from all warehouses
+        const totalStockAllWarehouses = mutations.reduce((total, mutation) => total + mutation.totalStock, 0);
+
+        return {
+          ...product.toJSON(),
+          Mutations: mutations || [],
+          totalStockAllWarehouses: totalStockAllWarehouses || 0,
+        };
+      })
+    );
+
     // Send the response
     res.status(200).json({
       ok: true,
@@ -349,7 +387,7 @@ exports.handleGetAllProducts = async (req, res) => {
         totalData,
         page,
       },
-      details: products,
+      details: productStock,
     });
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -370,7 +408,7 @@ exports.handleUnarchiveProduct = async (req, res) => {
     if (!product) {
       return res.status(404).json({
         ok: false,
-        message: 'Product not found',
+        message: "Product not found",
       });
     }
 
@@ -379,14 +417,14 @@ exports.handleUnarchiveProduct = async (req, res) => {
 
     res.status(200).json({
       ok: true,
-      message: 'Product unarchived successfully',
+      message: "Product unarchived successfully",
       product: product, // You can customize the response as needed
     });
   } catch (error) {
-    console.error('Error unarchiving product:', error);
+    console.error("Error unarchiving product:", error);
     res.status(500).json({
       ok: false,
-      message: 'Internal server error',
+      message: "Internal server error",
     });
   }
 };
@@ -401,7 +439,7 @@ exports.handleArchiveProduct = async (req, res) => {
     if (!product) {
       return res.status(404).json({
         ok: false,
-        message: 'Product not found',
+        message: "Product not found",
       });
     }
 
@@ -410,18 +448,18 @@ exports.handleArchiveProduct = async (req, res) => {
 
     res.status(200).json({
       ok: true,
-      message: 'Product archived successfully',
+      message: "Product archived successfully",
       product: product, // You can customize the response as needed
     });
   } catch (error) {
-    console.error('Error archiving product:', error);
+    console.error("Error archiving product:", error);
     res.status(500).json({
       ok: false,
-      message: 'Internal server error',
+      message: "Internal server error",
     });
   }
 };
-  
+
 exports.handleDeleteProduct = async (req, res) => {
   const productId = req.params.productId;
 
@@ -432,7 +470,7 @@ exports.handleDeleteProduct = async (req, res) => {
     if (!product) {
       return res.status(404).json({
         ok: false,
-        message: 'Product not found',
+        message: "Product not found",
       });
     }
 
@@ -455,14 +493,222 @@ exports.handleDeleteProduct = async (req, res) => {
 
     res.status(200).json({
       ok: true,
-      message: 'Product deleted successfully',
+      message: "Product deleted successfully",
       product: product, // You can customize the response as needed
     });
   } catch (error) {
-    console.error('Error deleting product:', error);
+    console.error("Error deleting product:", error);
     res.status(500).json({
       ok: false,
-      message: 'Internal server error',
+      message: "Internal server error",
     });
   }
 };
+
+const updateStock = async (warehouseId, productId, quantity, type, adminId, transaction) => {
+  try {
+    quantity = parseInt(quantity);
+    if (type !== "add" && type !== "subtract") {
+      throw new Error("Invalid 'type' parameter. Must be 'add' or 'subtract'.");
+    }
+
+    const latestMutation = await Mutation.findOne({
+      where: {
+        productId,
+        warehouseId,
+      },
+      order: [["createdAt", "DESC"]],
+      limit: 1,
+      attributes: ["stock"],
+      transaction,
+    });
+
+    console.log("Latest Mutation:", latestMutation);
+    const currentStock = latestMutation ? latestMutation.stock : 0;
+
+    if (type === "subtract" && quantity > currentStock) {
+      throw new Error("Cannot subtract more than current stock");
+    }
+
+    const newStock = type === "add" ? currentStock + quantity : currentStock - quantity;
+
+    await Mutation.create(
+      {
+        productId,
+        warehouseId,
+        mutationQuantity: quantity,
+        mutationType: type,
+        adminId,
+        stock: newStock,
+      },
+      { transaction }
+    );
+  } catch (error) {
+    throw new Error(`Error updating stock: ${error.message}`);
+  }
+};
+
+exports.updateProductStock = async (req, res) => {
+  const t = await sequelize.transaction();
+
+  try {
+    const { warehouseId, productId, quantity, type } = req.body;
+    const { isWarehouseAdmin } = req.user;
+
+    if (!warehouseId || !productId || !quantity || !type) {
+      await t.rollback();
+      return res.status(400).json({
+        ok: false,
+        message: "Missing required parameters",
+      });
+    }
+
+    const product = await Product.findByPk(productId);
+    if (!product) {
+      await t.rollback();
+      return res.status(404).json({
+        ok: false,
+        message: "Product not found",
+      });
+    }
+
+    let selectedWarehouseId = warehouseId;
+    if (!isWarehouseAdmin) {
+      selectedWarehouseId = req.body.warehouseId;
+      if (!selectedWarehouseId) {
+        await t.rollback();
+        return res.status(400).json({
+          ok: false,
+          message: "Please select a warehouse",
+        });
+      }
+    }
+    await updateStock(selectedWarehouseId, productId, quantity, type, req.user.id, t);
+    await t.commit();
+
+    res.status(200).json({
+      ok: true,
+      message: "Stock updated successfully",
+      detail: {
+        product,
+        selectedWarehouseId,
+        quantity,
+        type,
+        adminId: req.user.id,
+      },
+    });
+  } catch (error) {
+    await t.rollback();
+    console.error("Error updating stock:", error);
+    res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+      detail: String(error),
+    });
+  }
+};
+
+const removeStock = async (warehouseId, productId, transaction) => {
+  try {
+    const product = await Product.findByPk(productId, {
+      transaction,
+      include: [
+        {
+          model: Mutation,
+          attributes: ["id", "stock"],
+          order: [["createdAt", "DESC"]],
+          where: { warehouseId },
+        },
+      ],
+    });
+
+    if (!product) {
+      throw new Error("Product stock not found in the warehouse");
+    }
+
+    await Mutation.destroy({
+      where: {
+        id: {
+          [Op.in]: product.Mutations.map((mutation) => mutation.id),
+        },
+      },
+    });
+  } catch (error) {
+    throw new Error(`Error removing stock: ${error.message}`);
+  }
+};
+
+exports.handleRemoveProductStock = async (req, res) => {
+  const t = await sequelize.transaction();
+
+  try {
+    const { warehouseId, productId } = req.body;
+    const { isWarehouseAdmin } = req.user;
+
+    if (!warehouseId || !productId) {
+      await t.rollback();
+      return res.status(400).json({
+        ok: false,
+        message: "Missing required parameters",
+      });
+    }
+
+    const product = await Product.findByPk(productId);
+    if (!product) {
+      await t.rollback();
+      return res.status(404).json({
+        ok: false,
+        message: "Product not found",
+      });
+    }
+
+    const productInWarehouse = await Mutation.findOne({
+      where: {
+        productId,
+        warehouseId,
+      },
+    });
+
+    if (!productInWarehouse) {
+      await t.rollback();
+      return res.status(404).json({
+        ok: false,
+        message: "Product not found in warehouse",
+      });
+    }
+
+    let selectedWarehouseId = warehouseId;
+    if (!isWarehouseAdmin) {
+      selectedWarehouseId = req.body.warehouseId;
+      if (!selectedWarehouseId) {
+        await t.rollback();
+        return res.status(400).json({
+          ok: false,
+          message: "Please select a warehouse",
+        });
+      }
+    }
+
+    await removeStock(selectedWarehouseId, productId, t);
+    await t.commit();
+
+    res.status(200).json({
+      ok: true,
+      message: "Stock removed successfully",
+      detail: {
+        product,
+        selectedWarehouseId,
+        adminId: req.user.id,
+      },
+    });
+  } catch (error) {
+    await t.rollback();
+    console.error("Error removing stock:", error);
+    res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+      detail: String(error),
+    });
+  }
+};
+

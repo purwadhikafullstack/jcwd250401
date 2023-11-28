@@ -16,6 +16,7 @@ import { Customers } from "./pages/Customers";
 import { Staff } from "./pages/Staff";
 import Warehouse from "./pages/Warehouse";
 import HomeProducts from "./pages/HomeProducts";
+import { Stock } from "./pages/Stock";
 
 // 
 
@@ -57,6 +58,7 @@ export default function App() {
           <Route path="/dashboard/customers" element={<Customers />} />
           <Route path="/dashboard/staff" element={<Staff />} />
           <Route path="/dashboard/warehouse" element={<Warehouse />} />
+          <Route path="/dashboard/report/stock" element={<Stock />} />
           {/* client routes */}
           <Route path="/" element={<Homepage />} />
           <Route path="/reset-password" element={<ResetPassword userType={"user"} />} />

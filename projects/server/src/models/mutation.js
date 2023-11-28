@@ -18,8 +18,8 @@ module.exports = (sequelize, DataTypes) => {
   Mutation.init({
     productId: DataTypes.INTEGER,
     warehouseId: DataTypes.INTEGER,
-    mutatioQuantity: DataTypes.INTEGER,
-    mutationType: DataTypes.STRING,
+    mutationQuantity: DataTypes.INTEGER,
+    mutationType: DataTypes.ENUM('add', 'substract'),
     adminId: DataTypes.INTEGER,
     stock: DataTypes.INTEGER
   }, {
