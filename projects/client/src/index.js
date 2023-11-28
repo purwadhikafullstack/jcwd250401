@@ -24,7 +24,7 @@ root.render(
     <PersistGate loading={null} persistor={persistor}>
       <BrowserRouter>
         <ChakraProvider theme={theme}>
-          <Toaster position="bottom-center" />
+          <Toaster position="bottom-center" richColors />
           <App />
         </ChakraProvider>
       </BrowserRouter>

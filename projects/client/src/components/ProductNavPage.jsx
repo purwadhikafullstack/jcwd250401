@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 
 import getProductsCountsUser from "../api/products/getProductsCountsUser";
+import { Button } from "flowbite-react";
 
 const formatSubCategory = (subCategory) => {
   // Split the subCategory into words
@@ -20,7 +21,7 @@ const formatSubCategory = (subCategory) => {
 };
 
 export const ProductNavPage = () => {
-  const { gender, mainCategory, subCategory, productName } = useParams();
+  const { gender, mainCategory, subCategory } = useParams();
   const [categories, setCategories] = useState([]);
   const [totalData, setTotalData] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -32,14 +33,13 @@ export const ProductNavPage = () => {
         category,
         filterBy: gender,
       });
-      
+
       const totalData = result.pagination.totalData;
 
       setTotalData(totalData);
     } catch (error) {
       if (error?.response?.status === 404) {
         setTotalData(0);
-       
       } else if (error.request) {
         // Handle request errors
         setTimeout(() => {
@@ -71,18 +71,18 @@ export const ProductNavPage = () => {
   const pathSegments = location.pathname.split("/").filter((segment) => segment !== "");
 
   return (
-    <div className="space-y-16 mt-16">
-      <div className="flex flex-col space-y-2">
+    <div className="space-y-0 lg:space-y-10 mt-2 lg:mt-8">
+      <div className="flex lg:flex-col space-x-2 lg:space-x-0 lg:space-y-2 ">
         <span className="font-bold"> Result</span>
         <span> {totalData} items </span>
       </div>
-      <div className="flex flex-col space-y-6">
-        <div>
+      <div className="flex flex-col space-y-0 lg:space-y-4">
+        <div className="hidden lg:block">
           <span className="font-bold text-xl">{mainCategory.charAt(0).toUpperCase() + mainCategory.slice(1)}</span>
         </div>
-        <div className="flex flex-col space-y-4">
+        <div className="hidden lg:flex flex-col space-y-4">
           {categories.map((category, index) => (
-            <Link className="hover:underline cursor-pointer" to={`/${gender}/${mainCategory}/${category.name.replace(/\s+/g, "-").toLowerCase()}`} key={index}>
+            <Link className="hover:underline cursor-pointer" to={`/products/${gender}/${mainCategory}/${category.name.replace(/\s+/g, "-").toLowerCase()}`} key={index}>
               {category.name}
             </Link>
           ))}

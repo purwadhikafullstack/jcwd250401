@@ -13,12 +13,12 @@ module.exports = (sequelize, DataTypes) => {
         as: "productImages",
       });
       Product.belongsToMany(models.Category, {
-        through: "ProductCategory",
+        through: models.ProductCategory,
         foreignKey: "productId",
+        as: "Categories",
       });
       Product.hasMany(models.OrderItem, { foreignKey: "productId" });
       Product.hasMany(models.Mutation, { foreignKey: "productId" });
-
     }
   }
   Product.init(

@@ -11,7 +11,7 @@ import { showLoginModal, showSignUpModal } from "../slices/authModalSlices";
 import { logout, setUsername } from "../slices/accountSlices";
 import { getAuth, signOut } from "firebase/auth";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import getProfile from "../api/profile/getProfile";
 
@@ -36,6 +36,7 @@ function Navigationbar() {
   const profile = JSON.parse(localStorage.getItem("profile"));
   const username = profile?.data?.profile?.username;
   const isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
+  const location = useLocation();
 
   const openAuthModal = () => {
     dispatch(showLoginModal());
@@ -47,17 +48,17 @@ function Navigationbar() {
 
   const handleIconClick = () => setDropdownVisible(!dropdownVisible);
 
-  const handleSubcategoryClick = (subcategory) => {
-    setIsDropdownTransitioning(true);
-    setDropdownSubcategory(subcategory);
-  };
-
+ const handleSubcategoryClick = (subcategory) => {
+  setIsDropdownTransitioning(true);
+  setDropdownSubcategory((prevSubcategory) => (prevSubcategory === subcategory ? null : subcategory));
+  
+};
   const handleLogout = () => {
-    navigate("/");
     signOut(auth)
-      .then(() => {
-        setDropdownVisible(false);
-        dispatch(logout());
+    .then(() => {
+      setDropdownVisible(false);
+      dispatch(logout());
+      navigate(location.pathname);
       })
       .catch((error) => {
         console.error("Error signing out:", error);
@@ -66,16 +67,18 @@ function Navigationbar() {
 
   const getUserData = async () => {
     try {
-      const response = await getProfile({ username });
-      setUserData(response.detail);
-      dispatch(setUsername(response.detail.username));
+      if (isLoggedIn) {
+        const response = await getProfile({ username });
+        setUserData(response.detail);
+        dispatch(setUsername(response.detail.username));
+      }
     } catch (error) {
-      if (error.response && (error.response.status === 401 || error.response.status === 403 || error.response.status === 404 || error.response.status === 500)) {
+      if (error.response.status === 404 || error.response.status === 500) {
         toast.error(error.response.data.message);
         setTimeout(() => {
           handleLogout();
+          navigate(location.pathname);
         }, 1000);
-        
       }
     }
   };
@@ -88,10 +91,7 @@ function Navigationbar() {
     const resetTransition = () => {
       setIsDropdownTransitioning(false);
     };
-
-    const timeoutId = setTimeout(resetTransition, 200);
-
-    return () => clearTimeout(timeoutId);
+    const timeout = setTimeout(resetTransition, 300);
   }, [dropdownSubcategory]);
 
   return (
@@ -100,7 +100,7 @@ function Navigationbar() {
         <Link to="/">
           <img src={rains} alt="Logo" className="w-26 h-10 hover:cursor-pointer" />
         </Link>
-        <div className="hidden space-x-4 lg:flex">
+        <div className="hidden space-x-6 lg:flex">
           {categories.map((category, index) => {
             const joinedCategories = category.toLowerCase().replace(" ", "-");
             const finalCategory = joinedCategories === "bags" || joinedCategories === "accessories" ? `unisex/${joinedCategories}` : joinedCategories;
@@ -109,7 +109,7 @@ function Navigationbar() {
               const joinedSubcategory = subcategory.toLowerCase().replace(/\s/g, "-");
               const finalSubcategory = joinedSubcategory === "all-bags" || joinedSubcategory === "all-accessories" ? "" : `/${joinedSubcategory}`;
               return (
-                <Link key={index} to={`${finalCategory}${finalSubcategory}`}>
+                <Link key={index} to={`/products/${finalCategory}${finalSubcategory}`}>
                   <p className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm">{subcategory}</p>
                 </Link>
               );
@@ -117,13 +117,15 @@ function Navigationbar() {
 
             return (
               <>
-                <span key={index} className="text-md font-semibold cursor-pointer underline-on-hover " onMouseEnter={() => handleSubcategoryClick(category)}>
+                <span key={index} className="text-md font-semibold cursor-pointer underline-on-hover " onMouseEnter={() => dropdownSubcategory !== category && handleSubcategoryClick(category)} >
                   {category}
                 </span>
+
                 {dropdownSubcategory === category && (
                   <div
                     className={`absolute top-20 w-full right-0 h-50 bg-white ring-1 ring-black ring-opacity-5 z-10 flex-wrap transition-dropdown ${isDropdownTransitioning ? "dropdown-hidden" : "dropdown-visible"}`}
-                    onMouseLeave={() => setDropdownSubcategory(null)}>
+                    onMouseLeave={() => setDropdownSubcategory(null)}
+                  >
                     <div className="flex flex-row h-full px-44">
                       <div className="flex flex-col flex-wrap">
                         {(() => {

@@ -84,8 +84,8 @@ function EditProductModal({ isOpen, isClose, data }) {
     initialValues: {
       productName: data?.name,
       productGender: data?.gender === "Unisex" ? "" : data?.gender,
-      productMainCategory: data?.Categories[0]?.name,
-      productSubCategory: data?.Categories[1]?.name,
+      productMainCategory: data?.categories[0]?.name,
+      productSubCategory: data?.categories[1]?.name,
       productDescription: data?.description,
       productPrice: data?.price || 0,
       productImages: "",
