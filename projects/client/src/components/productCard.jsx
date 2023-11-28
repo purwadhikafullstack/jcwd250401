@@ -228,7 +228,7 @@ function ProductCard() {
             ))}
             <div className="flex justify-center">
               {selectedProduct.map((product) => (
-                <div classname>
+                <div className="flex justify-center">
                   <SimpleGrid columns={5} spacing={2} key={product.id}>
                     {product.productImages.map((image, idx) => (
                       <div key={idx} className={`w-[62px] h-[82px] object-cover shadow-xl cursor-pointer ${idx === activeImageIndex ? "border-2 border-[#777777]" : ""}`} onClick={() => handleImageClick(image.id)}>
