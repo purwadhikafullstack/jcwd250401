@@ -1,6 +1,7 @@
 import { useLocation } from "react-router-dom";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
+import React from "react";
 
 const capitalize = (str) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -20,27 +21,49 @@ const Breadcrumbs = () => {
   const skipProducts = pathSegments[0] === "products";
   const segmentsToRender = skipProducts ? pathSegments.slice(1) : pathSegments;
 
+  // Set the styles for the breadcrumb container
+  const containerStyle = { display: 'flex', flexWrap: 'wrap' };
+
+  // Define a media query for screen widths larger than 600px
+  const isLargeScreen = window.innerWidth > 500; // You can adjust the threshold as needed
+
+  // Define the maximum index to render based on the screen size
+  const maxIndexToRender = isLargeScreen ? segmentsToRender.length : 3; // Show till the third segment in mobile view
+
+  const unclickableSegments = ["men", "women", "unisex"];
+
   return (
-    <Breadcrumb>
-      <BreadcrumbItem >
-        <BreadcrumbLink>
-          <Link to={"/"} className="hover:underline">
+    <Breadcrumb style={containerStyle}>
+      <BreadcrumbItem>
+        <BreadcrumbLink isCurrentPage>
+          <span className="hover:underline">
             Home
-          </Link>
+          </span>
         </BreadcrumbLink>
       </BreadcrumbItem>
-      {segmentsToRender.map((segment, index, array) => (
-        <BreadcrumbItem key={index} isCurrentPage={index === array.length - 1}>
-          {index === 0 || index === array.length - 1 ? (
-            <span>{formatSegment(segment)}</span>
-          ) : (
-            <BreadcrumbLink>
-              <Link className="hover:underline" to={`/products/${array.slice(0, index + 1).join("/")}`}>
-                {formatSegment(segment)}
-              </Link>
-            </BreadcrumbLink>
-          )}
-        </BreadcrumbItem>
+      {segmentsToRender.slice(0, maxIndexToRender).map((segment, index, array) => (
+        <React.Fragment key={index}>
+          <BreadcrumbItem>
+            {index === array.length - 1 ? (
+              <BreadcrumbLink isCurrentPage>
+                <span>{formatSegment(segment)}</span>
+              </BreadcrumbLink>
+            ) : (
+              <React.Fragment>
+                {unclickableSegments.includes(segment.toLowerCase()) ? (
+                  <span>{formatSegment(segment)}</span>
+                ) : (
+                  <BreadcrumbLink>
+                    <Link className="hover:underline" to={`/products/${array.slice(0, index + 1).join("/")}`}>
+                      {formatSegment(segment)}
+                    </Link>
+                  </BreadcrumbLink>
+                )}
+                <span style={{ margin: '0 6px' }}>/</span>
+              </React.Fragment>
+            )}
+          </BreadcrumbItem>
+        </React.Fragment>
       ))}
     </Breadcrumb>
   );
