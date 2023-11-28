@@ -8,9 +8,7 @@ import { AiOutlineLoading } from "react-icons/ai";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Button } from "flowbite-react";
 import { loginAdmin } from "../slices/accountSlices";
-import { login } from "../slices/accountSlices";
 import rains from "../assets/rains.png";
-import api from "../api";
 import { toast } from "sonner";
 import { Switch } from "@chakra-ui/react";
 import ForgotPasswordModal from "../components/ForgotPasswordModal";
@@ -55,7 +53,6 @@ function AdminLoginPage() {
             autoClose: 1000,
             onAutoClose: (t) => {
               setIsSubmitting(false);
-              // dispatch(loginAdmin(responseData));
               dispatch(loginAdmin(response));
               navigate("/dashboard");
             },
@@ -65,16 +62,12 @@ function AdminLoginPage() {
         if (error.response) {
           if (error.response.status === 401) {
             setTimeout(() => {
-              toast.error("Email or password incorrect");
+              toast.error(error.response.data.message, {
+                description: error.response.data.detail || "Please check your email and password",
+              });
               setIsSubmitting(false);
             }, 2000);
-          } else {
-            // Handle other HTTP errors
           }
-        } else if (error.request) {
-          // Handle network errors (request was made but no response received)
-        } else {
-          // Handle other non-network, non-HTTP-related errors
         }
       } finally {
         // Add a 1-second delay before closing the modal

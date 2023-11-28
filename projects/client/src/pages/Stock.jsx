@@ -241,7 +241,7 @@ export const Stock = () => {
                         {mutation.mutationQuantity}
                       </Td>
                       <Td>{mutation.stock}</Td>
-                      <Td>{mutation?.status ? mutation.status : "Mutation"}</Td>
+                      <Td>{mutation?.status ? mutation.status : "-"}</Td>
                     </Tr>
                   ))}
                 </Tbody>

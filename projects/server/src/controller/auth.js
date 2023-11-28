@@ -5,7 +5,7 @@ const mailer = require("../lib/nodemailer");
 const hbs = require("handlebars");
 const crypto = require("crypto");
 const fs = require("fs"); // Don't forget to import the 'fs' module
-const { User, Admin } = require("../models");
+const { User, Admin, Warehouse } = require("../models");
 const path = require("path");
 
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
@@ -249,7 +249,7 @@ exports.handleLogin = async (req, res) => {
       return;
     }
     const payload = { id: account.id, isVerify: account.isVerify };
-    const expiresIn = remember ? '30d' : '2h'; // Set expiration to 1 month if remember is true, otherwise 2 hours
+    const expiresIn = remember ? "30d" : "2h"; // Set expiration to 1 month if remember is true, otherwise 2 hours
 
     const token = jwt.sign(payload, JWT_SECRET_KEY, {
       expiresIn,
@@ -300,7 +300,7 @@ exports.handleLoginWithGoogle = async (req, res) => {
     }
 
     const payload = { id: account.id, isVerify: account.isVerify };
-    const expiresIn = remember ? '30d' : '2h'; // Set expiration to 1 month if remember is true, otherwise 2 hours
+    const expiresIn = remember ? "30d" : "2h"; // Set expiration to 1 month if remember is true, otherwise 2 hours
 
     const token = jwt.sign(payload, JWT_SECRET_KEY, {
       expiresIn,
@@ -510,43 +510,41 @@ exports.handleSendVerifyEmail = async (req, res) => {
 };
 
 exports.handleAdminRegister = async (req, res) => {
-  const { email, password, username="admin", isWarehouseAdmin=false } = req.body;
+  const { email, password, username = "admin", isWarehouseAdmin = false } = req.body;
 
   try {
-   existingAdmin = await Admin.findOne({
-    where: {
-      email,
-    },
-  });
-
-  if (existingAdmin) {
-    return res.status(400).send({
-      message: "Admin with this email already exists",
+    existingAdmin = await Admin.findOne({
+      where: {
+        email,
+      },
     });
-  
-  }
-  const salt = await bcrypt.genSalt(10);
-  const hashPassword = await bcrypt.hash(password, salt);
-  const username = email.split("@")[0];
-  const admin = await Admin.create({
-    username,
-    email,
-    password: hashPassword,
-    isWarehouseAdmin
-  });
 
-  const response = {
-    username,
-    email: admin.email,
-    isWarehouseAdmin: admin.isWarehouseAdmin,
-  };
-  
-  return res.status(201).send({
-    message: "Admin created successfully",
-    ok: true,
-    data: response,
-  })
+    if (existingAdmin) {
+      return res.status(400).send({
+        message: "Admin with this email already exists",
+      });
+    }
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt);
+    const username = email.split("@")[0];
+    const admin = await Admin.create({
+      username,
+      email,
+      password: hashPassword,
+      isWarehouseAdmin,
+    });
 
+    const response = {
+      username,
+      email: admin.email,
+      isWarehouseAdmin: admin.isWarehouseAdmin,
+    };
+
+    return res.status(201).send({
+      message: "Admin created successfully",
+      ok: true,
+      data: response,
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).send({
@@ -555,8 +553,6 @@ exports.handleAdminRegister = async (req, res) => {
   }
 };
 
-
-   
 exports.handleAdminLogin = async (req, res) => {
   const { email, password, remember } = req.body;
 
@@ -568,12 +564,13 @@ exports.handleAdminLogin = async (req, res) => {
           password,
         },
       },
+      include: [{ model: Warehouse }],
     });
 
     if (!account) {
       res.status(401).json({
         ok: false,
-        message: 'Incorrect email or password',
+        message: "Incorrect email or password",
       });
       return;
     }
@@ -582,13 +579,22 @@ exports.handleAdminLogin = async (req, res) => {
     if (!isValid) {
       res.status(401).json({
         ok: false,
-        message: 'Incorrect email or password',
+        message: "Incorrect email or password",
+      });
+      return;
+    }
+
+    if (!account.Warehouse && account.isWarehouseAdmin === true) {
+      res.status(401).json({
+        ok: false,
+        message: "Admin does not have warehouse",
+        detail: "Please contact administrator",
       });
       return;
     }
 
     const payload = { id: account.id, isWarehouseAdmin: account.isWarehouseAdmin };
-    const expiresIn = remember ? '30d' : '2h'; // Set expiration to 1 month if remember is true, otherwise 2 hours
+    const expiresIn = remember ? "30d" : "2h"; // Set expiration to 1 month if remember is true, otherwise 2 hours
 
     const token = jwt.sign(payload, JWT_SECRET_KEY, {
       expiresIn,
@@ -614,7 +620,6 @@ exports.handleAdminLogin = async (req, res) => {
     });
   }
 };
-
 
 exports.handleForgotPasswordAdmin = async (req, res) => {
   try {
