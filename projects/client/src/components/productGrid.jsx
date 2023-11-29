@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import getProductsUser from "../api/products/getProductsUser";
-import { SimpleGrid } from "@chakra-ui/react";
+import { SimpleGrid, Button, Flex, Box, Text } from "@chakra-ui/react";
 import { toast } from "sonner";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import { Button } from "flowbite-react";
 import api from "../api";
 
 function ProductGrid() {
@@ -51,6 +50,7 @@ function ProductGrid() {
         filterBy: gender,
         page: currentPage,
         sort: sortCriteria,
+        limit: 8,
       });
       const totalData = result.pagination.totalData;
       const totalPages = result.pagination.totalPages;
@@ -68,7 +68,7 @@ function ProductGrid() {
         }, 2000);
       }
     }
-  }, [currentPage, totalData, gender, mainCategory, sortCriteria, subCategory]);
+  }, [currentPage, totalData, gender, mainCategory, sortCriteria, subCategory, totalPages, currentPage]);
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -145,6 +145,12 @@ function ProductGrid() {
     slidesToScroll: 1,
     nextArrow: <></>,
     prevArrow: <></>,
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
   };
 
   return (
@@ -236,7 +242,14 @@ function ProductGrid() {
         </div>
       )}
       <div className="mt-6">
-        <SimpleGrid columns={{ base: 2, lg: 4 }} spacing={{ base: 3, lg: 4 }} h={{ base: "73vh", lg: "69vh" }} borderRadius={{ base: "xl", lg: "none" }} overflowY="auto" className="scrollbar-hide">
+        <SimpleGrid
+          columns={{ base: 2, lg: 4 }}
+          spacing={{ base: 3, lg: 4 }}
+          h={{ base: "68vh", lg: "63vh" }}
+          borderRadius={{ base: "xl", lg: "md" }}
+          overflowY="auto"
+          className="scrollbar-hide"
+        >
           {products.map((product) => (
             <div className="flex flex-col items-center lg:justify-normal lg:items-start space-y-6 lg:space-y-10">
               <Slider {...settings} className="w-[180px] h-[260px] lg:w-[230px] lg:h-[280px]">
@@ -273,6 +286,50 @@ function ProductGrid() {
             </div>
           ))}
         </SimpleGrid>
+        {totalPages > 1 && (
+          <Box display="flex" justifyContent="center" gap={2} mt={4} textAlign="right" mr={4}>
+            <Flex alignItems={"center"} gap={2}>
+              <Box>
+                <Button
+                  boxShadow="md"
+                  key={1}
+                  w="30px"
+                  size={{base: "md" , lg: "sm"}}
+                  borderRadius="50%"
+                  onClick={() => handlePageChange(1)}
+                  variant={currentPage === 1 ? "solid" : "solid"}
+                  bgColor={currentPage === 1 ? "gray.900" : "white"}
+                  textColor={currentPage === 1 ? "white" : "gray.900"}
+                  _hover={{ bgColor: "gray.900", textColor: "white" }}
+                  mr="5px"
+                  transition={"ease-in-out 0.5s"}
+                >
+                  1
+                </Button>
+                {totalPages > 1 &&
+                  Array.from({ length: totalPages - 1 }, (_, index) => (
+                    <Button
+                      boxShadow="md"
+                      key={index + 2}
+                      w="30px"
+                      size={{base: "md", lg: "sm"}}
+                     
+                      borderRadius="50%"
+                      onClick={() => handlePageChange(index + 2)}
+                      variant={currentPage === index + 2 ? "solid" : "solid"}
+                      bgColor={currentPage === index + 2 ? "gray.900" : "gray.white"}
+                      textColor={currentPage === index + 2 ? "white" : "gray.900"}
+                      _hover={{ bgColor: "gray.900", textColor: "white" }}
+                      mr="5px"
+                      transition={"ease-in-out 0.5s"}
+                    >
+                      {index + 2}
+                    </Button>
+                  ))}
+              </Box>
+            </Flex>
+          </Box>
+        )}
       </div>
     </div>
   );

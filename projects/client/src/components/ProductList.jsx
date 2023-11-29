@@ -228,7 +228,7 @@ function ProductList() {
 
   return (
     <div className="flex flex-col gap-4 w-full h-screen">
-      <div className="w-full flex justify-between space-x-16">
+      <div className="hidden w-full lg:flex justify-between space-x-16">
         <div className="w-[30vw]">
           <div className="relative">
             <span className="absolute inset-y-0 left-2 pl-1 flex items-center">
@@ -308,6 +308,88 @@ function ProductList() {
           </div>
         </div>
       </div>
+
+      {/* Mobile View */}
+      <div className="w-full flex flex-col space-y-2 lg:hidden">
+        <div className="w-[full]">
+          <div className="relative">
+            <span className="absolute inset-y-0 left-2 pl-1 flex items-center">
+              <FaSearch className="text-gray-400" />
+            </span>
+            <input
+              type="text"
+              className="pl-10 pr-3 py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent"
+              placeholder="Search by product or SKU"
+              onChange={handleSearchInputChange}
+            />
+          </div>
+        </div>
+        <div className="flex flex-wrap justify-center gap-2 w-full">
+          <div className="w-[48%]">
+            <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" onChange={handleFilterStockChange}>
+              <option value="" disabled className="text-gray-400">
+                Stock
+              </option>
+              {stockFilter.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="w-[48%]">
+            <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent " onChange={handleFilterChange}>
+              <option value="" disabled className="text-gray-400">
+                Gender
+              </option>
+              {filterOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="w-[48%]">
+            <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" onChange={handleCategoryChange}>
+              <option value="" disabled className="text-gray-400">
+                Category
+              </option>
+              {sortingProduct.map((opt) => (
+                <React.Fragment key={opt.value}>
+                  <option
+                    value={opt.value}
+                    disabled={opt.subOpts}
+                    style={{
+                      fontWeight: opt.subOpts ? "bold" : "normal",
+                    }}
+                  >
+                    {opt.label}
+                  </option>
+                  {opt.subOpts &&
+                    opt.subOpts.map((subOpt) => (
+                      <option key={subOpt.value} value={subOpt.value}>
+                        {subOpt.label}
+                      </option>
+                    ))}
+                </React.Fragment>
+              ))}
+            </select>
+          </div>
+
+          <div className="w-[48%]">
+            <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" onChange={handleSortChange}>
+              <option value="" disabled className="text-gray-400">
+                Sort
+              </option>
+              {sortingOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
       <div className={`space-y-6 overflow-y-scroll scrollbar-hide ${isWarehouseAdmin ? "h-[60vh]" : "h-[56vh]"}`}>
         {products.length === 0 ? (
           <Text textAlign={"center"} fontStyle={"italic"}>
@@ -317,23 +399,23 @@ function ProductList() {
           ""
         )}
         {products.map((product) => (
-          <div key={product.id} className="bg-white items-center justify-between flex gap-6 h-36 w-full px-6 py-2 rounded-lg shadow-sm">
-            <div className="h-[100px] w-[100px] flex justify-center items-center">
-              {product.productImages[0].imageUrl ? (
-                product.totalStockAllWarehouses !== 0 ? (
+          <div key={product.id} className="bg-white lg:items-center lg:justify-between flex lg:flex-row flex-col gap-6 lg:h-36 w-full px-6 lg:py-2  py-6 rounded-lg shadow-sm">
+            <div className="w-full flex justify-center lg:hidden">
+              <div className="h-[200px] w-[200px] lg:h-[100px] lg:w-[100px]">
+                {product.totalStockAllWarehouses !== 0 ? (
                   <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" />
                 ) : (
                   <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" style={{ filter: "grayscale(100%)" }} />
-                )
-              ) : (
-                <div className="w-full h-full flex justify-center items-center bg-gray-200 text-gray-400">
-                  <div className="flex flex-col items-center justify-center">
-                    <PiInfo className="h-8 w-8" />
-                    <span>No Image</span>
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
+            <div className="hidden lg:block h-[100px] w-[100px]">
+                {product.totalStockAllWarehouses !== 0 ? (
+                  <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" />
+                ) : (
+                  <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" style={{ filter: "grayscale(100%)" }} />
+                )}
+              </div>
 
             <div className="flex w-60 flex-col">
               {product.totalStockAllWarehouses !== 0 ? <span className="font-bold">{product.name}</span> : <span className="font-bold">(Out of stock) {product.name}</span>}
