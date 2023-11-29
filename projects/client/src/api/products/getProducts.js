@@ -1,6 +1,6 @@
 import api from "../../api";
 
-const getProducts = async ({ page = 1, limit, sort, category, search, filterBy, isArchived = false } = {}) => {
+const getProducts = async ({ page = 1, limit, sort, category, search, filterBy, stockFilter, isArchived = false } = {}) => {
   try {
     const url =
       `/product?page=${page}&isArchived=${isArchived}` +
@@ -8,8 +8,8 @@ const getProducts = async ({ page = 1, limit, sort, category, search, filterBy, 
       (sort ? `&sort=${sort}` : "") +
       (category ? `&category=${category}` : "") +
       (search ? `&search=${search}` : "") +
-      (filterBy ? `&filterBy=${filterBy}` : "");
-
+      (filterBy ? `&filterBy=${filterBy}` : "") + 
+      (stockFilter ? `&stockFilter=${stockFilter}` : "");
 
     const response = await api.admin.get(url);
     return response.data;

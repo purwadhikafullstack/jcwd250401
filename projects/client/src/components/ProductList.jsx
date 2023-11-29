@@ -24,7 +24,7 @@ function ProductList() {
   const [sortCriteria, setSortCriteria] = useState("date-desc"); // Default sorting criteria that matches the backend;
   const [searchInput, setSearchInput] = useState(""); // Initialize with "All"
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [selectedWarehouse, setSelectedWarehouse] = useState("All Warehouse");
+  const [selectedFilterStock, setSelectedFilterStock] = useState("all");
   const [selectedFilter, setSelectedFilter] = useState("All Genders");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -48,10 +48,6 @@ function ProductList() {
     setSearchInput(e.target.value);
   }, 600); // 600 milliseconds debounce time (adjust as needed)
 
-  const handleWarehouseChange = (e) => {
-    setSelectedWarehouse(e.target.value);
-  };
-
   const formatToRupiah = (number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -68,6 +64,7 @@ function ProductList() {
         category: selectedCategory,
         search: searchInput,
         filterBy: selectedFilter,
+        stockFilter: selectedFilterStock,
       });
       const totalData = result.pagination.totalData;
       const totalPages = Math.ceil(totalData / productsPerPage);
@@ -108,7 +105,7 @@ function ProductList() {
         }, 2000);
       }
     }
-  }, [currentPage, sortCriteria, selectedCategory, searchInput, selectedFilter, totalPages, totalData, newProducts]);
+  }, [currentPage, sortCriteria, selectedCategory, searchInput, selectedFilter, totalPages, totalData, newProducts, categoryLists, selectedFilterStock]);
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -148,12 +145,16 @@ function ProductList() {
     setSelectedFilter(selectedFilterValue);
   };
 
-  // const warehouse = [
-  //   { label: "All Warehouse", value: "All" },
-  //   { label: "Jakarta", value: "Jakarta" },
-  //   { label: "Bandung", value: "Bandung" },
-  //   { label: "Medan", value: "Medan" },
-  // ];
+  const handleFilterStockChange = (event) => {
+    const selectedFilterStockValue = event.target.value;
+    setSelectedFilterStock(selectedFilterStockValue);
+  };
+
+  const stockFilter = [
+    { label: "All Stock", value: "all" },
+    { label: "In Stock", value: "inStock" },
+    { label: "Out of Stock", value: "outOfStock" },
+  ];
 
   const sortingOptions = [
     { label: "Date DESC", value: "date-desc" },
@@ -242,22 +243,22 @@ function ProductList() {
           </div>
         </div>
         <div className="flex gap-4 w-full">
-          {/* <div className="w-full">
-            <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent">
+          <div className="w-full">
+            <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" onChange={handleFilterStockChange}>
               <option value="" disabled className="text-gray-400">
-                Warehouse
+                Stock
               </option>
-              {warehouse.map((opt) => (
+              {stockFilter.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
                 </option>
               ))}
             </select>
-          </div> */}
+          </div>
           <div className="w-full">
             <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent " onChange={handleFilterChange}>
               <option value="" disabled className="text-gray-400">
-                Filter
+                Gender
               </option>
               {filterOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>

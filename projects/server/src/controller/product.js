@@ -388,9 +388,8 @@ exports.handleUpdateProduct = async (req, res) => {
 //           }
 //         }
 //       })
-    
-//     );
 
+//     );
 
 //     // Remove null values from the productStock array
 //     const filteredProductStock = productStock.filter((product) => product !== null);
@@ -728,31 +727,25 @@ exports.handleRemoveProductStock = async (req, res) => {
   }
 };
 
-
 exports.handleGetAllProducts = async (req, res) => {
-  const limit = parseInt(req.query.limit) || 100;
+  const limit = parseInt(req.query.limit) || 10;
   const page = parseInt(req.query.page) || 1;
   const sort = req.query.sort;
   const category = req.query.category;
   const search = req.query.search;
   const filterBy = req.query.filterBy;
-  const isArchived = req.query.isArchived || false; // New query parameter
-  
- 
+  const isArchived = req.query.isArchived || false;
+  const stockFilter = req.query.stockFilter;
+
   try {
     const filter = {
-      include: [
-        { model: Mutation, attributes: ["stock"], order: [["createdAt", "DESC"]], limit: 1 },
-      ],
+      include: [{ model: Mutation, attributes: ["stock"], order: [["createdAt", "DESC"]], limit: 1 }],
       where: {},
     };
 
     // Apply search query filter using Sequelize's Op.like
     if (search) {
-      filter.where[Op.or] = [
-        { name: { [Op.like]: `%${search}%` } },
-        { sku: { [Op.like]: `%${search}%` } },
-      ];
+      filter.where[Op.or] = [{ name: { [Op.like]: `%${search}%` } }, { sku: { [Op.like]: `%${search}%` } }];
     }
 
     // Include sorting options
@@ -791,46 +784,38 @@ exports.handleGetAllProducts = async (req, res) => {
 
     // Include category filter
     if (category && category !== "All") {
-      filter.include = [
+      filter.include.push(
         { model: ProductImage, as: "productImages" },
         {
           model: Category,
           as: "Categories",
           through: { model: ProductCategory, attributes: [] },
           attributes: ["id", "name"],
-          where: { name: category }, // Filter categories based on the queried category
-        },
-      ];
+          where: { name: category },
+        }
+      );
     } else {
-      // Include without category filter
-      filter.include = [
+      filter.include.push(
         { model: ProductImage, as: "productImages" },
         {
           model: Category,
           as: "Categories",
           through: { model: ProductCategory, attributes: [] },
           attributes: ["id", "name"],
-        },
-      ];
+        }
+      );
     }
 
     // Retrieve products without pagination to get the total count
-    const totalData = await Product.count({
-      ...filter,
-      distinct: true, // Add this line to ensure distinct counts
-      col: "id",
-    });
-
+  
     // Query to fetch products with primary details
-    const products = await Product.findAll({
+    const productsWithMutations = await Product.findAll({
       where: filter.where,
       include: filter.include,
       order: filter.order,
-      limit,
-      offset: (page - 1) * limit,
     });
 
-    if (!products || products.length === 0) {
+    if (!productsWithMutations || productsWithMutations.length === 0) {
       return res.status(404).json({
         ok: false,
         message: "No products found!",
@@ -838,14 +823,12 @@ exports.handleGetAllProducts = async (req, res) => {
     }
 
     // Extract product IDs for the next query
-    const productIds = products.map((product) => product.id);
+    const productIds = productsWithMutations.map((product) => product.id);
 
     // Query to fetch all categories associated with the products
     const allCategories = await ProductCategory.findAll({
       where: { productId: productIds },
-      include: [
-        { model: Category, as: "Category", attributes: ["id", "name"] },
-      ],
+      include: [{ model: Category, as: "Category", attributes: ["id", "name"] }],
     });
 
     // Organize categories by product ID for efficient mapping
@@ -858,36 +841,16 @@ exports.handleGetAllProducts = async (req, res) => {
       categoriesByProductId[productId].push(Category);
     });
 
-    // Map categories to the corresponding products
-    products.forEach((product) => {
+    productsWithMutations.forEach((product) => {
       const productId = product.id;
       product.dataValues.categories = categoriesByProductId[productId] || [];
       delete product.dataValues.Categories; // Remove unnecessary attribute
     });
 
+    // Map categories to the corresponding products
     const productStock = await Promise.all(
-      products.map(async (product) => {
-        const warehouses = await Warehouse.findAll();
-
-        const mutations = await Promise.all(
-          warehouses.map(async (warehouse) => {
-            const latestMutation = await Mutation.findOne({
-              attributes: ["stock"],
-              where: {
-                productId: product.id,
-                warehouseId: warehouse.id,
-              },
-              order: [["createdAt", "DESC"]],
-              limit: 1,
-            });
-
-            return {
-              warehouseId: warehouse.id,
-              warehouseName: warehouse.name,
-              totalStock: latestMutation ? latestMutation.stock : 0,
-            };
-          })
-        );
+      productsWithMutations.map(async (product) => {
+        const mutations = await getMutationsForProduct(product.id);
 
         // Calculate the total stock from all warehouses
         const totalStockAllWarehouses = mutations.reduce((total, mutation) => total + mutation.totalStock, 0);
@@ -900,14 +863,23 @@ exports.handleGetAllProducts = async (req, res) => {
       })
     );
 
-    // Send the response
+    // Filter products based on stock status
+    const filteredProducts = filterProductsByStock(productStock, stockFilter);
+
+    // Calculate pagination information after filtering
+    const totalData = filteredProducts.length;
+    const totalPages = Math.ceil(totalData / limit);
+    const offset = (page - 1) * limit;
+    const paginatedProducts = filteredProducts.slice(offset, offset + limit);
+
     res.status(200).json({
       ok: true,
       pagination: {
         totalData,
+        totalPages,
         page,
       },
-      details: productStock,
+      details: paginatedProducts,
     });
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -918,6 +890,42 @@ exports.handleGetAllProducts = async (req, res) => {
   }
 };
 
+// Helper function to filter products based on stock status
+const filterProductsByStock = (products, stockFilter) => {
+  if (stockFilter === "inStock") {
+    return products.filter((product) => product.totalStockAllWarehouses > 0);
+  } else if (stockFilter === "outOfStock") {
+    return products.filter((product) => product.totalStockAllWarehouses === 0);
+  } else {
+    return products; // Return all products if no stock filter is specified
+  }
+};
+
+// Helper function to get mutations for a product
+const getMutationsForProduct = async (productId) => {
+  const warehouses = await Warehouse.findAll();
+
+  return Promise.all(
+    warehouses.map(async (warehouse) => {
+      const latestMutation = await Mutation.findOne({
+        attributes: ["stock"],
+        where: {
+          productId,
+          warehouseId: warehouse.id,
+        },
+        order: [["createdAt", "DESC"]],
+        limit: 1,
+      });
+
+      return {
+        warehouseId: warehouse.id,
+        warehouseName: warehouse.name,
+        totalStock: latestMutation ? latestMutation.stock : 0,
+      };
+    })
+  );
+};
+
 exports.handleGetAllArchivedProducts = async (req, res) => {
   const limit = parseInt(req.query.limit) || 100;
   const page = parseInt(req.query.page) || 1;
@@ -925,24 +933,18 @@ exports.handleGetAllArchivedProducts = async (req, res) => {
   const category = req.query.category;
   const search = req.query.search;
   const filterBy = req.query.filterBy; // New query parameter
-  
- 
+
   try {
     const filter = {
-      include: [
-        { model: Mutation, attributes: ["stock"], order: [["createdAt", "DESC"]], limit: 1 },
-      ],
+      include: [{ model: Mutation, attributes: ["stock"], order: [["createdAt", "DESC"]], limit: 1 }],
       where: {
-        isArchived: true
+        isArchived: true,
       },
     };
 
     // Apply search query filter using Sequelize's Op.like
     if (search) {
-      filter.where[Op.or] = [
-        { name: { [Op.like]: `%${search}%` } },
-        { sku: { [Op.like]: `%${search}%` } },
-      ];
+      filter.where[Op.or] = [{ name: { [Op.like]: `%${search}%` } }, { sku: { [Op.like]: `%${search}%` } }];
     }
 
     // Include sorting options
@@ -973,7 +975,6 @@ exports.handleGetAllArchivedProducts = async (req, res) => {
     }
 
     // Add condition for isArchived
-   
 
     // Include category filter
     if (category && category !== "All") {
@@ -1029,9 +1030,7 @@ exports.handleGetAllArchivedProducts = async (req, res) => {
     // Query to fetch all categories associated with the products
     const allCategories = await ProductCategory.findAll({
       where: { productId: productIds },
-      include: [
-        { model: Category, as: "Category", attributes: ["id", "name"] },
-      ],
+      include: [{ model: Category, as: "Category", attributes: ["id", "name"] }],
     });
 
     // Organize categories by product ID for efficient mapping

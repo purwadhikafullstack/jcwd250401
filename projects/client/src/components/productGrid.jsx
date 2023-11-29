@@ -139,6 +139,7 @@ function ProductGrid() {
   const settings = {
     dots: true,
     infinite: true,
+    fade: true,
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
@@ -257,7 +258,7 @@ function ProductGrid() {
                     {/* Overlay for Out of Stock */}
                     {product.totalStockAllWarehouses === 0 && (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="bg-black bg-opacity-40 w-full flex justify-center text-white p-4">
+                        <div className="bg-black bg-opacity-30 w-full flex justify-center text-white p-1">
                           <span className="text-lg font-medium">Out of Stock</span>
                         </div>
                       </div>
