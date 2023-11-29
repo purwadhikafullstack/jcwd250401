@@ -523,7 +523,6 @@ const updateStock = async (warehouseId, productId, quantity, type, adminId, tran
       transaction,
     });
 
-    console.log("Latest Mutation:", latestMutation);
     const currentStock = latestMutation ? latestMutation.stock : 0;
 
     if (type === "subtract" && quantity > currentStock) {
@@ -536,10 +535,13 @@ const updateStock = async (warehouseId, productId, quantity, type, adminId, tran
       {
         productId,
         warehouseId,
+        destinationWarehouseId: warehouseId,
         mutationQuantity: quantity,
         mutationType: type,
         adminId,
         stock: newStock,
+        status: "success",
+        isManual: true,
       },
       { transaction }
     );

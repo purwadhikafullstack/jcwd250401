@@ -11,7 +11,9 @@ module.exports = (sequelize, DataTypes) => {
       Admin.hasOne(models.Warehouse, {
         foreignKey: "adminId",
       });
-      
+      Admin.hasMany(models.Journal, {
+        foreignKey: "adminId",
+      });
     }
   }
   Admin.init(
