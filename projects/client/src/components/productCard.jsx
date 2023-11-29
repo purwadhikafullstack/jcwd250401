@@ -16,7 +16,9 @@ function ProductCard() {
   const [showPopup, setShowPopup] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState([]);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [activeImageIndexMobile, setActiveImageIndexMobile] = useState(0);
   const sliderRef = useRef(null);
+  const sliderRefMobile = useRef(null);
   const isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
   const dispatch = useDispatch();
 
@@ -63,6 +65,16 @@ function ProductCard() {
       setActiveImageIndex(index);
       if (sliderRef.current) {
         sliderRef.current.slickGoTo(index);
+      }
+    }
+  };
+
+  const handleImageClickMobile = (imageId) => {
+    const index = selectedProduct[0].productImages.findIndex((image) => image.id === imageId);
+    if (index !== -1) {
+      setActiveImageIndexMobile(index);
+      if (sliderRefMobile.current) {
+        sliderRefMobile.current.slickGoTo(index);
       }
     }
   };
@@ -116,7 +128,10 @@ function ProductCard() {
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
-    afterChange: (current) => setActiveImageIndex(current),
+    afterChange: (current) => {
+      setActiveImageIndex(current);
+      setActiveImageIndexMobile(current);
+    },
     nextArrow: <SampleNextArrow />,
     prevArrow: <SamplePrevArrow />,
   };
@@ -152,26 +167,25 @@ function ProductCard() {
       {selectedProduct.length !== 0 ? (
         <>
           <div className="hidden lg:flex w-full mt-14 gap-5">
-            <div>
-              {selectedProduct.map((product) => (
-                <SimpleGrid columns={2} spacing={5} key={product.id}>
+            {selectedProduct.map((product) => (
+              <div key={product.id} className="flex space-x-5">
+                <SimpleGrid columns={2} spacing={5} h="184px">
                   {product.productImages.map((image, idx) => (
-                    <div key={idx} className={`w-[82px] h-[82px] object-cover shadow-xl cursor-pointer ${idx === activeImageIndex ? "border-2 border-[#777777]" : ""}`} onClick={() => handleImageClick(image.id)}>
+                    <div key={`simpleGrid-${idx}`} className={`w-[82px] h-[82px] object-cover shadow-xl cursor-pointer ${idx === activeImageIndex ? "border-2 border-[#777777]" : ""}`} onClick={() => handleImageClick(image.id)}>
                       <img src={`http://localhost:8000/public/${image.imageUrl}`} alt={`Product Image ${idx}`} className="w-full h-full object-cover" />
                     </div>
                   ))}
                 </SimpleGrid>
-              ))}
-            </div>
-            {selectedProduct.map((product) => (
-              <div className="flex flex-col space-y-10 cursor-zoom-in" key={product.id}>
-                <Slider {...settings} className="w-[480px] h-[480px] shadow-xl" ref={sliderRef}>
-                  {product.productImages.map((image, idx) => (
-                    <ZoomableImage imageUrl={`http://localhost:8000/public/${image.imageUrl}`} alt={`Product Image ${idx}`} images={selectedProduct[0].productImages} />
-                  ))}
-                </Slider>
+                <div className="flex flex-col space-y-10 cursor-zoom-in" key={`slider-${product.id}`}>
+                  <Slider {...settings} className="w-[480px] h-[480px] shadow-xl" ref={sliderRef}>
+                    {product.productImages.map((image, idx) => (
+                      <ZoomableImage key={`zoomableImage-${idx}`} imageUrl={`http://localhost:8000/public/${image.imageUrl}`} alt={`Product Image ${idx}`} images={selectedProduct[0].productImages} />
+                    ))}
+                  </Slider>
+                </div>
               </div>
             ))}
+
             {selectedProduct.map((product) => (
               <div className="flex flex-col justify-between ml-28 w-[25vw]">
                 <div className="flex flex-col space-y-5">
@@ -234,7 +248,7 @@ function ProductCard() {
           <div className="flex flex-col w-full mt-14 gap-5 lg:hidden">
             {selectedProduct.map((product) => (
               <div className="flex flex-col justify-center items-center space-y-10 cursor-zoom-in" key={product.id}>
-                <Slider {...settings} className="w-[350px] h-[480px] shadow-xl" ref={sliderRef}>
+                <Slider {...settings} className="w-[350px] h-[480px] shadow-xl" ref={sliderRefMobile}>
                   {product.productImages.map((image, idx) => (
                     <ZoomableImage imageUrl={`http://localhost:8000/public/${image.imageUrl}`} alt={`Product Image ${idx}`} images={selectedProduct[0].productImages} />
                   ))}
@@ -246,7 +260,7 @@ function ProductCard() {
                 <div className="flex justify-center">
                   <SimpleGrid columns={5} spacing={2} key={product.id}>
                     {product.productImages.map((image, idx) => (
-                      <div key={idx} className={`w-[62px] h-[82px] object-cover shadow-xl cursor-pointer ${idx === activeImageIndex ? "border-2 border-[#777777]" : ""}`} onClick={() => handleImageClick(image.id)}>
+                      <div key={idx} className={`w-[62px] h-[82px] object-cover shadow-xl cursor-pointer ${idx === activeImageIndexMobile ? "border-2 border-[#777777]" : ""}`} onClick={() => handleImageClickMobile(image.id)}>
                         <img src={`http://localhost:8000/public/${image.imageUrl}`} alt={`Product Image ${idx}`} className="w-full h-full object-cover" />
                       </div>
                     ))}
