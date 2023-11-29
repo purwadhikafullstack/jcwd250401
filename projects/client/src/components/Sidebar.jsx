@@ -89,58 +89,107 @@ const Sidebar = () => {
   };
 
   const segments = location.pathname;
- 
 
   return (
-    <div className="w-[16vw] bg-black h-screen">
-      <div className="flex justify-center flex-col">
-        <div className="flex justify-center mt-6 mb-10">
-          <img src={rains} alt="logo" className="w-[40%] invert"></img>
-        </div>
-        <div>
-          {menuList.map((item, index) => (
-            <div key={index}>
-              {/* Add a condition to check if the item should be rendered */}
-              {(!isWarehouseAdminAcc || (item.name !== "Customers" && item.name !== "Staff")) && (
-                <>
-                  {item.subItems ? (
-                    <div
-                      onClick={() => handleAccordionClick(index)}
-                      className={`flex items-center justify-start text-white hover:text-black hover:bg-white px-4 py-2 rounded mb-2 mx-2 cursor-pointer gap-2 ${segments === item.link ? "!text-black bg-white" : ""}`}>
-                      <div className="mr-6 ">{item.icon}</div>
-                      <div className="">{item.name}</div>
-                      <div className="ml-auto">{isExpanded[index] ? <FiChevronUp size={18} /> : <FiChevronDown size={18} />}</div>
-                    </div>
-                  ) : (
-                    <Link
-                      key={index}
-                      to={item.link}
-                      className={`flex items-center justify-start text-white hover:text-black hover:bg-white px-4 py-2 rounded mb-2 mx-2 ${segments === item.link ? "!text-black bg-white" : ""}`}>
-                      <div className="mr-8">{item.icon}</div>
-                      {item.name}
-                    </Link>
-                  )}
+    <>
+      <div className="w-[16vw] bg-black h-screen hidden lg:block">
+        <div className="flex justify-center flex-col">
+          <div className="flex justify-center mt-6 mb-10">
+            <img src={rains} alt="logo" className="w-[40%] invert"></img>
+          </div>
+          <div>
+            {menuList.map((item, index) => (
+              <div key={index}>
+                {/* Add a condition to check if the item should be rendered */}
+                {(!isWarehouseAdminAcc || (item.name !== "Customers" && item.name !== "Staff")) && (
+                  <>
+                    {item.subItems ? (
+                      <div
+                        onClick={() => handleAccordionClick(index)}
+                        className={`flex items-center justify-start text-white hover:text-black hover:bg-white px-4 py-2 rounded mb-2 mx-2 cursor-pointer gap-2 ${segments === item.link ? "!text-black bg-white" : ""}`}
+                      >
+                        <div className="mr-6 ">{item.icon}</div>
+                        <div className="">{item.name}</div>
+                        <div className="ml-auto">{isExpanded[index] ? <FiChevronUp size={18} /> : <FiChevronDown size={18} />}</div>
+                      </div>
+                    ) : (
+                      <Link key={index} to={item.link} className={`flex items-center justify-start text-white hover:text-black hover:bg-white px-4 py-2 rounded mb-2 mx-2 ${segments === item.link ? "!text-black bg-white" : ""}`}>
+                        <div className="mr-8">{item.icon}</div>
+                        {item.name}
+                      </Link>
+                    )}
 
-                  {item.subItems && activeMenu === index && (
-                    <div className="ml-6">
-                      {item.subItems.map((subItem, subIndex) => (
-                        <Link
-                          key={subIndex}
-                          to={subItem.link}
-                          className={`flex items-center justify-start text-white hover:text-black hover:bg-white px-4 py-2 rounded mb-2 mx-2 ${segments === subItem.link ? "!text-black bg-white" : ""}`}>
-                          <div className="mr-8 ml-2">{subItem.icon}</div>
-                          {subItem.name}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          ))}
+                    {item.subItems && activeMenu === index && (
+                      <div className="ml-6">
+                        {item.subItems.map((subItem, subIndex) => (
+                          <Link
+                            key={subIndex}
+                            to={subItem.link}
+                            className={`flex items-center justify-start text-white hover:text-black hover:bg-white px-4 py-2 rounded mb-2 mx-2 ${segments === subItem.link ? "!text-black bg-white" : ""}`}
+                          >
+                            <div className="mr-8 ml-2">{subItem.icon}</div>
+                            {subItem.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Mobile */}
+
+      <div className="w-[18vw] bg-black h-screen lg:hidden">
+        <div className="flex justify-center flex-col">
+          <div className="flex justify-center mt-8 mb-10">
+            <img src={rains} alt="logo" className="w-[70%] invert"></img>
+          </div>
+          <div>
+            {menuList.map((item, index) => (
+              <div key={index}>
+                {/* Add a condition to check if the item should be rendered */}
+                {(!isWarehouseAdminAcc || (item.name !== "Customers" && item.name !== "Staff")) && (
+                  <>
+                    {item.subItems ? (
+                      <div
+                        onClick={() => handleAccordionClick(index)}
+                        className={`flex items-center justify-center text-white hover:text-black hover:bg-white px-2 py-2 rounded mb-2 mx-2 cursor-pointer flex-col  ${segments === item.link ? "!text-black bg-white" : ""}`}
+                      >
+                        <div className="">{item.icon}</div>
+                        <div className="">{isExpanded[index] ? <FiChevronUp size={18} /> : <FiChevronDown size={18} />}</div>
+                      </div>
+                    ) : (
+                      <Link key={index} to={item.link} className={`flex items-center justify-center text-white hover:text-black hover:bg-white px-4 py-2 rounded mb-2 mx-2 ${segments === item.link ? "!text-black bg-white" : ""}`}>
+                        <div className="">{item.icon}</div>
+                      </Link>
+                    )}
+
+                    {item.subItems && activeMenu === index && (
+                      <div className="">
+                        {item.subItems.map((subItem, subIndex) => (
+                          <Link
+                            key={subIndex}
+                            to={subItem.link}
+                            className={`flex items-center justify-center text-white hover:text-black hover:bg-white px-2 py-2 rounded mb-2  ${segments === subItem.link ? "!text-black bg-white" : ""}`}
+                          >
+                            <div className="">{subItem.icon}</div>
+                            <span className="text-xs">{subItem.name}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
 
