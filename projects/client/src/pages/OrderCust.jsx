@@ -8,11 +8,13 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 import { useSelector } from "react-redux";
-
+import getWarehouses from "../api/warehouse/getWarehouses";
 
 function OrderCust() {
   const navList = ["All Orders", "New Orders", "Ready to Ship", "On Delivery", "Completed", "Cancelled"];
+  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "November", "December"];
   const [selectedComponent, setSelectedComponent] = useState("All Orders");
+  const [warehouses, setWarehouses] = useState([]);
   const [sort, setSort] = useState("allW");
   const [order, setOrder] = useState("allM");
   const [pillWidth, setPillWidth] = useState(0); // State to store the width of the pill
@@ -22,6 +24,19 @@ function OrderCust() {
   const dispatch = useDispatch();
 
   const isWarehouseAdmin = useSelector((state) => state?.account?.isWarehouseAdmin);
+
+  const fetchWarehouses = async () => {
+    try {
+      const { data } = await getWarehouses();
+      setWarehouses(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchWarehouses();
+  }, []);
 
   useEffect(() => {
     // Calculate the width of the selected navigation item
@@ -44,16 +59,22 @@ function OrderCust() {
               <option value={"allW"} defaultChecked>
                 All Warehouses
               </option>
-              <option value={"username"}>Warehouse 1</option>
-              <option value={"email"}>Warehouse 2</option>
+              {warehouses.map((warehouse) => (
+                <option key={warehouse.id} value={warehouse.id}>
+                  {warehouse.name}
+                </option>
+              ))}
             </select>
 
             <select value={order} onChange={(e) => setOrder(e.target.value)} className="bg-white text-[#40403F] py-2 px-12 rounded-md cursor-pointer focus:ring-0 focus:border-none">
               <option value={"allM"} defaultChecked>
                 All Months
               </option>
-              <option value={"1"}>January</option>
-              <option value={"2"}>February</option>
+              {months.map((month, index) => (
+                <option key={index} value={month}>
+                  {month}
+                </option>
+              ))}
             </select>
             </div>
           )}
