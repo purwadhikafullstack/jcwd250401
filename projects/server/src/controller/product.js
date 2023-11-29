@@ -208,195 +208,210 @@ exports.handleUpdateProduct = async (req, res) => {
   }
 };
 
+// exports.handleGetAllProducts = async (req, res) => {
+//   const limit = parseInt(req.query.limit) || 100;
+//   const page = parseInt(req.query.page) || 1;
+//   const sort = req.query.sort;
+//   const category = req.query.category;
+//   const search = req.query.search;
+//   const filterBy = req.query.filterBy;
+//   const isArchived = req.query.isArchived || false;
+//   const isEmptyStock = req.query.isEmptyStock || false;
 
+//   try {
+//     const filter = {
+//       include: [{ model: Mutation, attributes: ["stock"], order: [["createdAt", "DESC"]], limit: 1 }],
+//       where: {},
+//     };
 
-exports.handleGetAllProducts = async (req, res) => {
-  const limit = parseInt(req.query.limit) || 100;
-  const page = parseInt(req.query.page) || 1;
-  const sort = req.query.sort;
-  const category = req.query.category;
-  const search = req.query.search;
-  const filterBy = req.query.filterBy;
-  const isArchived = req.query.isArchived || false; // New query parameter
+//     // Apply search query filter using Sequelize's Op.like
+//     if (search) {
+//       filter.where[Op.or] = [{ name: { [Op.like]: `%${search}%` } }, { sku: { [Op.like]: `%${search}%` } }];
+//     }
 
-  try {
-    const filter = {
-      include: [
-        { model: Mutation, attributes: ["stock"], order: [["createdAt", "DESC"]], limit: 1 },
-      ],
-      where: {},
-    };
+//     // Include sorting options
+//     if (sort) {
+//       if (sort === "alphabetical-asc") {
+//         filter.order = [["name", "ASC"]];
+//       } else if (sort === "alphabetical-desc") {
+//         filter.order = [["name", "DESC"]];
+//       } else if (sort === "date-asc") {
+//         filter.order = [["updatedAt", "ASC"]];
+//       } else if (sort === "date-desc") {
+//         filter.order = [["updatedAt", "DESC"]];
+//       } else if (sort === "price-asc") {
+//         filter.order = [["price", "ASC"]];
+//       } else if (sort === "price-desc") {
+//         filter.order = [["price", "DESC"]];
+//       }
+//     }
 
-    // Apply search query filter using Sequelize's Op.like
-    if (search) {
-      filter.where[Op.or] = [
-        { name: { [Op.like]: `%${search}%` } },
-        { sku: { [Op.like]: `%${search}%` } },
-      ];
-    }
+//     if (filterBy && filterBy.toLowerCase() !== "all genders") {
+//       if (filterBy.toLowerCase() === "men") {
+//         filter.where.gender = "Men";
+//       } else if (filterBy.toLowerCase() === "women") {
+//         filter.where.gender = "Women";
+//       } else if (filterBy.toLowerCase() === "unisex") {
+//         filter.where.gender = "Unisex";
+//       }
+//     }
 
-    // Include sorting options
-    if (sort) {
-      if (sort === "alphabetical-asc") {
-        filter.order = [["name", "ASC"]];
-      } else if (sort === "alphabetical-desc") {
-        filter.order = [["name", "DESC"]];
-      } else if (sort === "date-asc") {
-        filter.order = [["updatedAt", "ASC"]];
-      } else if (sort === "date-desc") {
-        filter.order = [["updatedAt", "DESC"]];
-      } else if (sort === "price-asc") {
-        filter.order = [["price", "ASC"]];
-      } else if (sort === "price-desc") {
-        filter.order = [["price", "DESC"]];
-      }
-    }
+//     // Add condition for isArchived
+//     if (isArchived === "true") {
+//       filter.where.isArchived = true;
+//     } else {
+//       filter.where.isArchived = false;
+//     }
 
-    if (filterBy && filterBy.toLowerCase() !== "all genders") {
-      if (filterBy.toLowerCase() === "men") {
-        filter.where.gender = "Men";
-      } else if (filterBy.toLowerCase() === "women") {
-        filter.where.gender = "Women";
-      } else if (filterBy.toLowerCase() === "unisex") {
-        filter.where.gender = "Unisex";
-      }
-    }
+//     // Include category filter
+//     if (category && category !== "All") {
+//       filter.include = [
+//         { model: ProductImage, as: "productImages" },
+//         {
+//           model: Category,
+//           as: "Categories",
+//           through: { model: ProductCategory, attributes: [] },
+//           attributes: ["id", "name"],
+//           where: { name: category }, // Filter categories based on the queried category
+//         },
+//       ];
+//     } else {
+//       // Include without category filter
+//       filter.include = [
+//         { model: ProductImage, as: "productImages" },
+//         {
+//           model: Category,
+//           as: "Categories",
+//           through: { model: ProductCategory, attributes: [] },
+//           attributes: ["id", "name"],
+//         },
+//       ];
+//     }
 
-    // Add condition for isArchived
-    if (isArchived === "true") {
-      filter.where.isArchived = true;
-    } else {
-      filter.where.isArchived = false;
-    }
+//     // Retrieve products without pagination to get the total count
+//     // const totalData = await Product.count({
+//     //   ...filter,
+//     //   distinct: true, // Add this line to ensure distinct counts
+//     //   col: "id",
+//     // });
 
-    // Include category filter
-    if (category && category !== "All") {
-      filter.include = [
-        { model: ProductImage, as: "productImages" },
-        {
-          model: Category,
-          as: "Categories",
-          through: { model: ProductCategory, attributes: [] },
-          attributes: ["id", "name"],
-          where: { name: category }, // Filter categories based on the queried category
-        },
-      ];
-    } else {
-      // Include without category filter
-      filter.include = [
-        { model: ProductImage, as: "productImages" },
-        {
-          model: Category,
-          as: "Categories",
-          through: { model: ProductCategory, attributes: [] },
-          attributes: ["id", "name"],
-        },
-      ];
-    }
+//     // Query to fetch products with primary details
+//     const products = await Product.findAll({
+//       where: filter.where,
+//       include: filter.include,
+//       order: filter.order,
+//       limit,
+//       offset: (page - 1) * limit,
+//     });
 
-    // Retrieve products without pagination to get the total count
-    const totalData = await Product.count({
-      ...filter,
-      distinct: true, // Add this line to ensure distinct counts
-      col: "id",
-    });
+//     if (!products || products.length === 0) {
+//       return res.status(404).json({
+//         ok: false,
+//         message: "No products found!",
+//       });
+//     }
 
-    // Query to fetch products with primary details
-    const products = await Product.findAll({
-      where: filter.where,
-      include: filter.include,
-      order: filter.order,
-      limit,
-      offset: (page - 1) * limit,
-    });
+//     // Extract product IDs for the next query
+//     const productIds = products.map((product) => product.id);
 
-    if (!products || products.length === 0) {
-      return res.status(404).json({
-        ok: false,
-        message: "No products found!",
-      });
-    }
+//     // Query to fetch all categories associated with the products
+//     const allCategories = await ProductCategory.findAll({
+//       where: { productId: productIds },
+//       include: [{ model: Category, as: "Category", attributes: ["id", "name"] }],
+//     });
 
-    // Extract product IDs for the next query
-    const productIds = products.map((product) => product.id);
+//     // Organize categories by product ID for efficient mapping
+//     const categoriesByProductId = {};
+//     allCategories.forEach((productCategory) => {
+//       const { productId, Category } = productCategory;
+//       if (!categoriesByProductId[productId]) {
+//         categoriesByProductId[productId] = [];
+//       }
+//       categoriesByProductId[productId].push(Category);
+//     });
 
-    // Query to fetch all categories associated with the products
-    const allCategories = await ProductCategory.findAll({
-      where: { productId: productIds },
-      include: [
-        { model: Category, as: "Category", attributes: ["id", "name"] },
-      ],
-    });
+//     // Map categories to the corresponding products
+//     products.forEach((product) => {
+//       const productId = product.id;
+//       product.dataValues.categories = categoriesByProductId[productId] || [];
+//       delete product.dataValues.Categories; // Remove unnecessary attribute
+//     });
 
-    // Organize categories by product ID for efficient mapping
-    const categoriesByProductId = {};
-    allCategories.forEach((productCategory) => {
-      const { productId, Category } = productCategory;
-      if (!categoriesByProductId[productId]) {
-        categoriesByProductId[productId] = [];
-      }
-      categoriesByProductId[productId].push(Category);
-    });
+//     const productStock = await Promise.all(
+//       products.map(async (product) => {
+//         const warehouses = await Warehouse.findAll();
 
-    // Map categories to the corresponding products
-    products.forEach((product) => {
-      const productId = product.id;
-      product.dataValues.categories = categoriesByProductId[productId] || [];
-      delete product.dataValues.Categories; // Remove unnecessary attribute
-    });
+//         const mutations = await Promise.all(
+//           warehouses.map(async (warehouse) => {
+//             const latestMutation = await Mutation.findOne({
+//               attributes: ["stock"],
+//               where: {
+//                 productId: product.id,
+//                 warehouseId: warehouse.id,
+//               },
+//               order: [["createdAt", "DESC"]],
+//               limit: 1,
+//             });
 
-    const productStock = await Promise.all(
-      products.map(async (product) => {
-        const warehouses = await Warehouse.findAll();
+//             return {
+//               warehouseId: warehouse.id,
+//               warehouseName: warehouse.name,
+//               totalStock: latestMutation ? latestMutation.stock : 0,
+//             };
+//           })
+//         );
 
-        const mutations = await Promise.all(
-          warehouses.map(async (warehouse) => {
-            const latestMutation = await Mutation.findOne({
-              attributes: ["stock"],
-              where: {
-                productId: product.id,
-                warehouseId: warehouse.id,
-              },
-              order: [["createdAt", "DESC"]],
-              limit: 1,
-            });
+//         // Calculate the total stock from all warehouses
+//         const totalStockAllWarehouses = mutations.reduce((total, mutation) => total + mutation.totalStock, 0);
 
-            return {
-              warehouseId: warehouse.id,
-              warehouseName: warehouse.name,
-              totalStock: latestMutation ? latestMutation.stock : 0,
-            };
-          })
-        );
+//         if (isEmptyStock) {
+//           // Show only products with totalStockAllWarehouses === 0 when isEmptyStock is true
+//           if (totalStockAllWarehouses === 0) {
+//             return {
+//               ...product.toJSON(),
+//               Mutations: mutations || [],
+//               totalStockAllWarehouses: totalStockAllWarehouses || 0,
+//             };
+//           } else {
+//             return null; // Exclude products with totalStockAllWarehouses > 0 when isEmptyStock is true
+//           }
+//         } else {
+//           // Show only products with totalStockAllWarehouses > 0 when isEmptyStock is false
+//           if (totalStockAllWarehouses > 0) {
+//             return {
+//               ...product.toJSON(),
+//               Mutations: mutations || [],
+//               totalStockAllWarehouses: totalStockAllWarehouses || 0,
+//             };
+//           } else {
+//             return null; // Exclude products with totalStockAllWarehouses === 0 when isEmptyStock is false
+//           }
+//         }
+//       })
 
-        // Calculate the total stock from all warehouses
-        const totalStockAllWarehouses = mutations.reduce((total, mutation) => total + mutation.totalStock, 0);
+//     );
 
-        return {
-          ...product.toJSON(),
-          Mutations: mutations || [],
-          totalStockAllWarehouses: totalStockAllWarehouses || 0,
-        };
-      })
-    );
+//     // Remove null values from the productStock array
+//     const filteredProductStock = productStock.filter((product) => product !== null);
+//     const totalData = filteredProductStock.length;
 
-    // Send the response
-    res.status(200).json({
-      ok: true,
-      pagination: {
-        totalData,
-        page,
-      },
-      details: productStock,
-    });
-  } catch (error) {
-    console.error("Error fetching data:", error);
-    res.status(500).json({
-      ok: false,
-      message: "Internal server error",
-    });
-  }
-};
+//     // Send the response
+//     res.status(200).json({
+//       ok: true,
+//       pagination: {
+//         totalData,
+//         page,
+//       },
+//       details: filteredProductStock,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching data:", error);
+//     res.status(500).json({
+//       ok: false,
+//       message: "Internal server error",
+//     });
+//   }
+// };
 
 exports.handleUnarchiveProduct = async (req, res) => {
   const productId = req.params.productId; // Assuming you're passing the product ID in the request parameters
@@ -714,3 +729,378 @@ exports.handleRemoveProductStock = async (req, res) => {
   }
 };
 
+exports.handleGetAllProducts = async (req, res) => {
+  const limit = parseInt(req.query.limit) || 10;
+  const page = parseInt(req.query.page) || 1;
+  const sort = req.query.sort;
+  const category = req.query.category;
+  const search = req.query.search;
+  const filterBy = req.query.filterBy;
+  const isArchived = req.query.isArchived || false;
+  const stockFilter = req.query.stockFilter;
+
+  try {
+    const filter = {
+      include: [{ model: Mutation, attributes: ["stock"], order: [["createdAt", "DESC"]], limit: 1 }],
+      where: {},
+    };
+
+    // Apply search query filter using Sequelize's Op.like
+    if (search) {
+      filter.where[Op.or] = [{ name: { [Op.like]: `%${search}%` } }, { sku: { [Op.like]: `%${search}%` } }];
+    }
+
+    // Include sorting options
+    if (sort) {
+      if (sort === "alphabetical-asc") {
+        filter.order = [["name", "ASC"]];
+      } else if (sort === "alphabetical-desc") {
+        filter.order = [["name", "DESC"]];
+      } else if (sort === "date-asc") {
+        filter.order = [["updatedAt", "ASC"]];
+      } else if (sort === "date-desc") {
+        filter.order = [["updatedAt", "DESC"]];
+      } else if (sort === "price-asc") {
+        filter.order = [["price", "ASC"]];
+      } else if (sort === "price-desc") {
+        filter.order = [["price", "DESC"]];
+      }
+    }
+
+    if (filterBy && filterBy.toLowerCase() !== "all genders") {
+      if (filterBy.toLowerCase() === "men") {
+        filter.where.gender = "Men";
+      } else if (filterBy.toLowerCase() === "women") {
+        filter.where.gender = "Women";
+      } else if (filterBy.toLowerCase() === "unisex") {
+        filter.where.gender = "Unisex";
+      }
+    }
+
+    // Add condition for isArchived
+    if (isArchived === "true") {
+      filter.where.isArchived = true;
+    } else {
+      filter.where.isArchived = false;
+    }
+
+    // Include category filter
+    if (category && category !== "All") {
+      filter.include.push(
+        { model: ProductImage, as: "productImages" },
+        {
+          model: Category,
+          as: "Categories",
+          through: { model: ProductCategory, attributes: [] },
+          attributes: ["id", "name"],
+          where: { name: category },
+        }
+      );
+    } else {
+      filter.include.push(
+        { model: ProductImage, as: "productImages" },
+        {
+          model: Category,
+          as: "Categories",
+          through: { model: ProductCategory, attributes: [] },
+          attributes: ["id", "name"],
+        }
+      );
+    }
+
+    // Retrieve products without pagination to get the total count
+  
+    // Query to fetch products with primary details
+    const productsWithMutations = await Product.findAll({
+      where: filter.where,
+      include: filter.include,
+      order: filter.order,
+    });
+
+    if (!productsWithMutations || productsWithMutations.length === 0) {
+      return res.status(404).json({
+        ok: false,
+        message: "No products found!",
+      });
+    }
+
+    // Extract product IDs for the next query
+    const productIds = productsWithMutations.map((product) => product.id);
+
+    // Query to fetch all categories associated with the products
+    const allCategories = await ProductCategory.findAll({
+      where: { productId: productIds },
+      include: [{ model: Category, as: "Category", attributes: ["id", "name"] }],
+    });
+
+    // Organize categories by product ID for efficient mapping
+    const categoriesByProductId = {};
+    allCategories.forEach((productCategory) => {
+      const { productId, Category } = productCategory;
+      if (!categoriesByProductId[productId]) {
+        categoriesByProductId[productId] = [];
+      }
+      categoriesByProductId[productId].push(Category);
+    });
+
+    productsWithMutations.forEach((product) => {
+      const productId = product.id;
+      product.dataValues.categories = categoriesByProductId[productId] || [];
+      delete product.dataValues.Categories; // Remove unnecessary attribute
+    });
+
+    // Map categories to the corresponding products
+    const productStock = await Promise.all(
+      productsWithMutations.map(async (product) => {
+        const mutations = await getMutationsForProduct(product.id);
+
+        // Calculate the total stock from all warehouses
+        const totalStockAllWarehouses = mutations.reduce((total, mutation) => total + mutation.totalStock, 0);
+
+        return {
+          ...product.toJSON(),
+          Mutations: mutations || [],
+          totalStockAllWarehouses: totalStockAllWarehouses || 0,
+        };
+      })
+    );
+
+    // Filter products based on stock status
+    const filteredProducts = filterProductsByStock(productStock, stockFilter);
+
+    // Calculate pagination information after filtering
+    const totalData = filteredProducts.length;
+    const totalPages = Math.ceil(totalData / limit);
+    const offset = (page - 1) * limit;
+    const paginatedProducts = filteredProducts.slice(offset, offset + limit);
+
+    res.status(200).json({
+      ok: true,
+      pagination: {
+        totalData,
+        totalPages,
+        page,
+      },
+      details: paginatedProducts,
+    });
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+// Helper function to filter products based on stock status
+const filterProductsByStock = (products, stockFilter) => {
+  if (stockFilter === "inStock") {
+    return products.filter((product) => product.totalStockAllWarehouses > 0);
+  } else if (stockFilter === "outOfStock") {
+    return products.filter((product) => product.totalStockAllWarehouses === 0);
+  } else {
+    return products; // Return all products if no stock filter is specified
+  }
+};
+
+// Helper function to get mutations for a product
+const getMutationsForProduct = async (productId) => {
+  const warehouses = await Warehouse.findAll();
+
+  return Promise.all(
+    warehouses.map(async (warehouse) => {
+      const latestMutation = await Mutation.findOne({
+        attributes: ["stock"],
+        where: {
+          productId,
+          warehouseId: warehouse.id,
+        },
+        order: [["createdAt", "DESC"]],
+        limit: 1,
+      });
+
+      return {
+        warehouseId: warehouse.id,
+        warehouseName: warehouse.name,
+        totalStock: latestMutation ? latestMutation.stock : 0,
+      };
+    })
+  );
+};
+
+exports.handleGetAllArchivedProducts = async (req, res) => {
+  const limit = parseInt(req.query.limit) || 100;
+  const page = parseInt(req.query.page) || 1;
+  const sort = req.query.sort;
+  const category = req.query.category;
+  const search = req.query.search;
+  const filterBy = req.query.filterBy; // New query parameter
+
+  try {
+    const filter = {
+      include: [{ model: Mutation, attributes: ["stock"], order: [["createdAt", "DESC"]], limit: 1 }],
+      where: {
+        isArchived: true,
+      },
+    };
+
+    // Apply search query filter using Sequelize's Op.like
+    if (search) {
+      filter.where[Op.or] = [{ name: { [Op.like]: `%${search}%` } }, { sku: { [Op.like]: `%${search}%` } }];
+    }
+
+    // Include sorting options
+    if (sort) {
+      if (sort === "alphabetical-asc") {
+        filter.order = [["name", "ASC"]];
+      } else if (sort === "alphabetical-desc") {
+        filter.order = [["name", "DESC"]];
+      } else if (sort === "date-asc") {
+        filter.order = [["updatedAt", "ASC"]];
+      } else if (sort === "date-desc") {
+        filter.order = [["updatedAt", "DESC"]];
+      } else if (sort === "price-asc") {
+        filter.order = [["price", "ASC"]];
+      } else if (sort === "price-desc") {
+        filter.order = [["price", "DESC"]];
+      }
+    }
+
+    if (filterBy && filterBy.toLowerCase() !== "all genders") {
+      if (filterBy.toLowerCase() === "men") {
+        filter.where.gender = "Men";
+      } else if (filterBy.toLowerCase() === "women") {
+        filter.where.gender = "Women";
+      } else if (filterBy.toLowerCase() === "unisex") {
+        filter.where.gender = "Unisex";
+      }
+    }
+
+    // Add condition for isArchived
+
+    // Include category filter
+    if (category && category !== "All") {
+      filter.include = [
+        { model: ProductImage, as: "productImages" },
+        {
+          model: Category,
+          as: "Categories",
+          through: { model: ProductCategory, attributes: [] },
+          attributes: ["id", "name"],
+          where: { name: category }, // Filter categories based on the queried category
+        },
+      ];
+    } else {
+      // Include without category filter
+      filter.include = [
+        { model: ProductImage, as: "productImages" },
+        {
+          model: Category,
+          as: "Categories",
+          through: { model: ProductCategory, attributes: [] },
+          attributes: ["id", "name"],
+        },
+      ];
+    }
+
+    // Retrieve products without pagination to get the total count
+    const totalData = await Product.count({
+      ...filter,
+      distinct: true, // Add this line to ensure distinct counts
+      col: "id",
+    });
+
+    // Query to fetch products with primary details
+    const products = await Product.findAll({
+      where: filter.where,
+      include: filter.include,
+      order: filter.order,
+      limit,
+      offset: (page - 1) * limit,
+    });
+
+    if (!products || products.length === 0) {
+      return res.status(404).json({
+        ok: false,
+        message: "No products found!",
+      });
+    }
+
+    // Extract product IDs for the next query
+    const productIds = products.map((product) => product.id);
+
+    // Query to fetch all categories associated with the products
+    const allCategories = await ProductCategory.findAll({
+      where: { productId: productIds },
+      include: [{ model: Category, as: "Category", attributes: ["id", "name"] }],
+    });
+
+    // Organize categories by product ID for efficient mapping
+    const categoriesByProductId = {};
+    allCategories.forEach((productCategory) => {
+      const { productId, Category } = productCategory;
+      if (!categoriesByProductId[productId]) {
+        categoriesByProductId[productId] = [];
+      }
+      categoriesByProductId[productId].push(Category);
+    });
+
+    // Map categories to the corresponding products
+    products.forEach((product) => {
+      const productId = product.id;
+      product.dataValues.categories = categoriesByProductId[productId] || [];
+      delete product.dataValues.Categories; // Remove unnecessary attribute
+    });
+
+    const productStock = await Promise.all(
+      products.map(async (product) => {
+        const warehouses = await Warehouse.findAll();
+
+        const mutations = await Promise.all(
+          warehouses.map(async (warehouse) => {
+            const latestMutation = await Mutation.findOne({
+              attributes: ["stock"],
+              where: {
+                productId: product.id,
+                warehouseId: warehouse.id,
+              },
+              order: [["createdAt", "DESC"]],
+              limit: 1,
+            });
+
+            return {
+              warehouseId: warehouse.id,
+              warehouseName: warehouse.name,
+              totalStock: latestMutation ? latestMutation.stock : 0,
+            };
+          })
+        );
+
+        // Calculate the total stock from all warehouses
+        const totalStockAllWarehouses = mutations.reduce((total, mutation) => total + mutation.totalStock, 0);
+
+        return {
+          ...product.toJSON(),
+          Mutations: mutations || [],
+          totalStockAllWarehouses: totalStockAllWarehouses || 0,
+        };
+      })
+    );
+
+    // Send the response
+    res.status(200).json({
+      ok: true,
+      pagination: {
+        totalData,
+        page,
+      },
+      details: productStock,
+    });
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+    });
+  }
+};

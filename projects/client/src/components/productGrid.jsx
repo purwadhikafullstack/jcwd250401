@@ -139,6 +139,7 @@ function ProductGrid() {
   const settings = {
     dots: true,
     infinite: true,
+    fade: true,
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
@@ -242,7 +243,7 @@ function ProductGrid() {
                 {product.productImages.map((image, idx) => (
                   <div
                     key={idx}
-                    className="w-[180px] h-[250px] lg:w-[230px] lg:h-[310px] cursor-pointer"
+                    className="w-[180px] h-[250px] lg:w-[230px] lg:h-[310px] cursor-pointer relative"
                     onClick={() =>
                       navigate(
                         `/products/${product.gender.toLowerCase()}/${product.categories[0].name.replace(/\s+/g, "-").toLowerCase()}/${product.categories[1].name.replace(/\s+/g, "-").toLowerCase()}/${product.name
@@ -251,7 +252,17 @@ function ProductGrid() {
                       )
                     }
                   >
+                    {/* Product Image */}
                     <img src={`http://localhost:8000/public/${image.imageUrl}`} className="w-full h-full object-cover shadow-md rounded-lg lg:rounded-none" alt={`Product Image ${idx}`} />
+
+                    {/* Overlay for Out of Stock */}
+                    {product.totalStockAllWarehouses === 0 && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="bg-black bg-opacity-30 w-full flex justify-center text-white p-1">
+                          <span className="text-lg font-medium">Out of Stock</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </Slider>

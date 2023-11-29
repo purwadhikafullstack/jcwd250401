@@ -24,7 +24,7 @@ function ProductList() {
   const [sortCriteria, setSortCriteria] = useState("date-desc"); // Default sorting criteria that matches the backend;
   const [searchInput, setSearchInput] = useState(""); // Initialize with "All"
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [selectedWarehouse, setSelectedWarehouse] = useState("All Warehouse");
+  const [selectedFilterStock, setSelectedFilterStock] = useState("all");
   const [selectedFilter, setSelectedFilter] = useState("All Genders");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -48,10 +48,6 @@ function ProductList() {
     setSearchInput(e.target.value);
   }, 600); // 600 milliseconds debounce time (adjust as needed)
 
-  const handleWarehouseChange = (e) => {
-    setSelectedWarehouse(e.target.value);
-  };
-
   const formatToRupiah = (number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -68,6 +64,7 @@ function ProductList() {
         category: selectedCategory,
         search: searchInput,
         filterBy: selectedFilter,
+        stockFilter: selectedFilterStock,
       });
       const totalData = result.pagination.totalData;
       const totalPages = Math.ceil(totalData / productsPerPage);
@@ -108,7 +105,7 @@ function ProductList() {
         }, 2000);
       }
     }
-  }, [currentPage, sortCriteria, selectedCategory, searchInput, selectedFilter, totalPages, totalData, newProducts]);
+  }, [currentPage, sortCriteria, selectedCategory, searchInput, selectedFilter, totalPages, totalData, newProducts, categoryLists, selectedFilterStock]);
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -148,12 +145,16 @@ function ProductList() {
     setSelectedFilter(selectedFilterValue);
   };
 
-  // const warehouse = [
-  //   { label: "All Warehouse", value: "All" },
-  //   { label: "Jakarta", value: "Jakarta" },
-  //   { label: "Bandung", value: "Bandung" },
-  //   { label: "Medan", value: "Medan" },
-  // ];
+  const handleFilterStockChange = (event) => {
+    const selectedFilterStockValue = event.target.value;
+    setSelectedFilterStock(selectedFilterStockValue);
+  };
+
+  const stockFilter = [
+    { label: "All Stock", value: "all" },
+    { label: "In Stock", value: "inStock" },
+    { label: "Out of Stock", value: "outOfStock" },
+  ];
 
   const sortingOptions = [
     { label: "Date DESC", value: "date-desc" },
@@ -242,22 +243,22 @@ function ProductList() {
           </div>
         </div>
         <div className="flex gap-4 w-full">
-          {/* <div className="w-full">
-            <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent">
+          <div className="w-full">
+            <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" onChange={handleFilterStockChange}>
               <option value="" disabled className="text-gray-400">
-                Warehouse
+                Stock
               </option>
-              {warehouse.map((opt) => (
+              {stockFilter.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
                 </option>
               ))}
             </select>
-          </div> */}
+          </div>
           <div className="w-full">
             <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent " onChange={handleFilterChange}>
               <option value="" disabled className="text-gray-400">
-                Filter
+                Gender
               </option>
               {filterOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -278,7 +279,8 @@ function ProductList() {
                     disabled={opt.subOpts}
                     style={{
                       fontWeight: opt.subOpts ? "bold" : "normal",
-                    }}>
+                    }}
+                  >
                     {opt.label}
                   </option>
                   {opt.subOpts &&
@@ -318,7 +320,11 @@ function ProductList() {
           <div key={product.id} className="bg-white items-center justify-between flex gap-6 h-36 w-full px-6 py-2 rounded-lg shadow-sm">
             <div className="h-[100px] w-[100px] flex justify-center items-center">
               {product.productImages[0].imageUrl ? (
-                <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" />
+                product.totalStockAllWarehouses !== 0 ? (
+                  <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" />
+                ) : (
+                  <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" style={{ filter: "grayscale(100%)" }} />
+                )
               ) : (
                 <div className="w-full h-full flex justify-center items-center bg-gray-200 text-gray-400">
                   <div className="flex flex-col items-center justify-center">
@@ -330,7 +336,7 @@ function ProductList() {
             </div>
 
             <div className="flex w-60 flex-col">
-              <span className="font-bold">{product.name} </span>
+              {product.totalStockAllWarehouses !== 0 ? <span className="font-bold">{product.name}</span> : <span className="font-bold">(Out of stock) {product.name}</span>}
               <span>
                 SKU : {product.sku} ({product.gender}){" "}
               </span>
@@ -369,7 +375,8 @@ function ProductList() {
                     borderColor="gray.500"
                     borderWidth="2px"
                     _hover={{ bg: "gray.900", textColor: "white" }}
-                    _expanded={{ bg: "gray.900", textColor: "white" }}>
+                    _expanded={{ bg: "gray.900", textColor: "white" }}
+                  >
                     <Flex justifyContent="between" gap={4} px={2} alignItems="center">
                       <Text fontWeight="bold">Edit</Text>
                       <PiCaretDown size="20px" />
@@ -397,7 +404,8 @@ function ProductList() {
                     borderColor="gray.500"
                     borderWidth="2px"
                     _hover={{ bg: "gray.900", textColor: "white" }}
-                    _expanded={{ bg: "gray.900", textColor: "white" }}>
+                    _expanded={{ bg: "gray.900", textColor: "white" }}
+                  >
                     <Flex justifyContent="between" gap={4} px={2} alignItems="center">
                       <Text fontWeight="bold">Update</Text>
                       <PiCaretDown size="20px" />
