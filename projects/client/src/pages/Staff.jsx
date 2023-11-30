@@ -116,8 +116,8 @@ export const Staff = () => {
   return (
     <div className="flex flex-row justify-between h-screen">
       <Sidebar />
-      <div className="w-[84vw] bg-[#f0f0f0] overflow-hidden flex flex-col">
-        <div className="shadow-md fixed top-0 left-[16vw] right-0 z-50 bg-white">
+      <div className="w-[82vw] lg:w-[84vw] bg-[#f0f0f0] overflow-hidden flex flex-col">
+        <div className="shadow-md fixed top-0 left-[18vw] lg:left-[16vw] right-0 z-50 bg-white">
           <Navigationadmin />
         </div>
 
