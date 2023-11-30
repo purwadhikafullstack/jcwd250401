@@ -97,9 +97,31 @@ function ProductGrid() {
     }).format(number);
   };
 
-  const handleSortChange = (event) => {
-    const selectedSortValue = event.target.value;
+  useEffect(() => {
+    // Parse the URL to get the sort parameter
+    const queryParams = new URLSearchParams(location.search);
+    const sortParam = queryParams.get("sort");
+
+    // Check if the sort parameter is present and update the state
+    if (sortParam) {
+      setSortCriteria(sortParam);
+    }
+
+    // Fetch products based on the sort parameter
+    fetchProducts();
+  }, [location.search]);
+
+  const handleSortChange = ({ target }) => {
+    const selectedSortValue = target.value;
     setSortCriteria(selectedSortValue);
+
+    const queryParams = new URLSearchParams(location.search);
+    queryParams.set("sort", selectedSortValue);
+
+    navigate({
+      pathname: location.pathname,
+      search: queryParams.toString(),
+    });
   };
 
   const handleImageSlider = (index, productId) => {
@@ -128,12 +150,12 @@ function ProductGrid() {
   };
 
   const sortingOptions = [
-    { label: "Date DESC", value: "date-desc" },
-    { label: "Date ASC", value: "date-asc" },
+    { label: "Latest", value: "date-desc" },
+    { label: "Oldest", value: "date-asc" },
     { label: "(A-Z)", value: "alphabetical-asc" },
     { label: "(Z-A)", value: "alphabetical-desc" },
-    { label: "Price ASC", value: "price-asc" },
-    { label: "Price DESC", value: "price-desc" },
+    { label: "Lowest Price", value: "price-asc" },
+    { label: "Highest Price", value: "price-desc" },
   ];
 
   const settings = {
@@ -198,7 +220,7 @@ function ProductGrid() {
           <div className="hidden lg:block">&nbsp;</div>
           <div className="hidden lg:block w-full lg:w-[168px] space-y-2">
             <span className="font-bold"> Sort by</span>
-            <select className="py-2 border-1 rounded-lg w-full text-sm shadow-sm focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" onChange={handleSortChange}>
+            <select className="py-2 border-1 rounded-lg w-full text-sm shadow-sm focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" onChange={handleSortChange} value={sortCriteria}>
               <option value="" disabled className="text-gray-400">
                 Sort
               </option>
@@ -242,14 +264,7 @@ function ProductGrid() {
         </div>
       )}
       <div className="mt-6">
-        <SimpleGrid
-          columns={{ base: 2, lg: 4 }}
-          spacing={{ base: 3, lg: 4 }}
-          h={{ base: "68vh", lg: "63vh" }}
-          borderRadius={{ base: "xl", lg: "md" }}
-          overflowY="auto"
-          className="scrollbar-hide"
-        >
+        <SimpleGrid columns={{ base: 2, lg: 4 }} spacing={{ base: 3, lg: 4 }} h={{ base: "68vh", lg: "63vh" }} borderRadius={{ base: "xl", lg: "md" }} overflowY="auto" className="scrollbar-hide">
           {products.map((product) => (
             <div className="flex flex-col items-center lg:justify-normal lg:items-start space-y-6 lg:space-y-10">
               <Slider {...settings} className="w-[180px] h-[260px] lg:w-[230px] lg:h-[280px]">
@@ -266,7 +281,7 @@ function ProductGrid() {
                     }
                   >
                     {/* Product Image */}
-                    <img src={`http://localhost:8000/public/${image.imageUrl}`} className="w-full h-full object-cover shadow-md rounded-lg lg:rounded-none" alt={`Product Image ${idx}`} />
+                    <img src={`http://localhost:8000/public/${image.imageUrl}`} loading="lazy" className="w-full h-full object-cover shadow-md rounded-lg lg:rounded-none" alt={`Product Image ${idx}`} />
 
                     {/* Overlay for Out of Stock */}
                     {product.totalStockAllWarehouses === 0 && (
@@ -294,7 +309,7 @@ function ProductGrid() {
                   boxShadow="md"
                   key={1}
                   w="30px"
-                  size={{base: "md" , lg: "sm"}}
+                  size={{ base: "md", lg: "sm" }}
                   borderRadius="50%"
                   onClick={() => handlePageChange(1)}
                   variant={currentPage === 1 ? "solid" : "solid"}
@@ -312,8 +327,7 @@ function ProductGrid() {
                       boxShadow="md"
                       key={index + 2}
                       w="30px"
-                      size={{base: "md", lg: "sm"}}
-                     
+                      size={{ base: "md", lg: "sm" }}
                       borderRadius="50%"
                       onClick={() => handlePageChange(index + 2)}
                       variant={currentPage === index + 2 ? "solid" : "solid"}

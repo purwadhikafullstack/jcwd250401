@@ -37,6 +37,11 @@ function Navigationbar() {
   const username = profile?.data?.profile?.username;
   const isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
   const location = useLocation();
+  const [isSearchBarVisible, setIsSearchBarVisible] = useState(false);
+
+  const handleSearchIconEnter = () => {
+    setIsSearchBarVisible(!isSearchBarVisible);
+  };
 
   const openAuthModal = () => {
     dispatch(showLoginModal());
@@ -48,17 +53,16 @@ function Navigationbar() {
 
   const handleIconClick = () => setDropdownVisible(!dropdownVisible);
 
- const handleSubcategoryClick = (subcategory) => {
-  setIsDropdownTransitioning(true);
-  setDropdownSubcategory((prevSubcategory) => (prevSubcategory === subcategory ? null : subcategory));
-  
-};
+  const handleSubcategoryClick = (subcategory) => {
+    setIsDropdownTransitioning(true);
+    setDropdownSubcategory((prevSubcategory) => (prevSubcategory === subcategory ? null : subcategory));
+  };
   const handleLogout = () => {
     signOut(auth)
-    .then(() => {
-      setDropdownVisible(false);
-      dispatch(logout());
-      navigate(location.pathname);
+      .then(() => {
+        setDropdownVisible(false);
+        dispatch(logout());
+        navigate(location.pathname);
       })
       .catch((error) => {
         console.error("Error signing out:", error);
@@ -117,7 +121,7 @@ function Navigationbar() {
 
             return (
               <>
-                <span key={index} className="text-md font-semibold cursor-pointer underline-on-hover " onMouseEnter={() => dropdownSubcategory !== category && handleSubcategoryClick(category)} >
+                <span key={index} className="text-md font-semibold cursor-pointer underline-on-hover " onMouseEnter={() => dropdownSubcategory !== category && handleSubcategoryClick(category)}>
                   {category}
                 </span>
 
@@ -161,7 +165,18 @@ function Navigationbar() {
       {isLoggedIn ? (
         <>
           <div className="hidden gap-8 lg:flex items-center">
-            <BsSearch className="text-xl cursor-pointer" />
+            <div className={`flex items-center ${isSearchBarVisible ? "space-x-4" : "-space-x-7"}`}>
+              <div className="text-xl cursor-pointer search-icon" onClick={handleSearchIconEnter}>
+                <BsSearch />
+              </div>
+              <input
+                type="text"
+                placeholder="Search..."
+                className={`border-1 border-gray-500 rounded-lg shadow-sm shadow-gray-200 focus:ring-transparent focus:shadow-md focus:shadow-gray-300 focus:border-gray-800 search-input ${
+                  isSearchBarVisible ? "search-input-visible" : "search-input-hidden"
+                }`} // Add other input properties and styles as needed
+              />
+            </div>
             <img src={photoProfile ? `http://localhost:8000/public/${photoProfile}` : "https://via.placeholder.com/150"} alt="Profile" className="w-6 h-6 rounded-full cursor-pointer" onClick={handleIconClick} />
             {dropdownVisible && (
               <div className={`absolute top-16 w-48 h-48 bg-white ring-1 ring-black ring-opacity-5 z-10 ${isDropdownTransitioning ? "dropdown-hidden" : "dropdown-visible"}`} onMouseLeave={() => setDropdownVisible(false)}>
@@ -180,7 +195,7 @@ function Navigationbar() {
             )}
 
             <MdFavoriteBorder className="text-xl cursor-pointer" />
-            <BsCart className="text-xl cursor-pointer" onClick={() => navigate("/account/cart")} />
+            <BsCart className="text-xl cursor-pointer" onClick={() => navigate("/account/shopping-cart")} />
           </div>
 
           {/* Mobile */}
@@ -222,6 +237,18 @@ function Navigationbar() {
         </>
       ) : (
         <div className="flex items-center gap-4">
+          <div className={`flex items-center ${isSearchBarVisible ? "space-x-4" : "-space-x-6"}`}>
+            <div className="text-xl cursor-pointer search-icon" onClick={handleSearchIconEnter}>
+              <BsSearch />
+            </div>
+            <input
+              type="text"
+              placeholder="Search..."
+              className={`border-1 border-gray-500 rounded-lg shadow-sm shadow-gray-200 focus:ring-transparent focus:shadow-md focus:shadow-gray-300 focus:border-gray-800 search-input ${
+                isSearchBarVisible ? "search-input-visible" : "search-input-hidden"
+              }`} 
+            />
+          </div>
           <a onClick={openAuthModal} className="text-black text-md font-semibold hover:underline cursor-pointer">
             Log in
           </a>

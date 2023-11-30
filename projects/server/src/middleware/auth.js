@@ -31,6 +31,7 @@ exports.validateToken = (req, res, next) => {
 
     req.user = payload;
     next();
+    
   } catch (error) {
     if (error.name === "JsonWebTokenError") {
       // JWT is malformed

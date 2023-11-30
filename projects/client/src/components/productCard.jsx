@@ -10,17 +10,24 @@ import { Button } from "flowbite-react";
 import { useDispatch } from "react-redux";
 import { showLoginModal } from "../slices/authModalSlices";
 import ZoomableImage from "./ZoomableImage";
+import addToCart from "../api/cart/addToCart";
+import { AiOutlineLoading } from "react-icons/ai";
+import AddToCartConfirmation from "./AddToCartConfirmation";
 
 function ProductCard() {
   const { gender, mainCategory, subCategory, productName } = useParams();
   const [showPopup, setShowPopup] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState([]);
+  const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [activeImageIndexMobile, setActiveImageIndexMobile] = useState(0);
   const sliderRef = useRef(null);
   const sliderRefMobile = useRef(null);
   const isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
   const dispatch = useDispatch();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isConfirmationOpen, setConfirmationOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const formatSubCategory = (subCategory) => {
     const words = subCategory.split("-");
@@ -136,17 +143,41 @@ function ProductCard() {
     prevArrow: <SamplePrevArrow />,
   };
 
-  const handleAddToCart = () => {
-    if (!isLoggedIn) {
-      toast.info("Please login first to perform this action", {
-        duration: 1700,
-        onAutoClose: (t) => {
-          dispatch(showLoginModal());
-        },
-      });
-    }
+  function handleQuantityChange(newQuantity) {
+    setQuantity(newQuantity);
+  }
 
-    console.log("add to cart");
+  const handleAddToCart = async () => {
+    try {
+      // Check if the user is logged in
+      if (!isLoggedIn) {
+        // If not logged in, show login modal and stop further execution
+        toast.info("Please login first to perform this action", {
+          duration: 1700,
+          onAutoClose: (t) => {
+            // Await the dispatch before continuing
+            dispatch(showLoginModal());
+          },
+        });
+        return;
+      }
+
+      // If logged in, proceed with adding to cart
+      setIsSubmitting(true);
+
+      const response = await addToCart({
+        productId: selectedProduct[0].id,
+        quantity: quantity,
+      });
+      setConfirmationOpen(true);
+    } catch (error) {
+      // Handle errors
+      if (error?.response?.status === 500 || error?.response?.status === 400 || error?.response?.status === 403 || error?.response?.status === 401) {
+        toast.error(error.response.data.message, {
+          description: error.response.data.detail,
+        });
+      }
+    }
   };
 
   const handleAddToWishlist = () => {
@@ -217,7 +248,14 @@ function ProductCard() {
                     </div>
                     <div className="w-full space-y-4">
                       <span className="font-bold text-xl">Quantity</span>
-                      <NumberInput defaultValue={product.totalStockAllWarehouses === 0 ? 0 : 1} min={product.totalStockAllWarehouses === 0 ? 0 : 1} max={product.totalStockAllWarehouses} isDisabled={product.totalStockAllWarehouses === 0}>
+                      <NumberInput
+                        defaultValue={product.totalStockAllWarehouses === 0 ? 0 : 1}
+                        min={product.totalStockAllWarehouses === 0 ? 0 : 1}
+                        max={product.totalStockAllWarehouses}
+                        isDisabled={product.totalStockAllWarehouses === 0}
+                        value={product.totalStockAllWarehouses !== 0 ? quantity : 0}
+                        onChange={(valueString, valueNumber) => handleQuantityChange(valueNumber)}
+                      >
                         <NumberInputField />
                         <NumberInputStepper>
                           <NumberIncrementStepper />
@@ -313,9 +351,15 @@ function ProductCard() {
                       Add To Wishlist
                     </Button>
                     {product.totalStockAllWarehouses !== 0 ? (
-                      <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777] shadow-md" size="lg" onClick={handleAddToCart}>
-                        Add To Cart
-                      </Button>
+                      isSubmitting ? (
+                        <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777] outline-none" size="lg" isProcessing processingSpinner={<AiOutlineLoading className="h-6 w-6 animate-spin" />}>
+                          Logging in...
+                        </Button>
+                      ) : (
+                        <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777]" size="lg" onClick={handleAddToCart} disabled={isSubmitting}>
+                          Add To Cart
+                        </Button>
+                      )
                     ) : (
                       <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777] shadow-md" size="lg" disabled>
                         Out Of Stock
@@ -345,6 +389,7 @@ function ProductCard() {
           <span className="text-xl ">No product matches. </span>
         </div>
       )}
+      <AddToCartConfirmation isOpen={isConfirmationOpen} onClose={() => setConfirmationOpen(false)} quantity={quantity} price={selectedProduct[0]?.price} />
     </div>
   );
 }

@@ -18,11 +18,11 @@ const Breadcrumbs = () => {
   const pathSegments = location.pathname.split("/").filter((segment) => segment !== "");
 
   // Check if the URL contains "products", and if so, skip the first segment
-  const skipProducts = pathSegments[0] === "products";
+  const skipProducts = pathSegments[0] === "products" || pathSegments[0] === "account";
   const segmentsToRender = skipProducts ? pathSegments.slice(1) : pathSegments;
 
   // Set the styles for the breadcrumb container
-  const containerStyle = { display: 'flex', flexWrap: 'wrap' };
+  const containerStyle = { display: "flex", flexWrap: "wrap" };
 
   // Define a media query for screen widths larger than 600px
   const isLargeScreen = window.innerWidth > 500; // You can adjust the threshold as needed
@@ -35,10 +35,10 @@ const Breadcrumbs = () => {
   return (
     <Breadcrumb style={containerStyle}>
       <BreadcrumbItem>
-        <BreadcrumbLink isCurrentPage>
-          <span className="hover:underline">
-            Home
-          </span>
+        <BreadcrumbLink>
+          <Link to={"/"}>
+            <span className="hover:underline">Home</span>
+          </Link>
         </BreadcrumbLink>
       </BreadcrumbItem>
       {segmentsToRender.slice(0, maxIndexToRender).map((segment, index, array) => (
@@ -59,7 +59,7 @@ const Breadcrumbs = () => {
                     </Link>
                   </BreadcrumbLink>
                 )}
-                <span style={{ margin: '0 6px' }}>/</span>
+                <span style={{ margin: "0 6px" }}>/</span>
               </React.Fragment>
             )}
           </BreadcrumbItem>

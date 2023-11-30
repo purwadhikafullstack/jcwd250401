@@ -30,3 +30,4 @@ router.post("/forgot-password-admin", authController.handleForgotPasswordAdmin);
 router.post("/reset-password-admin", passwordValidator.passwordValidationRules, passwordValidator.applyPasswordValidation, authController.handleResetPasswordAdmin);
 
 module.exports = router;
+

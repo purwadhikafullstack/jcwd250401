@@ -11,14 +11,14 @@ import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import { Order } from "./pages/Order";
-import { CartPage } from "./pages/CartPage";
+import CartPage from "./pages/CartPage";
 import { Customers } from "./pages/Customers";
 import { Staff } from "./pages/Staff";
 import Warehouse from "./pages/Warehouse";
 import HomeProducts from "./pages/HomeProducts";
 import { Stock } from "./pages/Stock";
 
-// 
+//
 
 const adminPaths = [
   "/adminlogin",
@@ -66,7 +66,7 @@ export default function App() {
           <Route path="/account/my-order" element={<Order />} />
           <Route path="/account/address-book" element={<Address />} />
           <Route path="/account/change-password" element={<ChangePassword />} />
-          <Route path="/account/cart" element={<CartPage />} />
+          <Route path="/account/shopping-cart" element={<CartPage />} />
           <Route path="/products/:gender/:mainCategory?/:subCategory?/:productName?" element={<HomeProducts />} />
           {/* Add more route configurations as needed */}
           <Route path="*" element={<NotFound />} />
