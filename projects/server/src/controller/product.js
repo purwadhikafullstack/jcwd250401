@@ -467,6 +467,7 @@ exports.handleArchiveProduct = async (req, res) => {
       product: product, // You can customize the response as needed
     });
   } catch (error) {
+
     console.error("Error archiving product:", error);
     res.status(500).json({
       ok: false,
@@ -538,7 +539,6 @@ const updateStock = async (warehouseId, productId, quantity, type, adminId, tran
       transaction,
     });
 
-    console.log("Latest Mutation:", latestMutation);
     const currentStock = latestMutation ? latestMutation.stock : 0;
 
     if (type === "subtract" && quantity > currentStock) {
@@ -551,10 +551,14 @@ const updateStock = async (warehouseId, productId, quantity, type, adminId, tran
       {
         productId,
         warehouseId,
+        destinationWarehouseId: warehouseId,
         mutationQuantity: quantity,
+        previousStock: currentStock,
         mutationType: type,
         adminId,
         stock: newStock,
+        status: "success",
+        isManual: true,
       },
       { transaction }
     );
@@ -644,6 +648,7 @@ const removeStock = async (warehouseId, productId, transaction) => {
     await Mutation.destroy({
       where: {
         id: {
+          // Remove stock from all mutations in the warehouse
           [Op.in]: product.Mutations.map((mutation) => mutation.id),
         },
       },

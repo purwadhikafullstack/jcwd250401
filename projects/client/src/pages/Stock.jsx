@@ -147,7 +147,7 @@ export const Stock = () => {
             </InputLeftElement>
             <Input
               type="text"
-              placeholder="Search product id or mutation"
+              placeholder="Find product id or mutation type"
               value={searchInput}
               onChange={handleSearchInputChange}
               bgColor={"white"}
@@ -185,23 +185,23 @@ export const Stock = () => {
 
         {mutations.length > 0 ? (
           <div className="flex flex-col px-4 md:px-8 min-h-[50vh] md:h-[67vh] overflow-y-auto scrollbar-hide">
-            <TableContainer bgColor={"white"} borderRadius={"md"} className="scrollbar-hide" h={"full"}>
-              <Box display={"flex"} justifyContent={"space-between"} alignItems={"center"} py={3} px={5}>
-                <Heading size="md">Stock History</Heading>
+            <Box display={"flex"} justifyContent={"space-between"} alignItems={"center"} py={3} px={5} bgColor={"white"} borderTopRadius={"md"}>
+              <Heading size="md">Stock History</Heading>
 
-                <div className="flex gap-2">
-                  <select value={order} onChange={(e) => setOrder(e.target.value)} className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#40403F] focus:border-[#40403F] block w-full p-2.5 cursor-pointer">
-                    <option value="">Order</option>
-                    <option value="ASC">Ascending</option>
-                    <option value="DESC">Descending</option>
-                  </select>
-                  <select value={sort} onChange={(e) => setSort(e.target.value)} className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#40403F] focus:border-[#40403F] block w-full p-2.5 cursor-pointer">
-                    <option value="">Sort by</option>
-                    <option value="createdAt">Created at</option>
-                    <option value="stock">Stock</option>
-                  </select>
-                </div>
-              </Box>
+              <div className="flex gap-2">
+                <select value={order} onChange={(e) => setOrder(e.target.value)} className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#40403F] focus:border-[#40403F] block w-full p-2.5 cursor-pointer">
+                  <option value="">Order</option>
+                  <option value="ASC">Ascending</option>
+                  <option value="DESC">Descending</option>
+                </select>
+                <select value={sort} onChange={(e) => setSort(e.target.value)} className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#40403F] focus:border-[#40403F] block w-full p-2.5 cursor-pointer">
+                  <option value="">Sort by</option>
+                  <option value="createdAt">Created at</option>
+                  <option value="stock">Stock</option>
+                </select>
+              </div>
+            </Box>
+            <TableContainer bgColor={"white"} borderBottomRadius={"md"} className="scrollbar-hide" h={"full"}>
               <Table variant="striped" colorScheme="blackAlpha">
                 <Thead>
                   <Tr textColor={"#40403F"} fontWeight={"bold"}>
@@ -212,6 +212,9 @@ export const Stock = () => {
                     <Th>Date</Th>
                     <Th>
                       Mutation <br /> Type
+                    </Th>
+                    <Th>
+                      Previous <br /> Stock
                     </Th>
                     <Th>
                       Inventory
@@ -236,12 +239,13 @@ export const Stock = () => {
                       <Td>{mutation.Warehouse.name}</Td>
                       <Td>{mutation.createdAt.slice(0, 10)}</Td>
                       <Td>{mutation.mutationType}</Td>
-                      <Td color={mutation.mutationType === "add" ? "green" : "red"}>
+                      <Td>{mutation.previousStock}</Td>
+                      <Td color={mutation.mutationType === "add" ? "green" : mutation.status === "processing" || mutation.status === "pending" ? "orange" : mutation.status === "cancelled"  || mutation.status === "failed" ? "red" : "green"}>
                         {mutation.mutationType === "add" ? "+" : "-"}
                         {mutation.mutationQuantity}
                       </Td>
-                      <Td>{mutation.stock}</Td>
-                      <Td>{mutation?.status ? mutation.status : "-"}</Td>
+                      <Td color={mutation.status === "processing" || mutation.status === "pending" ? "orange" : mutation.status === "failed" ? "red" : "green"}>{mutation.stock}</Td>
+                      <Td color={mutation.status === "processing" || mutation.status === "pending" ? "orange" : mutation.status === "failed" ? "red" : "green"}>{mutation?.status ? mutation.status : "-"}</Td>
                     </Tr>
                   ))}
                 </Tbody>
