@@ -1,5 +1,5 @@
 const { Op, literal } = require("sequelize");
-const { Mutation, Product, Warehouse, Admin, ProductImage, Category, sequelize } = require("../models");
+const { Mutation, Product, Warehouse, Admin, ProductImage, Category, sequelize, Journal } = require("../models");
 
 exports.getTotalStockByWarehouseProductId = async (req, res) => {
   const { warehouseId, productId } = req.params;
@@ -37,7 +37,7 @@ exports.getTotalStockByWarehouseProductId = async (req, res) => {
 
 exports.getAllMutations = async (req, res) => {
   try {
-    const { page = 1, size = 5, sort = "createdAt", order = "DESC", search, warehouseId = null, month = null } = req.query;
+    const { page = 1, size = 5, sort = "id", order = "DESC", search, warehouseId = null, month = null } = req.query;
     const limit = parseInt(size);
     const offset = (parseInt(page) - 1) * limit;
 
@@ -168,6 +168,40 @@ exports.createManualStockMutation = async (req, res) => {
       });
     }
 
+    if (mutationQuantity <= 0) {
+      return res.status(400).json({
+        ok: false,
+        message: "Mutation quantity must be greater than 0",
+      });
+    }
+
+    if (warehouseId === destinationWarehouseId) {
+      return res.status(400).json({
+        ok: false,
+        message: "Source and destination warehouse cannot be the same",
+      });
+    }
+
+    const isExistMutation = await Mutation.findOne({
+      where: {
+        adminId,
+        warehouseId,
+        destinationWarehouseId,
+        productId,
+        mutationQuantity,
+        status: "pending",
+      },
+      transaction: t,
+    });
+
+    if (isExistMutation) {
+      await t.rollback();
+      return res.status(400).json({
+        ok: false,
+        message: "Mutation with the same quantity already exists, please wait for it to be processed",
+      });
+    }
+
     // check if the admin, source warehouse and destination warehouse exists
     const admin = await Admin.findByPk(adminId, { transaction: t });
     const sourceWarehouse = await Warehouse.findByPk(warehouseId, { transaction: t });
@@ -195,7 +229,7 @@ exports.createManualStockMutation = async (req, res) => {
 
     // get the latest mutation from the source warehouse to check if there is enough stock
     const currentStockAtSourceWarehouse = latestMutation ? latestMutation.stock : 0;
-    if (currentStockAtSourceWarehouse <= mutationQuantity) {
+    if (currentStockAtSourceWarehouse < mutationQuantity) {
       await t.rollback();
       return res.status(400).json({
         ok: false,
@@ -210,10 +244,29 @@ exports.createManualStockMutation = async (req, res) => {
         warehouseId,
         destinationWarehouseId,
         mutationQuantity,
+        previousStock: currentStockAtSourceWarehouse,
         mutationType: "subtract",
         adminId,
+        stock: latestMutation.stock,
         status: "pending",
         isManual: true,
+      },
+      { transaction: t }
+    );
+
+    const mutationJournal = await Journal.create(
+      {
+        mutationId: mutation.id,
+        productId: mutation.productId,
+        warehouseId: mutation.warehouseId,
+        destinationWarehouseId: mutation.destinationWarehouseId,
+        mutationQuantity: mutation.mutationQuantity,
+        previousStock: mutation.previousStock,
+        mutationType: mutation.mutationType,
+        adminId: mutation.adminId,
+        stock: mutation.stock,
+        status: mutation.status,
+        isManual: mutation.isManual,
       },
       { transaction: t }
     );
@@ -222,6 +275,7 @@ exports.createManualStockMutation = async (req, res) => {
       ok: true,
       message: "Mutation created successfully",
       detail: mutation,
+      journal: mutationJournal,
     });
 
     await t.commit();
@@ -237,20 +291,9 @@ exports.createManualStockMutation = async (req, res) => {
 
 exports.processStockMutationByWarehouse = async (req, res) => {
   const t = await sequelize.transaction();
-  const { warehouseId, mutationId, action } = req.body;
+  const { mutationId, action } = req.body;
 
   try {
-    // check if the warehouse exists
-    const warehouse = await Warehouse.findByPk(warehouseId, { transaction: t });
-
-    if (!warehouse) {
-      await t.rollback();
-      return res.status(404).json({
-        ok: false,
-        message: "Warehouse not found",
-      });
-    }
-
     // check if the mutation with status pending exists
     const mutation = await Mutation.findOne({
       where: {
@@ -265,6 +308,27 @@ exports.processStockMutationByWarehouse = async (req, res) => {
       return res.status(404).json({
         ok: false,
         message: "Mutation not found",
+      });
+    }
+
+    // get Journal
+    const updatedMutationJournal = await Journal.findOne({
+      where: {
+        productId: mutation.productId,
+        warehouseId: mutation.warehouseId,
+        destinationWarehouseId: mutation.destinationWarehouseId,
+        createdAt: mutation.createdAt,
+      },
+      order: [["createdAt", "DESC"]],
+      limit: 1,
+      transaction: t,
+    });
+
+    if (!updatedMutationJournal) {
+      await t.rollback();
+      return res.status(404).json({
+        ok: false,
+        message: "Journal not found",
       });
     }
 
@@ -289,9 +353,10 @@ exports.processStockMutationByWarehouse = async (req, res) => {
     }
 
     if (action === "process") {
-      // get the latest mutation from the source warehouse
+      // get the latest mutation from the source warehouse to check if there is enough stock
       const productId = mutation.productId;
       const warehouseId = mutation.warehouseId;
+
       const findLatestMutationSourceWarehouse = await Mutation.findOne({
         where: {
           productId,
@@ -300,18 +365,30 @@ exports.processStockMutationByWarehouse = async (req, res) => {
         },
         order: [["createdAt", "DESC"]],
         limit: 1,
-        attributes: ["stock"],
+        attributes: ["stock", "id"],
         transaction: t,
       });
 
-      // check if the latest mutation exists
-      if (findLatestMutationSourceWarehouse) {
+      // check if the latest mutation exists and if there is enough stock
+      if (findLatestMutationSourceWarehouse && findLatestMutationSourceWarehouse.stock >= mutation.mutationQuantity) {
         // update the latest mutation stock from the source warehouse
         const updatedStock = findLatestMutationSourceWarehouse.stock - mutation.mutationQuantity;
-        findLatestMutationSourceWarehouse.stock = updatedStock;
-        await findLatestMutationSourceWarehouse.save({ transaction: t });
+        // create a new mutation for the source warehouse to update the stock
+        const newMutationForSourceWarehouse = await Mutation.create({
+          productId,
+          warehouseId,
+          destinationWarehouseId: mutation.destinationWarehouseId,
+          mutationQuantity: mutation.mutationQuantity,
+          previousStock: mutation.previousStock,
+          mutationType: "subtract",
+          adminId: mutation.adminId,
+          stock: updatedStock,
+          status: "success",
+          isManual: true,
+        });
+        await newMutationForSourceWarehouse.save({ transaction: t });
 
-        // get the latest mutation from the destination warehouse
+        // get the latest mutation from the destination warehouse in order to update the stock
         const existingDestinationWarehouseMutation = await Mutation.findOne({
           where: {
             productId,
@@ -320,7 +397,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
           },
           order: [["createdAt", "DESC"]],
           limit: 1,
-          attributes: ["stock"],
+          attributes: ["stock", "id"],
           transaction: t,
         });
 
@@ -328,54 +405,80 @@ exports.processStockMutationByWarehouse = async (req, res) => {
 
         // check if the latest mutation from the destination warehouse exists
         if (existingDestinationWarehouseMutation) {
-          // update the latest mutation stock from the destination warehouse by creating a new mutation
+          // update the latest mutation stock from the destination warehouse
           const updatedStock = existingDestinationWarehouseMutation.stock + stockForDestinationWarehouse;
-          await Mutation.create({
+          const updatedMutation = await Mutation.create({
             productId,
-            warehouseId: mutation.destinationWarehouseId,
+            warehouseId: mutation.warehouseId,
             destinationWarehouseId: mutation.destinationWarehouseId,
             mutationQuantity: stockForDestinationWarehouse,
+            previousStock: existingDestinationWarehouseMutation.stock,
             mutationType: "add",
             adminId: mutation.adminId,
             stock: updatedStock,
             status: "success",
-            isManual: mutation.isManual,
+            isManual: true,
           });
 
-          await mutation.save({ transaction: t });
+          // update the latest mutation journal
+          updatedMutationJournal.stock = updatedStock;
+          updatedMutationJournal.status = "success";
+          updatedMutationJournal.adminId = mutation.adminId;
+          updatedMutationJournal.mutationType = "add";
+          await updatedMutationJournal.save({ transaction: t });
+
           await t.commit();
           return res.status(200).json({
             ok: true,
             message: "Success updating stock at destination warehouse",
-            description: `Updated stock from ${findLatestMutationSourceWarehouse.stock} to ${updatedStock}`,
-            detail: mutation,
+            detail: updatedMutation,
+            journal: updatedMutationJournal,
           });
         } else {
-          // create a new mutation in the destination warehouse to update the stock if it does not exist
-          const stock = await Mutation.create(
-            {
-              productId,
-              warehouseId: mutation.destinationWarehouseId,
-              destinationWarehouseId: mutation.destinationWarehouseId,
-              mutationQuantity: stockForDestinationWarehouse,
-              mutationType: "add",
-              adminId: mutation.adminId,
-              stock: stockForDestinationWarehouse,
-              status: "success",
-              isManual: mutation.isManual,
-            },
-            { transaction: t }
-          );
+          // create a new mutation at destination warehouse
+          const updatedMutation = await Mutation.create({
+            productId,
+            warehouseId: mutation.destinationWarehouseId,
+            destinationWarehouseId: mutation.destinationWarehouseId,
+            mutationQuantity: stockForDestinationWarehouse,
+            previousStock: 0,
+            mutationType: "add",
+            adminId: mutation.adminId,
+            stock: stockForDestinationWarehouse,
+            status: "success",
+            isManual: true,
+          });
 
-          await mutation.save({ transaction: t });
+          // update the latest mutation journal
+          updatedMutationJournal.stock = stockForDestinationWarehouse;
+          updatedMutationJournal.status = "success";
+          updatedMutationJournal.adminId = mutation.adminId;
+          updatedMutationJournal.mutationType = "add";
+          await updatedMutationJournal.save({ transaction: t });
+
           await t.commit();
           return res.status(200).json({
             ok: true,
-            message: "Success updating stock and creating new mutation at destination warehouse",
-            description: `Updated stock from 0 to ${stockForDestinationWarehouse}`,
-            detail: stock,
+            message: "Success updating stock at destination warehouse",
+            detail: updatedMutation,
+            journal: updatedMutationJournal,
           });
         }
+      } else {
+        mutation.status = "failed";
+        await mutation.save({ transaction: t });
+
+        // update the latest mutation journal
+        updatedMutationJournal.stock = mutation.stock;
+        updatedMutationJournal.status = "failed";
+        await updatedMutationJournal.save({ transaction: t });
+
+        await t.commit();
+        return res.status(400).json({
+          ok: false,
+          message: "Failed, not enough stock at source warehouse",
+          detail: findLatestMutationSourceWarehouse,
+        });
       }
     }
   } catch (error) {

@@ -19,6 +19,7 @@ module.exports = (sequelize, DataTypes) => {
       warehouseId: DataTypes.INTEGER,
       destinationWarehouseId: DataTypes.INTEGER,
       mutationQuantity: DataTypes.INTEGER,
+      previousStock: DataTypes.INTEGER,
       mutationType: DataTypes.ENUM("add", "substract"),
       adminId: DataTypes.INTEGER,
       stock: DataTypes.INTEGER,
