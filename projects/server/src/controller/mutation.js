@@ -308,7 +308,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
       await t.rollback();
       return res.status(404).json({
         ok: false,
-        message: "Mutation not found",
+        message: "Mutation with status pending not found",
       });
     }
 
@@ -319,6 +319,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
         warehouseId: mutation.warehouseId,
         destinationWarehouseId: mutation.destinationWarehouseId,
         createdAt: mutation.createdAt,
+        status: "pending",
       },
       order: [["createdAt", "DESC"]],
       limit: 1,
@@ -370,29 +371,11 @@ exports.processStockMutationByWarehouse = async (req, res) => {
         transaction: t,
       });
 
-      // check if the latest mutation exists and if there is enough stock
-      if (findLatestMutationSourceWarehouse && findLatestMutationSourceWarehouse.stock >= mutation.mutationQuantity) {
-        
+      // check if the latest mutation exists and if there is enough stock at the source warehouse, also check if the stock is still equal to the mutation quantity
+      if (findLatestMutationSourceWarehouse && findLatestMutationSourceWarehouse.stock >= mutation.mutationQuantity && findLatestMutationSourceWarehouse.stock === mutation.previousStock) {
         // update latest pending mutation
         mutation.status = "success";
         await mutation.save({ transaction: t });
-        
-        // // update the latest mutation stock from the source warehouse
-        // const updatedStock = findLatestMutationSourceWarehouse.stock - mutation.mutationQuantity;
-        // create a new mutation for the source warehouse to update the stock
-        // const newMutationForSourceWarehouse = await Mutation.create({
-        //   productId,
-        //   warehouseId,
-        //   destinationWarehouseId: mutation.destinationWarehouseId,
-        //   mutationQuantity: mutation.mutationQuantity,
-        //   previousStock: mutation.previousStock,
-        //   mutationType: "subtract",
-        //   adminId: mutation.adminId,
-        //   stock: updatedStock,
-        //   status: "success",
-        //   isManual: true,
-        // });
-        // await newMutationForSourceWarehouse.save({ transaction: t });
 
         // get the latest mutation from the destination warehouse in order to update the stock
         const existingDestinationWarehouseMutation = await Mutation.findOne({
@@ -413,6 +396,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
         if (existingDestinationWarehouseMutation) {
           // update the latest mutation stock from the destination warehouse
           const updatedStock = existingDestinationWarehouseMutation.stock + stockForDestinationWarehouse;
+          // create a new mutation at destination warehouse
           const updatedMutation = await Mutation.create({
             productId,
             warehouseId: mutation.warehouseId,
@@ -426,20 +410,29 @@ exports.processStockMutationByWarehouse = async (req, res) => {
             isManual: true,
           });
 
-          // update the latest mutation journal
-          updatedMutationJournal.warehouseId = mutation.destinationWarehouseId;
-          updatedMutationJournal.stock = updatedStock;
+          // update the latest status in the mutation journal
           updatedMutationJournal.status = "success";
-          updatedMutationJournal.adminId = mutation.adminId;
-          updatedMutationJournal.mutationType = "add";
           await updatedMutationJournal.save({ transaction: t });
+
+          // create a new mutation journal at destination warehouse
+          const newMutationForDestinationWarehouse = await Journal.create({
+            productId,
+            warehouseId: mutation.destinationWarehouseId,
+            destinationWarehouseId: mutation.destinationWarehouseId,
+            mutationQuantity: stockForDestinationWarehouse,
+            previousStock: existingDestinationWarehouseMutation.stock,
+            mutationType: "add",
+            adminId: mutation.adminId,
+            stock: updatedStock,
+            status: "success",
+          });
 
           await t.commit();
           return res.status(200).json({
             ok: true,
             message: "Success updating stock at destination warehouse",
             detail: updatedMutation,
-            journal: updatedMutationJournal,
+            journal: newMutationForDestinationWarehouse,
           });
         } else {
           // create a new mutation at destination warehouse
@@ -456,20 +449,30 @@ exports.processStockMutationByWarehouse = async (req, res) => {
             isManual: true,
           });
 
-          // update the latest mutation journal
-          updatedMutationJournal.warehouseId = mutation.destinationWarehouseId;
-          updatedMutationJournal.stock = stockForDestinationWarehouse;
+          // update the latest status mutation journal
           updatedMutationJournal.status = "success";
-          updatedMutationJournal.adminId = mutation.adminId;
-          updatedMutationJournal.mutationType = "add";
           await updatedMutationJournal.save({ transaction: t });
+
+          // create a new mutation journal at destination warehouse
+          const newMutationForDestinationWarehouse = await Journal.create({
+            productId,
+            warehouseId: mutation.destinationWarehouseId,
+            destinationWarehouseId: mutation.destinationWarehouseId,
+            mutationQuantity: stockForDestinationWarehouse,
+            previousStock: 0,
+            mutationType: "add",
+            adminId: mutation.adminId,
+            stock: stockForDestinationWarehouse,
+            status: "success",
+            isManual: true,
+          });
 
           await t.commit();
           return res.status(200).json({
             ok: true,
             message: "Success updating stock at destination warehouse",
             detail: updatedMutation,
-            journal: updatedMutationJournal,
+            journal: newMutationForDestinationWarehouse,
           });
         }
       } else {
@@ -484,7 +487,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
         await t.commit();
         return res.status(400).json({
           ok: false,
-          message: "Failed, not enough stock at source warehouse",
+          message: "Failed, not enough stock at source warehouse or stock is already not equal to previous stock",
           detail: findLatestMutationSourceWarehouse,
         });
       }

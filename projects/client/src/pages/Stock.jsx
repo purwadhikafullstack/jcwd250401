@@ -240,12 +240,12 @@ export const Stock = () => {
                       <Td>{mutation.createdAt.slice(0, 10)}</Td>
                       <Td>{mutation.mutationType}</Td>
                       <Td>{mutation.previousStock}</Td>
-                      <Td color={mutation.mutationType === "add" ? "green" : mutation.status === "processing" || mutation.status === "pending" ? "orange" : mutation.status === "cancelled" ? "red" : "green"}>
+                      <Td color={mutation.mutationType === "add" ? "green" : mutation.status === "processing" || mutation.status === "pending" ? "orange" : mutation.status === "cancelled"  || mutation.status === "failed" ? "red" : "green"}>
                         {mutation.mutationType === "add" ? "+" : "-"}
                         {mutation.mutationQuantity}
                       </Td>
-                      <Td color={mutation.status === "processing" || mutation.status === "pending" ? "orange" : "black"}>{mutation.stock}</Td>
-                      <Td color={mutation.status === "processing" || mutation.status === "pending" ? "orange" : "green"}>{mutation?.status ? mutation.status : "-"}</Td>
+                      <Td color={mutation.status === "processing" || mutation.status === "pending" ? "orange" : mutation.status === "failed" ? "red" : "green"}>{mutation.stock}</Td>
+                      <Td color={mutation.status === "processing" || mutation.status === "pending" ? "orange" : mutation.status === "failed" ? "red" : "green"}>{mutation?.status ? mutation.status : "-"}</Td>
                     </Tr>
                   ))}
                 </Tbody>
