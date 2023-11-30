@@ -9,6 +9,7 @@ import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 import { useSelector } from "react-redux";
 import getWarehouses from "../api/warehouse/getWarehouses";
+import OrderList from "../components/OrderList";
 
 function OrderCust() {
   const navList = ["All Orders", "New Orders", "Ready to Ship", "On Delivery", "Completed", "Cancelled"];
@@ -53,7 +54,6 @@ function OrderCust() {
           <Navigationadmin />
         </div>
         <div className="flex flex-col mt-16 py-8 px-4 md:p-8">
-          {!isWarehouseAdmin && (
             <div className="flex justify-end items-center gap-4">
             <select value={sort} onChange={(e) => setSort(e.target.value)} className="bg-white text-[#40403F] py-2 px-10 rounded-md cursor-pointer focus:ring-0 focus:border-none">
               <option value={"allW"} defaultChecked>
@@ -77,7 +77,6 @@ function OrderCust() {
               ))}
             </select>
             </div>
-          )}
           <div className="flex items-center p-2 md:p-4 mt-4 bg-white rounded-lg shadow-sm">
             <div className="hidden md:flex flex-wrap gap-3 lg:gap-14 mx-4">
               {navList.map((nav, index) => (
@@ -104,7 +103,7 @@ function OrderCust() {
             </div>
           </div>
           <div className="flex items-center mt-4">
-            {selectedComponent === "All Orders"}
+            {selectedComponent === "All Orders" && <OrderList />}
             {selectedComponent === "New Orders"}
             {selectedComponent === "Ready to Ship"}
             {selectedComponent === "On Delivery"}
