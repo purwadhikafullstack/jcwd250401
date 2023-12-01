@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("Mutations", {
+    await queryInterface.createTable("Journals", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -19,6 +19,15 @@ module.exports = {
         },
       },
       warehouseId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: {
+            tableName: "Warehouses",
+          },
+          key: "id",
+        },
+      },
+      destinationWarehouseId: {
         type: Sequelize.INTEGER,
         references: {
           model: {
@@ -46,6 +55,12 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: true,
       },
+      status: {
+        type: Sequelize.ENUM("pending", "approved", "processing", "success", "cancelled", "failed"),
+      },
+      isManual: {
+        type: Sequelize.BOOLEAN,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
@@ -57,6 +72,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("Mutations");
+    await queryInterface.dropTable("Journals");
   },
 };

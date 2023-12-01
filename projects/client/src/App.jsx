@@ -17,6 +17,7 @@ import { Staff } from "./pages/Staff";
 import Warehouse from "./pages/Warehouse";
 import HomeProducts from "./pages/HomeProducts";
 import { Stock } from "./pages/Stock";
+import OrderCust from "./pages/OrderCust";
 
 //
 
@@ -28,6 +29,7 @@ const adminPaths = [
   "/dashboard/customers",
   "/dashboard/staff",
   "/dashboard/warehouse",
+  "/dashboard/order/customers",
   // Add more admin paths as needed
 ];
 
@@ -59,6 +61,7 @@ export default function App() {
           <Route path="/dashboard/staff" element={<Staff />} />
           <Route path="/dashboard/warehouse" element={<Warehouse />} />
           <Route path="/dashboard/report/stock" element={<Stock />} />
+          <Route path="/dashboard/order/customers" element={<OrderCust />} />
           {/* client routes */}
           <Route path="/" element={<Homepage />} />
           <Route path="/reset-password" element={<ResetPassword userType={"user"} />} />

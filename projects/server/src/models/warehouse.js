@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Warehouse.belongsTo(models.WarehouseAddress, {  foreignKey: 'warehouseAddressId' });
       Warehouse.belongsTo(models.Admin, {  foreignKey: 'adminId' });
-      
+      Warehouse.hasMany(models.Journal, {  foreignKey: 'warehouseId' });
     }
   }
   Warehouse.init({
