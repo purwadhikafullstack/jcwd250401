@@ -8,8 +8,9 @@ import { NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInpu
 import { Button } from "flowbite-react";
 import { PiTrash } from "react-icons/pi";
 import DeleteCartItemModal from "./DeleteCartItemModal";
+import CartSummary from "./CartSummary";
 
-function CartGetter() {
+function CartSection() {
   const [carts, setCarts] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
@@ -90,19 +91,22 @@ function CartGetter() {
   return (
     <div className="w-full">
       <span className="text-2xl font-bold"> Shopping Cart</span>
-      <div className="flex justify-between">
-        <div className="flex mt-8 flex-col space-y-4 h-60 overflow-y-scroll scrollbar-hide">
+      <div className="flex lg:flex-row flex-col justify-between">
+        <div className="flex mt-8 flex-col space-y-4 h-96 lg:h-60 overflow-y-scroll scrollbar-hide">
           {carts.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full">
               <p className="text-gray-600 text-lg">No items found.</p>
             </div>
           )}
           {carts.map((cart, index) => (
-            <div className="flex flex-col w-[52vw]" key={index}>
-              <div className="flex gap-4">
-                <div className="w-[180px] h-[180px]">
-                  <img className="w-full h-full object-cover" loading="lazy" src={`http://localhost:8000/public/${cart.Product.productImages[0].imageUrl}`} />
+            <div className="flex flex-col lg:w-[52vw]" key={index}>
+              <div className="flex lg:flex-row flex-col gap-4">
+                <div className="flex lg:justify-start justify-center">
+                  <div className="w-[150px] h-[150px] lg:w-[180px] lg:h-[180px] ">
+                    <img className="w-full h-full object-cover" loading="lazy" src={`http://localhost:8000/public/${cart.Product.productImages[0].imageUrl}`} />
+                  </div>
                 </div>
+
                 <div className="flex flex-col">
                   <div className="flex justify-between items-center">
                     <span className="font-bold">{cart.Product.name}</span>
@@ -127,38 +131,15 @@ function CartGetter() {
                   </div>
                 </div>
               </div>
-              <div className="w-[94%] mt-14 mb-1 border-t border border-gray-200"></div>
+              <div className="w-full lg:w-[94%] mt-6 lg:mt-14 mb-1 border-t border border-gray-200"></div>
             </div>
           ))}
         </div>
-        <div className="mt-4 p-6 flex flex-col h-62 border rounded-md w-[30vw]">
-          <div className="flex-col space-y-2">
-            <span className="font-bold text-2xl">Order Summary {totalQuantity} item(s) </span>
-            <div className="flex justify-between">
-              <span className="text-md ">Item(s) subtotal:</span>
-              <span>{formatToRupiah(totalPrice)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-md ">Tax included:</span>
-              <span>{formatToRupiah(totalPrice * 0.1)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-md font-bold ">Subtotal:</span>
-              <span className="text-md font-bold">{formatToRupiah(totalPrice)}</span>
-            </div>
-          </div>
-
-          <div className="flex mt-6 flex-col space-y-2">
-            <Button className="w-full bg-gray-900 enabled:hover:bg-gray-700" size="lg" onClick={() => console.log("opening cart")}>
-              Checkout
-            </Button>
-            <span className="text-sm">Prices and delivery cost are not confirmed until you've reached the checkout.</span>
-          </div>
-        </div>
+        <CartSummary totalQuantity={totalQuantity} totalPrice={totalPrice} />
       </div>
       {openDeleteCartModal && <DeleteCartItemModal isOpen={openDeleteCartModal} data={selectedProduct} isClose={toggleDeleteModal} onSuccess={() => fetchCarts()} />}
     </div>
   );
 }
 
-export default CartGetter;
+export default CartSection;

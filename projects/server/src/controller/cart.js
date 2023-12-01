@@ -140,6 +140,10 @@ exports.handleGetCart = async (req, res) => {
           ],
         },
       ],
+      order: [
+        [CartItem, 'createdAt', 'DESC'], // Order CartItem by createdAt in DESC order
+        ['createdAt', 'DESC'], // Order the main Cart query by createdAt in DESC order
+      ],
     });
 
     // Check if cart is found
