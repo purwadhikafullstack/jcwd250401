@@ -13,6 +13,7 @@ import ZoomableImage from "./ZoomableImage";
 import addToCart from "../api/cart/addToCart";
 import { AiOutlineLoading } from "react-icons/ai";
 import AddToCartConfirmation from "./AddToCartConfirmation";
+import { addToCartItems } from "../slices/cartSlices";
 
 function ProductCard() {
   const { gender, mainCategory, subCategory, productName } = useParams();
@@ -170,6 +171,7 @@ function ProductCard() {
         quantity: quantity,
       });
       setConfirmationOpen(true);
+      dispatch(addToCartItems(quantity));
     } catch (error) {
       // Handle errors
       if (error?.response?.status === 500 || error?.response?.status === 400 || error?.response?.status === 403 || error?.response?.status === 401) {

@@ -9,6 +9,7 @@ import { Button } from "flowbite-react";
 import { PiTrash } from "react-icons/pi";
 import DeleteCartItemModal from "./DeleteCartItemModal";
 import CartSummary from "./CartSummary";
+import { setCartItems, updateCartItem } from "../slices/cartSlices";
 
 function CartSection() {
   const [carts, setCarts] = useState([]);
@@ -58,6 +59,7 @@ function CartSection() {
 
     setTotalPrice(total);
     setTotalQuantity(quantity);
+    dispatch(setCartItems(quantity));
   };
 
   const handleQuantityChange = (newQuantity, cartIndex) => {
@@ -92,7 +94,7 @@ function CartSection() {
     <div className="w-full">
       <span className="text-2xl font-bold"> Shopping Cart</span>
       <div className="flex lg:flex-row flex-col justify-between">
-        <div className="flex mt-8 flex-col space-y-4 h-96 lg:h-60 overflow-y-scroll scrollbar-hide">
+        <div className="flex mt-8 flex-col space-y-4 lg:mr-2 h-96 lg:h-64 overflow-y-auto overflow-x-hidden ">
           {carts.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full">
               <p className="text-gray-600 text-lg">No items found.</p>
@@ -119,7 +121,19 @@ function CartSection() {
                   <div className="flex flex-col mt-2 space-y-2">
                     <span className="font-bold text-md">Quantity</span>
                     <div className="flex items-center space-x-32">
-                      <NumberInput defaultValue={cart.quantity} size={"md"} min="0" onChange={(valueString) => handleQuantityChange(Number(valueString), index)}>
+                      <NumberInput
+                        defaultValue={cart.quantity}
+                        size={"md"}
+                        min="0"
+                        onChange={(valueString) => {
+                          const value = Number(valueString);
+                          handleQuantityChange(value, index);
+                          // Trigger delete modal when the value is 0
+                          if (value === 0) {
+                            toggleDeleteModal(cart);
+                          } 
+                        }}
+                      >
                         <NumberInputField />
                         <NumberInputStepper>
                           <NumberIncrementStepper />
@@ -135,7 +149,7 @@ function CartSection() {
             </div>
           ))}
         </div>
-        <CartSummary totalQuantity={totalQuantity} totalPrice={totalPrice} />
+        {totalQuantity > 0 && <CartSummary totalQuantity={totalQuantity} totalPrice={totalPrice} />}
       </div>
       {openDeleteCartModal && <DeleteCartItemModal isOpen={openDeleteCartModal} data={selectedProduct} isClose={toggleDeleteModal} onSuccess={() => fetchCarts()} />}
     </div>
