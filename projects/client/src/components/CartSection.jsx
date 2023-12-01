@@ -10,6 +10,7 @@ import { PiTrash } from "react-icons/pi";
 import DeleteCartItemModal from "./DeleteCartItemModal";
 import CartSummary from "./CartSummary";
 import { setCartItems, updateCartItem } from "../slices/cartSlices";
+import { set } from "lodash";
 
 function CartSection() {
   const [carts, setCarts] = useState([]);
@@ -19,6 +20,7 @@ function CartSection() {
   const navigate = useNavigate();
   const [openDeleteCartModal, setOpenDeleteCartModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState({});
+  const isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
 
   const fetchCarts = useCallback(async () => {
     try {
@@ -31,11 +33,19 @@ function CartSection() {
         setCarts([]);
       } else if (error.response && error.response.status === 401) {
         dispatch(showLoginModal());
+        navigate("/");
+        setCarts([]);
+        setTotalPrice(0);
+        setTotalQuantity(0);
         toast.error(error.response.data.message, {
           description: error.response.data.detail,
         });
       } else if (error.response && error.response.status === 403) {
         dispatch(showLoginModal());
+        navigate("/");
+        setCarts([]);
+        setTotalPrice(0);
+        setTotalQuantity(0);
         toast.error(error.response.data.message, {
           description: error.response.data.detail,
         });
@@ -46,7 +56,7 @@ function CartSection() {
         }, 2000);
       }
     }
-  }, []);
+  }, [isLoggedIn]);
 
   const calculateTotal = (cartItems) => {
     let total = 0;
@@ -124,14 +134,10 @@ function CartSection() {
                       <NumberInput
                         defaultValue={cart.quantity}
                         size={"md"}
-                        min="0"
+                        min="1"
                         onChange={(valueString) => {
                           const value = Number(valueString);
                           handleQuantityChange(value, index);
-                          // Trigger delete modal when the value is 0
-                          if (value === 0) {
-                            toggleDeleteModal(cart);
-                          } 
                         }}
                       >
                         <NumberInputField />

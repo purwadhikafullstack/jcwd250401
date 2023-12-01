@@ -56,24 +56,14 @@ function Navigationbar() {
     } catch (error) {
       if (error?.response?.status === 404) {
         setCarts([]);
+        dispatch(setCartItems(0));
       } else if (error.response && error.response.status === 401) {
         dispatch(showLoginModal());
-        toast.error(error.response.data.message, {
-          description: error.response.data.detail,
-        });
       } else if (error.response && error.response.status === 403) {
         dispatch(showLoginModal());
-        toast.error(error.response.data.message, {
-          description: error.response.data.detail,
-        });
-      } else if (error.request) {
-        // Handle request errors
-        setTimeout(() => {
-          toast.error("Network error, please try again later");
-        }, 2000);
       }
     }
-  }, [cartItem]);
+  }, [isLoggedIn]);
 
   const calculateTotal = (cartItems) => {
     let total = 0;
@@ -116,6 +106,7 @@ function Navigationbar() {
       .then(() => {
         setDropdownVisible(false);
         dispatch(logout());
+
         navigate(location.pathname);
       })
       .catch((error) => {
@@ -233,7 +224,7 @@ function Navigationbar() {
             </div>
             <img src={photoProfile ? `http://localhost:8000/public/${photoProfile}` : "https://via.placeholder.com/150"} alt="Profile" className="w-6 h-6 rounded-full cursor-pointer" onClick={handleIconClick} />
             {dropdownVisible && (
-              <div className={`absolute top-16 w-48 h-48 bg-white ring-1 ring-black ring-opacity-5 z-10 ${isDropdownTransitioning ? "dropdown-hidden" : "dropdown-visible"}`} onMouseLeave={() => setDropdownVisible(false)}>
+              <div className={`absolute right-16 top-16 w-48 h-48 bg-white ring-1 ring-black ring-opacity-5 z-10 ${isDropdownTransitioning ? "dropdown-hidden" : "dropdown-visible"}`} onMouseLeave={() => setDropdownVisible(false)}>
                 {accounts.map((account, index) => {
                   const joinedAccounts = account.toLowerCase().replace(/\s/g, "-");
                   return (
