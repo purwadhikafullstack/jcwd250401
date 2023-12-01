@@ -17,8 +17,8 @@ const addressRouter = require("./routes/address");
 const categoryRouter = require("./routes/category");
 const orderRouter = require("./routes/order");
 const productRouter = require("./routes/product");
-const userRouter = require("./routes/user")
-const cartRoutes = require("./routes/cartRoutes");
+const userRouter = require("./routes/user");
+const cartRouter = require("./routes/cart");
 const WarehouseRoutes = require("./routes/warehouse");
 const mutationRoutes = require("./routes/mutation");
 
@@ -30,10 +30,9 @@ app.use("/category", categoryRouter);
 app.use("/order", orderRouter);
 app.use("/product", productRouter);
 app.use("/users", userRouter)
-app.use("/api/cart", cartRoutes);
 app.use("/api/warehouse", WarehouseRoutes);
 app.use("/api/mutation", mutationRoutes);
-
+app.use("/cart", cartRouter);
 app.use("/public", express.static(__dirname + "/public"));
 
 //#region API ROUTES

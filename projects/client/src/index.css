@@ -23,7 +23,8 @@ html {
   height: 3px;
   border-radius: 60px;
   bottom: 0;
-  background-color: black; /* Adjust the color as needed */
+  background-color: black;
+  /* Adjust the color as needed */
   transition: all 0.3s;
 }
 
@@ -45,7 +46,8 @@ html {
 
 .transition-dropdown {
   transition-property: opacity, max-height;
-  transition-duration: 0.3s; /* Adjust the duration according to your preference */
+  transition-duration: 0.3s;
+  /* Adjust the duration according to your preference */
   transition-timing-function: ease-in-out;
   overflow: hidden;
 }
@@ -63,10 +65,42 @@ html {
 
 
 .pill-animation {
-  transition: width 0.3s ease; /* You can adjust the duration and easing function */
+  transition: width 0.3s ease;
+  /* You can adjust the duration and easing function */
 }
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
 
+.search-icon {
+  transition: color 0.3s ease-in-out;
+  /* Example transition, adjust properties as needed */
+}
+
+/* Add transition for the search input */
+.search-input {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Add styles for when the search input is visible */
+
+.search-input {
+  transition: all 0.8s ease-in-out;
+  opacity: 0;
+  width: 0;
+  visibility: hidden;
+}
+
+.search-input-visible {
+  opacity: 1;
+  transform: scale(1);
+  width: 300px;
+  visibility: visible;
+}
+
+.search-input-hidden {
+  opacity: 0;
+  width: 0;
+  visibility: hidden;
+}

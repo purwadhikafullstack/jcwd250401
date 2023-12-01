@@ -22,6 +22,7 @@ const ZoomableImage = ({ imageUrl, alt, images }) => {
         <img
           src={imageUrl}
           alt={alt}
+          loading="lazy"
           className={`h-full w-full object-cover transition-transform duration-500 ${isHovered ? "hovered" : ""}`}
           style={{
             transformOrigin: `${position.x}px ${position.y}px`,
@@ -45,6 +46,7 @@ const ZoomableImage = ({ imageUrl, alt, images }) => {
         <img
           src={imageUrl}
           alt={alt}
+          loading="lazy"
           className={`h-full w-full object-cover transition-transform duration-500 ${isHovered ? "hovered" : ""}`}
           style={{
             transformOrigin: `${position.x}px ${position.y}px`,

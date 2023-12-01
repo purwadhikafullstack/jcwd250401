@@ -10,15 +10,25 @@ import { Button } from "flowbite-react";
 import { useDispatch } from "react-redux";
 import { showLoginModal } from "../slices/authModalSlices";
 import ZoomableImage from "./ZoomableImage";
+import addToCart from "../api/cart/addToCart";
+import { AiOutlineLoading } from "react-icons/ai";
+import AddToCartConfirmation from "./AddToCartConfirmation";
+import { addToCartItems } from "../slices/cartSlices";
 
 function ProductCard() {
   const { gender, mainCategory, subCategory, productName } = useParams();
   const [showPopup, setShowPopup] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState([]);
+  const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [activeImageIndexMobile, setActiveImageIndexMobile] = useState(0);
   const sliderRef = useRef(null);
+  const sliderRefMobile = useRef(null);
   const isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
   const dispatch = useDispatch();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isConfirmationOpen, setConfirmationOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const formatSubCategory = (subCategory) => {
     const words = subCategory.split("-");
@@ -63,6 +73,16 @@ function ProductCard() {
       setActiveImageIndex(index);
       if (sliderRef.current) {
         sliderRef.current.slickGoTo(index);
+      }
+    }
+  };
+
+  const handleImageClickMobile = (imageId) => {
+    const index = selectedProduct[0].productImages.findIndex((image) => image.id === imageId);
+    if (index !== -1) {
+      setActiveImageIndexMobile(index);
+      if (sliderRefMobile.current) {
+        sliderRefMobile.current.slickGoTo(index);
       }
     }
   };
@@ -116,22 +136,50 @@ function ProductCard() {
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
-    afterChange: (current) => setActiveImageIndex(current),
+    afterChange: (current) => {
+      setActiveImageIndex(current);
+      setActiveImageIndexMobile(current);
+    },
     nextArrow: <SampleNextArrow />,
     prevArrow: <SamplePrevArrow />,
   };
 
-  const handleAddToCart = () => {
-    if (!isLoggedIn) {
-      toast.info("Please login first to perform this action", {
-        duration: 1700,
-        onAutoClose: (t) => {
-          dispatch(showLoginModal());
-        },
-      });
-    }
+  function handleQuantityChange(newQuantity) {
+    setQuantity(newQuantity);
+  }
 
-    console.log("add to cart");
+  const handleAddToCart = async () => {
+    try {
+      // Check if the user is logged in
+      if (!isLoggedIn) {
+        // If not logged in, show login modal and stop further execution
+        toast.info("Please login first to perform this action", {
+          duration: 1700,
+          onAutoClose: (t) => {
+            // Await the dispatch before continuing
+            dispatch(showLoginModal());
+          },
+        });
+        return;
+      }
+
+      // If logged in, proceed with adding to cart
+      setIsSubmitting(true);
+
+      const response = await addToCart({
+        productId: selectedProduct[0].id,
+        quantity: quantity,
+      });
+      setConfirmationOpen(true);
+      dispatch(addToCartItems(quantity));
+    } catch (error) {
+      // Handle errors
+      if (error?.response?.status === 500 || error?.response?.status === 400 || error?.response?.status === 403 || error?.response?.status === 401) {
+        toast.error(error.response.data.message, {
+          description: error.response.data.detail,
+        });
+      }
+    }
   };
 
   const handleAddToWishlist = () => {
@@ -152,26 +200,25 @@ function ProductCard() {
       {selectedProduct.length !== 0 ? (
         <>
           <div className="hidden lg:flex w-full mt-14 gap-5">
-            <div>
-              {selectedProduct.map((product) => (
-                <SimpleGrid columns={2} spacing={5} key={product.id}>
+            {selectedProduct.map((product) => (
+              <div key={product.id} className="flex space-x-5">
+                <SimpleGrid columns={2} spacing={5} h="184px">
                   {product.productImages.map((image, idx) => (
-                    <div key={idx} className={`w-[82px] h-[82px] object-cover shadow-xl cursor-pointer ${idx === activeImageIndex ? "border-2 border-[#777777]" : ""}`} onClick={() => handleImageClick(image.id)}>
+                    <div key={`simpleGrid-${idx}`} className={`w-[82px] h-[82px] object-cover shadow-xl cursor-pointer ${idx === activeImageIndex ? "border-2 border-[#777777]" : ""}`} onClick={() => handleImageClick(image.id)}>
                       <img src={`http://localhost:8000/public/${image.imageUrl}`} alt={`Product Image ${idx}`} className="w-full h-full object-cover" />
                     </div>
                   ))}
                 </SimpleGrid>
-              ))}
-            </div>
-            {selectedProduct.map((product) => (
-              <div className="flex flex-col space-y-10 cursor-zoom-in" key={product.id}>
-                <Slider {...settings} className="w-[480px] h-[480px] shadow-xl" ref={sliderRef}>
-                  {product.productImages.map((image, idx) => (
-                    <ZoomableImage imageUrl={`http://localhost:8000/public/${image.imageUrl}`} alt={`Product Image ${idx}`} images={selectedProduct[0].productImages} />
-                  ))}
-                </Slider>
+                <div className="flex flex-col space-y-10 cursor-zoom-in" key={`slider-${product.id}`}>
+                  <Slider {...settings} className="w-[480px] h-[480px] shadow-xl" ref={sliderRef}>
+                    {product.productImages.map((image, idx) => (
+                      <ZoomableImage key={`zoomableImage-${idx}`} imageUrl={`http://localhost:8000/public/${image.imageUrl}`} alt={`Product Image ${idx}`} images={selectedProduct[0].productImages} />
+                    ))}
+                  </Slider>
+                </div>
               </div>
             ))}
+
             {selectedProduct.map((product) => (
               <div className="flex flex-col justify-between ml-28 w-[25vw]">
                 <div className="flex flex-col space-y-5">
@@ -203,7 +250,14 @@ function ProductCard() {
                     </div>
                     <div className="w-full space-y-4">
                       <span className="font-bold text-xl">Quantity</span>
-                      <NumberInput defaultValue={product.totalStockAllWarehouses === 0 ? 0 : 1} min={product.totalStockAllWarehouses === 0 ? 0 : 1} max={product.totalStockAllWarehouses} isDisabled={product.totalStockAllWarehouses === 0}>
+                      <NumberInput
+                        defaultValue={product.totalStockAllWarehouses === 0 ? 0 : 1}
+                        min={product.totalStockAllWarehouses === 0 ? 0 : 1}
+                        max={product.totalStockAllWarehouses}
+                        isDisabled={product.totalStockAllWarehouses === 0}
+                        value={product.totalStockAllWarehouses !== 0 ? quantity : 0}
+                        onChange={(valueString, valueNumber) => handleQuantityChange(valueNumber)}
+                      >
                         <NumberInputField />
                         <NumberInputStepper>
                           <NumberIncrementStepper />
@@ -234,7 +288,7 @@ function ProductCard() {
           <div className="flex flex-col w-full mt-14 gap-5 lg:hidden">
             {selectedProduct.map((product) => (
               <div className="flex flex-col justify-center items-center space-y-10 cursor-zoom-in" key={product.id}>
-                <Slider {...settings} className="w-[350px] h-[480px] shadow-xl" ref={sliderRef}>
+                <Slider {...settings} className="w-[350px] h-[480px] shadow-xl" ref={sliderRefMobile}>
                   {product.productImages.map((image, idx) => (
                     <ZoomableImage imageUrl={`http://localhost:8000/public/${image.imageUrl}`} alt={`Product Image ${idx}`} images={selectedProduct[0].productImages} />
                   ))}
@@ -246,7 +300,7 @@ function ProductCard() {
                 <div className="flex justify-center">
                   <SimpleGrid columns={5} spacing={2} key={product.id}>
                     {product.productImages.map((image, idx) => (
-                      <div key={idx} className={`w-[62px] h-[82px] object-cover shadow-xl cursor-pointer ${idx === activeImageIndex ? "border-2 border-[#777777]" : ""}`} onClick={() => handleImageClick(image.id)}>
+                      <div key={idx} className={`w-[62px] h-[82px] object-cover shadow-xl cursor-pointer ${idx === activeImageIndexMobile ? "border-2 border-[#777777]" : ""}`} onClick={() => handleImageClickMobile(image.id)}>
                         <img src={`http://localhost:8000/public/${image.imageUrl}`} alt={`Product Image ${idx}`} className="w-full h-full object-cover" />
                       </div>
                     ))}
@@ -299,9 +353,15 @@ function ProductCard() {
                       Add To Wishlist
                     </Button>
                     {product.totalStockAllWarehouses !== 0 ? (
-                      <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777] shadow-md" size="lg" onClick={handleAddToCart}>
-                        Add To Cart
-                      </Button>
+                      isSubmitting ? (
+                        <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777] outline-none" size="lg" isProcessing processingSpinner={<AiOutlineLoading className="h-6 w-6 animate-spin" />}>
+                          Logging in...
+                        </Button>
+                      ) : (
+                        <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777]" size="lg" onClick={handleAddToCart} disabled={isSubmitting}>
+                          Add To Cart
+                        </Button>
+                      )
                     ) : (
                       <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777] shadow-md" size="lg" disabled>
                         Out Of Stock
@@ -331,6 +391,7 @@ function ProductCard() {
           <span className="text-xl ">No product matches. </span>
         </div>
       )}
+      <AddToCartConfirmation isOpen={isConfirmationOpen} onClose={() => setConfirmationOpen(false)} quantity={quantity} price={selectedProduct[0]?.price} />
     </div>
   );
 }

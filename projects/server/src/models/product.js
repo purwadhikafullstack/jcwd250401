@@ -18,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
         as: "Categories",
       });
       Product.hasMany(models.OrderItem, { foreignKey: "productId" });
+      Product.belongsToMany(models.Cart, {
+        through: models.CartItem,
+        foreignKey: "productId",
+      })
       Product.hasMany(models.Mutation, { foreignKey: "productId" });
       Product.hasMany(models.Journal, { foreignKey: "productId" });
     }

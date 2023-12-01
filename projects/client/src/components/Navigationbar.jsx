@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { BsCart, BsSearch } from "react-icons/bs";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { HiOutlineArrowRight } from "react-icons/hi";
@@ -14,6 +14,9 @@ import { toast } from "sonner";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import getProfile from "../api/profile/getProfile";
+import { PiHeart, PiMagnifyingGlass, PiShoppingCart } from "react-icons/pi";
+import getCart from "../api/cart/getCart";
+import { setCartItems } from "../slices/cartSlices";
 
 function Navigationbar() {
   const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -27,7 +30,7 @@ function Navigationbar() {
   const bagsSubCategory = ["All bags", "Backpacks", "Totes Bags", "Travel Bags", "Laptop Bags", "Crossbody & Bum bags", "Wash bags"];
   const accessories = ["Caps", "Bags", "Accessories"];
   const accounts = ["Profile", "Address Book", "My Order", "Change Password"];
-  const accountsDropdown = ["Profile", "Address Book", "My Order", "Change Password", "Search", "Cart", "Favorites"];
+  const accountsDropdown = ["Profile", "Address Book", "My Order", "Change Password", "Search", "Favorites"];
   const dispatch = useDispatch();
   const auth = getAuth();
   const [userData, setUserData] = useState(null);
@@ -37,6 +40,52 @@ function Navigationbar() {
   const username = profile?.data?.profile?.username;
   const isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
   const location = useLocation();
+  const [isSearchBarVisible, setIsSearchBarVisible] = useState(false);
+  const [carts, setCarts] = useState([]);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [totalQuantity, setTotalQuantity] = useState(0);
+
+  const cartItem = useSelector((state) => state.cart.items);
+
+  const fetchCarts = useCallback(async () => {
+    try {
+      const result = await getCart({});
+      setCarts(result.detail.CartItems);
+      // Calculate total price and quantity
+      calculateTotal(result.detail.CartItems);
+    } catch (error) {
+      if (error?.response?.status === 404) {
+        setCarts([]);
+        dispatch(setCartItems(0));
+      } else if (error.response && error.response.status === 401) {
+        dispatch(showLoginModal());
+      } else if (error.response && error.response.status === 403) {
+        dispatch(showLoginModal());
+      }
+    }
+  }, [isLoggedIn]);
+
+  const calculateTotal = (cartItems) => {
+    let total = 0;
+    let quantity = 0;
+
+    cartItems.forEach((cart) => {
+      total += cart.Product.price * cart.quantity;
+      quantity += cart.quantity;
+    });
+
+    setTotalPrice(total);
+    setTotalQuantity(quantity);
+    dispatch(setCartItems(quantity));
+  };
+
+  useEffect(() => {
+    fetchCarts();
+  }, [fetchCarts]);
+
+  const handleSearchIconEnter = () => {
+    setIsSearchBarVisible(!isSearchBarVisible);
+  };
 
   const openAuthModal = () => {
     dispatch(showLoginModal());
@@ -48,17 +97,17 @@ function Navigationbar() {
 
   const handleIconClick = () => setDropdownVisible(!dropdownVisible);
 
- const handleSubcategoryClick = (subcategory) => {
-  setIsDropdownTransitioning(true);
-  setDropdownSubcategory((prevSubcategory) => (prevSubcategory === subcategory ? null : subcategory));
-  
-};
+  const handleSubcategoryClick = (subcategory) => {
+    setIsDropdownTransitioning(true);
+    setDropdownSubcategory((prevSubcategory) => (prevSubcategory === subcategory ? null : subcategory));
+  };
   const handleLogout = () => {
     signOut(auth)
-    .then(() => {
-      setDropdownVisible(false);
-      dispatch(logout());
-      navigate(location.pathname);
+      .then(() => {
+        setDropdownVisible(false);
+        dispatch(logout());
+
+        navigate(location.pathname);
       })
       .catch((error) => {
         console.error("Error signing out:", error);
@@ -73,7 +122,7 @@ function Navigationbar() {
         dispatch(setUsername(response.detail.username));
       }
     } catch (error) {
-      if (error.response.status === 404 || error.response.status === 500) {
+      if (error.response.status === 404 || error.response.status === 500 || error.response.status === 401 || error.response.status === 403) {
         toast.error(error.response.data.message);
         setTimeout(() => {
           handleLogout();
@@ -117,7 +166,7 @@ function Navigationbar() {
 
             return (
               <>
-                <span key={index} className="text-md font-semibold cursor-pointer underline-on-hover " onMouseEnter={() => dropdownSubcategory !== category && handleSubcategoryClick(category)} >
+                <span key={index} className="text-md font-semibold cursor-pointer underline-on-hover " onMouseEnter={() => dropdownSubcategory !== category && handleSubcategoryClick(category)}>
                   {category}
                 </span>
 
@@ -161,10 +210,21 @@ function Navigationbar() {
       {isLoggedIn ? (
         <>
           <div className="hidden gap-8 lg:flex items-center">
-            <BsSearch className="text-xl cursor-pointer" />
+            <div className={`flex items-center ${isSearchBarVisible ? "space-x-4" : "-space-x-7"}`}>
+              <div className="text-xl cursor-pointer search-icon" onClick={handleSearchIconEnter}>
+                <PiMagnifyingGlass />
+              </div>
+              <input
+                type="text"
+                placeholder="Search..."
+                className={`border-1 border-gray-500 rounded-lg shadow-sm shadow-gray-200 focus:ring-transparent focus:shadow-md focus:shadow-gray-300 focus:border-gray-800 search-input ${
+                  isSearchBarVisible ? "search-input-visible" : "search-input-hidden"
+                }`} // Add other input properties and styles as needed
+              />
+            </div>
             <img src={photoProfile ? `http://localhost:8000/public/${photoProfile}` : "https://via.placeholder.com/150"} alt="Profile" className="w-6 h-6 rounded-full cursor-pointer" onClick={handleIconClick} />
             {dropdownVisible && (
-              <div className={`absolute top-16 w-48 h-48 bg-white ring-1 ring-black ring-opacity-5 z-10 ${isDropdownTransitioning ? "dropdown-hidden" : "dropdown-visible"}`} onMouseLeave={() => setDropdownVisible(false)}>
+              <div className={`absolute right-16 top-16 w-48 h-48 bg-white ring-1 ring-black ring-opacity-5 z-10 ${isDropdownTransitioning ? "dropdown-hidden" : "dropdown-visible"}`} onMouseLeave={() => setDropdownVisible(false)}>
                 {accounts.map((account, index) => {
                   const joinedAccounts = account.toLowerCase().replace(/\s/g, "-");
                   return (
@@ -179,8 +239,30 @@ function Navigationbar() {
               </div>
             )}
 
-            <MdFavoriteBorder className="text-xl cursor-pointer" />
-            <BsCart className="text-xl cursor-pointer" onClick={() => navigate("/account/cart")} />
+            <PiHeart className="text-xl cursor-pointer" />
+            <div style={{ position: "relative", display: "inline-block" }}>
+              <PiShoppingCart className="text-xl cursor-pointer" onClick={() => navigate("/account/shopping-cart")} />
+              {cartItem > 0 && ( // Conditionally render the circle if cartItem is greater than 0
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "-8px",
+                    right: "-12px",
+                    width: "20px",
+                    height: "20px",
+                    borderRadius: "50%",
+                    backgroundColor: "#40403F",
+                    color: "white",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    fontSize: "12px",
+                  }}
+                >
+                  {cartItem}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Mobile */}
@@ -211,6 +293,10 @@ function Navigationbar() {
                         </Link>
                       );
                     })}
+
+                    <span className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" role="menuitem" onClick={() => navigate("/account/shopping-cart")}>
+                      Shopping Cart {cartItem > 0 && <span className="text-sm font-bold">{cartItem}</span>}
+                    </span>
                     <p className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" role="menuitem" onClick={handleLogout}>
                       Log Out
                     </p>
@@ -222,6 +308,18 @@ function Navigationbar() {
         </>
       ) : (
         <div className="flex items-center gap-4">
+          <div className={`flex items-center ${isSearchBarVisible ? "space-x-4" : "-space-x-6"}`}>
+            <div className="text-xl cursor-pointer search-icon" onClick={handleSearchIconEnter}>
+              <PiMagnifyingGlass />
+            </div>
+            <input
+              type="text"
+              placeholder="Search..."
+              className={`border-1 border-gray-500 rounded-lg shadow-sm shadow-gray-200 focus:ring-transparent focus:shadow-md focus:shadow-gray-300 focus:border-gray-800 search-input ${
+                isSearchBarVisible ? "search-input-visible" : "search-input-hidden"
+              }`}
+            />
+          </div>
           <a onClick={openAuthModal} className="text-black text-md font-semibold hover:underline cursor-pointer">
             Log in
           </a>
