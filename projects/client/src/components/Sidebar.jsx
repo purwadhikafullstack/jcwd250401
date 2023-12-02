@@ -101,7 +101,7 @@ const Sidebar = () => {
             {menuList.map((item, index) => (
               <div key={index}>
                 {/* Add a condition to check if the item should be rendered */}
-                {(!isWarehouseAdminAcc || (item.name !== "Customers" && item.name !== "Staff")) && (
+                {(!isWarehouseAdminAcc || (item.name !== "Customers" && item.name !== "Staff" && item.name !== "Warehouse")) && (
                   <>
                     {item.subItems ? (
                       <div
