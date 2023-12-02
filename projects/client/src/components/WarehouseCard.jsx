@@ -48,6 +48,7 @@ const WarehouseCard = ({ warehouse, onSuccess }) => {
         src={`http://localhost:8000/public/${warehouse.warehouseImage}`}
         alt={`Image of ${warehouse.name}`}
         className="w-full md:w-1/3 object-cover rounded-lg"
+        fallbackSrc='https://via.placeholder.com/300x150'
       />
       <Box p={6} className="flex-1">
         <HStack spacing={4} mb={4}>
