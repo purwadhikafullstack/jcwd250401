@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-const { Order, OrderItem, Product, ProductImage } = require("../models");
+const { Order, OrderItem, Product, ProductImage, Warehouse } = require("../models");
 
 exports.paymentProof = async (req, res) => {
   const { id, userId } = req.params;
@@ -143,7 +143,7 @@ exports.getAllOrderLists = async (req, res) => {
       include: [
         {
           model: Order,
-          attributes: ["id", "status", "totalPrice", "userId"],
+          attributes: ["id", "status", "totalPrice", "userId", "warehouseId"],
           where: status !== "all" ? { status } : undefined,
         },
         {
@@ -179,6 +179,11 @@ exports.getAllOrderLists = async (req, res) => {
       orderLists.map(async (orderItem) => {
         const product = orderItem.Product;
 
+        const warehouse = await Warehouse.findOne({
+          where: { id: orderItem.Order.warehouseId },
+          attributes: ["id", "name"],
+        });
+
         const productImages = await ProductImage.findAll({
           where: { productId: product.id },
           attributes: ["id", "imageUrl"],
@@ -196,12 +201,17 @@ exports.getAllOrderLists = async (req, res) => {
             status: orderItem.Order.status,
             totalPrice: orderItem.Order.totalPrice,
             userId: orderItem.Order.userId,
+            warehouse: {
+              id: warehouse.id,
+              warehouseName: warehouse.name,
+            },
           },
           Product: {
             id: product.id,
             productName: product.name,
             productImages: productImages,
           },
+          
         };
       })
     );

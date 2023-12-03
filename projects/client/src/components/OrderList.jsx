@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Button } from 'flowbite-react';
 import getAllOrders from '../api/order/getAllOrder';
 
 function OrderList() {
@@ -17,8 +18,14 @@ function OrderList() {
       {orders.map(({ Order, Product, quantity, createdAt }) => (
         <div key={Order.id} className="bg-white shadow rounded-lg p-6 mb-4">
           <div className="flex items-center justify-between mb-4">
-            <div className="text-lg font-semibold text-gray-700">{Order.status}</div>
-            <div className="text-sm text-gray-500">{new Date(createdAt).toLocaleString()}</div>
+            <div className='flex items-center space-x-4'>
+              <div className="text-lg font-semibold text-gray-700">{Order.status}</div>
+              <div className="text-sm text-gray-500">{Order.warehouse.warehouseName}</div>
+              <div className="text-sm text-gray-500">{new Date(createdAt).toLocaleString()}</div>
+            </div>
+              <Button color="light" size="small" className="md:p-2 w-52 shadow-sm">
+                Payment Proof
+              </Button>
           </div>
           <div className="flex items-center space-x-4 mb-4">
             <img
@@ -33,8 +40,15 @@ function OrderList() {
             </div>
           </div>
           <div className="flex items-center justify-between mt-4 pt-4 border-t">
-            <span className="text-sm font-medium text-gray-500">Total:</span>
-            <span className="text-lg font-bold text-gray-800">Rp{Order.totalPrice.toLocaleString()}</span>
+            <span className="text-sm font-medium text-gray-500">Total: Rp{Order.totalPrice.toLocaleString()}</span>
+            <div className="flex items-center space-x-4">
+              <Button color="light" size="small" className="md:p-2 w-52 shadow-sm">
+                Reject Order
+              </Button>
+              <Button color="dark" size="small" className="md:p-2 w-52 shadow-sm">
+                Accept Order
+              </Button>
+            </div>
           </div>
         </div>
       ))}
