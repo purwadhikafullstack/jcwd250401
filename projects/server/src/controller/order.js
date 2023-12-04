@@ -135,7 +135,7 @@ exports.getOrderLists = async (req, res) => {
 
 exports.getAllOrderLists = async (req, res) => {
   try {
-    const { status = "all", page = 1, size = 10, sort = "createdAt", order = "DESC" } = req.query;
+    const { status = "all", page = 1, size = 10, sort = "createdAt", order = "DESC", warehouseId, month} = req.query;
     const limit = parseInt(size);
     const offset = (parseInt(page) - 1) * limit;
 
@@ -164,6 +164,24 @@ exports.getAllOrderLists = async (req, res) => {
       } else {
         filter.order = [[sort, order]];
       }
+    }
+
+    if (warehouseId) {
+      filter.include[0].where = { warehouseId };
+    }
+
+    if (month) {
+      const monthInt = parseInt(month);
+
+      filter.where = {
+        ...filter.where,
+        createdAt: {
+          [Op.and]: [
+            { [Op.gte]: new Date(new Date().getFullYear(), monthInt - 1, 1) },
+            { [Op.lte]: new Date(new Date().getFullYear(), monthInt, 0) },
+          ],
+        },
+      };
     }
 
     const orderLists = await OrderItem.findAll(filter);

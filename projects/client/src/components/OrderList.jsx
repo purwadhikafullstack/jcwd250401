@@ -2,16 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from 'flowbite-react';
 import getAllOrders from '../api/order/getAllOrder';
 
-function OrderList() {
-  const [orders, setOrders] = useState([]);
-
-  useEffect(() => {
-    getAllOrders().then(response => {
-      if (response.ok) {
-        setOrders(response.detail);
-      }
-    });
-  }, []);
+function OrderList({ orders, fetchOrders }) {
 
   return (
     <div className="container mx-auto px-4">
