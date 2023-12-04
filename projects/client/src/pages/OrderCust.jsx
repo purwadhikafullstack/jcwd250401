@@ -9,15 +9,30 @@ import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 import { useSelector } from "react-redux";
 import getWarehouses from "../api/warehouse/getWarehouses";
+import getAllOrders from "../api/order/getAllOrder";
 import OrderList from "../components/OrderList";
 
 function OrderCust() {
   const navList = ["All Orders", "New Orders", "Ready to Ship", "On Delivery", "Completed", "Cancelled"];
-  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "November", "December"];
+  const months = [
+    { name: "January", number: 1 },
+    { name: "February", number: 2 },
+    { name: "March", number: 3 },
+    { name: "April", number: 4 },
+    { name: "May", number: 5 },
+    { name: "June", number: 6 },
+    { name: "July", number: 7 },
+    { name: "August", number: 8 },
+    { name: "September", number: 9 },
+    { name: "October", number: 10 },
+    { name: "November", number: 11 },
+    { name: "December", number: 12 }
+  ];
   const [selectedComponent, setSelectedComponent] = useState("All Orders");
   const [warehouses, setWarehouses] = useState([]);
-  const [sort, setSort] = useState("allW");
-  const [order, setOrder] = useState("allM");
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [orders, setOrders] = useState([]);
   const [pillWidth, setPillWidth] = useState(0); // State to store the width of the pill
   const handleSelectComponent = (nav) => setSelectedComponent(nav);
   const navRefs = useRef([]); // Refs to store references to each navigation item
@@ -25,6 +40,26 @@ function OrderCust() {
   const dispatch = useDispatch();
 
   const isWarehouseAdmin = useSelector((state) => state?.account?.isWarehouseAdmin);
+
+  const fetchOrders = () => {
+    getAllOrders({ month: selectedMonth, warehouseId: selectedWarehouseId })
+      .then(response => {
+        if (response.ok) {
+          setOrders(response.detail);
+        } else if (response.status === 404) {
+          // Handle 404 specifically
+          setOrders([]); // Set orders to an empty array
+          console.log("No orders found.");
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching orders:', error);
+        if (error.response && error.response.status === 404) {
+          setOrders([]); // Set orders to an empty array for 404 errors
+        }
+        // Handle other errors as needed
+      });
+  };  
 
   const fetchWarehouses = async () => {
     try {
@@ -35,9 +70,21 @@ function OrderCust() {
     }
   };
 
+  const handleWarehouseChange = (e) => {
+    setSelectedWarehouseId(e.target.value);
+  }
+
+  const handleMonthChange = (e) => {
+    setSelectedMonth(e.target.value);
+  }
+
   useEffect(() => {
     fetchWarehouses();
   }, []);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [selectedMonth, selectedWarehouseId]);
 
   useEffect(() => {
     // Calculate the width of the selected navigation item
@@ -49,14 +96,14 @@ function OrderCust() {
   return (
     <div className="flex flex-row justify-between h-screen">
       <Sidebar />
-      <div className="w-[82vw] lg:w-[84vw] bg-[#f0f0f0] overflow-hidden flex flex-col">
+      <div className="w-[82vw] lg:w-[84vw] bg-[#f0f0f0] overflow-y-auto scrollbar-hide flex flex-col">
         <div className="shadow-md fixed top-0 left-[18vw] lg:left-[16vw] right-0 z-50 bg-white">
           <Navigationadmin />
         </div>
         <div className="flex flex-col mt-16 py-8 px-4 md:p-8">
             <div className="flex justify-end items-center gap-4">
-            <select value={sort} onChange={(e) => setSort(e.target.value)} className="bg-white text-[#40403F] py-2 px-10 rounded-md cursor-pointer focus:ring-0 focus:border-none">
-              <option value={"allW"} defaultChecked>
+            <select value={selectedWarehouseId} onChange={handleWarehouseChange} className="bg-white text-[#40403F] py-2 px-10 rounded-md cursor-pointer focus:ring-0 focus:border-none">
+              <option value={""} defaultChecked>
                 All Warehouses
               </option>
               {warehouses.map((warehouse) => (
@@ -66,13 +113,13 @@ function OrderCust() {
               ))}
             </select>
 
-            <select value={order} onChange={(e) => setOrder(e.target.value)} className="bg-white text-[#40403F] py-2 px-12 rounded-md cursor-pointer focus:ring-0 focus:border-none">
-              <option value={"allM"} defaultChecked>
+            <select value={selectedMonth} onChange={handleMonthChange} className="bg-white text-[#40403F] py-2 px-12 rounded-md cursor-pointer focus:ring-0 focus:border-none">
+              <option value={""} defaultChecked>
                 All Months
               </option>
               {months.map((month, index) => (
-                <option key={index} value={month}>
-                  {month}
+                <option key={index} value={month.number}>
+                  {month.name}
                 </option>
               ))}
             </select>
@@ -103,7 +150,7 @@ function OrderCust() {
             </div>
           </div>
           <div className="flex items-center mt-4">
-            {selectedComponent === "All Orders" && <OrderList />}
+            {selectedComponent === "All Orders" && <OrderList orders={orders} fetchOrders={fetchOrders}/>}
             {selectedComponent === "New Orders"}
             {selectedComponent === "Ready to Ship"}
             {selectedComponent === "On Delivery"}
