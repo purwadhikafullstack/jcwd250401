@@ -87,7 +87,14 @@ function EditProductModal({ isOpen, isClose, data }) {
       productMainCategory: data?.categories[0]?.name,
       productSubCategory: data?.categories[1]?.name,
       productDescription: data?.description,
-      productPrice: data?.price || 0,
+      productMaterial: data?.material,
+      productLining: data?.lining,
+      productWaterproofRating: data?.waterproofRating,
+      weight: data?.weight || "",
+      length: data?.length || "",
+      width: data?.width || "",
+      height: data?.height || "",
+      productPrice: data?.price || "",
       productImages: "",
     },
     validationSchema: Yup.object({
@@ -95,10 +102,17 @@ function EditProductModal({ isOpen, isClose, data }) {
       productMainCategory: Yup.string().required("Please enter your product main category"),
       productSubCategory: Yup.string().required("Please enter your product sub category"),
       productDescription: Yup.string().required("Please enter your description").min(10, "Product description must be at least 10 characters"),
+      productMaterial: Yup.string().required("Please enter your product material"),
+      productLining: Yup.string().required("Please enter your product lining"),
+      productWaterproofRating: Yup.string().required("Please enter your product waterproof rating"),
+      weight: Yup.number().optional(),
+      length: Yup.number().optional(),
+      width: Yup.number().optional(),
+      height: Yup.number().optional(),
       productPrice: Yup.string().required("Please enter your product price"),
-      productGender: Yup.string().when('productMainCategory', {
-        is: (productMainCategory) => !(productMainCategory === 'Bags' || productMainCategory === 'Accessories'),
-        then: (productGender) => Yup.string().required('Please select a gender'),
+      productGender: Yup.string().when("productMainCategory", {
+        is: (productMainCategory) => !(productMainCategory === "Bags" || productMainCategory === "Accessories"),
+        then: (productGender) => Yup.string().required("Please select a gender"),
       }),
     }),
     onSubmit: async (values) => {
@@ -112,12 +126,33 @@ function EditProductModal({ isOpen, isClose, data }) {
         datas.append("productSubCategory", values.productSubCategory);
         datas.append("productDescription", values.productDescription);
         datas.append("productPrice", values.productPrice);
+        datas.append("productMaterial", values.productMaterial);
+        datas.append("productLining", values.productLining);
+        datas.append("productWaterproofRating", values.productWaterproofRating);
+
+        if (values.weight) {
+          datas.append("weight", values.weight);
+        }
+
+        if (values.length) {
+          datas.append("length", values.length);
+        }
+
+        if (values.width) {
+          datas.append("width", values.width);
+        }
+
+        if (values.height) {
+          datas.append("height", values.height);
+        }
 
         if (values.productImages) {
           values.productImages.forEach((image) => {
             datas.append("productImages", image);
           });
         }
+
+
 
         const response = await api.admin.put(`/product/${data.id}`, datas, {
           headers: {
@@ -148,14 +183,12 @@ function EditProductModal({ isOpen, isClose, data }) {
             setIsSubmitting(false);
             toast.error("Please upload at least one photo of the product.");
           }, 3000);
-        }
-        else if (error.response.status === 404) {
+        } else if (error.response.status === 404) {
           setTimeout(() => {
             setIsSubmitting(false);
             toast.error("Product not found.");
           }, 3000);
-        }
-        else if (error.request) {
+        } else if (error.request) {
           // Handle request errors
           setTimeout(() => {
             setIsSubmitting(false);
@@ -270,6 +303,13 @@ function EditProductModal({ isOpen, isClose, data }) {
     { label: "Bags", value: "Bags" },
     { label: "Accessories", value: "Accessories" },
     // ... more main categories
+  ];
+
+  const waterproofRating = [
+    { label: "W1 - Protection from light mositure", value: "W1 - Protection from light mositure" },
+    { label: "W2 - Protection from intermittent light rain", value: "W2 - Protection from intermittent light rain" },
+    { label: "W3 - Waterproof protection from light rain", value: "W3 -  Waterproof protection from light rain" },
+    { label: "W4 - Waterproof protection from moderate rain", value: "W4 - Waterproof protection from moderate rain" },
   ];
 
   return (
@@ -487,6 +527,176 @@ function EditProductModal({ isOpen, isClose, data }) {
                       <div className="ml-2 text-xs flex items-center gap-1 text-red-500">
                         <PiWarningCircleBold />
                         {formik.errors.productDescription}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="lg:flex lg:flex-row flex items-center flex-col lg:space-x-20 lg:space-y-0 space-y-4 justify-between ">
+                  <div className="lg:w-[20vw] w-full space-y-1">
+                    <h4 className="text-sm font-bold text-gray-900 dark:text-white">Product Material</h4>
+                  </div>
+                  <div className="w-full">
+                    <input
+                      type="productMaterial"
+                      id="productMaterial"
+                      name="productMaterial"
+                      placeholder="Enter product material..."
+                      className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg shadow-md shadow-gray-200 focus:ring-transparent focus:border-gray-500"
+                      {...formik.getFieldProps("productMaterial")}
+                    />
+                    {formik.touched.productMaterial && formik.errors.productMaterial ? (
+                      <div className="ml-2 text-xs flex items-center gap-1 text-red-500">
+                        <PiWarningCircleBold />
+                        {formik.errors.productMaterial}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="lg:flex lg:flex-row flex items-center flex-col lg:space-x-20 lg:space-y-0 space-y-4 justify-between ">
+                  <div className="lg:w-[20vw] w-full space-y-1">
+                    <h4 className="text-sm font-bold text-gray-900 dark:text-white">Product Lining</h4>
+                  </div>
+                  <div className="w-full">
+                    <input
+                      type="productLining"
+                      id="productLining"
+                      name="productLining"
+                      placeholder="Enter product lining..."
+                      className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg shadow-md shadow-gray-200 focus:ring-transparent focus:border-gray-500"
+                      {...formik.getFieldProps("productLining")}
+                    />
+                    {formik.touched.productLining && formik.errors.productLining ? (
+                      <div className="ml-2 text-xs flex items-center gap-1 text-red-500">
+                        <PiWarningCircleBold />
+                        {formik.errors.productLining}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="lg:flex lg:flex-row flex items-center flex-col lg:space-x-20 lg:space-y-0 space-y-4 justify-between ">
+                  <div className="lg:w-[20vw] w-full space-y-1">
+                    <h4 className="text-sm font-bold text-gray-900 dark:text-white">Product Waterproof Rating</h4>
+                  </div>
+                  <div className="w-full">
+                    <select
+                      id="productWaterproofRating"
+                      name="productWaterproofRating"
+                      className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg shadow-md shadow-gray-200 focus:ring-transparent focus:border-gray-500"
+                      {...formik.getFieldProps("productWaterproofRating")}
+                    >
+                      <option value="" disabled className="text-gray-400">
+                        Select waterproof rating
+                      </option>
+                      {waterproofRating.map((rating) => (
+                        <option key={rating.value} value={rating.value}>
+                          {rating.label}
+                        </option>
+                      ))}
+                    </select>
+                    {formik.touched.productWaterproofRating && formik.errors.productWaterproofRating ? (
+                      <div className="ml-2 text-xs flex items-center gap-1 text-red-500">
+                        <PiWarningCircleBold />
+                        {formik.errors.productWaterproofRating}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="lg:flex lg:flex-row flex flex-col items-center lg:space-x-20 lg:space-y-0 space-y-4 justify-between ">
+                  <div className="lg:w-[20vw] w-full space-y-1">
+                    <h4 className="text-sm font-bold text-gray-900 dark:text-white">Weight (Optional)</h4>
+                  </div>
+                  <div className="w-full">
+                    <div className="relative">
+                      <input
+                        type="number"
+                        id="weight"
+                        name="weight"
+                        placeholder="Enter product weight (optional)..."
+                        className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg shadow-md shadow-gray-200 focus:ring-transparent focus:border-gray-500"
+                        {...formik.getFieldProps("weight")}
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center p-4 pointer-events-none bg-gray-200 border-2 border-gray-300 rounded-r-lg shadow-md shadow-gray-200 focus:ring-transparent focus:border-gray-500">
+                        <span className="text-gray-500">gr</span>
+                      </div>
+                    </div>
+                    {formik.touched.weight && formik.errors.weight ? (
+                      <div className="ml-2 text-xs flex items-center gap-1 text-red-500">
+                        <PiWarningCircleBold /> {formik.errors.weight}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="lg:flex lg:flex-row flex flex-col items-center lg:space-x-20 lg:space-y-0 space-y-4 justify-between ">
+                  <div className="lg:w-[20vw] w-full space-y-1">
+                    <h4 className="text-sm font-bold text-gray-900 dark:text-white">Length (Optional)</h4>
+                  </div>
+                  <div className="w-full">
+                    <div className="relative">
+                      <input
+                        type="number"
+                        id="length"
+                        name="length"
+                        placeholder="Enter product length (optional)..."
+                        className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg shadow-md shadow-gray-200 focus:ring-transparent focus:border-gray-500"
+                        {...formik.getFieldProps("length")}
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center p-4 pointer-events-none bg-gray-200 border-2 border-gray-300 rounded-r-lg shadow-md shadow-gray-200 focus:ring-transparent focus:border-gray-500">
+                        <span className="text-gray-500">cm</span>
+                      </div>
+                    </div>
+                    {formik.touched.length && formik.errors.length ? (
+                      <div className="ml-2 text-xs flex items-center gap-1 text-red-500">
+                        <PiWarningCircleBold /> {formik.errors.length}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="lg:flex lg:flex-row flex flex-col items-center lg:space-x-20 lg:space-y-0 space-y-4 justify-between ">
+                  <div className="lg:w-[20vw] w-full space-y-1">
+                    <h4 className="text-sm font-bold text-gray-900 dark:text-white">Width (Optional)</h4>
+                  </div>
+                  <div className="w-full">
+                    <div className="relative">
+                      <input
+                        type="number"
+                        id="width"
+                        name="width"
+                        placeholder="Enter product width (optional)..."
+                        className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg shadow-md shadow-gray-200 focus:ring-transparent focus:border-gray-500"
+                        {...formik.getFieldProps("width")}
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center p-4 pointer-events-none bg-gray-200 border-2 border-gray-300 rounded-r-lg shadow-md shadow-gray-200 focus:ring-transparent focus:border-gray-500">
+                        <span className="text-gray-500">cm</span>
+                      </div>
+                    </div>
+                    {formik.touched.width && formik.errors.width ? (
+                      <div className="ml-2 text-xs flex items-center gap-1 text-red-500">
+                        <PiWarningCircleBold /> {formik.errors.width}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="lg:flex lg:flex-row flex flex-col items-center lg:space-x-20 lg:space-y-0 space-y-4 justify-between ">
+                  <div className="lg:w-[20vw] w-full space-y-1">
+                    <h4 className="text-sm font-bold text-gray-900 dark:text-white">Height (Optional)</h4>
+                  </div>
+                  <div className="w-full">
+                    <div className="relative">
+                      <input
+                        type="number"
+                        id="height"
+                        name="height"
+                        placeholder="Enter product height (optional)..."
+                        className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg shadow-md shadow-gray-200 focus:ring-transparent focus:border-gray-500"
+                        {...formik.getFieldProps("height")}
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center p-4 pointer-events-none bg-gray-200 border-2 border-gray-300 rounded-r-lg shadow-md shadow-gray-200 focus:ring-transparent focus:border-gray-500">
+                        <span className="text-gray-500">cm</span>
+                      </div>
+                    </div>
+                    {formik.touched.height && formik.errors.height ? (
+                      <div className="ml-2 text-xs flex items-center gap-1 text-red-500">
+                        <PiWarningCircleBold /> {formik.errors.height}
                       </div>
                     ) : null}
                   </div>

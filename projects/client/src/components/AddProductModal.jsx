@@ -79,13 +79,26 @@ function AddProductModal({ isOpen, isClose }) {
         data.append("productSubCategory", values.productSubCategory);
         data.append("productDescription", values.productDescription);
         data.append("productPrice", values.productPrice);
-        data.append("weight", values.weight);
-        data.append("length", values.length);
-        data.append("width", values.width);
-        data.append("height", values.height);
         data.append("productMaterial", values.productMaterial);
         data.append("productLining", values.productLining);
         data.append("productWaterproofRating", values.productWaterproofRating);
+
+        
+        if (values.weight) {
+          data.append("weight", values.weight);
+        }
+        
+        if (values.length) {
+          data.append("length", values.length);
+        }
+
+        if (values.width) {
+          data.append("width", values.width);
+        }
+
+        if (values.height) {
+          data.append("height", values.height);
+        }
 
 
         if (values.productImages) {
@@ -535,9 +548,6 @@ function AddProductModal({ isOpen, isClose }) {
                     ) : null}
                   </div>
                 </div>
-
-                
-
                 <div className="lg:flex lg:flex-row flex flex-col items-center lg:space-x-20 lg:space-y-0 space-y-4 justify-between ">
                   <div className="lg:w-[20vw] w-full space-y-1">
                     <h4 className="text-sm font-bold text-gray-900 dark:text-white">Weight (Optional)</h4>
@@ -638,7 +648,6 @@ function AddProductModal({ isOpen, isClose }) {
                     ) : null}
                   </div>
                 </div>
-
                 <div className="lg:flex flex lg:flex-row flex-col lg:space-x-20 lg:space-y-0 space-y-4 justify-between">
                   <div className="w-full flex-col space-y-2">
                     <h4 className="text-sm font-bold text-gray-900 dark:text-white">Product Image</h4>

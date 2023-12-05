@@ -113,7 +113,7 @@ exports.handleAddProduct = async (req, res) => {
 };
 
 exports.handleUpdateProduct = async (req, res) => {
-  const { productName, productPrice, productDescription, productGender, productMainCategory, productSubCategory } = req.body;
+  const { productName, productPrice, productDescription, productGender, productMainCategory, productSubCategory, productMaterial, productLining, productWaterproofRating, height, lenght, width, weight } = req.body;
   const { productId } = req.params;
 
   try {
@@ -148,6 +148,14 @@ exports.handleUpdateProduct = async (req, res) => {
     existingProduct.price = productPrice;
     existingProduct.description = productDescription;
     existingProduct.gender = productGender || "Unisex";
+    existingProduct.height = height;
+    existingProduct.lenght = lenght;
+    existingProduct.width = width;
+    existingProduct.weight = weight;
+    existingProduct.material = productMaterial;
+    existingProduct.lining = productLining;
+    existingProduct.waterproofRating = productWaterproofRating;
+    
 
     // Save the updated product
     await existingProduct.save();

@@ -246,17 +246,17 @@ function Navigationbar() {
                 <div
                   style={{
                     position: "absolute",
-                    top: "-8px",
-                    right: "-12px",
-                    width: "20px",
-                    height: "20px",
+                    top: "-7px",
+                    right: "-9px",
+                    width: "16px",
+                    height: "16px",
                     borderRadius: "50%",
-                    backgroundColor: "#40403F",
+                    backgroundColor: "red",
                     color: "white",
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    fontSize: "12px",
+                    fontSize: "9px",
                   }}
                 >
                   {totalQuantity}
