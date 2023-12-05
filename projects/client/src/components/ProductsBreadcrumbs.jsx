@@ -13,12 +13,12 @@ const formatSegment = (segment) => {
   return capitalizedWords.join(" ");
 };
 
-const Breadcrumbs = () => {
+const ProductsBreadcrumbs = () => {
   const location = useLocation();
   const pathSegments = location.pathname.split("/").filter((segment) => segment !== "");
 
   // Check if the URL contains "products", and if so, skip the first segment
-  const skipProducts = pathSegments[0] === "products" || pathSegments[0] === "account";
+  const skipProducts = pathSegments[0] === "products"
   const segmentsToRender = skipProducts ? pathSegments.slice(1) : pathSegments;
 
   // Set the styles for the breadcrumb container
@@ -69,4 +69,4 @@ const Breadcrumbs = () => {
   );
 };
 
-export default Breadcrumbs;
+export default ProductsBreadcrumbs;

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import getCart from "../api/cart/getCart";
+import updateCartItems from "../api/cart/updateCartItems";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -28,6 +29,7 @@ function CartSection() {
       setCarts(result.detail.CartItems);
       // Calculate total price and quantity
       calculateTotal(result.detail.CartItems);
+      dispatch(setCartItems(result.detail.CartItems));
     } catch (error) {
       if (error?.response?.status === 404) {
         setCarts([]);
@@ -69,19 +71,28 @@ function CartSection() {
 
     setTotalPrice(total);
     setTotalQuantity(quantity);
-    dispatch(setCartItems(quantity));
   };
 
-  const handleQuantityChange = (newQuantity, cartIndex) => {
+  const handleQuantityChange = async (newQuantity, cartIndex) => {
     // Update the quantity in the state
-    const updatedCarts = [...carts];
-    updatedCarts[cartIndex].quantity = newQuantity;
+  
+    const updatedCarts = carts.map((cart, index) => (index === cartIndex ? { ...cart, quantity: newQuantity } : cart));
     setCarts(updatedCarts);
 
     // Recalculate total price and quantity
     calculateTotal(updatedCarts);
-  };
 
+    dispatch(setCartItems(updatedCarts));
+
+    const { productId } = updatedCarts[cartIndex];
+    await updateCartItems({ productId, newQuantity });
+    
+    fetchCarts();
+  };
+  
+  useEffect(() => {
+    fetchCarts();
+  }, [fetchCarts]);
   const formatToRupiah = (price) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -91,9 +102,6 @@ function CartSection() {
     }).format(price);
   };
 
-  useEffect(() => {
-    fetchCarts();
-  }, [fetchCarts]);
 
   const toggleDeleteModal = (cart) => {
     setSelectedProduct(cart);
@@ -104,7 +112,7 @@ function CartSection() {
     <div className="w-full">
       <span className="text-2xl font-bold"> Shopping Cart</span>
       <div className="flex lg:flex-row flex-col justify-between">
-        <div className="flex mt-8 flex-col space-y-4 lg:mr-2 h-96 lg:h-64 overflow-y-auto overflow-x-hidden ">
+        <div className="flex mt-8 flex-col space-y-4 lg:mr-2 h-96 lg:h-[60vh] overflow-y-auto overflow-x-hidden ">
           {carts.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full">
               <p className="text-gray-600 text-lg">No items found.</p>
@@ -125,7 +133,7 @@ function CartSection() {
                     <PiTrash size={24} className="mr-2  cursor-pointer" onClick={() => toggleDeleteModal(cart)} />
                   </div>
 
-                  <span className="text-sm mt-1">SKU: {cart.Product.sku}</span>
+                  <span className="text-sm mt-1">SKU: {cart.Product.sku} ({cart.Product.gender})</span>
                   <span className="text-sm mt-1">Size: All Size</span>
                   <span className="text-sm font-bold mt-2">{formatToRupiah(cart.Product.price)}</span>
                   <div className="flex flex-col mt-2 space-y-2">
@@ -155,7 +163,7 @@ function CartSection() {
             </div>
           ))}
         </div>
-        {totalQuantity > 0 && <CartSummary totalQuantity={totalQuantity} totalPrice={totalPrice} />}
+        {totalQuantity > 0 && <CartSummary totalPrice={totalPrice} totalQuantity={totalQuantity} />}
       </div>
       {openDeleteCartModal && <DeleteCartItemModal isOpen={openDeleteCartModal} data={selectedProduct} isClose={toggleDeleteModal} onSuccess={() => fetchCarts()} />}
     </div>

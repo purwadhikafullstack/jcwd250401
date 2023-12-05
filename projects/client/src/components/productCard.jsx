@@ -171,7 +171,8 @@ function ProductCard() {
         quantity: quantity,
       });
       setConfirmationOpen(true);
-      dispatch(addToCartItems(quantity));
+
+      dispatch(addToCartItems(response.detail.CartItems));
     } catch (error) {
       // Handle errors
       if (error?.response?.status === 500 || error?.response?.status === 400 || error?.response?.status === 403 || error?.response?.status === 401) {
@@ -196,31 +197,88 @@ function ProductCard() {
 
   console.log(showPopup);
   return (
-    <div className="flex flex-col px-6 lg:px-32 space-y-6 lg:space-y-20 h-screen overflow-y scrollbar-hide">
+    <div className="flex lg:flex-row flex-col px-6 lg:px-32 space-y-6 lg:space-y-20 scrollbar-hide">
       {selectedProduct.length !== 0 ? (
         <>
-          <div className="hidden lg:flex w-full mt-14 gap-5">
-            {selectedProduct.map((product) => (
-              <div key={product.id} className="flex space-x-5">
-                <SimpleGrid columns={2} spacing={5} h="184px">
-                  {product.productImages.map((image, idx) => (
-                    <div key={`simpleGrid-${idx}`} className={`w-[82px] h-[82px] object-cover shadow-xl cursor-pointer ${idx === activeImageIndex ? "border-2 border-[#777777]" : ""}`} onClick={() => handleImageClick(image.id)}>
-                      <img src={`http://localhost:8000/public/${image.imageUrl}`} alt={`Product Image ${idx}`} className="w-full h-full object-cover" />
-                    </div>
-                  ))}
-                </SimpleGrid>
-                <div className="flex flex-col space-y-10 cursor-zoom-in" key={`slider-${product.id}`}>
-                  <Slider {...settings} className="w-[480px] h-[480px] shadow-xl" ref={sliderRef}>
+          <div className="hidden lg:flex w-full mt-14 gap-2">
+            <div className="flex flex-col w-[58vw] lg:h-[76vh] overflow-y-auto scrollbar-hide space-y-20">
+              {selectedProduct.map((product) => (
+                <div key={product.id} className="flex space-x-5">
+                  <SimpleGrid columns={2} spacing={5} h="184px">
                     {product.productImages.map((image, idx) => (
-                      <ZoomableImage key={`zoomableImage-${idx}`} imageUrl={`http://localhost:8000/public/${image.imageUrl}`} alt={`Product Image ${idx}`} images={selectedProduct[0].productImages} />
+                      <div key={`simpleGrid-${idx}`} className={`w-[82px] h-[82px] object-cover shadow-xl cursor-pointer ${idx === activeImageIndex ? "border-2 border-[#777777]" : ""}`} onClick={() => handleImageClick(image.id)}>
+                        <img src={`http://localhost:8000/public/${image.imageUrl}`} alt={`Product Image ${idx}`} className="w-full h-full object-cover" />
+                      </div>
                     ))}
-                  </Slider>
+                  </SimpleGrid>
+                  <div className="flex flex-col space-y-10 cursor-zoom-in" key={`slider-${product.id}`}>
+                    <Slider {...settings} className="w-[480px] h-[480px] shadow-xl" ref={sliderRef}>
+                      {product.productImages.map((image, idx) => (
+                        <ZoomableImage key={`zoomableImage-${idx}`} imageUrl={`http://localhost:8000/public/${image.imageUrl}`} alt={`Product Image ${idx}`} images={selectedProduct[0].productImages} />
+                      ))}
+                    </Slider>
+                  </div>
+                </div>
+              ))}
+
+              <div className="hidden lg:flex pb-10 flex-col space-y-4 lg:space-y-8 w-full">
+                <div className="flex flex-col space-y-4">
+                  <span className="font-bold text-2xl">Description</span>
+                  <div className="flex flex-col">
+                    {selectedProduct[0]?.description.split("\n").map((paragraph, index) => (
+                      <p key={index} className="text-md mb-2 leading-snug">
+                        {paragraph.trim()}
+                      </p>
+                    ))}
+                  </div>
+                  <div className="mt-8 border-t border border-gray-200"></div>
+                </div>
+                <div className="flex flex-col space-y-4">
+                  <span className="font-bold text-2xl">Details</span>
+                  <div className="flex flex-col space-y-4">
+                    <div className="flex flex-col">
+                      <span className="text-md text-gray-500"> Material:</span>
+                      <span className="text-md">{selectedProduct[0]?.material}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-md text-gray-500"> Lining:</span>
+                      <span className="text-md">{selectedProduct[0]?.lining}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-md text-gray-500"> Waterproof Rating:</span>
+                      <span className="text-md">{selectedProduct[0]?.waterproofRating}</span>
+                    </div>
+                    {selectedProduct[0]?.height && selectedProduct[0].length && selectedProduct[0].width && selectedProduct[0].weight && (
+                      <>
+                        <div className="flex flex-col">
+                          <span className="text-md text-gray-500"> Measurements:</span>
+                          <span className="text-md">
+                            H{selectedProduct[0]?.height} x W{selectedProduct[0]?.width} x L{selectedProduct[0]?.length} cm / H{Math.floor((selectedProduct[0]?.height / 2.54) * 10) / 10} x W
+                            {Math.floor((selectedProduct[0]?.width / 2.54) * 10) / 10} x L{Math.floor((selectedProduct[0]?.length / 2.54) * 10) / 10} inches
+                          </span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-md text-gray-500"> Volume:</span>
+                          <span className="text-md">
+                            {Math.floor(((selectedProduct[0]?.height * selectedProduct[0]?.width * selectedProduct[0]?.length) / 1000) * 10) / 10} liters /{" "}
+                            {Math.floor(((selectedProduct[0]?.height * selectedProduct[0]?.width * selectedProduct[0]?.length) / 3785.41) * 10) / 10} gallons
+                          </span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-md text-gray-500"> Weight:</span>
+                          <span className="text-md">
+                            {selectedProduct[0]?.weight} g / {Math.floor(selectedProduct[0]?.weight * 0.03527396 * 10) / 10} oz
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
-            ))}
+            </div>
 
             {selectedProduct.map((product) => (
-              <div className="flex flex-col justify-between ml-28 w-[25vw]">
+              <div className="flex flex-col ml-28 w-[30vw]">
                 <div className="flex flex-col space-y-5">
                   <div className="flex flex-col space-y-2">
                     <span className="font-bold text-2xl">{product.name}</span>
@@ -241,7 +299,7 @@ function ProductCard() {
                   </div>
                 </div>
                 <div className="space-y-6 flex flex-col justify-end">
-                  <div className="flex space-x-4 justify-between">
+                  <div className="mt-4 flex space-x-4 justify-between">
                     <div className="w-full space-y-4">
                       <span className="font-bold text-xl">Size</span>
                       <select className="w-full h-10 rounded-md border-gray-200 focus:outline-transparent transition-all ease-in-out duration-500" disabled={product.totalStockAllWarehouses === 0}>
@@ -353,15 +411,9 @@ function ProductCard() {
                       Add To Wishlist
                     </Button>
                     {product.totalStockAllWarehouses !== 0 ? (
-                      isSubmitting ? (
-                        <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777] outline-none" size="lg" isProcessing processingSpinner={<AiOutlineLoading className="h-6 w-6 animate-spin" />}>
-                          Logging in...
-                        </Button>
-                      ) : (
-                        <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777]" size="lg" onClick={handleAddToCart} disabled={isSubmitting}>
-                          Add To Cart
-                        </Button>
-                      )
+                      <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777]" size="lg" onClick={handleAddToCart}>
+                        Add To Cart
+                      </Button>
                     ) : (
                       <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777] shadow-md" size="lg" disabled>
                         Out Of Stock
@@ -372,18 +424,59 @@ function ProductCard() {
               </div>
             ))}
           </div>
-          <div className="pb-10 flex-col space-y-4 lg:space-y-8">
-            <div>
+          <div className="lg:hidden pb-10 flex-col space-y-4 lg:space-y-8">
+            <div className="flex flex-col space-y-4">
               <span className="font-bold text-2xl">Description</span>
+              <div className="flex flex-col">
+                {selectedProduct[0]?.description.split("\n").map((paragraph, index) => (
+                  <p key={index} className="text-md mb-2 leading-snug">
+                    {paragraph.trim()}
+                  </p>
+                ))}
+              </div>
+              <div className="mt-8 border-t border border-gray-200"></div>
             </div>
-            <div>
-              {selectedProduct[0]?.description.split("\n").map((paragraph, index) => (
-                <p key={index} className="text-md mb-2 leading-snug">
-                  {paragraph.trim()}
-                </p>
-              ))}
+            <div className="flex flex-col space-y-4">
+              <span className="font-bold text-2xl">Details</span>
+              <div className="flex flex-col space-y-4">
+                <div className="flex flex-col">
+                  <span className="text-md text-gray-500"> Material:</span>
+                  <span className="text-md">{selectedProduct[0]?.material}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-md text-gray-500"> Lining:</span>
+                  <span className="text-md">{selectedProduct[0]?.lining}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-md text-gray-500"> Waterproof Rating:</span>
+                  <span className="text-md">{selectedProduct[0]?.waterproofRating}</span>
+                </div>
+                {selectedProduct[0]?.height && selectedProduct[0].length && selectedProduct[0].width && selectedProduct[0].weight && (
+                  <>
+                    <div className="flex flex-col">
+                      <span className="text-md text-gray-500"> Measurements:</span>
+                      <span className="text-md">
+                        H{selectedProduct[0]?.height} x W{selectedProduct[0]?.width} x L{selectedProduct[0]?.length} cm / H{Math.floor((selectedProduct[0]?.height / 2.54) * 10) / 10} x W
+                        {Math.floor((selectedProduct[0]?.width / 2.54) * 10) / 10} x L{Math.floor((selectedProduct[0]?.length / 2.54) * 10) / 10} inches
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-md text-gray-500"> Volume:</span>
+                      <span className="text-md">
+                        {Math.floor(((selectedProduct[0]?.height * selectedProduct[0]?.width * selectedProduct[0]?.length) / 1000) * 10) / 10} liters /{" "}
+                        {Math.floor(((selectedProduct[0]?.height * selectedProduct[0]?.width * selectedProduct[0]?.length) / 3785.41) * 10) / 10} gallons
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-md text-gray-500"> Weight:</span>
+                      <span className="text-md">
+                        {selectedProduct[0]?.weight} g / {Math.floor(selectedProduct[0]?.weight * 0.03527396 * 10) / 10} oz
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
-            <div className="mt-8 border-t border border-gray-200"></div>
           </div>
         </>
       ) : (
