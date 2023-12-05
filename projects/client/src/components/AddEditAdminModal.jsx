@@ -48,7 +48,6 @@ export const AddEditAdminModal = ({ isOpen, onClose, data, modalFor }) => {
           if (response.ok) {
             toast.success("Update admin success");
             formik.resetForm();
-            dispatch(updateProfileAdmin(response));
             onClose();
           }
         } else if (modalFor === "Create") {
