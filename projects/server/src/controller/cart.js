@@ -238,3 +238,76 @@ exports.handleDeleteCartItem = async (req, res) => {
       });
     }
   };
+
+
+  exports.handleUpdateCartItem = async (req, res) => {
+    const { id: userId } = req.user;
+    const { productId } = req.params; // Assuming productId is passed as a URL parameter
+    const { quantity } = req.body; // Assuming quantity is passed as a request body
+  
+    try {
+      if (!userId) {
+        return res.status(403).json({
+          ok: false,
+          message: "Please login first.",
+        });
+      }
+  
+      const user = await User.findByPk(userId);
+      if (!user) {
+        return res.status(404).json({
+          ok: false,
+          message: "User not found",
+        });
+      }
+  
+      const cart = await Cart.findOne({
+        where: {
+          userId,
+        },
+        include: [
+          {
+            model: CartItem,
+          },
+        ],
+      });
+  
+      // Check if cart is found
+      if (!cart) {
+        return res.status(404).json({
+          ok: false,
+          message: "Cart not found",
+        });
+      }
+  
+      const cartItem = await CartItem.findOne({
+        where: {
+          cartId: cart.id,
+          productId: productId,
+        },
+      });
+  
+      if (!cartItem) {
+        return res.status(404).json({
+          ok: false,
+          message: "Cart item not found",
+        });
+      }
+  
+      cartItem.quantity = quantity;
+      await cartItem.save();
+  
+      return res.status(200).json({
+        ok: true,
+        message: "Items updated successfully",
+        detail: cart,
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+        ok: false,
+        message: "Internal server error",
+        detail: String(error),
+      });
+    }
+  };

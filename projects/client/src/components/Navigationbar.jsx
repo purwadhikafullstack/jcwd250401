@@ -63,7 +63,7 @@ function Navigationbar() {
         dispatch(showLoginModal());
       }
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, cartItem]);
 
   const calculateTotal = (cartItems) => {
     let total = 0;
@@ -76,12 +76,12 @@ function Navigationbar() {
 
     setTotalPrice(total);
     setTotalQuantity(quantity);
-    dispatch(setCartItems(quantity));
   };
 
   useEffect(() => {
     fetchCarts();
   }, [fetchCarts]);
+
 
   const handleSearchIconEnter = () => {
     setIsSearchBarVisible(!isSearchBarVisible);
@@ -242,7 +242,7 @@ function Navigationbar() {
             <PiHeart className="text-xl cursor-pointer" />
             <div style={{ position: "relative", display: "inline-block" }}>
               <PiShoppingCart className="text-xl cursor-pointer" onClick={() => navigate("/account/shopping-cart")} />
-              {cartItem > 0 && ( // Conditionally render the circle if cartItem is greater than 0
+              {totalQuantity > 0 && ( // Conditionally render the circle if cartItem is greater than 0
                 <div
                   style={{
                     position: "absolute",
@@ -259,7 +259,7 @@ function Navigationbar() {
                     fontSize: "12px",
                   }}
                 >
-                  {cartItem}
+                  {totalQuantity}
                 </div>
               )}
             </div>

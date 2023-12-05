@@ -171,7 +171,8 @@ function ProductCard() {
         quantity: quantity,
       });
       setConfirmationOpen(true);
-      dispatch(addToCartItems(quantity));
+
+      dispatch(addToCartItems(response.detail.CartItems));
     } catch (error) {
       // Handle errors
       if (error?.response?.status === 500 || error?.response?.status === 400 || error?.response?.status === 403 || error?.response?.status === 401) {
@@ -353,15 +354,9 @@ function ProductCard() {
                       Add To Wishlist
                     </Button>
                     {product.totalStockAllWarehouses !== 0 ? (
-                      isSubmitting ? (
-                        <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777] outline-none" size="lg" isProcessing processingSpinner={<AiOutlineLoading className="h-6 w-6 animate-spin" />}>
-                          Logging in...
-                        </Button>
-                      ) : (
-                        <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777]" size="lg" onClick={handleAddToCart} disabled={isSubmitting}>
-                          Add To Cart
-                        </Button>
-                      )
+                      <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777]" size="lg" onClick={handleAddToCart}>
+                        Add To Cart
+                      </Button>
                     ) : (
                       <Button className="w-full bg-Grey-1 enabled:hover:bg-[#777777] shadow-md" size="lg" disabled>
                         Out Of Stock

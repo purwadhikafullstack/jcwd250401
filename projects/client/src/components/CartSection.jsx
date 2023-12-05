@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import getCart from "../api/cart/getCart";
+import updateCartItems from "../api/cart/updateCartItems";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -28,6 +29,7 @@ function CartSection() {
       setCarts(result.detail.CartItems);
       // Calculate total price and quantity
       calculateTotal(result.detail.CartItems);
+      dispatch(setCartItems(result.detail.CartItems));
     } catch (error) {
       if (error?.response?.status === 404) {
         setCarts([]);
@@ -69,19 +71,29 @@ function CartSection() {
 
     setTotalPrice(total);
     setTotalQuantity(quantity);
-    dispatch(setCartItems(quantity));
   };
 
-  const handleQuantityChange = (newQuantity, cartIndex) => {
+  const handleQuantityChange = async (newQuantity, cartIndex) => {
     // Update the quantity in the state
-    const updatedCarts = [...carts];
-    updatedCarts[cartIndex].quantity = newQuantity;
+  
+    const updatedCarts = carts.map((cart, index) => (index === cartIndex ? { ...cart, quantity: newQuantity } : cart));
     setCarts(updatedCarts);
 
     // Recalculate total price and quantity
     calculateTotal(updatedCarts);
-  };
 
+    dispatch(setCartItems(updatedCarts));
+
+    const { productId } = updatedCarts[cartIndex];
+    await updateCartItems({ productId, newQuantity });
+    
+    fetchCarts();
+  };
+  
+  useEffect(() => {
+    fetchCarts();
+  }, [fetchCarts]);
+  
   const formatToRupiah = (price) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -91,9 +103,6 @@ function CartSection() {
     }).format(price);
   };
 
-  useEffect(() => {
-    fetchCarts();
-  }, [fetchCarts]);
 
   const toggleDeleteModal = (cart) => {
     setSelectedProduct(cart);
@@ -155,7 +164,7 @@ function CartSection() {
             </div>
           ))}
         </div>
-        {totalQuantity > 0 && <CartSummary totalQuantity={totalQuantity} totalPrice={totalPrice} />}
+        {totalQuantity > 0 && <CartSummary totalPrice={totalPrice} totalQuantity={totalQuantity} />}
       </div>
       {openDeleteCartModal && <DeleteCartItemModal isOpen={openDeleteCartModal} data={selectedProduct} isClose={toggleDeleteModal} onSuccess={() => fetchCarts()} />}
     </div>
