@@ -565,6 +565,7 @@ const updateStock = async (warehouseId, productId, quantity, type, adminId, tran
         stock: newStock,
         status: "success",
         isManual: true,
+        description: `Updated stock by Admin`,
       },
       { transaction }
     );
@@ -923,6 +924,7 @@ const getMutationsForProduct = async (productId) => {
         where: {
           productId,
           warehouseId: warehouse.id,
+          status: 'success',
         },
         order: [["createdAt", "DESC"]],
         limit: 1,

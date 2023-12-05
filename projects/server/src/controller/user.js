@@ -175,7 +175,7 @@ exports.getSingleAdminWarehouse = async (req, res) => {
       where: {
         username,
         email,
-        isWarehouseAdmin : true
+        isWarehouseAdmin: true,
       },
     });
 
@@ -190,7 +190,41 @@ exports.getSingleAdminWarehouse = async (req, res) => {
       ok: true,
       message: "Get admin warehouse successfully",
       detail: admin,
-    })
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+      detail: String(error),
+    });
+  }
+};
+
+exports.getSingleSuperAdmin = async (req, res) => {
+  const { username, email } = req.params;
+
+  try {
+    const admin = await Admin.findOne({
+      where: {
+        username,
+        email,
+        isWarehouseAdmin: false,
+      },
+    });
+
+    if (!admin) {
+      return res.status(404).json({
+        ok: false,
+        message: "Super Admin not found",
+      });
+    }
+
+    return res.status(200).json({
+      ok: true,
+      message: "Get super admin successfully",
+      detail: admin,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({

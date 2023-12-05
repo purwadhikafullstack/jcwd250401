@@ -101,7 +101,7 @@ function OrderCust() {
           <Navigationadmin />
         </div>
         <div className="flex flex-col mt-16 py-8 px-4 md:p-8">
-            <div className="flex justify-end items-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-end items-center gap-4">
             <select value={selectedWarehouseId} onChange={handleWarehouseChange} className="bg-white text-[#40403F] py-2 px-10 rounded-md cursor-pointer focus:ring-0 focus:border-none">
               <option value={""} defaultChecked>
                 All Warehouses
@@ -123,7 +123,7 @@ function OrderCust() {
                 </option>
               ))}
             </select>
-            </div>
+          </div>
           <div className="flex items-center p-2 md:p-4 mt-4 bg-white rounded-lg shadow-sm">
             <div className="hidden md:flex flex-wrap gap-3 lg:gap-14 mx-4">
               {navList.map((nav, index) => (
@@ -157,7 +157,7 @@ function OrderCust() {
             {selectedComponent === "Completed"}
             {selectedComponent === "Cancelled"}
           </div>
-        </div>
+          </div>
       </div>
     </div>
   );

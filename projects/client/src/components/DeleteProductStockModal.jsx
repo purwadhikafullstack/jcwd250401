@@ -119,6 +119,7 @@ export const DeleteProductStockModal = ({ isOpen, onClose, data }) => {
           <Box>
             <Text>Product: {data?.name}</Text>
             <Text>Total Stock: {data?.totalStockAllWarehouses}</Text>
+            <Text>SKU: {data?.sku}</Text>
           </Box>
 
           <Box>
