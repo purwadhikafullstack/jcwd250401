@@ -11,13 +11,15 @@ import { AiOutlineLoading } from "react-icons/ai";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from "@chakra-ui/react";
 import getProfile from "../api/profile/getProfile";
 import updateUserProfile from "../api/profile/updateUserProfile";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export const UpdateProfileModal = ({ isOpen, onClose }) => {
   const username = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const [selectedImage, setSelectedImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const location = useLocation();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const createObjectURL = (file) => {
@@ -74,6 +76,7 @@ export const UpdateProfileModal = ({ isOpen, onClose }) => {
         const response = await updateUserProfile({ username, data });
 
         if (response.ok) {
+          navigate(location.pathname);
           setTimeout(() => {
             toast.success("Update profile success", {
               autoClose: 2000,

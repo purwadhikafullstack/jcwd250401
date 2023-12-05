@@ -110,16 +110,16 @@ export const Address = () => {
     onSubmit: async (values) => {
       try {
         const response = await addNewAddress(
-          { userId },
           {
+            userId,
             street: values.street,
             firstName: values.firstName,
             lastName: values.lastName,
-            province: provinceIdToName,
+            province: values.province,
             city: values.city,
             district: values.district,
             subDistrict: values.subDistrict,
-            phoneNumber: 0 + values.phoneNumber.toString(),
+            phoneNumber: values.phoneNumber,
             setAsDefault: values.setAsDefault,
           }
         );
@@ -142,6 +142,8 @@ export const Address = () => {
       }
     },
   });
+
+  console.log("addres" + formik.values.street)
 
   const fetchUserData = useCallback(async () => {
     try {
