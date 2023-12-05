@@ -1,9 +1,4 @@
 import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
   Box,
   Button,
   Input,
@@ -20,7 +15,6 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import api from "../api";
 import { useSelector } from "react-redux";
 import getWarehouses from "../api/warehouse/getWarehouses";
 import { useNavigate } from "react-router-dom";
@@ -125,107 +119,121 @@ export const UpdateStockModal = ({ isOpen, onClose, data }) => {
     }
   };
 
-  useEffect(() => {
-    if (!isWarehouseAdmin) {
-      fetchWarehouses();
-    } else {
+  useEffect(() => { // fetch warehouse
+    if (isWarehouseAdmin) {
       fetchAdminWarehouseData();
+    } else {
+      fetchWarehouses();
     }
   }, []);
 
+    useEffect(() => { // update total stock
+      if(selectedWarehouse !== null) {
+        fetchTotalStockByWarehouseAndProductId();
+      }
+    }, [selectedWarehouse]);
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered size={"lg"}>
+    <Modal isOpen={isOpen} onClose={onClose} isCentered size={"2xl"}>
       <ModalOverlay bg="none" backdropFilter="auto" backdropBlur="2px" />
       <ModalContent>
         <ModalHeader>
           <Text fontWeight="bold">Update Stock</Text>
         </ModalHeader>
         <ModalBody display={"flex"} flexDirection={"column"} gap={3}>
-          <Box>
-            <Text>Product: {data?.name}</Text>
-            <Text>Total Stock: {data?.totalStockAllWarehouses}</Text>
+          <Box display={"flex"} flexDir={{ base: "column", md: "row" }} gap={{ base: 0, md: 7 }}>
+            <Text fontWeight={"bold"}>Product Information</Text>
+            <Box>
+              <Box display={"flex"}>
+                <Text minW={"120px"}>Product name:</Text>
+                <Text>{data?.name}</Text>
+              </Box>
+              <Box display={"flex"}>
+                <Text minW={"120px"}>SKU:</Text>
+                <Text>{data?.sku}</Text>
+              </Box>
+              <Box display={"flex"}>
+                <Text minW={"120px"}>Total Stock:</Text>
+                <Text>{data?.totalStockAllWarehouses}</Text>
+              </Box>
+            </Box>
           </Box>
 
           <Box>
-            <Text mb={2} fontWeight={"semibold"}>
-              Total Stock Every Warehouse:
-            </Text>
-            <div className="px-3 h-[110px] overflow-y-auto scrollbar-hide border border-1-black rounded-md">
-              <Accordion allowToggle>
-                {isWarehouseAdmin ? (
-                  <AccordionItem border={"solid 1px #40403F"} borderRadius={"md"} my={2}>
-                    <h2>
-                      <AccordionButton onClick={fetchTotalStockByWarehouseAndProductId}>
-                        <Box as="span" flex="1" textAlign="left">
-                          Warehouse: {selectedWarehouseName}
-                        </Box>
-                        <AccordionIcon />
-                      </AccordionButton>
-                    </h2>
-                    <AccordionPanel pb={4}>Total Stock: {selectedTotalStock ? selectedTotalStock : 0} </AccordionPanel>
-                  </AccordionItem>
-                ) : (
-                  totalStockEveryWarehouse?.map((item, index) => (
-                    <AccordionItem key={index} border={"solid 1px #40403F"} borderRadius={"md"} my={2}>
-                      <h2>
-                        <AccordionButton>
-                          <Box as="span" flex="1" textAlign="left">
-                            Warehouse: {item?.warehouseName}
-                          </Box>
-                          <AccordionIcon />
-                        </AccordionButton>
-                      </h2>
-                      <AccordionPanel pb={4}>Total Stock: {item?.totalStock}</AccordionPanel>
-                    </AccordionItem>
-                  ))
-                )}
-              </Accordion>
-            </div>
+            <Box display={"flex"} justifyContent={"space-evenly"}>
+              <Text mb={2} fontWeight={"semibold"} w={"30%"}>
+                Stock
+              </Text>
+              <Text mb={2} fontWeight={"semibold"} w={"30%"}>
+                Warehouse Name
+              </Text>
+              <Text mb={2} fontWeight={"semibold"} w={"30%"}>
+                Current Stock
+              </Text>
+            </Box>
+
+            <Box display={"flex"} flexDirection={"column"} gap={3} h={"100px"} overflowY={"auto"}>
+              {isWarehouseAdmin ? (
+                <Box display={"flex"} justifyContent={"space-evenly"}>
+                  <Box w={"30%"}></Box>
+                  <Text w={"30%"}>{selectedWarehouseName}</Text>
+                  <Text w={"30%"}>{selectedTotalStock ? selectedTotalStock : 0}</Text>
+                </Box>
+              ) : (
+                totalStockEveryWarehouse?.map((item, index) => (
+                  <Box key={index} display={"flex"} justifyContent={"space-evenly"}>
+                    <Box w={"30%"}></Box>
+                    <Text w={"30%"}>{item?.warehouseName}</Text>
+                    <Text w={"30%"}>{item?.totalStock}</Text>
+                  </Box>
+                ))
+              )}
+            </Box>
           </Box>
 
-          <Box display={"flex"} gap={3}>
-            <Menu>
-              <MenuButton as={Button} rightIcon={<ChevronDownIcon />} color={"white"} variant={"solid"} bgColor={"#40403F"} _hover={{ opacity: 0.8 }} _expanded={{ bg: "#40403F", color: "white" }}>
-                {selectedWarehouseName ? selectedWarehouseName : "Select Warehouse ..."}
-              </MenuButton>
-              <MenuList>
-                {isWarehouseAdmin ? (
-                  <MenuItem
-                    onClick={() => {
-                      setSelectedWarehouse(warehouseList?.id);
-                      setSelectedWarehouseName(warehouseList?.name);
-                    }}>
-                    {warehouseList?.name}
-                  </MenuItem>
-                ) : (
-                  warehouseList?.map((warehouse, index) => (
+          <Text fontWeight={"bold"}>Update Stock</Text>
+          <Box display={"flex"} flexDir={{ base: "column", md: "row" }} gap={3}>
+            <Box display={"flex"} gap={3} w={"100%"}>
+              <Menu>
+                <MenuButton as={Button} rightIcon={<ChevronDownIcon />} color={"#40403F"} borderColor={"#40403F"} variant={"outline"} _hover={{ opacity: 0.8 }} _expanded={{ bg: "#40403F", color: "white" }} w={{ base: "50%", md: "50%" }}>
+                  {selectedWarehouseName ? selectedWarehouseName : "Warehouse"}
+                </MenuButton>
+                <MenuList>
+                  {isWarehouseAdmin ? (
                     <MenuItem
-                      key={index}
                       onClick={() => {
-                        setSelectedWarehouse(warehouse?.id);
-                        setSelectedWarehouseName(warehouse?.name);
+                        setSelectedWarehouse(warehouseList?.id);
+                        setSelectedWarehouseName(warehouseList?.name);
                       }}>
-                      {warehouse?.name}
+                      {warehouseList?.name}
                     </MenuItem>
-                  ))
-                )}
-              </MenuList>
-            </Menu>
+                  ) : (
+                    warehouseList?.map((warehouse, index) => (
+                      <MenuItem
+                        key={index}
+                        onClick={() => {
+                          setSelectedWarehouse(warehouse?.id);
+                          setSelectedWarehouseName(warehouse?.name);
+                        }}>
+                        {warehouse?.name}
+                      </MenuItem>
+                    ))
+                  )}
+                </MenuList>
+              </Menu>
 
-            <Menu>
-              <MenuButton as={Button} rightIcon={<ChevronDownIcon />} color={"white"} variant={"solid"} bgColor={"#40403F"} _hover={{ opacity: 0.8 }} _expanded={{ bg: "#40403F", color: "white" }}>
-                {selectedType ? selectedType : "Select Type"}
-              </MenuButton>
-              <MenuList>
-                <MenuItem onClick={() => setSelectedType("add")}>Add</MenuItem>
-                <MenuItem onClick={() => setSelectedType("subtract")}>Subtract</MenuItem>
-              </MenuList>
-            </Menu>
-          </Box>
+              <Menu>
+                <MenuButton as={Button} rightIcon={<ChevronDownIcon />} color={"#40403F"} borderColor={"#40403F"} variant={"outline"} _hover={{ opacity: 0.8 }} _expanded={{ bg: "#40403F", color: "white" }} w={{ base: "50%", md: "50%" }}>
+                  {selectedType ? selectedType : "Action"}
+                </MenuButton>
+                <MenuList>
+                  <MenuItem onClick={() => setSelectedType("add")}>Add</MenuItem>
+                  <MenuItem onClick={() => setSelectedType("subtract")}>Subtract</MenuItem>
+                </MenuList>
+              </Menu>
+            </Box>
 
-          <Box>
-            <Text mb={2}>Quantity:</Text>
-            <Input type="number" placeholder="Enter quantity" onChange={(e) => setQuantity(e.target.value, 10)} />
+            <Input type="number" placeholder="Enter new stock amount" onChange={(e) => setQuantity(e.target.value, 10)} w={{ base: "100%", md: "50%" }} />
           </Box>
         </ModalBody>
         <ModalFooter>
@@ -235,6 +243,7 @@ export const UpdateStockModal = ({ isOpen, onClose, data }) => {
             variant={"outline"}
             _hover={{ opacity: 0.8 }}
             mr={3}
+            w={"30%"}
             onClick={() => {
               onClose();
             }}>
@@ -245,6 +254,7 @@ export const UpdateStockModal = ({ isOpen, onClose, data }) => {
             variant={"solid"}
             bgColor={"#40403F"}
             _hover={{ opacity: 0.8 }}
+            w={"30%"}
             onClick={() => {
               handleUpdateStock();
             }}>

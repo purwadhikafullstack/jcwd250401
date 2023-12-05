@@ -239,6 +239,11 @@ exports.assignWarehouseAdmin = async (req, res) => {
   try {
     const warehouse = await Warehouse.findByPk(warehouseId);
     const adminAcc = await Admin.findByPk(adminId);
+    const isAssignedToAnotherWarehouse = await Warehouse.findOne({
+      where: {
+        adminId,
+      },
+    });
 
     if (!warehouse) {
       return res.status(404).json({
@@ -247,6 +252,7 @@ exports.assignWarehouseAdmin = async (req, res) => {
       });
     }
 
+    // Check if admin exists
     if (!adminAcc || adminAcc.isWarehouseAdmin !== true) {
       return res.status(404).json({
         ok: false,
@@ -254,10 +260,19 @@ exports.assignWarehouseAdmin = async (req, res) => {
       });
     }
 
+    // Check if warehouse already has an assigned admin
     if (warehouse.adminId) {
       return res.status(400).json({
         ok: false,
         message: "Warehouse already has an assigned admin",
+      });
+    }
+
+    // Check if admin is already assigned to another warehouse
+    if (isAssignedToAnotherWarehouse) {
+      return res.status(400).json({
+        ok: false,
+        message: "Admin is already assigned to another warehouse",
       });
     }
 
@@ -323,7 +338,11 @@ exports.getWarehouseByAdmin = async (req, res) => {
       where: {
         adminId,
       },
-    })
+      include: {
+        model: Admin,
+        attributes: ["id", "username"],
+      },
+    });
 
     if (!warehouse) {
       return res.status(404).json({
@@ -336,7 +355,7 @@ exports.getWarehouseByAdmin = async (req, res) => {
       ok: true,
       message: "Get warehouse successfully",
       detail: warehouse,
-    })
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -345,4 +364,4 @@ exports.getWarehouseByAdmin = async (req, res) => {
       detail: String(error),
     });
   }
-}
+};

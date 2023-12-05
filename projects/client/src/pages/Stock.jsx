@@ -8,9 +8,13 @@ import getAllMutations from "../api/mutation/getAllMutations";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import getWarehouses from "../api/warehouse/getWarehouses";
-import { pureFinalPropsSelectorFactory } from "react-redux/es/connect/selectorFactory";
+import { useSelector } from "react-redux";
+import getWarehouseByAdmin from "../api/warehouse/getWarehouseByAdmin";
+import getSingleAdmin from "../api/users/getSingleAdmin";
 
 export const Stock = () => {
+  const isWarehouseAdmin = useSelector((state) => state?.account?.isWarehouseAdmin);
+  const adminData = useSelector((state) => state?.account?.adminProfile?.data?.profile);
   const [searchInput, setSearchInput] = useState("");
   const [sort, setSort] = useState("");
   const [order, setOrder] = useState("");
@@ -127,10 +131,40 @@ export const Stock = () => {
     }
   }, []);
 
+  const fetchAdminWarehouseData = async () => {
+    try {
+      const response = await getSingleAdmin({
+        username: adminData?.username,
+        email: adminData?.email,
+      });
+      if (response.ok) {
+        const adminIdFromResponse = response.detail.id;
+
+        const response2 = await getWarehouseByAdmin({ adminId: adminIdFromResponse });
+
+        if (response2.ok) {
+          const warehouseIdFromResponse = response2.detail.id;
+          setWarehouseList(response2.detail);
+          setWarehouseId(warehouseIdFromResponse);
+          fetchMutations();
+        }
+      }
+    } catch (error) {
+      if (error.response && (error.response.status === 404 || error.response.status === 500)) {
+        toast.error(error.response.data.message);
+        if (error.response.status === 500) console.error(error);
+      }
+    }
+  };
+
   useEffect(() => {
-    fetchMutations();
-    fetchWarehouse();
-  }, [fetchMutations, pureFinalPropsSelectorFactory]);
+    if (isWarehouseAdmin) {
+      fetchAdminWarehouseData();
+    } else {
+      fetchWarehouse();
+      fetchMutations();
+    }
+  }, [fetchMutations]);
 
   return (
     <div className="flex flex-row justify-between h-screen">
@@ -162,12 +196,18 @@ export const Stock = () => {
               value={warehouseId}
               onChange={(e) => setWarehouseId(e.target.value)}
               className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#40403F] focus:border-[#40403F] block w-full p-2.5 cursor-pointer">
-              <option value={""}>All Warehouse</option>
-              {warehouseList.map((warehouse, index) => (
-                <option key={index} value={warehouse.id}>
-                  {warehouse.name}
-                </option>
-              ))}
+              {isWarehouseAdmin ? (
+                <option value={warehouseId}>{warehouseList.name}</option>
+              ) : (
+                <>
+                  <option value={""}>All Warehouse</option>
+                  {warehouseList.map((warehouse, index) => (
+                    <option key={index} value={warehouse.id}>
+                      {warehouse.name}
+                    </option>
+                  ))}
+                </>
+              )}
             </select>
             <select
               value={selectedMonth}
@@ -225,6 +265,7 @@ export const Stock = () => {
                       Total <br /> Stock
                     </Th>
                     <Th>Status</Th>
+                    <Th>Description</Th>
                   </Tr>
                 </Thead>
                 <Tbody>
@@ -240,12 +281,13 @@ export const Stock = () => {
                       <Td>{mutation.createdAt.slice(0, 10)}</Td>
                       <Td>{mutation.mutationType}</Td>
                       <Td>{mutation.previousStock}</Td>
-                      <Td color={mutation.mutationType === "add" ? "green" : mutation.status === "processing" || mutation.status === "pending" ? "orange" : mutation.status === "cancelled"  || mutation.status === "failed" ? "red" : "green"}>
+                      <Td color={mutation.mutationType === "add" ? "green" : mutation.status === "processing" || mutation.status === "pending" ? "orange" : mutation.status === "cancelled" || mutation.status === "failed" ? "red" : "green"}>
                         {mutation.mutationType === "add" ? "+" : "-"}
                         {mutation.mutationQuantity}
                       </Td>
                       <Td color={mutation.status === "processing" || mutation.status === "pending" ? "orange" : mutation.status === "failed" ? "red" : "green"}>{mutation.stock}</Td>
                       <Td color={mutation.status === "processing" || mutation.status === "pending" ? "orange" : mutation.status === "failed" ? "red" : "green"}>{mutation?.status ? mutation.status : "-"}</Td>
+                      <Td>{mutation.description}</Td>
                     </Tr>
                   ))}
                 </Tbody>

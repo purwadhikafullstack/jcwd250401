@@ -6,9 +6,12 @@ import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import editAdmin from "../api/users/editAdmin";
 import createAdmin from "../api/users/createAdmin";
+import { useDispatch } from "react-redux";
+import { updateProfileAdmin } from "../slices/accountSlices";
 
 export const AddEditAdminModal = ({ isOpen, onClose, data, modalFor }) => {
   const [toggleInput, setToggleInput] = useState(false);
+  const dispatch = useDispatch();
 
   const handleToggleInput = () => setToggleInput(!toggleInput);
   const formik = useFormik({
@@ -45,6 +48,7 @@ export const AddEditAdminModal = ({ isOpen, onClose, data, modalFor }) => {
           if (response.ok) {
             toast.success("Update admin success");
             formik.resetForm();
+            dispatch(updateProfileAdmin(response));
             onClose();
           }
         } else if (modalFor === "Create") {
