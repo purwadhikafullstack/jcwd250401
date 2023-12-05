@@ -116,11 +116,9 @@ function Navigationbar() {
 
   const getUserData = async () => {
     try {
-      if (isLoggedIn) {
         const response = await getProfile({ username });
         setUserData(response.detail);
         dispatch(setUsername(response.detail.username));
-      }
     } catch (error) {
       if (error.response.status === 404 || error.response.status === 500 || error.response.status === 401 || error.response.status === 403) {
         toast.error(error.response.data.message);

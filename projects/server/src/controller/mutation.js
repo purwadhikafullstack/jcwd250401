@@ -15,6 +15,7 @@ exports.getTotalStockByWarehouseProductId = async (req, res) => {
       where: {
         productId,
         warehouseId,
+        status: "success",
       },
       order: [["createdAt", "DESC"]],
       limit: 1,
@@ -55,6 +56,7 @@ exports.getAllMutations = async (req, res) => {
     if (month) {
       whereCondition.createdAt = {
         [Op.and]: [
+          // Optional: Combine multiple conditions
           // Filter by the current month
           literal(`MONTH(createdAt) = ${parseInt(month)}`), // Required: Filter by the current month
           literal(`YEAR(createdAt) = YEAR(NOW())`), // Optional: Filter by the current year
@@ -108,7 +110,7 @@ exports.getAllMutations = async (req, res) => {
   }
 };
 
-exports.getPendingMuntation = async (req, res) => {
+exports.getPendingMutation = async (req, res) => {
   try {
     const pendingMutations = await Mutation.findAll({
       where: {
@@ -156,9 +158,143 @@ exports.getPendingMuntation = async (req, res) => {
   }
 };
 
+exports.getAllMutationsJournal = async (req, res) => {
+  try {
+    const { page = 1, size = 5, sort = "id", order = "DESC", search, warehouseId = null, destinationWarehouseId = null, month = null, status } = req.query;
+    const limit = parseInt(size);
+    const offset = (parseInt(page) - 1) * limit;
+
+    const whereCondition = {};
+    // whereCondition.status = "pending";
+
+    if (search) {
+      whereCondition[Op.or] = [{ productId: { [Op.like]: `%${search}%` } }];
+    }
+
+    if (warehouseId) {
+      whereCondition[Op.or] = [{ warehouseId }, { destinationWarehouseId: warehouseId }];
+    }
+
+    if (destinationWarehouseId) {
+      whereCondition.destinationWarehouseId = destinationWarehouseId;
+    }
+
+    if (month) {
+      whereCondition.createdAt = {
+        [Op.and]: [literal(`MONTH(createdAt) = ${parseInt(month)}`), literal(`YEAR(createdAt) = YEAR(NOW())`)],
+      };
+    }
+
+    if (status) {
+      whereCondition.status = status;
+    }
+
+    const mutationsJournal = await Journal.findAll({
+      where: whereCondition,
+      limit,
+      offset,
+      order: [[sort, order]],
+      include: [
+        {
+          model: Product,
+          attributes: ["id", "name"],
+          include: [
+            {
+              model: Category,
+              as: "Categories",
+              attributes: ["id", "name"],
+            },
+            {
+              model: ProductImage,
+              as: "productImages",
+              attributes: ["id", "productId", "imageUrl"],
+            },
+          ],
+        },
+        {
+          model: Warehouse,
+          attributes: ["id", "name"],
+        },
+        {
+          model: Admin,
+          attributes: ["id", "username"],
+        },
+      ],
+    });
+
+    if (!mutationsJournal || mutationsJournal.length === 0) {
+      return res.status(404).json({
+        ok: false,
+        message: "No mutations found!",
+      });
+    }
+
+    // add source and destination warehouse names to each mutation
+    const mutationsJournalWithNames = await Promise.all(
+      mutationsJournal.map(async (mutation) => {
+        const sourceWarehouse = await Warehouse.findOne({
+          where: {
+            id: mutation.warehouseId,
+          },
+          attributes: ["id", "name", "adminId"],
+        });
+
+        const destinationWarehouse = await Warehouse.findOne({
+          where: {
+            id: mutation.destinationWarehouseId,
+          },
+          attributes: ["id", "name", "adminId"],
+        });
+
+        return {
+          ...mutation.toJSON(),
+          sourceWarehouseData: sourceWarehouse
+            ? {
+                id: sourceWarehouse.id,
+                name: sourceWarehouse.name,
+                adminId: sourceWarehouse.adminId,
+              }
+            : null,
+          destinationWarehouseData: destinationWarehouse
+            ? {
+                id: destinationWarehouse.id,
+                name: destinationWarehouse.name,
+                adminId: destinationWarehouse.adminId,
+              }
+            : null,
+        };
+      })
+    );
+
+    // calculate pagination data
+    const totalData = mutationsJournalWithNames.length;
+    const totalPage = Math.ceil(totalData / limit);
+
+    res.status(200).json({
+      ok: true,
+      message: "Mutations journal retrieved successfully",
+      pagination: {
+        totalData,
+        totalPage,
+      },
+      detail: {
+        data: mutationsJournalWithNames,
+      },
+    });
+  } catch (error) {
+    console.error("Error retrieving mutation:", error);
+    res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+    });
+  }
+};
 exports.createManualStockMutation = async (req, res) => {
-  const { adminId, warehouseId, destinationWarehouseId, productId, mutationQuantity } = req.body;
+  const { adminId, warehouseId, destinationWarehouseId, productId, date } = req.body;
+  let { mutationQuantity } = req.body;
   const t = await sequelize.transaction();
+  mutationQuantity = parseInt(mutationQuantity);
+  console.log(adminId, warehouseId, destinationWarehouseId, productId, date, mutationQuantity);
 
   try {
     if (!adminId || !warehouseId || !destinationWarehouseId || !productId || !mutationQuantity) {
@@ -236,7 +372,23 @@ exports.createManualStockMutation = async (req, res) => {
         message: "Insufficient stock at the source warehouse",
       });
     }
-    const newStockAtSourceWarehouse = currentStockAtSourceWarehouse - mutationQuantity;
+    // const newStockAtSourceWarehouse = currentStockAtSourceWarehouse - mutationQuantity;
+
+    const sourceWarehouseName = await Warehouse.findOne({
+      where: {
+        id: warehouseId,
+      },
+      attributes: ["id", "name"],
+      transaction: t,
+    });
+
+    const destinationWarehouseName = await Warehouse.findOne({
+      where: {
+        id: destinationWarehouseId,
+      },
+      attributes: ["id", "name"],
+      transaction: t,
+    });
 
     // create the mutation
     const mutation = await Mutation.create(
@@ -248,9 +400,12 @@ exports.createManualStockMutation = async (req, res) => {
         previousStock: currentStockAtSourceWarehouse,
         mutationType: "subtract",
         adminId,
-        stock: newStockAtSourceWarehouse,
+        stock: currentStockAtSourceWarehouse,
         status: "pending",
         isManual: true,
+        description: `Warehouse Admin mutation, ${sourceWarehouseName.name} -> ${destinationWarehouseName.name}`,
+        createdAt: date,
+        updatedAt: date,
       },
       { transaction: t }
     );
@@ -268,18 +423,22 @@ exports.createManualStockMutation = async (req, res) => {
         stock: mutation.stock,
         status: mutation.status,
         isManual: mutation.isManual,
+        description: mutation.description,
+        createdAt: mutation.createdAt,
+        updatedAt: mutation.updatedAt,
       },
       { transaction: t }
     );
 
+    await t.commit();
     res.status(200).json({
       ok: true,
       message: "Mutation created successfully",
-      detail: mutation,
+      detail: {
+        mutation,
+      },
       journal: mutationJournal,
     });
-
-    await t.commit();
   } catch (error) {
     await t.rollback();
     console.error("Error creating mutation:", error);
@@ -339,7 +498,9 @@ exports.processStockMutationByWarehouse = async (req, res) => {
       await mutation.save({ transaction: t });
     } else if (action === "cancel") {
       mutation.status = "cancelled";
+      updatedMutationJournal.status = "cancelled";
       await mutation.save({ transaction: t });
+      await updatedMutationJournal.save({ transaction: t });
       await t.commit();
       return res.status(200).json({
         ok: true,
@@ -371,10 +532,21 @@ exports.processStockMutationByWarehouse = async (req, res) => {
         transaction: t,
       });
 
+      // get warehouse name for description
+      const sourceWarehouseName = await Warehouse.findOne({
+        where: {
+          id: mutation.warehouseId,
+        },
+        attributes: ["id", "name"],
+        transaction: t,
+      });
+
       // check if the latest mutation exists and if there is enough stock at the source warehouse, also check if the stock is still equal to the mutation quantity
       if (findLatestMutationSourceWarehouse && findLatestMutationSourceWarehouse.stock >= mutation.mutationQuantity && findLatestMutationSourceWarehouse.stock === mutation.previousStock) {
-        // update latest pending mutation
+        // update latest pending mutation stock and status
+        const updatedStock = findLatestMutationSourceWarehouse.stock - mutation.mutationQuantity;
         mutation.status = "success";
+        mutation.stock = updatedStock;
         await mutation.save({ transaction: t });
 
         // get the latest mutation from the destination warehouse in order to update the stock
@@ -399,7 +571,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
           // create a new mutation at destination warehouse
           const updatedMutation = await Mutation.create({
             productId,
-            warehouseId: mutation.warehouseId,
+            warehouseId: mutation.destinationWarehouseId,
             destinationWarehouseId: mutation.destinationWarehouseId,
             mutationQuantity: stockForDestinationWarehouse,
             previousStock: existingDestinationWarehouseMutation.stock,
@@ -408,6 +580,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
             stock: updatedStock,
             status: "success",
             isManual: true,
+            description: `Warehouse Admin mutation, Get new stock from ${sourceWarehouseName.name}`,
           });
 
           // update the latest status in the mutation journal
@@ -416,6 +589,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
 
           // create a new mutation journal at destination warehouse
           const newMutationForDestinationWarehouse = await Journal.create({
+            mutationId: updatedMutation.id,
             productId,
             warehouseId: mutation.destinationWarehouseId,
             destinationWarehouseId: mutation.destinationWarehouseId,
@@ -425,6 +599,8 @@ exports.processStockMutationByWarehouse = async (req, res) => {
             adminId: mutation.adminId,
             stock: updatedStock,
             status: "success",
+            isManual: true,
+            description: `Warehouse Admin mutation, Get new stock from ${sourceWarehouseName.name}`,
           });
 
           await t.commit();
@@ -447,6 +623,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
             stock: stockForDestinationWarehouse,
             status: "success",
             isManual: true,
+            description: `Warehouse Admin mutation, Get new stock from ${sourceWarehouseName.name}`,
           });
 
           // update the latest status mutation journal
@@ -465,6 +642,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
             stock: stockForDestinationWarehouse,
             status: "success",
             isManual: true,
+            description: `Warehouse Admin mutation, Get new stock from ${sourceWarehouseName.name}`,
           });
 
           await t.commit();
@@ -477,6 +655,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
         }
       } else {
         mutation.status = "failed";
+        mutation.description = `Not enough stock at ${sourceWarehouseName.name} or stock is already not equal to previous stock`;
         await mutation.save({ transaction: t });
 
         // update the latest mutation journal
@@ -487,7 +666,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
         await t.commit();
         return res.status(400).json({
           ok: false,
-          message: "Failed, not enough stock at source warehouse or stock is already not equal to previous stock",
+          message: `Failed, not enough stock at ${sourceWarehouseName.name} or stock is already not equal to previous stock`,
           detail: findLatestMutationSourceWarehouse,
         });
       }

@@ -25,6 +25,7 @@ module.exports = (sequelize, DataTypes) => {
       stock: DataTypes.INTEGER,
       status: DataTypes.ENUM("pending", "approved", "processing", "success", "cancelled", "failed"),
       isManual: DataTypes.BOOLEAN,
+      description: DataTypes.STRING,
     },
     {
       sequelize,
