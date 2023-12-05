@@ -10,9 +10,9 @@ function OrderList({ orders, fetchOrders }) {
           <div className="flex flex-col md:flex-row justify-between mb-4">
             <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
               <div className="text-lg font-semibold text-gray-700">{Order.status}</div>
-              <div className='flex flex-row md:flex-row md:items-center space-y-0 md:space-y-0 md:space-x-4'>
+              <div className='flex flex-row md:flex-row md:items-center space-y-0 md:space-y-0 md:space-x-4 justify-between'>
                 <div className="text-sm text-gray-500">{Order.warehouse.warehouseName}</div>
-                <div className="text-sm text-gray-500">{new Date(createdAt).toLocaleString()}</div>
+                <div className="text-sm text-gray-500">{new Date(createdAt).toLocaleDateString()}</div>
               </div>
             </div>
             <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm">
