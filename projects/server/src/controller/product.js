@@ -2,7 +2,7 @@ const { Product, ProductImage, ProductCategory, Category, Mutation, Warehouse, s
 const { Op } = require("sequelize");
 
 exports.handleAddProduct = async (req, res) => {
-  const { productName, productPrice, productDescription, productGender, productMainCategory, productSubCategory } = req.body;
+  const { productName, productPrice, productDescription, productGender, productMainCategory, productSubCategory, productMaterial, productLining, productWaterproofRating, height, lenght, width, weight } = req.body;
 
   try {
     const existingProduct = await Product.findOne({
@@ -38,6 +38,13 @@ exports.handleAddProduct = async (req, res) => {
       price: productPrice,
       description: productDescription,
       gender: gender,
+      height: height,
+      lenght: lenght,
+      width: width,
+      weight: weight,
+      material: productMaterial,
+      lining: productLining,
+      waterproofRating: productWaterproofRating,
     });
 
     console.log(req.files);
@@ -467,7 +474,6 @@ exports.handleArchiveProduct = async (req, res) => {
       product: product, // You can customize the response as needed
     });
   } catch (error) {
-
     console.error("Error archiving product:", error);
     res.status(500).json({
       ok: false,
@@ -812,7 +818,7 @@ exports.handleGetAllProducts = async (req, res) => {
     }
 
     // Retrieve products without pagination to get the total count
-  
+
     // Query to fetch products with primary details
     const productsWithMutations = await Product.findAll({
       where: filter.where,

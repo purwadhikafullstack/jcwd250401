@@ -93,7 +93,6 @@ function CartSection() {
   useEffect(() => {
     fetchCarts();
   }, [fetchCarts]);
-  
   const formatToRupiah = (price) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -113,7 +112,7 @@ function CartSection() {
     <div className="w-full">
       <span className="text-2xl font-bold"> Shopping Cart</span>
       <div className="flex lg:flex-row flex-col justify-between">
-        <div className="flex mt-8 flex-col space-y-4 lg:mr-2 h-96 lg:h-64 overflow-y-auto overflow-x-hidden ">
+        <div className="flex mt-8 flex-col space-y-4 lg:mr-2 h-96 lg:h-[60vh] overflow-y-auto overflow-x-hidden ">
           {carts.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full">
               <p className="text-gray-600 text-lg">No items found.</p>
@@ -134,7 +133,7 @@ function CartSection() {
                     <PiTrash size={24} className="mr-2  cursor-pointer" onClick={() => toggleDeleteModal(cart)} />
                   </div>
 
-                  <span className="text-sm mt-1">SKU: {cart.Product.sku}</span>
+                  <span className="text-sm mt-1">SKU: {cart.Product.sku} ({cart.Product.gender})</span>
                   <span className="text-sm mt-1">Size: All Size</span>
                   <span className="text-sm font-bold mt-2">{formatToRupiah(cart.Product.price)}</span>
                   <div className="flex flex-col mt-2 space-y-2">

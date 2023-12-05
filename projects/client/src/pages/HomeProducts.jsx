@@ -3,10 +3,10 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import ProductNavPage from "../components/ProductNavPage";
 import ProductGrid from "../components/productGrid";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "@chakra-ui/react";
-import Breadcrumbs from "../components/Breadcrumbs";
 import getProductsUser from "../api/products/getProductsUser";
 import { toast } from "sonner";
 import ProductCard from "../components/productCard";
+import ProductsBreadcrumbs from './../components/ProductsBreadcrumbs';
 
 const HomeProducts = () => {
   const { gender, mainCategory, subCategory, productName } = useParams();
@@ -14,7 +14,7 @@ const HomeProducts = () => {
   return (
     <div className="w-full">
       <div className="px-6 lg:px-32 pt-4">
-        <Breadcrumbs />
+        <ProductsBreadcrumbs />
       </div>
       {!productName ? (
         <div className="px-6 lg:px-32 flex flex-col lg:flex-row justify-between">
