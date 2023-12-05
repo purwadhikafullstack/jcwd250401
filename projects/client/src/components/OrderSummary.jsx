@@ -78,7 +78,7 @@ function OrderSummary() {
   };
 
   return (
-    <div className="mt-2 lg:mt-4 p-6 flex flex-col h-62 border rounded-md lg:w-[30vw]">
+    <div className="mt-2 lg:mt-4 p-6 flex flex-col h-62 border rounded-md lg:w-[30vw] bg-white">
       <div className="flex-col space-y-2">
         <span className="font-bold text-2xl">Order Summary {totalQuantity} item(s) </span>
         <div className="flex justify-between">
