@@ -7,7 +7,7 @@ import getUserAddress from '../api/Address/getUserAddress';
 import { toast } from 'sonner';
 import { PiClipboard } from 'react-icons/pi';
 import { useDispatch, useSelector } from 'react-redux';
-import { EditAddressModal } from './EditAddressModal';
+import AddressListModal from './UserAddressModal';
 
 const DeliveryOptions = () => {
   const username = useSelector((state) => state?.account?.profile?.data?.profile?.username);
@@ -30,6 +30,14 @@ const DeliveryOptions = () => {
       toast.error(error.message);
     }
   }, [username]);
+
+  const handleEditModalOpen = () => {
+    setIsModalEditOpen(true);
+  }
+
+  const handleEditModalClose = () => {
+    setIsModalEditOpen(false);
+  }
 
   const handleModalOpen = () => {
     setIsModalOpen(true);
@@ -105,7 +113,7 @@ const DeliveryOptions = () => {
                 }`}</p>
               </div>
               <div className="w-[30%] flex justify-end">
-                <button className="w-[10vw] md:w-[10vw] lg:w-[10vw] h-[5vh] border border-gray-300 hover:bg-gray-100 rounded-md font-semibold">
+                <button className="w-[10vw] md:w-[10vw] lg:w-[10vw] h-[5vh] border border-gray-300 hover:bg-gray-100 rounded-md font-semibold" onClick={handleEditModalOpen}>
                   Edit
                 </button>
               </div>
@@ -127,6 +135,7 @@ const DeliveryOptions = () => {
         </button>
       </div>
       <AddAddressModal isOpen={isModalOpen} onClose={handleModalClose} />
+      <AddressListModal isOpen={isModalEditOpen} onClose={handleEditModalClose} username={username} />
     </div>
   );
 };
