@@ -42,7 +42,7 @@ const AddressListModal = ({ isOpen, onClose, username, handleSetDefault }) => {
         <ModalContent>
           <ModalHeader py={0}>
             <div className="px-4 lg:mt-7 mt-10 lg:mb-0 mb-4">
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Product</h3>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">User Addresses </h3>
             </div>
           </ModalHeader>
           <ModalCloseButton />
@@ -90,7 +90,7 @@ const AddressListModal = ({ isOpen, onClose, username, handleSetDefault }) => {
                               </div>
                               <div className="flex lg:flex-col items-center justify-between w-[100%] gap-2 mt-2">
                                 <div className="flex lg:flex-col gap-2">
-                                  <button className="w-[25vw] md:w-[15vw] lg:w-[12vw] h-[5vh] border border-gray-300 hover:bg-gray-100 rounded-md font-semibold" onClick={() => handleDefaultAddressModal(address)}>
+                                  <button className="bg-white enabled:hover:bg-gray-100 text-black border border-gray-300 font-semibold py-2 px-4 rounded" onClick={() => handleDefaultAddressModal(address)}>
                                     Set As Default
                                   </button>
                                 </div>
