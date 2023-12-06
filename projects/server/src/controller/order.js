@@ -1,5 +1,38 @@
 const { Op } = require("sequelize");
+const axios = require("axios");
 const { Order, OrderItem, Product, ProductImage, Warehouse } = require("../models");
+
+// Config default axios with rajaongkir
+axios.defaults.baseURL = "https://api.rajaongkir.com/starter";
+axios.defaults.headers.common["key"] = process.env.RAJAONGKIR_APIKEY;
+axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
+
+exports.getOrderCost = async (req, res) => {
+  try {
+    // Get data from request query params
+    const { origin, destination, weight, courier } = req.query;
+
+    const response = await axios.post("/cost", {
+      origin,
+      destination,
+      weight,
+      courier,
+    });
+
+    return res.status(200).json({
+      ok: true,
+      message: "Get cost successfully",
+      detail: response.data.rajaongkir.results,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+      detail: String(error),
+    });
+  }
+};
 
 exports.paymentProof = async (req, res) => {
   const { id, userId } = req.params;
