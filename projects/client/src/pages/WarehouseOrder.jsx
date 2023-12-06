@@ -35,8 +35,6 @@ export const WarehouseOrder = () => {
   const [sort, setSort] = useState(null);
   const [order, setOrder] = useState("");
   const [page, setPage] = useState(1);
-  console.log(mutations);
-  console.log(warehouseList);
   const months = [
     {
       id: 1,
@@ -91,7 +89,7 @@ export const WarehouseOrder = () => {
   const navRefs = useRef([]); // Refs to store references to each navigation item
   const navigate = useNavigate();
   const size = 2;
-  const debouncedSearchInput = useDebounceValue(searchInput, 300);
+  const debouncedSearchInput = useDebounceValue(searchInput, 500);
 
   const handleSearchInputChange = (e) => setSearchInput(e.target.value);
   const handleSelectComponent = (nav) => {
@@ -213,7 +211,7 @@ export const WarehouseOrder = () => {
               <InputLeftElement pointerEvents="none">
                 <SearchIcon color="#40403F" />
               </InputLeftElement>
-              <Input type="text" placeholder="Find product id" value={searchInput} onChange={handleSearchInputChange} bgColor={"white"} borderColor={"#40403F"} w={{ base: "100%", xl: "300px" }} _hover={{ borderColor: "#40403F" }} />
+              <Input type="number" placeholder="Find product id" value={searchInput} onChange={handleSearchInputChange} bgColor={"white"} borderColor={"#40403F"} w={{ base: "100%", xl: "300px" }} _hover={{ borderColor: "#40403F" }} />
             </InputGroup>
             <button className="text-white lg:w-[20vw] bg-[#40403F] p-2.5 rounded-lg hover:opacity-0.8 font-semibold" onClick={() => setRequestStockModal(!requestStockModal)}>
               Request Stock

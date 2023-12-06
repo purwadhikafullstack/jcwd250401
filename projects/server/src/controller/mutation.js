@@ -168,7 +168,7 @@ exports.getAllMutationsJournal = async (req, res) => {
     // whereCondition.status = "pending";
 
     if (search) {
-      whereCondition[Op.or] = [{ productId: { [Op.like]: `%${search}%` } }];
+      whereCondition.productId = { [Op.like]: `%${search}%` };
     }
 
     if (warehouseId) {

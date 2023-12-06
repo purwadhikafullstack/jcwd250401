@@ -57,7 +57,6 @@ const accountSlices = createSlice({
     },
     updateProfileAdmin(state, action) {
       state.adminProfile = action.payload;
-      window.localStorage.setItem("adminProfile", JSON.stringify(action.payload));
     },
     setIsWarehouseAdmin(state, action) {
       state.isWarehouseAdmin = action.payload;
