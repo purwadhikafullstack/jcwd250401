@@ -17,6 +17,7 @@ import getProfile from "../api/profile/getProfile";
 import { PiHeart, PiMagnifyingGlass, PiShoppingCart } from "react-icons/pi";
 import getCart from "../api/cart/getCart";
 import { setCartItems } from "../slices/cartSlices";
+import api from "../api";
 
 function Navigationbar() {
   const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -24,28 +25,98 @@ function Navigationbar() {
   const [isDropdownTransitioning, setIsDropdownTransitioning] = useState(false);
   const categories = ["NEW IN", "MEN", "WOMEN", "BAGS", "ACCESSORIES"];
   const newIn = ["New Arrivals", "Best Sellers", "Rains Essentials"];
-  const men = ["Jackets", "Tops", "Bottoms", "Accessories"];
-  const women = ["Jackets", "Tops", "Bottoms", "Accessories"];
-  const bags = ["Shop all bags", "New arrivals", "Texel travel series", "Color Story: Grey"];
-  const bagsSubCategory = ["All bags", "Backpacks", "Totes Bags", "Travel Bags", "Laptop Bags", "Crossbody & Bum bags", "Wash bags"];
-  const accessories = ["Caps", "Bags", "Accessories"];
+  const men = ["Jackets", "Tops", "Bottoms"];
+  const women = ["Jackets", "Tops", "Bottoms"];
   const accounts = ["Profile", "Address Book", "My Order", "Change Password"];
   const accountsDropdown = ["Profile", "Address Book", "My Order", "Change Password", "Search", "Favorites"];
   const dispatch = useDispatch();
   const auth = getAuth();
   const [userData, setUserData] = useState(null);
+  const updatedPhotoProfile = useSelector((state) => state?.account?.userPhotoProfile);
   const photoProfile = userData?.photoProfile;
   const navigate = useNavigate();
   const profile = JSON.parse(localStorage.getItem("profile"));
   const username = profile?.data?.profile?.username;
-  const isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
+  let isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
   const location = useLocation();
   const [isSearchBarVisible, setIsSearchBarVisible] = useState(false);
   const [carts, setCarts] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
-
+  const bags = ["Shop all bags", "New arrivals"];
+  const [bagsSubCategory, setBagsSubCategory] = useState([]);
+  const accessories = ["Shop all accessories", "New arrivals"];
+  const [accessoriesSubCategory, setAccessoriesSubCategory] = useState([]);
+  const [jacketsSubCategory, setJacketsSubCategory] = useState([]);
+  const [topsSubCategory, setTopsSubCategory] = useState([]);
+  const [bottomSubCategory, setBottomSubCategory] = useState([]);
   const cartItem = useSelector((state) => state.cart.items);
+  const [activeCategory, setActiveCategory] = useState(null);
+
+  const fetchCategoriesBags = useCallback(async () => {
+    try {
+      const response = await api.get(`/category/user/sub-categories?mainCategory=Bags`);
+      const categoryData = response.data.detail;
+      setBagsSubCategory(categoryData);
+      console.log(categoryData);
+    } catch (error) {
+      if (error?.response?.status === 404) {
+        setBagsSubCategory([]);
+      }
+    }
+  }, []);
+
+  const fetchCategoriesJackets = useCallback(async () => {
+    try {
+      const response = await api.get(`/category/user/sub-categories?mainCategory=Jackets`);
+      const categoryData = response.data.detail;
+      setJacketsSubCategory(categoryData);
+      console.log(categoryData);
+    } catch (error) {
+      if (error?.response?.status === 404) {
+        setJacketsSubCategory([]);
+      }
+    }
+  }, []);
+
+  const fetchCategoriesTops = useCallback(async () => {
+    try {
+      const response = await api.get(`/category/user/sub-categories?mainCategory=Tops`);
+      const categoryData = response.data.detail;
+      setTopsSubCategory(categoryData);
+      console.log(categoryData);
+    } catch (error) {
+      if (error?.response?.status === 404) {
+        setTopsSubCategory([]);
+      }
+    }
+  }, []);
+
+  const fetchCategoriesBottom = useCallback(async () => {
+    try {
+      const response = await api.get(`/category/user/sub-categories?mainCategory=Bottom`);
+      const categoryData = response.data.detail;
+      setBottomSubCategory(categoryData);
+      console.log(categoryData);
+    } catch (error) {
+      if (error?.response?.status === 404) {
+        setBottomSubCategory([]);
+      }
+    }
+  }, []);
+
+  const fetchCategoriesAccessories = useCallback(async () => {
+    try {
+      const response = await api.get(`/category/user/sub-categories?mainCategory=Accessories`);
+      const categoryData = response.data.detail;
+      setAccessoriesSubCategory(categoryData);
+      console.log(categoryData);
+    } catch (error) {
+      if (error?.response?.status === 404) {
+        setAccessoriesSubCategory([]);
+      }
+    }
+  }, []);
 
   const fetchCarts = useCallback(async () => {
     try {
@@ -58,9 +129,11 @@ function Navigationbar() {
         setCarts([]);
         dispatch(setCartItems(0));
       } else if (error.response && error.response.status === 401) {
-        dispatch(showLoginModal());
+        setCarts([]);
+        dispatch(setCartItems(0));
       } else if (error.response && error.response.status === 403) {
-        dispatch(showLoginModal());
+        setCarts([]);
+        dispatch(setCartItems(0));
       }
     }
   }, [isLoggedIn, cartItem]);
@@ -80,8 +153,12 @@ function Navigationbar() {
 
   useEffect(() => {
     fetchCarts();
-  }, [fetchCarts]);
-
+    fetchCategoriesJackets();
+    fetchCategoriesBags();
+    fetchCategoriesTops();
+    fetchCategoriesBottom();
+    fetchCategoriesAccessories();
+  }, [fetchCarts, fetchCategoriesJackets, fetchCategoriesTops, fetchCategoriesBottom, fetchCategoriesBags, fetchCategoriesAccessories, cartItem]);
 
   const handleSearchIconEnter = () => {
     setIsSearchBarVisible(!isSearchBarVisible);
@@ -97,16 +174,17 @@ function Navigationbar() {
 
   const handleIconClick = () => setDropdownVisible(!dropdownVisible);
 
-  const handleSubcategoryClick = (subcategory) => {
+  const handleSubcategoryClick = (category) => {
     setIsDropdownTransitioning(true);
-    setDropdownSubcategory((prevSubcategory) => (prevSubcategory === subcategory ? null : subcategory));
+    setDropdownSubcategory((prevSubcategory) => (prevSubcategory === category ? null : category));
+    setActiveCategory(category);
   };
+
   const handleLogout = () => {
     signOut(auth)
       .then(() => {
         setDropdownVisible(false);
         dispatch(logout());
-
         navigate(location.pathname);
       })
       .catch((error) => {
@@ -115,24 +193,28 @@ function Navigationbar() {
   };
 
   const getUserData = async () => {
-    try {
+    if (isLoggedIn) {
+      try {
         const response = await getProfile({ username });
         setUserData(response.detail);
         dispatch(setUsername(response.detail.username));
-    } catch (error) {
-      if (error.response.status === 404 || error.response.status === 500 || error.response.status === 401 || error.response.status === 403) {
-        toast.error(error.response.data.message);
-        setTimeout(() => {
-          handleLogout();
-          navigate(location.pathname);
-        }, 1000);
+      } catch (error) {
+        if (error.response.status === 404 || error.response.status === 500 || error.response.status === 401 || error.response.status === 403) {
+          toast.error(error.response.data.message);
+          setTimeout(() => {
+            isLoggedIn = false;
+            dispatch(logout());
+            handleLogout();
+            navigate(location.pathname);
+          }, 1000);
+        }
       }
     }
   };
 
   useEffect(() => {
     getUserData();
-  }, [username, photoProfile]);
+  }, [username, updatedPhotoProfile]);
 
   useEffect(() => {
     const resetTransition = () => {
@@ -161,37 +243,158 @@ function Navigationbar() {
                 </Link>
               );
             };
-
             return (
               <>
-                <span key={index} className="text-md font-semibold cursor-pointer underline-on-hover " onMouseEnter={() => dropdownSubcategory !== category && handleSubcategoryClick(category)}>
+                <span
+                  key={index}
+                  className={`text-md font-semibold cursor-pointer underline-on-hover ${activeCategory === category ? "active" : ""}`}
+                  onMouseEnter={() => dropdownSubcategory !== category && handleSubcategoryClick(category)}
+                >
                   {category}
                 </span>
 
                 {dropdownSubcategory === category && (
                   <div
                     className={`absolute top-20 w-full right-0 h-50 bg-white ring-1 ring-black ring-opacity-5 z-10 flex-wrap transition-dropdown ${isDropdownTransitioning ? "dropdown-hidden" : "dropdown-visible"}`}
-                    onMouseLeave={() => setDropdownSubcategory(null)}
+                    onMouseLeave={() => {
+                      setDropdownSubcategory(null);
+                      setActiveCategory(null);
+                    }}
                   >
-                    <div className="flex flex-row h-full px-44">
+                    <div className="flex flex-row h-full px-28">
                       <div className="flex flex-col flex-wrap">
                         {(() => {
                           switch (category) {
                             case "NEW IN":
                               return newIn.map(renderSubcategory);
                             case "MEN":
-                              return men.map(renderSubcategory);
+                              return (
+                                <div className="flex space-x-16 ">
+                                  <div className="mr-8 flex flex-col font-bold font-sagoe">{men.map(renderSubcategory)}</div>
+                                  <div className="flex flex-col">
+                                    <Link to={`/products/men/jackets`}>
+                                      <span className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm font-bold">All Jackets</span>
+                                    </Link>
+                                    {jacketsSubCategory.map((subCategory) => {
+                                      const joinedSubcategory = subCategory.name.toLowerCase().replace(/\s/g, "-");
+                                      return (
+                                        <Link to={`/products/men/jackets/${joinedSubcategory}`} key={subCategory.id}>
+                                          <span className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm">{subCategory.name}</span>
+                                        </Link>
+                                      );
+                                    })}
+                                  </div>
+                                  <div className="flex flex-col">
+                                    <Link to={`/products/men/tops`}>
+                                      <span className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm font-bold">All Tops</span>
+                                    </Link>
+                                    {topsSubCategory.map((subCategory) => {
+                                      const joinedSubcategory = subCategory.name.toLowerCase().replace(/\s/g, "-");
+                                      return (
+                                        <Link to={`/products/men/tops/${joinedSubcategory}`} key={subCategory.id}>
+                                          <span className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm">{subCategory.name}</span>
+                                        </Link>
+                                      );
+                                    })}
+                                  </div>
+                                  <div className="flex flex-col">
+                                    <Link to={`/products/men/bottom`}>
+                                      <span className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm font-bold">All Bottom</span>
+                                    </Link>
+                                    {bottomSubCategory.map((subCategory) => {
+                                      const joinedSubcategory = subCategory.name.toLowerCase().replace(/\s/g, "-");
+                                      return (
+                                        <Link to={`/products/men/bottom/${joinedSubcategory}`} key={subCategory.id}>
+                                          <span className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm">{subCategory.name}</span>
+                                        </Link>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              );
                             case "WOMEN":
-                              return women.map(renderSubcategory);
+                              return (
+                                <div className="flex space-x-16 ">
+                                  <div className="mr-8 font-bold font-sagoe">{women.map(renderSubcategory)}</div>
+                                  <div className="flex flex-col">
+                                    <Link to={`/products/women/jackets`}>
+                                      <span className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm font-bold">All Jackets</span>
+                                    </Link>
+                                    {jacketsSubCategory.map((subCategory) => {
+                                      const joinedSubcategory = subCategory.name.toLowerCase().replace(/\s/g, "-");
+                                      return (
+                                        <Link to={`/products/women/jackets/${joinedSubcategory}`} key={subCategory.id}>
+                                          <span className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm">{subCategory.name}</span>
+                                        </Link>
+                                      );
+                                    })}
+                                  </div>
+                                  <div className="flex flex-col">
+                                    <Link to={`/products/women/tops`}>
+                                      <span className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm font-bold">All Tops</span>
+                                    </Link>
+                                    {topsSubCategory.map((subCategory) => {
+                                      const joinedSubcategory = subCategory.name.toLowerCase().replace(/\s/g, "-");
+                                      return (
+                                        <Link to={`/products/women/tops/${joinedSubcategory}`} key={subCategory.id}>
+                                          <span className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm">{subCategory.name}</span>
+                                        </Link>
+                                      );
+                                    })}
+                                  </div>
+                                  <div className="flex flex-col">
+                                    <Link to={`/products/women/bottom`}>
+                                      <span className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm font-bold">All Bottom</span>
+                                    </Link>
+                                    {bottomSubCategory.map((subCategory) => {
+                                      const joinedSubcategory = subCategory.name.toLowerCase().replace(/\s/g, "-");
+                                      return (
+                                        <Link to={`/products/women/bottom/${joinedSubcategory}`} key={subCategory.id}>
+                                          <span className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm">{subCategory.name}</span>
+                                        </Link>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              );
                             case "BAGS":
                               return (
                                 <div className="flex justify-center">
-                                  <div className="mr-[4vw] font-bold font-sagoe">{bags.map(renderSubcategory)}</div>
-                                  <div>{bagsSubCategory.map(renderSubcategory)}</div>
+                                  <div className="mr-16 font-bold font-sagoe">{bags.map(renderSubcategory)}</div>
+                                  <div className="flex flex-col">
+                                    <Link to={`/products/unisex/bags`}>
+                                      <p className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm font-bold">All Bags</p>
+                                    </Link>
+                                    {bagsSubCategory.map((subCategory) => {
+                                      const joinedSubcategory = subCategory.name.toLowerCase().replace(/\s/g, "-");
+                                      return (
+                                        <Link to={`/products/unisex/bags/${joinedSubcategory}`} key={subCategory.id}>
+                                          <p className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm">{subCategory.name}</p>
+                                        </Link>
+                                      );
+                                    })}
+                                  </div>
                                 </div>
                               );
                             case "ACCESSORIES":
-                              return accessories.map(renderSubcategory);
+                              return (
+                                <div className="flex justify-center">
+                                  <div className="mr-16 font-bold font-sagoe">{accessories.map(renderSubcategory)}</div>
+                                  <div className="flex flex-col">
+                                    <Link to={`/products/unisex/accessories`}>
+                                      <p className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm font-bold">All Accessories</p>
+                                    </Link>
+                                    {accessoriesSubCategory.map((subCategory) => {
+                                      const joinedSubcategory = subCategory.name.toLowerCase().replace(/\s/g, "-");
+                                      return (
+                                        <Link to={`/products/unisex/accessories/${joinedSubcategory}`} key={subCategory.id}>
+                                          <p className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm">{subCategory.name}</p>
+                                        </Link>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              );
                             default:
                               return null;
                           }

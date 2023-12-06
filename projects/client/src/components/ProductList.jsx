@@ -14,7 +14,7 @@ import { EditCategoryModal } from "./EditCategoryModal";
 import ArchiveProductModal from "./ArchiveProductModal";
 import DeleteProductModal from "./DeleteProductModal";
 import { logoutAdmin } from "../slices/accountSlices";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import getProducts from "../api/products/getProducts";
 import { UpdateStockModal } from "./UpdateStockModal";
@@ -43,9 +43,18 @@ function ProductList() {
   const isWarehouseAdmin = useSelector((state) => state.account.isWarehouseAdmin);
   const newProducts = useSelector((state) => state.product?.productList);
   const categoryLists = useSelector((state) => state?.category?.categoryLists);
+  const location = useLocation();
 
   const handleSearchInputChange = _debounce((e) => {
     setSearchInput(e.target.value);
+
+    const queryParams = new URLSearchParams(location.search);
+    queryParams.set("search", e.target.value);
+
+    navigate({
+      pathname: location.pathname,
+      search: queryParams.toString(),
+    });
   }, 600); // 600 milliseconds debounce time (adjust as needed)
 
   const formatToRupiah = (number) => {
@@ -124,36 +133,123 @@ function ProductList() {
     fetchCategories();
   }, [fetchProducts, fetchCategories]);
 
+  useEffect(() => {
+    // Parse the URL to get the sort and page parameters
+    const queryParams = new URLSearchParams(location.search);
+    const sortParam = queryParams.get("sort");
+    const pageParam = queryParams.get("page");
+    const categoryParam = queryParams.get("category");
+    const searchParam = queryParams.get("search");
+    const stockParam = queryParams.get("stock");
+    const genderParam = queryParams.get("gender");
+  
+    // Check if the sort parameter is present and update the state
+    if (sortParam) {
+      setSortCriteria(sortParam);
+    }
+  
+    // Check if the page parameter is present and update the state
+    if (pageParam) {
+      setCurrentPage(parseInt(pageParam, 10));
+    }
+  
+    // Check if the category parameter is present and update the state
+    if (categoryParam === "all") {
+      setSelectedCategory("All");
+    } else if (categoryParam) {
+      // Capitalize the first letter of each word
+      const formattedCategory = categoryParam.replace(/\b\w/g, match => match.toUpperCase());
+      setSelectedCategory(formattedCategory);
+    }
+
+    // Check if the search parameter is present and update the state
+    if (searchParam) {
+      setSearchInput(searchParam);
+    }
+  
+    // Check if the stock parameter is present and update the state
+    if (stockParam) {
+      setSelectedFilterStock(stockParam);
+    }
+  
+    // Check if the gender parameter is present and update the state
+    if (genderParam) {
+      setSelectedFilter(genderParam);
+    }
+  
+    // Fetch products based on the updated state
+    fetchProducts();
+  }, [location.search]);
+
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
     }
+    const queryParams = new URLSearchParams(location.search);
+    queryParams.set("page", newPage);
+
+    navigate({
+      pathname: location.pathname,
+      search: queryParams.toString(),
+    });
   };
 
   const handleCategoryChange = (e) => {
-    const selectedCategory = e.target.value;
+    const selectedCategory = e.target.value.toLowerCase();
     setSelectedCategory(selectedCategory);
+
+    const queryParams = new URLSearchParams(location.search);
+    queryParams.set("category", selectedCategory);
+
+    navigate({
+      pathname: location.pathname,
+      search: queryParams.toString(),
+    });
   };
 
   const handleSortChange = (event) => {
     const selectedSortValue = event.target.value;
     setSortCriteria(selectedSortValue);
+
+    const queryParams = new URLSearchParams(location.search);
+    queryParams.set("sort", selectedSortValue);
+
+    navigate({
+      pathname: location.pathname,
+      search: queryParams.toString(),
+    });
   };
 
   const handleFilterChange = (event) => {
     const selectedFilterValue = event.target.value;
     setSelectedFilter(selectedFilterValue);
+
+    const queryParams = new URLSearchParams(location.search);
+    queryParams.set("gender", selectedFilterValue);
+
+    navigate({
+      pathname: location.pathname,
+      search: queryParams.toString(),
+    });
   };
 
   const handleFilterStockChange = (event) => {
     const selectedFilterStockValue = event.target.value;
     setSelectedFilterStock(selectedFilterStockValue);
+
+    const queryParams = new URLSearchParams(location.search);
+    queryParams.set("stock", selectedFilterStockValue);
+
+    navigate({
+      pathname: location.pathname,
+      search: queryParams.toString(),
+    });
   };
 
   const stockFilter = [
     { label: "All Stock", value: "all" },
-    { label: "In Stock", value: "inStock" },
-    { label: "Out of Stock", value: "outOfStock" },
+    { label: "In Stock", value: "in-stock" },
+    { label: "Out of Stock", value: "out-of-stock" },
   ];
 
   const sortingOptions = [
@@ -166,10 +262,10 @@ function ProductList() {
   ];
 
   const filterOptions = [
-    { label: "All Genders", value: "All Genders" },
-    { label: "Men", value: "Men" },
-    { label: "Women", value: "Women" },
-    { label: "Unisex", value: "Unisex" },
+    { label: "All Genders", value: "all genders" },
+    { label: "Men", value: "men" },
+    { label: "Women", value: "women" },
+    { label: "Unisex", value: "unisex" },
   ];
 
   const sortingProduct = [
@@ -239,12 +335,14 @@ function ProductList() {
               className="pl-10 pr-3 py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent"
               placeholder="Search by product or SKU"
               onChange={handleSearchInputChange}
+              value={searchInput}
             />
           </div>
         </div>
         <div className="flex gap-4 w-full">
           <div className="w-full">
-            <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" onChange={handleFilterStockChange}>
+            <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" onChange={handleFilterStockChange}
+            value={selectedFilterStock}>
               <option value="" disabled className="text-gray-400">
                 Stock
               </option>
@@ -256,7 +354,8 @@ function ProductList() {
             </select>
           </div>
           <div className="w-full">
-            <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent " onChange={handleFilterChange}>
+            <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" onChange={handleFilterChange}
+            value={selectedFilter}>
               <option value="" disabled className="text-gray-400">
                 Gender
               </option>
@@ -268,7 +367,8 @@ function ProductList() {
             </select>
           </div>
           <div className="w-full">
-            <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" onChange={handleCategoryChange}>
+            <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" onChange={handleCategoryChange}
+            value={selectedCategory}>
               <option value="" disabled className="text-gray-400">
                 Category
               </option>
@@ -295,7 +395,8 @@ function ProductList() {
           </div>
 
           <div className="w-full">
-            <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" onChange={handleSortChange}>
+            <select className="py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent" onChange={handleSortChange}
+            value={sortCriteria}>
               <option value="" disabled className="text-gray-400">
                 Sort
               </option>
@@ -410,12 +511,12 @@ function ProductList() {
               </div>
             </div>
             <div className="hidden lg:block h-[100px] w-[100px]">
-                {product.totalStockAllWarehouses !== 0 ? (
-                  <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" />
-                ) : (
-                  <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" style={{ filter: "grayscale(100%)" }} />
-                )}
-              </div>
+              {product.totalStockAllWarehouses !== 0 ? (
+                <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" />
+              ) : (
+                <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" style={{ filter: "grayscale(100%)" }} />
+              )}
+            </div>
 
             <div className="flex w-60 flex-col">
               {product.totalStockAllWarehouses !== 0 ? <span className="font-bold">{product.name}</span> : <span className="font-bold">(Out of stock) {product.name}</span>}

@@ -8,7 +8,6 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Add the underline effect to links with the .underline-on-hover class */
 .underline-on-hover {
   text-decoration: none;
   position: relative;
@@ -40,7 +39,13 @@ html {
 
 .underline-on-hover:hover::before,
 .underline-on-hover:hover::after {
-  width: 80%;
+  width: 90%;
+}
+
+/* New class to maintain the width after hover */
+.underline-on-hover.active::before,
+.underline-on-hover.active::after {
+  width: 90%;
 }
 
 

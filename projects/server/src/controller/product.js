@@ -912,9 +912,9 @@ exports.handleGetAllProducts = async (req, res) => {
 
 // Helper function to filter products based on stock status
 const filterProductsByStock = (products, stockFilter) => {
-  if (stockFilter === "inStock") {
+  if (stockFilter === "in-stock") {
     return products.filter((product) => product.totalStockAllWarehouses > 0);
-  } else if (stockFilter === "outOfStock") {
+  } else if (stockFilter === "out-of-stock") {
     return products.filter((product) => product.totalStockAllWarehouses === 0);
   } else {
     return products; // Return all products if no stock filter is specified
