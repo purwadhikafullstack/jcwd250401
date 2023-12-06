@@ -1,5 +1,5 @@
 const { Op, literal } = require("sequelize");
-const { Mutation, Product, Warehouse, Admin, ProductImage, Category, sequelize, Journal } = require("../models");
+const { Mutation, Product, Warehouse, Admin, ProductImage, Category, sequelize, Journal, OrderItem, Order,  WarehouseAddress } = require("../models");
 
 exports.getTotalStockByWarehouseProductId = async (req, res) => {
   const { warehouseId, productId } = req.params;
@@ -100,54 +100,6 @@ exports.getAllMutations = async (req, res) => {
       ok: true,
       message: "Mutations retrieved successfully",
       detail: mutations,
-    });
-  } catch (error) {
-    console.error("Error retrieving mutation:", error);
-    res.status(500).json({
-      ok: false,
-      message: "Internal server error",
-    });
-  }
-};
-
-exports.getPendingMutation = async (req, res) => {
-  try {
-    const pendingMutations = await Mutation.findAll({
-      where: {
-        status: "pending",
-      },
-      order: [["createdAt", "DESC"]],
-      include: [
-        {
-          model: Product,
-          attributes: ["id", "name"],
-          include: [
-            {
-              model: Category,
-              as: "Categories",
-              attributes: ["id", "name"],
-            },
-            {
-              model: ProductImage,
-              as: "productImages",
-              attributes: ["id", "productId", "imageUrl"],
-            },
-          ],
-        },
-      ],
-    });
-
-    if (!pendingMutations || pendingMutations.length === 0) {
-      return res.status(404).json({
-        ok: false,
-        message: "No pending mutations found!",
-      });
-    }
-
-    res.status(200).json({
-      ok: true,
-      message: "Pending Mutations retrieved successfully",
-      detail: pendingMutations,
     });
   } catch (error) {
     console.error("Error retrieving mutation:", error);
@@ -294,7 +246,6 @@ exports.createManualStockMutation = async (req, res) => {
   let { mutationQuantity } = req.body;
   const t = await sequelize.transaction();
   mutationQuantity = parseInt(mutationQuantity);
-  console.log(adminId, warehouseId, destinationWarehouseId, productId, date, mutationQuantity);
 
   try {
     if (!adminId || !warehouseId || !destinationWarehouseId || !productId || !mutationQuantity) {
@@ -372,7 +323,6 @@ exports.createManualStockMutation = async (req, res) => {
         message: "Insufficient stock at the source warehouse",
       });
     }
-    // const newStockAtSourceWarehouse = currentStockAtSourceWarehouse - mutationQuantity;
 
     const sourceWarehouseName = await Warehouse.findOne({
       where: {
@@ -571,7 +521,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
           // create a new mutation at destination warehouse
           const updatedMutation = await Mutation.create({
             productId,
-            warehouseId: mutation.destinationWarehouseId,
+            warehouseId: mutation.warehouseId,
             destinationWarehouseId: mutation.destinationWarehouseId,
             mutationQuantity: stockForDestinationWarehouse,
             previousStock: existingDestinationWarehouseMutation.stock,
@@ -591,7 +541,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
           const newMutationForDestinationWarehouse = await Journal.create({
             mutationId: updatedMutation.id,
             productId,
-            warehouseId: mutation.destinationWarehouseId,
+            warehouseId: mutation.warehouseId,
             destinationWarehouseId: mutation.destinationWarehouseId,
             mutationQuantity: stockForDestinationWarehouse,
             previousStock: existingDestinationWarehouseMutation.stock,
@@ -614,7 +564,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
           // create a new mutation at destination warehouse
           const updatedMutation = await Mutation.create({
             productId,
-            warehouseId: mutation.destinationWarehouseId,
+            warehouseId: mutation.warehouseId,
             destinationWarehouseId: mutation.destinationWarehouseId,
             mutationQuantity: stockForDestinationWarehouse,
             previousStock: 0,
@@ -633,7 +583,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
           // create a new mutation journal at destination warehouse
           const newMutationForDestinationWarehouse = await Journal.create({
             productId,
-            warehouseId: mutation.destinationWarehouseId,
+            warehouseId: mutation.warehouseId,
             destinationWarehouseId: mutation.destinationWarehouseId,
             mutationQuantity: stockForDestinationWarehouse,
             previousStock: 0,
@@ -680,3 +630,219 @@ exports.processStockMutationByWarehouse = async (req, res) => {
     });
   }
 };
+
+exports.autoRequestStock = async (req, res) => {
+  const t = await sequelize.transaction();
+  const { productId, orderId } = req.body;
+  try {
+    // get the selected order to get Warehouse & quantity
+    const order = await OrderItem.findOne({
+      where: {
+        orderId,
+        productId,
+      },
+      include: [
+        {
+          model: Order,
+          include: [
+            {
+              model: Warehouse,
+              attributes: ["id", "name", "warehouseAddressId"],
+              include: [
+                {
+                  model: WarehouseAddress,
+                  attributes: ["street", "city", "province", "latitude", "longitude"],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!order) {
+      await t.rollback;
+      return res.status(404).json({
+        ok: false,
+        message: "Order not found",
+      });
+    }
+
+    const requestedQuantity = order.quantity;
+
+    // Find the nearest warehouse using Haversine formula
+    const allWarehouses = await Warehouse.findAll({
+      attributes: ["id", "name", "warehouseAddressId"],
+      include: [
+        {
+          model: WarehouseAddress,
+          attributes: ["street", "city", "province", "latitude", "longitude"],
+        },
+      ],
+    });
+
+    // Find the nearest warehouse using Haversine formula
+    const nearestWarehouse = findNearestWarehouse(order.Warehouse.WarehouseAddress.latitude, order.Warehouse.WarehouseAddress.longitude, allWarehouses);
+    if (!nearestWarehouse) {
+      await t.rollback();
+      return res.status(404).json({
+        ok: false,
+        message: "Nearest warehouse not found",
+      });
+    }
+
+    // if(order.quantity > )
+    // Update the source warehouse stock
+    const updatedSourceWarehouseStock = await updateSourceWarehouseStock(productId, order.Warehouse.id, nearestWarehouse.id, requestedQuantity);
+
+    // Find latest mutation from destination warehouse to get the previous stock
+    const latestMutationFromDestinationWarehouse = await Mutation.findOne({
+      where: {
+        productId,
+        warehouseId: nearestWarehouse.id,
+        status: "success",
+      },
+      attributes: ["stock"],
+      order: [["createdAt", "DESC"]],
+      limit: 1,
+    });
+    const previousDestinationWarehouseStock = latestMutationFromDestinationWarehouse.stock || 0;
+
+    // Find the destination warehouse data to get the name
+    const destinationWarehouseData = Warehouse.findOne({
+      where: {
+        id: nearestWarehouse.id,
+      },
+      attributes: ["name"],
+    });
+
+    // create a new mutation for destination warehouse
+    const newMutationForDestinationWarehouse = await Mutation.create({
+      productId,
+      warehouseId: order.Warehouse.id,
+      destinationWarehouseId: nearestWarehouse.id,
+      mutationQuantity: requestedQuantity,
+      previousStock: previousDestinationWarehouseStock,
+      mutationType: "add",
+      adminId: null,
+      stock: requestedQuantity,
+      status: "success",
+      isManual: false,
+      description: `Auto Request Stock from ${sourceWarehouseName} to ${destinationWarehouseData.name}`,
+    });
+
+    await t.commit();
+    return res.status(200).json({
+      ok: true,
+      message: "Mutation created successfully",
+      details: {
+        updatedSourceWarehouseStock,
+        newMutationForDestinationWarehouse,
+      },
+    });
+  } catch (error) {}
+};
+
+// Function to find the nearest warehouse using Haversine formula
+function findNearestWarehouse(sourceLatitude, sourceLongitude, warehouses) {
+  const R = 6371; // Radius of the earth in km
+
+  return warehouses.reduce((nearest, warehouse) => {
+    const { latitude, longitude } = warehouse.WarehouseAddress;
+
+    // Haversine formula (menentukan jarak antara dua titik pada permukaan bola)
+    const dLat = toRad(latitude - sourceLatitude); // Calculate the difference in latitude in radians
+    const dLon = toRad(longitude - sourceLongitude); // Calculate the difference in longitude in radians
+
+    // Variable to calculate the distance
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) + // kuadrat setengah jarak lingkaran besar sepanjang garis lintang
+      Math.cos(toRad(sourceLatitude)) * Math.cos(toRad(latitude)) * Math.sin(dLon / 2) * Math.sin(dLon / 2); // kuadrat setengah jarak lingkaran sepanjang garis bujur
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); // Menghitung sudut sentral antara dua titik pada lingkaran besar
+
+    const distance = R * c; // Menghitung jarak antara dua titik pada permukaan bola
+
+    if (distance < nearest.distance || nearest.distance === undefined) {
+      return {
+        warehouse,
+        distance,
+      };
+    } else {
+      return nearest;
+    }
+  }, {});
+}
+
+// Helper function to convert degrees to radians
+function toRad(degrees) {
+  return (degrees * Math.PI) / 180;
+}
+
+// Function to update the source warehouse stock
+async function updateSourceWarehouseStock(productId, warehouseId, destinationWarehouseId, quantity) {
+  const t = await sequelize.transaction();
+  try {
+    // get the latest mutation from the source warehouse in order to get the stock
+    const findLatestMutationSourceWarehouse = await Mutation.findOne({
+      where: {
+        productId,
+        warehouseId,
+        status: "success",
+      },
+      order: [["createdAt", "DESC"]],
+      limit: 1,
+    });
+
+    const sourceWarehouseData = Warehouse.findOne({
+      where: {
+        id: warehouseId,
+      },
+      attributes: ["name"],
+    });
+
+    const destinationWarehouseData = Warehouse.findOne({
+      where: {
+        id: destinationWarehouseId,
+      },
+      attributes: ["name"],
+    });
+
+    let sourceWarehouseStock = findLatestMutationSourceWarehouse.stock || 0;
+    let newStock = sourceWarehouseStock - quantity;
+
+    // update the source warehouse stock by creating a new mutation
+    const mutation = await Mutation.create({
+      productId,
+      warehouseId,
+      destinationWarehouseId,
+      previousStock: sourceWarehouseStock,
+      mutationType: "subtract",
+      adminId: null,
+      stock: newStock,
+      status: "success",
+      isManual: false,
+      description: `Auto Request Stock mutation from ${sourceWarehouseData.name} to ${destinationWarehouseData.name}`,
+    });
+
+    await Journal.create({
+      mutationId: mutation.id,
+      productId,
+      warehouseId,
+      destinationWarehouseId,
+      previousStock: sourceWarehouseStock,
+      mutationType: "subtract",
+      adminId: null,
+      stock: newStock,
+      status: "success",
+      isManual: false,
+      description: `Stock mutation from ${sourceWarehouseData.name} to ${destinationWarehouseData.name}`,
+    });
+
+    await t.commit();
+    return mutation;
+  } catch (error) {
+    await t.rollback();
+    throw error;
+  }
+}

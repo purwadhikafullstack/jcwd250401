@@ -1,13 +1,15 @@
 import api from "../../api";
 
-const addNewAddress = async ({ userId, street, firstName, lastName, province, city, district, subDistrict, phoneNumber, setAsDefault }) => {
+const addNewAddress = async ({ userId, street, firstName, lastName, province, provinceId, city, cityId, district, subDistrict, phoneNumber, setAsDefault }) => {
   try {
     const response = await api.post(`/address/${userId}`, {
       firstName,
       lastName,
       province,
+      provinceId,
       street,
       city,
+      cityId,
       district,
       subDistrict,
       phoneNumber,

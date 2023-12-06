@@ -73,7 +73,7 @@ exports.handleGetCity = async (req, res) => {
 
 exports.handleAddNewAddress = async (req, res) => {
   const { userId } = req.params;
-  let { firstName, lastName, street, province, city, district, subDistrict, phoneNumber, setAsDefault } = req.body;
+  let { firstName, lastName, street, province, provinceId, city, cityId, district, subDistrict, phoneNumber, setAsDefault } = req.body;
 
   firstName = firstName
   lastName = lastName
@@ -86,7 +86,7 @@ exports.handleAddNewAddress = async (req, res) => {
     const user = await User.findOne({ where: { id: userId } });
 
     if (user) {
-      if (!street || !province || !city || !district || !subDistrict || !phoneNumber || !firstName || !lastName) {
+      if (!street || !province || !city || !provinceId || !cityId || !district || !subDistrict || !phoneNumber || !firstName || !lastName) {
         return res.status(400).json({
           ok: false,
           message: "Please fill all required fields",
@@ -119,9 +119,11 @@ exports.handleAddNewAddress = async (req, res) => {
         lastName,
         street,
         city,
+        cityId,
         district,
         subDistrict,
         province,
+        provinceId,
         longitude,
         latitude,
         setAsDefault,
