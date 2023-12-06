@@ -1,10 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
+import { AddAddressModal } from './AddAddressModal';
+import { showLoginModal } from "../slices/authModalSlices";
+import getProfile from '../api/profile/getProfile';
+import getUserAddress from '../api/Address/getUserAddress';
+import { toast } from 'sonner';
+import { PiClipboard } from 'react-icons/pi';
+import { useDispatch, useSelector } from 'react-redux';
+import { EditAddressModal } from './EditAddressModal';
 
 const DeliveryOptions = () => {
+  const username = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const [selectedOption, setSelectedOption] = useState('standard');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalEditOpen, setIsModalEditOpen] = useState(false);
+  const [userData, setUserData] = useState({});
+  const [address, setAddress] = useState([]);
+  const dispatch = useDispatch();
+
+  const fetchAddress = useCallback(async () => {
+    try {
+      const response = await getProfile({ username });
+      setUserData(response.detail); 
+
+      const responseLists = await getUserAddress({ userId: response.detail.id });
+      setAddress(responseLists.detail);
+      console.log(responseLists.detail);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  }, [username]);
+
+  const handleModalOpen = () => {
+    setIsModalOpen(true);
+  }
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+  }
+
+  useEffect(() => {
+    fetchAddress();
+  }, [fetchAddress]);
 
   return (
-    <div className="mt-2 lg:mt-4 p-6 flex flex-col h-62 border rounded-md lg:w-[30vw] bg-white">
+    <div className="mt-2 lg:mt-4 p-6 flex flex-col h-62 border rounded-md lg:w-[40vw] bg-white">
       <div className="mb-4">
         <h2 className="font-bold text-xl mb-2">1. Delivery Option</h2>
         <hr className="border-gray-300 my-4 mx-[-1.5rem]" />
@@ -47,14 +87,46 @@ const DeliveryOptions = () => {
           Outside Java: 1-7 working days
         </div>
       </div>
+      <div className="mb-4">
+      {/* Show the default address */}
+      <div className="flex flex-row items-center justify-between">
+        {address && address.length > 0 ? (
+        <>
+        {address
+          .filter((address) => address.setAsDefault === true)
+          .map((address) => (
+            <div className="flex flex-row justify-between">
+              <div className="w-[30%]">
+                <p className="text-md text-gray-600">{`${address.firstName.charAt(0).toUpperCase()}${address.firstName.slice(1)} ${address.lastName.charAt(0).toUpperCase()}${address.lastName.slice(1)}`}</p>
+              </div>
+              <div className="w-[40%] flex">
+                <p className="text-md text-gray-600">{`${address.street.charAt(0).toUpperCase()}${address.street.slice(1)}, ${address.district}, ${address.subDistrict}, ${address.city}, ${address.province}, ${
+                  address.phoneNumber
+                }`}</p>
+              </div>
+              <div className="w-[30%] flex justify-end">
+                <button className="w-[10vw] md:w-[10vw] lg:w-[10vw] h-[5vh] border border-gray-300 hover:bg-gray-100 rounded-md font-semibold">
+                  Edit
+                </button>
+              </div>
+            </div>
+          ))}
+        </>
+        ) : (
+          <p className="text-md text-gray-600">No default address found</p>
+        )}
+      </div>
+      </div>
+      {/* Buttons */}
       <div className="flex justify-between items-center pt-4">
         <button className="bg-gray-900 enabled:hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
           Payment Method
         </button>
-        <button className="bg-transparent hover:bg-gray-500 text-gray-700 font-semibold hover:text-white py-2 px-4 border border-gray-500 hover:border-transparent rounded">
-          Register a New Address
+        <button className="bg-white enabled:hover:bg-gray-100 text-black border border-gray-300 font-bold py-2 px-4 rounded" onClick={handleModalOpen}>
+          Register New Address
         </button>
       </div>
+      <AddAddressModal isOpen={isModalOpen} onClose={handleModalClose} />
     </div>
   );
 };
