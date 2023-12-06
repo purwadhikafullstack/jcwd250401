@@ -1,11 +1,15 @@
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "../api";
 import { useDispatch, useSelector } from "react-redux";
 import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay } from "@chakra-ui/react";
 import { addAddress } from "../slices/addressSlices";
+import addNewAddress from "../api/Address/addNewAddress";
+import getProvince from "../api/Address/getProvince";
+import getCity from "../api/Address/getCity";
+import getProfile from "../api/profile/getProfile";
 
 export const AddAddressModal = ({ isOpen, onClose }) => {
   const username = useSelector((state) => state?.account?.profile?.data?.profile?.username);
@@ -25,6 +29,8 @@ export const AddAddressModal = ({ isOpen, onClose }) => {
       street: "",
       province: "",
       city: "",
+      provinceId: "",
+      cityId: "",
       district: "",
       subDistrict: "",
       phoneNumber: 0,
@@ -42,21 +48,15 @@ export const AddAddressModal = ({ isOpen, onClose }) => {
     }),
     onSubmit: async (values) => {
       try {
-        const response = await api.post(`/address/${userId}`, {
-          firstName: values.firstName,
-          lastName: values.lastName,
-          street: values.street,
-          province: provinceIdToName,
-          city: values.city,
-          district: values.district,
-          subDistrict: values.subDistrict,
-          phoneNumber: 0 + values.phoneNumber.toString(),
-          setAsdefault: values.setAsdefault,
-        });
+        const response = await addNewAddress({
+          userId,
+          ...values,
+          phoneNumber: "0" + values.phoneNumber,
+        })
 
-        if (response.data.ok) {
+        if (response.ok) {
           toast.success("Register address success");
-          dispatch(addAddress(response.data.detail));
+          dispatch(addAddress(response.detail));
           formik.resetForm();
           onClose();
         }
@@ -75,30 +75,26 @@ export const AddAddressModal = ({ isOpen, onClose }) => {
     },
   });
 
-  const getProvinceLists = async () => {
-    try {
-      const response = await api.get("/address/province");
-      setProvinceLists(response.data.detail);
-    } catch (error) {
-      toast.error("Get address lists failed");
-    }
-  };
+  const fetchProvinceList = useCallback(async () => {
+    const response = await getProvince();
+    setProvinceLists(response.detail);
+  }, []);
 
-  const getCityLists = async () => {
-    try {
-      const response = await api.get(`/address/city`);
-      setCityLists(response.data.detail);
-    } catch (error) {
-      toast.error("Get city lists failed");
-    }
-  };
+  const fetchCityList = useCallback(async () => {
+    const response = await getCity();
+    setCityLists(response.detail);
+  }, []);
 
   const handleProvinceChange = (e) => {
     const selectedValue = e.target.value;
-    setSelectedProvince(selectedValue);
     formik.setFieldValue("province", selectedValue);
+    
+    setSelectedProvince(selectedValue);
+    console.log(selectedProvince);
+    const selectedProvinceDetails = provinceLists.filter((province) => province.province === selectedValue);
+    formik.setFieldValue("provinceId", selectedProvinceDetails[0]?.province_id);
 
-    setSelectedCityByProvince(cityLists.filter((city) => city.province_id === selectedValue));
+    setSelectedCityByProvince(cityLists.filter((city) => city.province === selectedValue));
   };
 
   const handleCityChange = (e) => {
@@ -106,30 +102,43 @@ export const AddAddressModal = ({ isOpen, onClose }) => {
     formik.setFieldValue("city", selectedValue);
 
     const selectedCityDetails = cityLists.find((city) => city.city_name === selectedValue);
+    formik.setFieldValue("cityId", selectedCityDetails?.city_id);
 
     if (selectedCityDetails) {
       const correspondingProvince = provinceLists.find((province) => province.province_id === selectedCityDetails.province_id);
       if (correspondingProvince) {
-        setSelectedProvince(correspondingProvince.province_id);
-        formik.setFieldValue("province", correspondingProvince.province_id);
+        setSelectedProvince(correspondingProvince.province);
+        formik.setFieldValue("province", correspondingProvince.province);
       }
     }
   };
 
-  const getUsersProfile = async () => {
+  const fetchUserData = useCallback(async () => {
     try {
-      const response = await api.get(`/profile/${username}`);
-      setUserData(response.data.detail);
+      const response = await getProfile({ username });
+      setUserData(response.detail);
+
     } catch (error) {
-      toast.error("Failed to get user data");
+      if (error.response) {
+        if (error.response.status === 401 || error.response.status === 403) {
+          toast.error(error.response.data.message);
+        }
+      }
     }
-  };
+  }, [username]);
 
   useEffect(() => {
-    getUsersProfile();
-    getProvinceLists();
-    getCityLists();
-  }, []);
+    try {
+      fetchUserData();
+      fetchProvinceList();
+      fetchCityList();
+    } catch (error) {
+      if (error.response && (error.response.status === 400 || error.response.status === 404 || error.response.status === 500)) {
+        toast.error(error.response.data.message);
+        if (error.response.status === 500) console.error(error);
+      }
+    }
+  }, [fetchUserData, fetchProvinceList, fetchCityList]);
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose} size={"lg"}>
@@ -197,14 +206,14 @@ export const AddAddressModal = ({ isOpen, onClose }) => {
                   <div className="w-[55%] sm:w-[65%]">
                     <select name="province" id="province" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500 cursor-pointer" {...formik.getFieldProps("province")} onChange={handleProvinceChange}>
                       {selectedProvince ? (
-                        <option value={selectedProvince}>{provinceIdToName}</option>
+                        <option value={selectedProvince}>{selectedProvince}</option>
                       ) : (
                         <option value="" disabled>
                           Select a Province
                         </option>
                       )}
                       {provinceLists.map((province, index) => (
-                        <option key={index} value={province.province_id}>
+                        <option key={index} value={province.province}>
                           {province.province}
                         </option>
                       ))}

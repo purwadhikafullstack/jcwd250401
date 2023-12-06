@@ -42,6 +42,66 @@ export const Address = () => {
   const userId = userData?.id;
   const addressLists = useSelector((state) => state?.address?.addressLists);
 
+  const formik = useFormik({
+    initialValues: {
+      firstName: "",
+      lastName: "",
+      street: "",
+      province: "",
+      provinceId: "",
+      city: "",
+      cityId: "",
+      district: "",
+      subDistrict: "",
+      phoneNumber: 0,
+      setAsDefault: false,
+    },
+    validationSchema: yup.object({
+      firstName: yup.string().required("First name is required"),
+      lastName: yup.string().required("Last name is required"),
+      street: yup.string().required("Street address is required"),
+      province: yup.string().required("Province is required"),
+      city: yup.string().required("City is required"),
+      district: yup.string().required("District is required"),
+      subDistrict: yup.string().required("Sub District is required"),
+      phoneNumber: yup.number().min(8, "Phone number must be at least 8 characters").required("Phone number is required"),
+    }),
+    onSubmit: async (values) => {
+      try {
+        const response = await addNewAddress({
+          userId,
+          street: values.street,
+          firstName: values.firstName,
+          lastName: values.lastName,
+          province: values.province,
+          provinceId: values.provinceId,
+          city: values.city,
+          cityId: values.cityId,
+          district: values.district,
+          subDistrict: values.subDistrict,
+          phoneNumber: "0" + values.phoneNumber,
+          setAsDefault: values.setAsDefault,
+        });
+        if (response.ok) {
+          toast.success("Register address success");
+          dispatch(addAddress(response.detail));
+          formik.resetForm();
+        }
+      } catch (error) {
+        if (error.response && (error.response.status === 400 || error.response.status === 401 || error.response.status === 403 || error.response.status === 500)) {
+          toast.error(error.response.data.message);
+          if (error.response.status === 500) console.error(error);
+          if (error.response.status === 401 || error.response.status === 403) {
+            setTimeout(() => {
+              navigate("/");
+              dispatch(showLoginModal());
+            }, 2000);
+          }
+        }
+      }
+    },
+  });
+
   const handleRegisterAddressBtn = () => setAddressForm(!addressForm);
   const handleAddAddress = () => setOpenModal(!openModal);
   const handleConfirmModal = (address) => {
@@ -64,10 +124,13 @@ export const Address = () => {
 
   const handleProvinceChange = (e) => {
     const selectedValue = e.target.value;
-    setSelectedProvince(selectedValue);
     formik.setFieldValue("province", selectedValue);
 
-    setSelectedCityByProvince(cityLists.filter((city) => city.province_id === selectedValue));
+    setSelectedProvince(selectedValue);
+    const selectedProvinceDetails = provinceLists.filter((province) => province.province === selectedValue);
+    formik.setFieldValue("provinceId", selectedProvinceDetails[0]?.province_id);
+
+    setSelectedCityByProvince(cityLists.filter((city) => city.province === selectedValue));
   };
 
   const handleCityChange = (e) => {
@@ -75,75 +138,16 @@ export const Address = () => {
     formik.setFieldValue("city", selectedValue);
 
     const selectedCityDetails = cityLists.find((city) => city.city_name === selectedValue);
+    formik.setFieldValue("cityId", selectedCityDetails?.city_id);
 
     if (selectedCityDetails) {
       const correspondingProvince = provinceLists.find((province) => province.province_id === selectedCityDetails.province_id);
       if (correspondingProvince) {
-        setSelectedProvince(correspondingProvince.province_id);
-        formik.setFieldValue("province", correspondingProvince.province_id);
+        setSelectedProvince(correspondingProvince.province);
+        formik.setFieldValue("province", correspondingProvince.province);
       }
     }
   };
-
-  const formik = useFormik({
-    initialValues: {
-      firstName: "",
-      lastName: "",
-      street: "",
-      province: "",
-      city: "",
-      district: "",
-      subDistrict: "",
-      phoneNumber: 0,
-      setAsDefault: false,
-    },
-    validationSchema: yup.object({
-      firstName: yup.string().required("First name is required"),
-      lastName: yup.string().required("Last name is required"),
-      street: yup.string().required("Street address is required"),
-      province: yup.string().required("Province is required"),
-      city: yup.string().required("City is required"),
-      district: yup.string().required("District is required"),
-      subDistrict: yup.string().required("Sub District is required"),
-      phoneNumber: yup.number().min(8, "Phone number must be at least 8 characters").required("Phone number is required"),
-    }),
-    onSubmit: async (values) => {
-      try {
-        const response = await addNewAddress(
-          {
-            userId,
-            street: values.street,
-            firstName: values.firstName,
-            lastName: values.lastName,
-            province: values.province,
-            city: values.city,
-            district: values.district,
-            subDistrict: values.subDistrict,
-            phoneNumber: values.phoneNumber,
-            setAsDefault: values.setAsDefault,
-          }
-        );
-        if (response.ok) {
-          toast.success("Register address success");
-          dispatch(addAddress(response.detail));
-          formik.resetForm();
-        }
-      } catch (error) {
-        if (error.response && (error.response.status === 400 || error.response.status === 401 || error.response.status === 403 || error.response.status === 500)) {
-          toast.error(error.response.data.message);
-          if (error.response.status === 500) console.error(error);
-          if (error.response.status === 401 || error.response.status === 403) {
-            setTimeout(() => {
-              navigate("/");
-              dispatch(showLoginModal());
-            }, 2000);
-          }
-        }
-      }
-    },
-  });
-
-  console.log("addres" + formik.values.street)
 
   const fetchUserData = useCallback(async () => {
     try {
@@ -166,14 +170,14 @@ export const Address = () => {
   }, [username]);
 
   const fetchProvinceList = useCallback(async () => {
-    const response = await getProvince()
+    const response = await getProvince();
     setProvinceLists(response.detail);
-  },[]);
+  }, []);
 
   const fetchCityList = useCallback(async () => {
-    const response = await getCity()
+    const response = await getCity();
     setCityLists(response.detail);
-  },[]);
+  }, []);
 
   useEffect(() => {
     try {
@@ -365,14 +369,14 @@ export const Address = () => {
                               {...formik.getFieldProps("province")}
                               onChange={handleProvinceChange}>
                               {selectedProvince ? (
-                                <option value={selectedProvince}>{provinceIdToName}</option>
+                                <option value={selectedProvince}>{selectedProvince}</option>
                               ) : (
                                 <option value="" disabled>
                                   Select a Province
                                 </option>
                               )}
                               {provinceLists.map((province, index) => (
-                                <option key={index} value={province.province_id}>
+                                <option key={index} value={province.province}>
                                   {province.province}
                                 </option>
                               ))}

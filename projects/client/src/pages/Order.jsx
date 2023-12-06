@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { showLoginModal } from "../slices/authModalSlices";
 import api from "../api";
 import { toast } from "sonner";
-import { PaymentProofModal } from "./PaymentProofModal";
+import { PaymentProofModal } from "../components/PaymentProofModal";
 import getProfile from "../api/profile/getProfile";
 import getUserOrder from "../api/order/getUserOrder";
 
