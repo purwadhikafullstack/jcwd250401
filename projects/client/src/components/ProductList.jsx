@@ -47,7 +47,6 @@ function ProductList() {
 
   const handleSearchInputChange = _debounce((e) => {
     setSearchInput(e.target.value);
-
     const queryParams = new URLSearchParams(location.search);
     queryParams.set("search", e.target.value);
 
@@ -335,7 +334,6 @@ function ProductList() {
               className="pl-10 pr-3 py-2 border-2 rounded-lg w-full text-sm shadow-md focus:outline-none focus:border-gray-800 border-gray-400 focus:ring-transparent"
               placeholder="Search by product or SKU"
               onChange={handleSearchInputChange}
-              value={searchInput}
             />
           </div>
         </div>
