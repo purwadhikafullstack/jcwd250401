@@ -79,13 +79,14 @@ export const Address = () => {
           cityId: values.cityId,
           district: values.district,
           subDistrict: values.subDistrict,
-          phoneNumber: "0" + values.phoneNumber,
+          phoneNumber: values.phoneNumber,
           setAsDefault: values.setAsDefault,
         });
         if (response.ok) {
           toast.success("Register address success");
           dispatch(addAddress(response.detail));
           formik.resetForm();
+          setSelectedProvince("");
         }
       } catch (error) {
         if (error.response && (error.response.status === 400 || error.response.status === 401 || error.response.status === 403 || error.response.status === 500)) {
@@ -454,12 +455,18 @@ export const Address = () => {
 
                           <div className="w-[55%] sm:w-[65%]">
                             <input
-                              type="number"
+                              type="tel"
                               id="phoneNumber"
                               name="phoneNumber"
+                              pattern="[0-9]*"
+                              inputMode="numeric" 
                               placeholder="Enter your phone number"
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500"
                               {...formik.getFieldProps("phoneNumber")}
+                              onChange={(e) => {
+                                const sanitizedValue = e.target.value.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+                                formik.setFieldValue("phoneNumber", sanitizedValue);
+                              }}
                             />
                             {formik.touched.phoneNumber && formik.errors.phoneNumber ? <div className="text-red-500">{formik.errors.phoneNumber}</div> : null}
                           </div>
