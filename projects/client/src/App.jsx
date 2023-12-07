@@ -22,6 +22,7 @@ import CheckoutPage from "./pages/CheckoutPage";
 import { WarehouseOrder } from "./pages/WarehouseOrder";
 import MenCollections from "./pages/MenCollections";
 import WomenCollections from "./pages/WomenCollections";
+import UnisexCollections from "./pages/UnisexCollections";
 
 
 //
@@ -79,6 +80,7 @@ export default function App() {
           <Route path="/account/shopping-cart/checkout" element={<CheckoutPage />} />
           <Route path="/collections/men" element={<MenCollections />} />
           <Route path="/collections/women" element={<WomenCollections />} />
+          <Route path="/collections/unisex" element={<UnisexCollections />} />
           <Route path="/products/:gender/:mainCategory?/:subCategory?/:productName?" element={<HomeProducts />} />
           {/* Add more route configurations as needed */}
           <Route path="*" element={<NotFound />} />

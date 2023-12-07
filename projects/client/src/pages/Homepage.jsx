@@ -8,11 +8,11 @@ import img5 from "../assets/image-5.jpg";
 import img6 from "../assets/image-6.jpg";
 import img7 from "../assets/image-7.jpeg";
 import Footer from "../components/Footer";
-import bagexplore from "../assets/bagexplore.jpg";
-import accessoriesexplore2 from "../assets/accessoriesexplore2.png";
-import menexplore from "../assets/menexplore.jpg";
-import womenexplore from "../assets/womenexplore.jpg";
-
+import bagexplore from "../assets/bagexplore2.jpg";
+import accessoriesexplore from "../assets/accessoriesexplore2.png";
+import menexplore from "../assets/menexplore2.jpg";
+import womenexplore from "../assets/womenexplore2.jpg";
+import unisexexplore from "../assets/unisexexplore.jpg";
 import { Button } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 
@@ -50,8 +50,7 @@ export const Homepage = () => {
               delivers a range of silhouettes developed for lifestyle needs.{" "}
             </p>
             <div>
-              <Button className="w-36 border border-gray-600" bg="white" color="light" size="md"
-              as={Link} to={"/products/unisex/bags"}>
+              <Button className="w-36 border border-gray-600" bg="white" color="light" size="md" as={Link} to={"/products/unisex/bags"}>
                 <span className="font-sans font-medium text-md">Explore</span>
               </Button>
             </div>
@@ -67,30 +66,32 @@ export const Homepage = () => {
               and easy to keep your outfits looking modern and timeless.
             </p>
             <div>
-              <Button className="w-36 border border-gray-600" bg="white" color="light" size="md"
-              as={Link} to={"/products/unisex/accessories"}>
+              <Button className="w-36 border border-gray-600" bg="white" color="light" size="md" as={Link} to={"/products/unisex/accessories"}>
                 <span className="font-sans font-medium text-md">Explore</span>
               </Button>
             </div>
           </div>
         </div>
         <div className="w-[50vw]">
-          <img src={accessoriesexplore2} alt="accessoriesexplore" className="w-full h-[650px] object-cover" />
+          <img src={accessoriesexplore} alt="accessoriesexplore" className="w-full h-[650px] object-cover" />
         </div>
       </div>
       <div className="flex justify-between">
-        <div className="w-[50vw] flex items-end px-20 py-16" style={{ backgroundImage: `url(${menexplore})`, backgroundSize: "cover", height: "80vh" }}>
-          <Button className="shadow-md shadow-gray-600 w-36 border border-gray-600" bg="white" color="light" size="md"
-          as={Link} to={"/collections/men"}>
-            <span className="font-sans font-medium text-md">Men's</span>
+        <div className="w-[50vw] flex items-end px-20 py-10" style={{ backgroundImage: `url(${menexplore})`, backgroundSize: "cover", height: "90vh" }}>
+          <Button className="shadow-md shadow-gray-600 w-44 border border-gray-600" bg="white" color="light" size="md" as={Link} to={"/collections/men"}>
+            <span className="font-sans font-medium text-md">Men Collections</span>
           </Button>
         </div>
-        <div className="w-[50vw] flex items-end px-20 py-16" style={{ backgroundImage: `url(${womenexplore})`, backgroundSize: "cover", height: "80vh" }}>
-          <Button className=" shadow-md shadow-gray-600 w-36 border border-gray-600" bg="white" color="light" size="md"
-         as={Link} to={"/collections/women"}>
-            <span className="font-sans font-medium text-md">Women's</span>
+        <div className="w-[50vw] flex items-end px-20 py-10" style={{ backgroundImage: `url(${womenexplore})`, backgroundSize: "cover", height: "90vh" }}>
+          <Button className=" shadow-md shadow-gray-600 w-44 border border-gray-600" bg="white" color="light" size="md" as={Link} to={"/collections/women"}>
+            <span className="font-sans font-medium text-md">Women Collections</span>
           </Button>
         </div>
+      </div>
+      <div className="w-full flex items-end px-20 py-10" style={{ backgroundImage: `url(${unisexexplore})`, backgroundSize: "cover", height: "80vh" }}>
+        <Button className=" shadow-md shadow-gray-600 w-44 border border-gray-600" bg="white" color="light" size="md" as={Link} to={"/collections/unisex"}>
+          <span className="font-sans font-medium text-md">Unisex Collections</span>
+        </Button>
       </div>
       <Footer />
     </div>

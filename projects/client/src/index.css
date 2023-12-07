@@ -156,6 +156,25 @@ html {
   background-image: url('./assets/womenbottom.jpg');
 }
 
+.unisexparallax {
+  background-position: top;
+  background-size: cover;
+  background-attachment: fixed;
+  height: 100vh;
+}
+
+.unisexbags {
+  background-image: url('./assets/bag.jpg');
+}
+
+.unisexaccessories {
+  background-image: url('./assets/accessories.jpg');
+}
+
+
+
+
+
 .womencta {
   display: flex;
   justify-content: center;
