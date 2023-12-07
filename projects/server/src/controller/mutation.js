@@ -149,7 +149,9 @@ exports.summaryTotalStock = async (req, res) => {
           SUM(CASE WHEN m.mutationType = 'subtract' AND m.status = 'success' THEN m.mutationQuantity ELSE 0 END) AS totalSubtraction,
           COALESCE((SELECT stock FROM Mutations AS sub WHERE sub.productId = m.productId AND sub.warehouseId = m.warehouseId AND sub.status = 'success' ORDER BY sub.createdAt DESC LIMIT 1), 0) AS endingStock
         FROM Mutations AS m
-        WHERE m.status = 'success' AND ${month ? `MONTH(m.createdAt) = ${parseInt(month)}` : "1"}
+        WHERE m.status = 'success' 
+        AND ${month ? `MONTH(m.createdAt) = ${parseInt(month)}` : "MONTH(NOW())"} 
+        ${warehouseId ? `AND m.warehouseId = ${warehouseId}` : ""}
         GROUP BY m.productId, m.warehouseId
       ) AS subquery`,
       { type: sequelize.QueryTypes.SELECT }

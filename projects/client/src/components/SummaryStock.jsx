@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import getSummaryTotalStock from "../api/mutation/getSummaryTotalStock";
 import { toast } from "sonner";
 
