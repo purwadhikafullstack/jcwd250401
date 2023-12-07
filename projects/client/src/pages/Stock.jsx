@@ -11,6 +11,7 @@ import getWarehouses from "../api/warehouse/getWarehouses";
 import { useSelector } from "react-redux";
 import getWarehouseByAdmin from "../api/warehouse/getWarehouseByAdmin";
 import getSingleAdmin from "../api/users/getSingleAdmin";
+import { SummaryStock } from "../components/SummaryStock";
 
 export const Stock = () => {
   const isWarehouseAdmin = useSelector((state) => state?.account?.isWarehouseAdmin);
@@ -23,6 +24,8 @@ export const Stock = () => {
   const [warehouseList, setWarehouseList] = useState([]);
   const [warehouseId, setWarehouseId] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(null);
+  const [selectedMonthName, setSelectedMonthName] = useState(null);
+
   const months = [
     {
       id: 1,
@@ -150,9 +153,12 @@ export const Stock = () => {
         }
       }
     } catch (error) {
-      if (error.response && (error.response.status === 404 || error.response.status === 500)) {
+      if (error.response && (error.response.status === 404 || error.response.status === 401 || error.response.status === 403 || error.response.status === 500)) {
         toast.error(error.response.data.message);
         if (error.response.status === 500) console.error(error);
+        if (error.response.status === 401 || error.response.status === 403) {
+          navigate("/adminlogin");
+        }
       }
     }
   };
@@ -174,7 +180,7 @@ export const Stock = () => {
           <Navigationadmin />
         </div>
 
-        <div className="flex mt-16 pt-8 pb-4 px-8">
+        <div className="flex mt-16 pt-8 pb-4 px-4 lg:px-8">
           <InputGroup>
             <InputLeftElement pointerEvents="none">
               <SearchIcon color="#40403F" />
@@ -186,12 +192,12 @@ export const Stock = () => {
               onChange={handleSearchInputChange}
               bgColor={"white"}
               borderColor={"#40403F"}
-              w={{ base: "100%", md: "300px" }}
+              w={{ base: "90%", md: "300px" }}
               _hover={{ borderColor: "#40403F" }}
             />
           </InputGroup>
 
-          <div className="flex gap-2 w-[35vw]">
+          <div className="flex gap-2 w-[38vw]">
             <select
               value={warehouseId}
               onChange={(e) => setWarehouseId(e.target.value)}
@@ -211,7 +217,9 @@ export const Stock = () => {
             </select>
             <select
               value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
+              onChange={(e) => {
+                setSelectedMonth(e.target.value);
+              }}
               className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#40403F] focus:border-[#40403F] block w-full p-2.5 cursor-pointer">
               <option value={""}>Month</option>
               {months.map((month, index) => (
@@ -224,76 +232,85 @@ export const Stock = () => {
         </div>
 
         {mutations.length > 0 ? (
-          <div className="flex flex-col px-4 md:px-8 min-h-[50vh] md:h-[67vh] overflow-y-auto scrollbar-hide">
-            <Box display={"flex"} justifyContent={"space-between"} alignItems={"center"} py={3} px={5} bgColor={"white"} borderTopRadius={"md"}>
-              <Heading size="md">Stock History</Heading>
+          <>
+            <div className="flex flex-col px-4 md:px-8 min-h-[50vh] md:h-[67vh] overflow-y-auto scrollbar-hide w-full">
+              <SummaryStock selectedMonth={selectedMonth} warehouseId={warehouseId} />
+              <Box display={"flex"} justifyContent={"space-between"} alignItems={"center"} py={3} px={5} bgColor={"white"} borderTopRadius={"md"}>
+                <Heading size="md">Stock History</Heading>
 
-              <div className="flex gap-2">
-                <select value={order} onChange={(e) => setOrder(e.target.value)} className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#40403F] focus:border-[#40403F] block w-full p-2.5 cursor-pointer">
-                  <option value="">Order</option>
-                  <option value="ASC">Ascending</option>
-                  <option value="DESC">Descending</option>
-                </select>
-                <select value={sort} onChange={(e) => setSort(e.target.value)} className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#40403F] focus:border-[#40403F] block w-full p-2.5 cursor-pointer">
-                  <option value="">Sort by</option>
-                  <option value="createdAt">Created at</option>
-                  <option value="stock">Stock</option>
-                </select>
-              </div>
-            </Box>
-            <TableContainer bgColor={"white"} borderBottomRadius={"md"} className="scrollbar-hide" h={"full"}>
-              <Table variant="striped" colorScheme="blackAlpha">
-                <Thead>
-                  <Tr textColor={"#40403F"} fontWeight={"bold"}>
-                    <Th>ID</Th>
-                    <Th>Product</Th>
-                    <Th>Category</Th>
-                    <Th>Warehouse</Th>
-                    <Th>Date</Th>
-                    <Th>
-                      Mutation <br /> Type
-                    </Th>
-                    <Th>
-                      Previous <br /> Stock
-                    </Th>
-                    <Th>
-                      Inventory
-                      <br />
-                      Change
-                    </Th>
-                    <Th>
-                      Total <br /> Stock
-                    </Th>
-                    <Th>Status</Th>
-                    <Th>Description</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {mutations.map((mutation, index) => (
-                    <Tr key={index}>
-                      <Td>{mutation.productId}</Td>
-                      <Td display={"flex"} gap={2} alignItems={"center"}>
-                        <Image src={`http://localhost:8000/public/${mutation.Product.productImages[0].imageUrl}`} alt={mutation.Product.name} width={50} height={50} />
-                        {mutation.Product.name}
-                      </Td>
-                      <Td>{mutation.Product.Categories[0].name}</Td>
-                      <Td>{mutation.Warehouse.name}</Td>
-                      <Td>{mutation.createdAt.slice(0, 10)}</Td>
-                      <Td>{mutation.mutationType}</Td>
-                      <Td>{mutation.previousStock}</Td>
-                      <Td color={mutation.mutationType === "add" ? "green" : mutation.status === "processing" || mutation.status === "pending" ? "orange" : mutation.status === "cancelled" || mutation.status === "failed" ? "red" : "green"}>
-                        {mutation.mutationType === "add" ? "+" : "-"}
-                        {mutation.mutationQuantity}
-                      </Td>
-                      <Td color={mutation.status === "processing" || mutation.status === "pending" ? "orange" : mutation.status === "failed" ? "red" : "green"}>{mutation.stock}</Td>
-                      <Td color={mutation.status === "processing" || mutation.status === "pending" ? "orange" : mutation.status === "failed" ? "red" : "green"}>{mutation?.status ? mutation.status : "-"}</Td>
-                      <Td>{mutation.description}</Td>
+                <div className="flex gap-2">
+                  <select value={order} onChange={(e) => setOrder(e.target.value)} className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#40403F] focus:border-[#40403F] block w-full p-2.5 cursor-pointer">
+                    <option value="">Order</option>
+                    <option value="ASC">Ascending</option>
+                    <option value="DESC">Descending</option>
+                  </select>
+                  <select value={sort} onChange={(e) => setSort(e.target.value)} className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#40403F] focus:border-[#40403F] block w-full p-2.5 cursor-pointer">
+                    <option value="">Sort by</option>
+                    <option value="createdAt">Created at</option>
+                    <option value="stock">Stock</option>
+                  </select>
+                </div>
+              </Box>
+              <TableContainer bgColor={"white"} h={"30vh"} className="scrollbar-hide">
+                <Table>
+                  <Thead>
+                    <Tr textColor={"#40403F"} fontWeight={"bold"} >
+                      <Th>ID</Th>
+                      <Th>Product</Th>
+                      <Th>Category</Th>
+                      <Th>Warehouse</Th>
+                      <Th>Date</Th>
+                      <Th>
+                        Mutation <br /> Type
+                      </Th>
+                      <Th>
+                        Previous <br /> Stock
+                      </Th>
+                      <Th>
+                        Inventory
+                        <br />
+                        Change
+                      </Th>
+                      <Th>
+                        Total <br /> Stock
+                      </Th>
+                      <Th>Status</Th>
+                      <Th>Description</Th>
                     </Tr>
-                  ))}
-                </Tbody>
-              </Table>
-            </TableContainer>
-          </div>
+                  </Thead>
+                </Table>
+              </TableContainer>
+              <TableContainer bgColor={"white"} borderBottomRadius={"md"} overflowY={"auto"} h={"full"}>
+                <Table variant="striped" colorScheme="blackAlpha">
+                  <Tbody>
+                    {mutations.map((mutation, index) => (
+                      <Tr key={index}>
+                        <Td>{mutation.productId}</Td>
+                        <Td display={"flex"} gap={2} alignItems={"center"}>
+                          <Image src={`http://localhost:8000/public/${mutation.Product.productImages[0].imageUrl}`} alt={mutation.Product.name} width={50} height={50} />
+                          {mutation.Product.name}
+                        </Td>
+                        <Td>{mutation.Product.Categories[0].name}</Td>
+                        <Td>{mutation.Warehouse.name}</Td>
+                        <Td>{mutation.createdAt.slice(0, 10)}</Td>
+                        <Td>{mutation.mutationType}</Td>
+                        <Td>{mutation.previousStock}</Td>
+                        <Td color={mutation.status === "processing" || mutation.status === "pending" ? "orange" : mutation.status === "cancelled" || mutation.status === "failed" ? "red" : "green"}>
+                          {mutation.mutationType === "add" ? "+" : "-"}
+                          {mutation.mutationQuantity}
+                        </Td>
+                        <Td color={mutation.status === "processing" || mutation.status === "pending" ? "orange" : mutation.status === "cancelled" || mutation.status === "failed" ? "red" : "green"}>{mutation.stock}</Td>
+                        <Td color={mutation.status === "processing" || mutation.status === "pending" ? "orange" : mutation.status === "cancelled" || mutation.status === "failed" ? "red" : "green"}>
+                          {mutation?.status ? mutation.status : "-"}
+                        </Td>
+                        <Td>{mutation.description}</Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              </TableContainer>
+            </div>
+          </>
         ) : (
           <div className="flex flex-col mt-16 py-8 px-4 md:p-8 gap-2 h-[55vh]">
             <h1 className="text-3xl font-semibold italic text-center">No data matches</h1>
@@ -301,11 +318,11 @@ export const Stock = () => {
         )}
         <div className="flex justify-between items-center px-8 mt-3 mb-2">
           <button disabled={page === 1} onClick={() => setPage(page - 1)} className="bg-[#40403F] text-white py-2 px-4 rounded-md font-bold">
-            Prev Page
+            Prev
           </button>
           <span className="text-[#40403F] font-bold">Page {page}</span>
           <button disabled={mutations.length < size} onClick={() => setPage(page + 1)} className="bg-[#40403F] text-white py-2 px-4 rounded-md font-bold">
-            Next Page
+            Next
           </button>
         </div>
       </div>

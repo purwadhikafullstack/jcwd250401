@@ -381,11 +381,11 @@ export const WarehouseOrder = () => {
           </div>
           <div className="flex justify-between items-center mt-3 mb-2">
             <button disabled={page === 1} onClick={() => setPage(page - 1)} className="bg-[#40403F] text-white py-2 px-4 rounded-md font-bold">
-              Prev Page
+              Prev
             </button>
             <span className="text-[#40403F] font-bold">Page {page}</span>
             <button disabled={mutations.length < size} onClick={() => setPage(page + 1)} className="bg-[#40403F] text-white py-2 px-4 rounded-md font-bold">
-              Next Page
+              Next
             </button>
           </div>
         </div>
