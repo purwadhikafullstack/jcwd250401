@@ -524,8 +524,8 @@ function Navigationbar() {
           <a onClick={openAuthModal} className="text-black text-md font-semibold hover:underline cursor-pointer">
             Log in
           </a>
-          <Button pill className="cursor-pointer bg-[#40403F] enabled:hover:bg-gray-400 transition duration-500 ease-in-out" onClick={openSignUpModal}>
-            <span className="text-white text-md font-semibold">Sign Up</span>
+          <Button pill className="cursor-pointer bg-[#40403F] text-white enabled:hover:bg-gray-400 enabled:hover:text-gray-900 transition duration-200 ease-linear" onClick={openSignUpModal}>
+            <span className="text-md font-semibold">Sign Up</span>
             <HiOutlineArrowRight className="ml-2 h-5 w-5 hover:block" />
           </Button>
         </div>
