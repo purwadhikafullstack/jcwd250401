@@ -109,3 +109,56 @@ html {
   width: 0;
   visibility: hidden;
 }
+
+
+.menparallax {
+  background-position: top;
+  background-size: cover;
+  background-attachment: fixed;
+  height: 100vh;
+}
+
+.menjackets {
+  background-image: url('./assets/menjackets.jpg');
+}
+
+.mentops {
+  background-image: url('./assets/mentops.jpg');
+}
+
+.menbottom {
+  background-image: url('./assets/menbottom.jpg');
+}
+
+.mencta {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.womenparallax {
+  background-position: top;
+  background-size: cover;
+  background-attachment: fixed;
+  height: 100vh;
+}
+
+.womenjackets {
+  background-image: url('./assets/womenjackets.jpg');
+}
+
+.womentops {
+  background-image: url('./assets/womentops.jpg');
+}
+
+.womenbottom {
+  background-image: url('./assets/womenbottom.jpg');
+}
+
+.womencta {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}

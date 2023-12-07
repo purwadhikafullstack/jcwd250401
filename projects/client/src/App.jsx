@@ -20,6 +20,8 @@ import { Stock } from "./pages/Stock";
 import OrderCust from "./pages/OrderCust";
 import CheckoutPage from "./pages/CheckoutPage";
 import { WarehouseOrder } from "./pages/WarehouseOrder";
+import MenCollections from "./pages/MenCollections";
+import WomenCollections from "./pages/WomenCollections";
 
 
 //
@@ -75,6 +77,8 @@ export default function App() {
           <Route path="/account/change-password" element={<ChangePassword />} />
           <Route path="/account/shopping-cart" element={<CartPage />} />
           <Route path="/account/shopping-cart/checkout" element={<CheckoutPage />} />
+          <Route path="/collections/men" element={<MenCollections />} />
+          <Route path="/collections/women" element={<WomenCollections />} />
           <Route path="/products/:gender/:mainCategory?/:subCategory?/:productName?" element={<HomeProducts />} />
           {/* Add more route configurations as needed */}
           <Route path="*" element={<NotFound />} />

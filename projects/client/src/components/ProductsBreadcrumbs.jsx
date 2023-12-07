@@ -51,7 +51,7 @@ const ProductsBreadcrumbs = () => {
             ) : (
               <React.Fragment>
                 {unclickableSegments.includes(segment.toLowerCase()) ? (
-                  <span>{formatSegment(segment)}</span>
+                  <Link to={`/collections/${segment}`} className="hover:underline">{formatSegment(segment)}</Link>
                 ) : (
                   <BreadcrumbLink>
                     <Link className="hover:underline" to={`/products/${array.slice(0, index + 1).join("/")}`}>

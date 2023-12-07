@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import ProductNavPage from "../components/ProductNavPage";
 import ProductGrid from "../components/productGrid";
@@ -11,6 +11,12 @@ import Footer from "../components/Footer";
 
 const HomeProducts = () => {
   const { gender, mainCategory, subCategory, productName } = useParams();
+  
+
+  useEffect(() => {
+    // Scroll to the top when the component is first rendered
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <div className="w-full flex flex-col">
@@ -27,7 +33,7 @@ const HomeProducts = () => {
       ) : (
         <ProductCard />
       )}
-      <div className="mt-4">
+      <div className="mt-32">
         <Footer />
       </div>
     </div>
