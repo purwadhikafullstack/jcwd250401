@@ -92,6 +92,11 @@ exports.addWarehouse = async (req, res) => {
       }
     );
 
+    // If cityId or provinceId not found, return error
+    if (warehouseAddress.cityId === null || warehouseAddress.provinceId === null) {
+      return res.status(400).send("Invalid city or province.");
+    }
+
     // If coordinates not found, return error
     if (warehouseAddress.latitude === null || warehouseAddress.longitude === null) {
       return res.status(400).send("Invalid address or unable to find coordinates.");
@@ -102,8 +107,8 @@ exports.addWarehouse = async (req, res) => {
       data: {
         name: warehouse.name,
         location: warehouse.location,
-        cityId: warehouseAddress.cityId,
-        provinceId: warehouseAddress.provinceId,
+        city_id: warehouseAddress.cityId,
+        province_id: warehouseAddress.provinceId,
         coordinates: {
           latitude: warehouseAddress.latitude,
           longitude: warehouseAddress.longitude,
@@ -111,11 +116,14 @@ exports.addWarehouse = async (req, res) => {
         warehouseImage,
       },
     });
+    
   } catch (error) {
-    res.status(500).send({
+    res.status(500).json({
+      ok: false,
       message: "Error adding warehouse: " + error.message,
-    });
+    })
   }
+  
 };
 
 exports.updateWarehouse = async (req, res) => {
