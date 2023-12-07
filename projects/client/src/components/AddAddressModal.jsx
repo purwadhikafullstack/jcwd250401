@@ -51,7 +51,6 @@ export const AddAddressModal = ({ isOpen, onClose }) => {
         const response = await addNewAddress({
           userId,
           ...values,
-          phoneNumber: "0" + values.phoneNumber,
         })
 
         if (response.ok) {
@@ -284,12 +283,18 @@ export const AddAddressModal = ({ isOpen, onClose }) => {
 
                   <div className="w-[55%] sm:w-[65%]">
                     <input
-                      type="number"
+                      type="tel"
                       id="phoneNumber"
                       name="phoneNumber"
+                      pattern="[0-9]*"
+                      inputMode="numeric" 
                       placeholder="Enter your phone number"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500"
                       {...formik.getFieldProps("phoneNumber")}
+                      onChange={(e) => {
+                        const sanitizedValue = e.target.value.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+                        formik.setFieldValue("phoneNumber", sanitizedValue);
+                      }}
                     />
                     {formik.touched.phoneNumber && formik.errors.phoneNumber ? <div className="text-red-500">{formik.errors.phoneNumber}</div> : null}
                   </div>
