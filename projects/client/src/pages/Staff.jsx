@@ -223,11 +223,11 @@ export const Staff = () => {
         )}
         <div className="flex justify-between items-center px-8 mt-3 mb-2">
           <button disabled={page === 1} className="bg-[#40403F] text-white py-2 px-4 rounded-md font-bold" onClick={() => setPage(page - 1)}>
-            Prev Page
+            Prev
           </button>
           <span className="text-[#40403F] font-bold">Page {page}</span>
           <button disabled={admins.length < size} className="bg-[#40403F] text-white py-2 px-4 rounded-md font-bold" onClick={() => setPage(page + 1)}>
-            Next Page
+            Next
           </button>
         </div>
       </div>

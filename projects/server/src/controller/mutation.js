@@ -1,5 +1,5 @@
-const { Op, literal } = require("sequelize");
-const { Mutation, Product, Warehouse, Admin, ProductImage, Category, sequelize, Journal, OrderItem, Order,  WarehouseAddress } = require("../models");
+const { Op, literal, where } = require("sequelize");
+const { Mutation, Product, Warehouse, Admin, ProductImage, Category, sequelize, Journal, OrderItem, Order, WarehouseAddress } = require("../models");
 
 exports.getTotalStockByWarehouseProductId = async (req, res) => {
   const { warehouseId, productId } = req.params;
@@ -103,6 +103,68 @@ exports.getAllMutations = async (req, res) => {
     });
   } catch (error) {
     console.error("Error retrieving mutation:", error);
+    res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+exports.summaryTotalStock = async (req, res) => {
+  try {
+    const { warehouseId = null, month = null } = req.query;
+
+    // Get the latest successful mutations for each product
+    const summary = await Mutation.findAll({
+      attributes: [
+        "productId",
+        "warehouseId",
+        [literal(`SUM(CASE WHEN mutationType = 'add' AND status = 'success' THEN mutationQuantity ELSE 0 END)`), "totalAddition"],
+        [literal(`SUM(CASE WHEN mutationType = 'subtract' AND status = 'success' THEN mutationQuantity ELSE 0 END)`), "totalSubtraction"],
+        [literal("(SELECT stock FROM Mutations AS sub WHERE sub.productId = Mutation.productId AND sub.warehouseId = Mutation.warehouseId AND sub.status = 'success' ORDER BY sub.createdAt DESC LIMIT 1)"), "endingStock"],
+      ],
+      where: {
+        ...(warehouseId && {
+          warehouseId,
+        }),
+        status: "success",
+        ...(month && {
+          createdAt: literal(`MONTH(createdAt) = ${parseInt(month)}`),
+        }),
+      },
+      group: ["productId", "warehouseId"],
+    });
+
+    // Get the overall total for addition, subtraction, and stock
+    const overallTotal = await sequelize.query(
+      `SELECT
+        SUM(totalAddition) AS overallTotalAddition,
+        SUM(totalSubtraction) AS overallTotalSubtraction,
+        SUM(endingStock) AS overallTotalStock
+      FROM (
+        SELECT
+          m.productId,
+          m.warehouseId,
+          SUM(CASE WHEN m.mutationType = 'add' AND m.status = 'success' THEN m.mutationQuantity ELSE 0 END) AS totalAddition,
+          SUM(CASE WHEN m.mutationType = 'subtract' AND m.status = 'success' THEN m.mutationQuantity ELSE 0 END) AS totalSubtraction,
+          COALESCE((SELECT stock FROM Mutations AS sub WHERE sub.productId = m.productId AND sub.warehouseId = m.warehouseId AND sub.status = 'success' ORDER BY sub.createdAt DESC LIMIT 1), 0) AS endingStock
+        FROM Mutations AS m
+        WHERE m.status = 'success' AND ${month ? `MONTH(m.createdAt) = ${parseInt(month)}` : "1"}
+        GROUP BY m.productId, m.warehouseId
+      ) AS subquery`,
+      { type: sequelize.QueryTypes.SELECT }
+    );
+
+    res.status(200).json({
+      ok: true,
+      message: "Summary of total stock retrieved successfully",
+      detail: {
+        overallTotal: overallTotal[0],
+        summary,
+      },
+    });
+  } catch (error) {
+    console.error("Error retrieving total stock:", error);
     res.status(500).json({
       ok: false,
       message: "Internal server error",
@@ -521,7 +583,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
           // create a new mutation at destination warehouse
           const updatedMutation = await Mutation.create({
             productId,
-            warehouseId: mutation.warehouseId,
+            warehouseId: mutation.destinationWarehouseId,
             destinationWarehouseId: mutation.destinationWarehouseId,
             mutationQuantity: stockForDestinationWarehouse,
             previousStock: existingDestinationWarehouseMutation.stock,
@@ -541,7 +603,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
           const newMutationForDestinationWarehouse = await Journal.create({
             mutationId: updatedMutation.id,
             productId,
-            warehouseId: mutation.warehouseId,
+            warehouseId: mutation.destinationWarehouseId,
             destinationWarehouseId: mutation.destinationWarehouseId,
             mutationQuantity: stockForDestinationWarehouse,
             previousStock: existingDestinationWarehouseMutation.stock,
@@ -564,7 +626,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
           // create a new mutation at destination warehouse
           const updatedMutation = await Mutation.create({
             productId,
-            warehouseId: mutation.warehouseId,
+            warehouseId: mutation.destinationWarehouseId,
             destinationWarehouseId: mutation.destinationWarehouseId,
             mutationQuantity: stockForDestinationWarehouse,
             previousStock: 0,
@@ -583,7 +645,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
           // create a new mutation journal at destination warehouse
           const newMutationForDestinationWarehouse = await Journal.create({
             productId,
-            warehouseId: mutation.warehouseId,
+            warehouseId: mutation.destinationWarehouseId,
             destinationWarehouseId: mutation.destinationWarehouseId,
             mutationQuantity: stockForDestinationWarehouse,
             previousStock: 0,
