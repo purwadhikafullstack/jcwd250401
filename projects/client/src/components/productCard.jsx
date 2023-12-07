@@ -201,7 +201,7 @@ function ProductCard() {
       {selectedProduct.length !== 0 ? (
         <>
           <div className="hidden lg:flex w-full mt-14 gap-2">
-            <div className="flex flex-col w-[58vw] lg:h-[76vh] overflow-y-auto scrollbar-hide space-y-20">
+            <div className="flex flex-col w-[58vw] lg:h-[80vh] overflow-y-auto scrollbar-hide space-y-20">
               {selectedProduct.map((product) => (
                 <div key={product.id} className="flex space-x-5">
                   <SimpleGrid columns={2} spacing={5} h="184px">
