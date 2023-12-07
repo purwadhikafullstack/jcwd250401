@@ -113,7 +113,7 @@ exports.handleAddProduct = async (req, res) => {
 };
 
 exports.handleUpdateProduct = async (req, res) => {
-  const { productName, productPrice, productDescription, productGender, productMainCategory, productSubCategory } = req.body;
+  const { productName, productPrice, productDescription, productGender, productMainCategory, productSubCategory, productMaterial, productLining, productWaterproofRating, height, lenght, width, weight } = req.body;
   const { productId } = req.params;
 
   try {
@@ -148,6 +148,14 @@ exports.handleUpdateProduct = async (req, res) => {
     existingProduct.price = productPrice;
     existingProduct.description = productDescription;
     existingProduct.gender = productGender || "Unisex";
+    existingProduct.height = height;
+    existingProduct.lenght = lenght;
+    existingProduct.width = width;
+    existingProduct.weight = weight;
+    existingProduct.material = productMaterial;
+    existingProduct.lining = productLining;
+    existingProduct.waterproofRating = productWaterproofRating;
+    
 
     // Save the updated product
     await existingProduct.save();
@@ -904,9 +912,9 @@ exports.handleGetAllProducts = async (req, res) => {
 
 // Helper function to filter products based on stock status
 const filterProductsByStock = (products, stockFilter) => {
-  if (stockFilter === "inStock") {
+  if (stockFilter === "in-stock") {
     return products.filter((product) => product.totalStockAllWarehouses > 0);
-  } else if (stockFilter === "outOfStock") {
+  } else if (stockFilter === "out-of-stock") {
     return products.filter((product) => product.totalStockAllWarehouses === 0);
   } else {
     return products; // Return all products if no stock filter is specified

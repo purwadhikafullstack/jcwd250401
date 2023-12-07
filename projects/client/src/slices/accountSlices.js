@@ -52,6 +52,9 @@ const accountSlices = createSlice({
     updateProfile(state, action) {
       state.profile = action.payload;
     },
+    updatePhotoProfile(state, action) {
+      state.userPhotoProfile = action.payload;
+    },
     updateProfileAdmin(state, action) {
       state.adminProfile = action.payload;
     },
@@ -64,5 +67,5 @@ const accountSlices = createSlice({
   },
 });
 
-export const { login, logout, loginAdmin, logoutAdmin, showUnauthorizedModal, hideUnauthorizeModal, updateProfile, updateProfileAdmin, setIsWarehouseAdmin, setUsername } = accountSlices.actions;
+export const { login, logout, loginAdmin, logoutAdmin, showUnauthorizedModal, hideUnauthorizeModal, updateProfile, updatePhotoProfile, updateProfileAdmin, setIsWarehouseAdmin, setUsername } = accountSlices.actions;
 export default accountSlices.reducer;

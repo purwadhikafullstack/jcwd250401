@@ -5,7 +5,7 @@ import { Button } from "flowbite-react";
 import * as yup from "yup";
 import { toast } from "sonner";
 import { useSelector, useDispatch } from "react-redux";
-import { setUsername, updateProfile } from "../slices/accountSlices";
+import { setUsername, updatePhotoProfile, updateProfile } from "../slices/accountSlices";
 import { FiUpload } from "react-icons/fi";
 import { AiOutlineLoading } from "react-icons/ai";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from "@chakra-ui/react";
@@ -85,6 +85,7 @@ export const UpdateProfileModal = ({ isOpen, onClose }) => {
                 setPreview(null);
                 setIsSubmitting(false);
                 dispatch(updateProfile(response));
+                dispatch(updatePhotoProfile(response.data.profile.photoProfile));
                 dispatch(setUsername(values.userName));
                 onClose();
               },

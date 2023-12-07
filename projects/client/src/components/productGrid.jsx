@@ -98,16 +98,22 @@ function ProductGrid() {
   };
 
   useEffect(() => {
-    // Parse the URL to get the sort parameter
+    // Parse the URL to get the sort and page parameters
     const queryParams = new URLSearchParams(location.search);
     const sortParam = queryParams.get("sort");
-
+    const pageParam = queryParams.get("page");
+  
     // Check if the sort parameter is present and update the state
     if (sortParam) {
       setSortCriteria(sortParam);
     }
-
-    // Fetch products based on the sort parameter
+  
+    // Check if the page parameter is present and update the state
+    if (pageParam) {
+      setCurrentPage(parseInt(pageParam, 10));
+    }
+  
+    // Fetch products based on the sort and page parameters
     fetchProducts();
   }, [location.search]);
 
@@ -172,6 +178,15 @@ function ProductGrid() {
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
+  
+      // Update URL with new page parameter
+      const queryParams = new URLSearchParams(location.search);
+      queryParams.set("page", newPage);
+  
+      navigate({
+        pathname: location.pathname,
+        search: queryParams.toString(),
+      });
     }
   };
 

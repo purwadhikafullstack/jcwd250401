@@ -50,7 +50,7 @@ function Product() {
         <div className="shadow-md fixed top-0 left-[18vw] lg:left-[16vw] right-0 z-50 bg-white">
           <Navigationadmin />
         </div>
-        <div className="flex flex-col mt-16 py-8 px-4 md:p-8">
+        <div className="flex flex-col overflow-hidden mt-16 py-8 px-4 md:p-8">
           {!isWarehouseAdmin && (
             <div className="flex justify-end items-center gap-2">
               <Button color="light" size="medium" className="md:p-2 w-52 shadow-sm" onClick={openAddCategoryModal}>
