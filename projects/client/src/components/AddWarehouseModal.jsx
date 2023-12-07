@@ -22,13 +22,16 @@ import {
 import { FiCamera } from 'react-icons/fi';
 import api from '../api'; 
 import { useRef } from 'react';
+import { set } from 'lodash';
 
 const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
   const [name, setName] = useState('');
   const [province, setProvince] = useState('');
+  const [provinceId, setProvinceId] = useState(0);
   const [provinces, setProvinces] = useState([]);
   const [selectedProvince, setSelectedProvince] = useState('');
   const [city, setCity] = useState('');
+  const [cityId, setCityId] = useState(0);
   const [cities, setCities] = useState([]);
   const [selectedCity, setSelectedCity] = useState('');
   const [street, setStreet] = useState('');
@@ -86,7 +89,9 @@ const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
     const formData = new FormData();
     formData.append('name', name);
     formData.append('province', province);
+    formData.append('provinceId', provinceId);
     formData.append('city', city);
+    formData.append('cityId', cityId);
     formData.append('street', street);
     formData.append('warehouseImage', warehouseImage);
 
@@ -110,7 +115,9 @@ const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
         // Reset form
         setName('');
         setProvince('');
+        setProvinceId(0);
         setCity('');
+        setCityId(0);
         setStreet('');
         setImagePreview(null);
         setWarehouseImage(null);
