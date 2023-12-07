@@ -52,7 +52,7 @@ const DeliveryOptions = () => {
   }, [fetchAddress]);
 
   return (
-    <div className="mt-2 lg:mt-4 p-6 flex flex-col h-62 border rounded-md lg:w-[40vw] bg-white">
+    <div className="mt-2 lg:mt-4 p-6 flex flex-col h-62 border rounded-md lg:w-[48vw] bg-white">
       <div className="mb-4">
         <h2 className="font-bold text-xl mb-2">1. Delivery Option</h2>
         <hr className="border-gray-300 my-4 mx-[-1.5rem]" />
