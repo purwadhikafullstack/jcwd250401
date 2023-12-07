@@ -27,9 +27,11 @@ const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
   const [name, setName] = useState('');
   const [province, setProvince] = useState('');
   const [provinces, setProvinces] = useState([]);
+  const [provinceId, setProvinceId] = useState(0);
   const [selectedProvince, setSelectedProvince] = useState('');
   const [city, setCity] = useState('');
   const [cities, setCities] = useState([]);
+  const [cityId, setCityId] = useState(0);
   const [selectedCity, setSelectedCity] = useState('');
   const [street, setStreet] = useState('');
   const [warehouseImage, setWarehouseImage] = useState(null);
@@ -64,6 +66,8 @@ const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
   const handleProvinceChange = (e) => {
     const provinceId = e.target.value;
     setSelectedProvince(provinceId);
+    setProvinceId(provinceId); // Set the province id state
+    setCityId(0); // Clear city id when province changes
     setCities([]); // Clear cities when province changes
     setSelectedCity(''); // Clear selected city when province changes
 
@@ -77,6 +81,10 @@ const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
     // Set the province name
     const province = provinces.find((province) => province.province_id === provinceId);
     setProvince(province.province);
+
+    // Set the city id
+    const city = cities.find((city) => city.city_id === cityId);
+    setCityId(city.city_id);
   };    
 
   const handleSubmit = async (e) => {
@@ -86,7 +94,9 @@ const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
     const formData = new FormData();
     formData.append('name', name);
     formData.append('province', province);
+    formData.append('provinceId', provinceId);
     formData.append('city', city);
+    formData.append('cityId', cityId);
     formData.append('street', street);
     formData.append('warehouseImage', warehouseImage);
 

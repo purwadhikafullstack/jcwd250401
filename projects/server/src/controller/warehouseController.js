@@ -37,34 +37,20 @@ exports.getAllWarehouses = async (req, res) => {
   }
 };
 
-// Function to convert address to coordinates
-const convertAddressToCoordinates = async (address) => {
-  try {
-    const response = await axios.get(`https://geocode.maps.co/search?q=${encodeURIComponent(address)}`);
-    // Check if the response data array has at least one result
-    if (response.data && response.data.length > 0) {
-      const firstResult = response.data[0];
-      return { lat: firstResult.lat, lon: firstResult.lon };
-    } else {
-      return null;
-    }
-  } catch (error) {
-    console.error("Error converting address to coordinates:", error);
-    return null;
-  }
-};
-
 exports.addWarehouse = async (req, res) => {
-  const { name, street, city, province } = req.body;
+  const { name, street, city, cityId, province, provinceId } = req.body;
   const address = `${street}, ${city}, ${province}`;
 
   try {
     // Convert address to coordinates
-    const coordinates = await convertAddressToCoordinates(address);
+    console.log("Converting address to coordinates:", address);
+    const apiKey = process.env.OPENCAGE_APIKEY;
 
-    if (!coordinates) {
-      return res.status(400).send("Invalid address or unable to find coordinates.");
-    }
+    const openCageResponse = await axios.get(`https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(address)}&key=${apiKey}`);
+    const { results } = openCageResponse.data;
+
+    const longitude = results[0].geometry.lng;
+    const latitude = results[0].geometry.lat;
 
     // Retrieve the uploaded image file, if available
     let warehouseImage;
@@ -87,9 +73,11 @@ exports.addWarehouse = async (req, res) => {
       warehouseId: warehouse.id,
       street,
       city,
+      cityId,
       province,
-      latitude: coordinates.lat,
-      longitude: coordinates.lon,
+      provinceId,
+      longitude,
+      latitude,
     });
 
     // Update Warehouse with warehouseAddressId
@@ -114,6 +102,8 @@ exports.addWarehouse = async (req, res) => {
       data: {
         name: warehouse.name,
         location: warehouse.location,
+        cityId: warehouseAddress.cityId,
+        provinceId: warehouseAddress.provinceId,
         coordinates: {
           latitude: warehouseAddress.latitude,
           longitude: warehouseAddress.longitude,
@@ -130,72 +120,87 @@ exports.addWarehouse = async (req, res) => {
 
 exports.updateWarehouse = async (req, res) => {
   const { id } = req.params;
-  const { name, street, city, province } = req.body;
+  const { name, street, city, cityId, province, provinceId } = req.body;
   const address = `${street}, ${city}, ${province}`;
 
   try {
     // Convert address to coordinates
-    const coordinates = await convertAddressToCoordinates(address);
+    console.log("Converting address to coordinates:", address);
+    const apiKey = process.env.OPENCAGE_APIKEY;
 
-    if (!coordinates) {
-      return res.status(400).send("Invalid address or unable to find coordinates.");
-    }
+    const openCageResponse = await axios.get(`https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(address)}&key=${apiKey}`);
+    const { results } = openCageResponse.data;
 
-    // Check if there is a new file uploaded
+    const longitude = results[0].geometry.lng;
+    const latitude = results[0].geometry.lat;
+
+    // Retrieve the uploaded image file, if available
     let warehouseImage;
     if (req.file) {
-      warehouseImage = req.file.filename; // Path to the new uploaded file
+      warehouseImage = req.file.filename; // The filename where the image is stored
+    } else {
+      // Handle the case where no image is uploaded (optional)
+      warehouseImage = "default-image-path"; // Or leave it undefined, based on your application logic
     }
 
-    // Update Warehouse with new data
-    const warehouseUpdate = {
-      name,
-      location: address,
-    };
-
-    // If a new image is uploaded, include it in the update
-    if (warehouseImage) {
-      warehouseUpdate.warehouseImage = warehouseImage;
-    }
-
-    const warehouse = await Warehouse.update(warehouseUpdate, {
-      where: { id },
-    });
+    // Update Warehouse with location and coordinates
+    const warehouse = await Warehouse.update(
+      {
+        name,
+        location: address,
+        warehouseImage,
+      },
+      {
+        where: {
+          id,
+        },
+      }
+    );
 
     // Update WarehouseAddress
     const warehouseAddress = await WarehouseAddress.update(
       {
+        warehouseId: warehouse.id,
         street,
         city,
+        cityId,
         province,
-        latitude: coordinates.lat,
-        longitude: coordinates.lon,
+        provinceId,
+        longitude,
+        latitude,
       },
       {
         where: {
-          id, // Assuming this is the correct field to match
+          id,
         },
       }
     );
 
     // If coordinates not found, return error
-    if (!coordinates.lat || !coordinates.lon) {
+    if (warehouseAddress.latitude === null || warehouseAddress.longitude === null) {
       return res.status(400).send("Invalid address or unable to find coordinates.");
     }
 
     res.json({
       ok: true,
       data: {
-        name,
-        location: address,
-        coordinates,
-        warehouseImage: warehouseImage || "Existing image path or default", // You can modify this as needed
+        name: warehouse.name,
+        location: warehouse.location,
+        cityId: warehouseAddress.cityId,
+        provinceId: warehouseAddress.provinceId,
+        coordinates: {
+          latitude: warehouseAddress.latitude,
+          longitude: warehouseAddress.longitude,
+        },
+        warehouseImage,
       },
     });
+    
   } catch (error) {
-    res.status(500).send({
+    res.status(500).json({
+      ok: false,
       message: "Error updating warehouse: " + error.message,
-    });
+    })
   }
 };
 
