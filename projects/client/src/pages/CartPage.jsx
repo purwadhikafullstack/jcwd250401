@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import CartSection from "../components/CartSection";
 import CartBreadcrumbs from "../components/CartBreadcrumbs";
+import Footer from "../components/Footer";
 
 function CartPage() {
   const { gender, mainCategory, subCategory, productName } = useParams();
@@ -13,6 +14,9 @@ function CartPage() {
       </div>
       <div className="px-6 lg:px-32 mt-4">
         <CartSection />
+      </div>
+      <div className="mt-32">
+        <Footer />
       </div>
     </div>
   );

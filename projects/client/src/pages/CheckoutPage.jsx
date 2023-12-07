@@ -6,10 +6,10 @@ import CartSection from "../components/CartSection";
 import OrderSummary from "../components/OrderSummary";
 import CartBreadcrumbs from "../components/CartBreadcrumbs";
 import DeliveryOptions from "../components/DeliveryOptions"; // Import the DeliveryOptions component
+import Footer from "../components/Footer";
 
 function CheckoutPage() {
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
-
 
   const handlePaymentOpen = () => {
     setIsPaymentOpen(true);
@@ -17,7 +17,7 @@ function CheckoutPage() {
 
   const handlePaymentClose = () => {
     setIsPaymentOpen(false);
-  }
+  };
 
   return (
     <div className="w-full min-h-screen bg-gray-100">
@@ -38,6 +38,9 @@ function CheckoutPage() {
         <div className="w-full lg:px-6 flex justify-start lg:justify-center lg:h-64">
           <OrderSummary />
         </div>
+      </div>
+      <div className="mt-32">
+        <Footer />
       </div>
     </div>
   );
