@@ -9,7 +9,7 @@ import { PiClipboard } from 'react-icons/pi';
 import { useDispatch, useSelector } from 'react-redux';
 import AddressListModal from './UserAddressModal';
 
-const DeliveryOptions = () => {
+const DeliveryOptions = ({ handlePaymentOpen }) => {
   const username = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const [selectedOption, setSelectedOption] = useState('standard');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -127,7 +127,7 @@ const DeliveryOptions = () => {
       </div>
       {/* Buttons */}
       <div className="flex justify-between items-center pt-4">
-        <button className="bg-gray-900 enabled:hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+        <button className="bg-gray-900 enabled:hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" onClick={handlePaymentOpen}>
           Payment Method
         </button>
         <button className="bg-white enabled:hover:bg-gray-100 text-black border border-gray-300 font-bold py-2 px-4 rounded" onClick={handleModalOpen}>
