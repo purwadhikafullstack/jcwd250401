@@ -142,13 +142,17 @@ exports.summaryTotalStock = async (req, res) => {
         SUM(totalSubtraction) AS overallTotalSubtraction,
         SUM(endingStock) AS overallTotalStock
       FROM (
+        -- Get the latest successful mutations for each product (subquery)
         SELECT
           m.productId,
           m.warehouseId,
+          -- Calculate the total addition and subtraction
           SUM(CASE WHEN m.mutationType = 'add' AND m.status = 'success' THEN m.mutationQuantity ELSE 0 END) AS totalAddition,
           SUM(CASE WHEN m.mutationType = 'subtract' AND m.status = 'success' THEN m.mutationQuantity ELSE 0 END) AS totalSubtraction,
+          -- Retrieve the latest stock for each product and warehouse
           COALESCE((SELECT stock FROM Mutations AS sub WHERE sub.productId = m.productId AND sub.warehouseId = m.warehouseId AND sub.status = 'success' ORDER BY sub.createdAt DESC LIMIT 1), 0) AS endingStock
         FROM Mutations AS m
+        -- Filter by warehouseId or month if provided
         WHERE m.status = 'success' 
         AND ${month ? `MONTH(m.createdAt) = ${parseInt(month)}` : "MONTH(NOW())"} 
         ${warehouseId ? `AND m.warehouseId = ${warehouseId}` : ""}
