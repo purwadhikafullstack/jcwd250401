@@ -79,8 +79,16 @@ const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
 
     // Set the province name
     const province = provinces.find((province) => province.province_id === provinceId);
-    setProvince(province.province);
+    setProvince(province ? province.province : '');
+    setProvinceId(province ? province.province_id : 0);
   };    
+
+  const handleCityChange = (e) => {
+    const cityName = e.target.value;
+    const city = cities.find(c => c.city_name === cityName);
+    setCity(cityName);
+    setCityId(city ? city.city_id : 0); 
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -89,9 +97,9 @@ const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
     const formData = new FormData();
     formData.append('name', name);
     formData.append('province', province);
-    formData.append('provinceId', provinceId);
+    formData.append('provinceId', Number(provinceId));
     formData.append('city', city);
-    formData.append('cityId', cityId);
+    formData.append('cityId', Number(cityId));
     formData.append('street', street);
     formData.append('warehouseImage', warehouseImage);
 
@@ -173,11 +181,11 @@ const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
                   </Select>
                 </FormControl>
                 <FormControl id="city" flex="1">
-                  <Select placeholder='Select City' onChange={(e) => setCity(e.target.value)} value={city} disabled={!selectedProvince}>
-                    {cities.map((city) => (
-                      <option key={city.city_id} value={city.city_name}>{city.city_name}</option>
-                    ))}
-                  </Select>
+                <Select placeholder='Select City' onChange={handleCityChange} value={city} disabled={!selectedProvince}>
+                  {cities.map((city) => (
+                    <option key={city.city_id} value={city.city_name}>{city.city_name}</option>
+                  ))}
+                </Select>
                 </FormControl>
               </HStack>
             </VStack>

@@ -15,7 +15,7 @@ import getWarehouseByAdmin from "../api/warehouse/getWarehouseByAdmin";
 import getSingleAdmin from "../api/users/getSingleAdmin";
 
 export const WarehouseOrder = () => {
-  const navList = ["All Orders", "Pending", "Success", "Cancelled", "Failed"];
+  const navList = ["All Order", "Pending", "Success", "Cancelled", "Failed"];
   const isWarehouseAdmin = useSelector((state) => state?.account?.isWarehouseAdmin);
   const adminData = useSelector((state) => state?.account?.adminProfile?.data?.profile);
   const [adminId, setAdminId] = useState(null);
@@ -24,7 +24,7 @@ export const WarehouseOrder = () => {
   const [warehouseList, setWarehouseList] = useState([]);
   const [warehouseId, setWarehouseId] = useState(null);
   const [destinationWarehouseId, setDestinationWarehouseId] = useState(null);
-  const [selectedComponent, setSelectedComponent] = useState("All Orders");
+  const [selectedComponent, setSelectedComponent] = useState("All Order");
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedOrderData, setSelectedOrderData] = useState(null);
@@ -155,7 +155,7 @@ export const WarehouseOrder = () => {
   const fetchMuntationsJournal = useCallback(async () => {
     try {
       let selectedStatusValue = selectedStatus;
-      if (selectedStatus === "all orders") {
+      if (selectedStatus === "all order") {
         selectedStatusValue = "";
       }
 
@@ -297,7 +297,7 @@ export const WarehouseOrder = () => {
               </select>
             </div>
           </div>
-          <div className="flex flex-col gap-4 rounded-lg mt-4 h-[43vh] lg:h-[55vh] overflow-y-auto scrollbar-hide">
+          <div className="flex flex-col gap-4 rounded-lg mt-4 h-[50vh] lg:h-[57vh] overflow-y-auto scrollbar-hide">
             {mutations.length > 0 ? (
               mutations.map((mutation, index) => {
                 return (

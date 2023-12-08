@@ -251,7 +251,7 @@ export const Stock = () => {
                   </select>
                 </div>
               </Box>
-              <TableContainer bgColor={"white"} h={"30vh"} className="scrollbar-hide">
+              <TableContainer bgColor={"white"} h={"15vh"} className="scrollbar-hide">
                 <Table>
                   <Thead>
                     <Tr textColor={"#40403F"} fontWeight={"bold"} >

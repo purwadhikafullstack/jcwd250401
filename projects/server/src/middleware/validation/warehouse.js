@@ -21,11 +21,23 @@ exports.WarehouseValidationRules = [
         .isLength({ min: 3 })
         .withMessage('City must be at least 3 characters long'),
 
+    body('cityId')
+        .notEmpty()
+        .withMessage('City ID is required')
+        .isNumeric()
+        .withMessage('City ID must be numeric'),
+
     body('province')
         .notEmpty()
         .withMessage('Province is required')
         .isLength({ min: 3 })
         .withMessage('Province must be at least 3 characters long'),
+
+    body('provinceId')
+        .notEmpty()
+        .withMessage('Province ID is required')
+        .isNumeric()
+        .withMessage('Province ID must be numeric'),
 
     body('warehouseImage')
         .custom((value, { req }) => {
