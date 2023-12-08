@@ -297,7 +297,7 @@ export const WarehouseOrder = () => {
               </select>
             </div>
           </div>
-          <div className="flex flex-col gap-4 rounded-lg mt-4 h-[50vh] lg:h-[60vh] overflow-y-auto scrollbar-hide">
+          <div className="flex flex-col gap-4 rounded-lg mt-4 h-[50vh] lg:h-[57vh] overflow-y-auto scrollbar-hide">
             {mutations.length > 0 ? (
               mutations.map((mutation, index) => {
                 return (
