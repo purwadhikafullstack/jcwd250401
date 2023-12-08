@@ -189,6 +189,11 @@ function ProductGrid() {
       });
     }
   };
+  
+  useEffect(() => {
+    // Scroll to the top when the component is first rendered
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <div>

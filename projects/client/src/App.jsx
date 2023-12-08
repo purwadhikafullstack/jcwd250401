@@ -1,5 +1,6 @@
 import React from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
+import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { Homepage } from "./pages/Homepage";
 import ResetPassword from "./pages/ResetPassword";
 import { Profile } from "./pages/Profile";
@@ -20,9 +21,10 @@ import { Stock } from "./pages/Stock";
 import OrderCust from "./pages/OrderCust";
 import CheckoutPage from "./pages/CheckoutPage";
 import { WarehouseOrder } from "./pages/WarehouseOrder";
-
-
-//
+import MenCollections from "./pages/MenCollections";
+import WomenCollections from "./pages/WomenCollections";
+import UnisexCollections from "./pages/UnisexCollections";
+import "./App.css"; // Add your CSS file for transitions
 
 const adminPaths = [
   "/adminlogin",
@@ -32,17 +34,14 @@ const adminPaths = [
   "/dashboard/customers",
   "/dashboard/staff",
   "/dashboard/warehouse",
+  "/dashboard/report/stock",
   "/dashboard/order/customers",
-  // Add more admin paths as needed
+  "/dashboard/order/warehouse",
 ];
 
 export default function App() {
   const location = useLocation();
-
-  // Check if the current path is an admin path
   const isAdminPath = adminPaths.some((path) => location.pathname.startsWith(path));
-
-  // Show Navigationbar only if it's not an admin path
   const showNavigationbar = !isAdminPath;
 
   return (
@@ -53,32 +52,48 @@ export default function App() {
         </div>
       )}
       <div className={showNavigationbar ? "mt-20" : ""}>
-        {/* Add some top margin to create space for the fixed navigation bar */}
-        <Routes>
-          {/* admin routes */}
-          <Route path="/adminlogin" element={<AdminLoginPage />} />
-          <Route path="/reset-password-admin" element={<ResetPassword userType={"admin"} />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/dashboard/products" element={<Products />} />
-          <Route path="/dashboard/customers" element={<Customers />} />
-          <Route path="/dashboard/staff" element={<Staff />} />
-          <Route path="/dashboard/warehouse" element={<Warehouse />} />
-          <Route path="/dashboard/report/stock" element={<Stock />} />
-          <Route path="/dashboard/order/customers" element={<OrderCust />} />
-          <Route path="/dashboard/order/warehouse" element={<WarehouseOrder />} />
-          {/* client routes */}
-          <Route path="/" element={<Homepage />} />
-          <Route path="/reset-password" element={<ResetPassword userType={"user"} />} />
-          <Route path="/account/profile" element={<Profile />} />
-          <Route path="/account/my-order" element={<Order />} />
-          <Route path="/account/address-book" element={<Address />} />
-          <Route path="/account/change-password" element={<ChangePassword />} />
-          <Route path="/account/shopping-cart" element={<CartPage />} />
-          <Route path="/account/shopping-cart/checkout" element={<CheckoutPage />} />
-          <Route path="/products/:gender/:mainCategory?/:subCategory?/:productName?" element={<HomeProducts />} />
-          {/* Add more route configurations as needed */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <TransitionGroup>
+          {isAdminPath ? (
+            <div>
+              <Routes>
+                {/* admin routes */}
+                <Route path="/adminlogin" element={<AdminLoginPage />} />
+                <Route path="/reset-password-admin" element={<ResetPassword userType={"admin"} />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/dashboard/products" element={<Products />} />
+                <Route path="/dashboard/customers" element={<Customers />} />
+                <Route path="/dashboard/staff" element={<Staff />} />
+                <Route path="/dashboard/warehouse" element={<Warehouse />} />
+                <Route path="/dashboard/report/stock" element={<Stock />} />
+                <Route path="/dashboard/order/customers" element={<OrderCust />} />
+                <Route path="/dashboard/order/warehouse" element={<WarehouseOrder />} />
+                {/* Add more admin routes as needed */}
+              </Routes>
+            </div>
+          ) : (
+            <CSSTransition key={location.key} classNames="fade" timeout={700}>
+              <div>
+                <Routes>
+                  {/* client routes */}
+                  <Route path="/" element={<Homepage />} />
+                  <Route path="/reset-password" element={<ResetPassword userType={"user"} />} />
+                  <Route path="/account/profile" element={<Profile />} />
+                  <Route path="/account/my-order" element={<Order />} />
+                  <Route path="/account/address-book" element={<Address />} />
+                  <Route path="/account/change-password" element={<ChangePassword />} />
+                  <Route path="/account/shopping-cart" element={<CartPage />} />
+                  <Route path="/account/shopping-cart/checkout" element={<CheckoutPage />} />
+                  <Route path="/collections/men" element={<MenCollections />} />
+                  <Route path="/collections/women" element={<WomenCollections />} />
+                  <Route path="/collections/unisex" element={<UnisexCollections />} />
+                  <Route path="/products/:gender/:mainCategory?/:subCategory?/:productName?" element={<HomeProducts />} />
+                  {/* Add more route configurations as needed */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </div>
+            </CSSTransition>
+          )}
+        </TransitionGroup>
       </div>
     </div>
   );

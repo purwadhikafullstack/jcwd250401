@@ -97,15 +97,85 @@ html {
   visibility: hidden;
 }
 
-.search-input-visible {
-  opacity: 1;
-  transform: scale(1);
-  width: 300px;
-  visibility: visible;
+/* Styles for larger screens */
+@media (min-width: 768px) {
+  .search-input-visible {
+    opacity: 1;
+    transform: scale(1);
+    width: 300px; /* Adjust the width for larger screens */
+    visibility: visible;
+  }
+}
+
+/* Styles for smaller screens */
+@media (max-width: 767px) {
+  .search-input-visible {
+    opacity: 1;
+    transform: scale(1);
+    width: 130px; /* Adjust the width for smaller screens */
+    visibility: visible;
+  }
 }
 
 .search-input-hidden {
   opacity: 0;
   width: 0;
   visibility: hidden;
+}
+
+
+.parallax {
+  background-position: top;
+  background-size: cover;
+  background-attachment: fixed;
+  height: 100vh;
+}
+
+.menjackets {
+  background-image: url('./assets/menjackets.jpg');
+}
+
+.mentops {
+  background-image: url('./assets/mentops.jpg');
+}
+
+.menbottom {
+  background-image: url('./assets/menbottom.jpg');
+}
+
+.mencta {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+
+.womenjackets {
+  background-image: url('./assets/womenjackets.jpg');
+}
+
+.womentops {
+  background-image: url('./assets/womentops.jpg');
+}
+
+.womenbottom {
+  background-image: url('./assets/womenbottom.jpg');
+}
+
+
+.unisexbags {
+  background-image: url('./assets/bag.jpg');
+}
+
+.unisexaccessories {
+  background-image: url('./assets/accessories.jpg');
+}
+
+
+.womencta {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
