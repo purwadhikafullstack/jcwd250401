@@ -14,8 +14,10 @@ const HomeProducts = () => {
   
 
   useEffect(() => {
-    // Scroll to the top when the component is first rendered
-    window.scrollTo(0, 0);
+    // Scroll to the top when the component is first rendered, but only on larger screens
+    if (window.innerWidth > 768) {
+      window.scrollTo(0, 0);
+    }
   }, []);
 
   return (

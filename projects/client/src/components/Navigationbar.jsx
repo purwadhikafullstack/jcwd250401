@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { BsCart, BsSearch } from "react-icons/bs";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { HiOutlineArrowRight } from "react-icons/hi";
@@ -52,6 +52,19 @@ function Navigationbar() {
   const [bottomSubCategory, setBottomSubCategory] = useState([]);
   const cartItem = useSelector((state) => state.cart.items);
   const [activeCategory, setActiveCategory] = useState(null);
+  const hoverTimeoutRef = useRef(null);
+
+  const handleMouseEnter = (category) => {
+    hoverTimeoutRef.current = setTimeout(() => {
+      if (dropdownSubcategory !== category) {
+        handleSubcategoryClick(category);
+      }
+    }, 500);
+  };
+
+  const handleMouseLeave = () => {
+    clearTimeout(hoverTimeoutRef.current);
+  };
 
   const fetchCategoriesBags = useCallback(async () => {
     try {
@@ -245,13 +258,19 @@ function Navigationbar() {
             };
             return (
               <>
-                <span
+                <Link
+                  to={category === "MEN" || category === "WOMEN" ? `/collections/${category.toLowerCase()}` : `/products/unisex/${category.toLowerCase()}`}
                   key={index}
                   className={`text-md font-semibold cursor-pointer underline-on-hover ${activeCategory === category ? "active" : ""}`}
-                  onMouseEnter={() => dropdownSubcategory !== category && handleSubcategoryClick(category)}
+                  onMouseEnter={() => handleMouseEnter(category)}
+                  onMouseLeave={handleMouseLeave}
+                  onClick={() => {
+                    setDropdownSubcategory(null);
+                    setActiveCategory(null);
+                  }}
                 >
                   {category}
-                </span>
+                </Link>
 
                 {dropdownSubcategory === category && (
                   <div
@@ -439,7 +458,6 @@ function Navigationbar() {
                 </p>
               </div>
             )}
-
             <PiHeart className="text-xl cursor-pointer" />
             <div style={{ position: "relative", display: "inline-block" }}>
               <PiShoppingCart className="text-xl cursor-pointer" onClick={() => navigate("/account/shopping-cart")} />
@@ -521,13 +539,20 @@ function Navigationbar() {
               }`}
             />
           </div>
-          <a onClick={openAuthModal} className="text-black text-md font-semibold hover:underline cursor-pointer">
-            Log in
-          </a>
-          <Button pill className="cursor-pointer bg-[#40403F] text-white enabled:hover:bg-gray-400 enabled:hover:text-gray-900 transition duration-200 ease-linear" onClick={openSignUpModal}>
-            <span className="text-md font-semibold">Sign Up</span>
-            <HiOutlineArrowRight className="ml-2 h-5 w-5 hover:block" />
-          </Button>
+          <div className="hidden lg:flex items-center gap-4">
+            <a onClick={openAuthModal} className="text-black text-md font-semibold hover:underline cursor-pointer">
+              Log in
+            </a>
+            <Button pill className="cursor-pointer bg-[#40403F] text-white enabled:hover:bg-gray-400 enabled:hover:text-gray-900 transition duration-200 ease-linear" onClick={openSignUpModal}>
+              <span className="text-md font-semibold">Sign Up</span>
+              <HiOutlineArrowRight className="ml-2 h-5 w-5 hover:block" />
+            </Button>
+          </div>
+          <div className="flex lg:hidden items-center gap-4">
+            <a onClick={openAuthModal} className="text-black text-md font-semibold hover:underline cursor-pointer">
+              Sign In
+            </a>
+          </div>
         </div>
       )}
       <AuthModal />

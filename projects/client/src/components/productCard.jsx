@@ -195,7 +195,11 @@ function ProductCard() {
     console.log("add to wishlist");
   };
 
-  console.log(showPopup);
+  useEffect(() => {
+    // Scroll to the top when the component is first rendered
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="flex lg:flex-row flex-col px-6 lg:px-32 space-y-6 lg:space-y-20 scrollbar-hide">
       {selectedProduct.length !== 0 ? (
