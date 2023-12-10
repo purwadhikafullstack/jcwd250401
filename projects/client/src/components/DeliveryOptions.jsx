@@ -4,6 +4,8 @@ import { AddAddressModal } from './AddAddressModal';
 import { showLoginModal } from "../slices/authModalSlices";
 import getProfile from '../api/profile/getProfile';
 import getUserAddress from '../api/Address/getUserAddress';
+import getWarehouses from '../api/warehouse/getWarehouses';
+import getShippingCost from '../api/order/getShippingCost';
 import { toast } from 'sonner';
 import { PiClipboard } from 'react-icons/pi';
 import { useDispatch, useSelector } from 'react-redux';
@@ -12,6 +14,8 @@ import AddressListModal from './UserAddressModal';
 const DeliveryOptions = ({ handlePaymentOpen }) => {
   const username = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const [selectedOption, setSelectedOption] = useState('standard');
+  const [showButtons, setShowButtons] = useState(true);
+  const [lockButton, setLockButton] = useState(false); // Lock button to prevent double click
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalEditOpen, setIsModalEditOpen] = useState(false);
   const [userData, setUserData] = useState({});
@@ -34,6 +38,12 @@ const DeliveryOptions = ({ handlePaymentOpen }) => {
   const handleEditModalOpen = () => {
     setIsModalEditOpen(true);
   }
+
+  const handlePaymentMethodClick = () => {
+    handlePaymentOpen();
+    setShowButtons(false); // Hide buttons
+    setLockButton(true); // Lock button
+  };
 
   const handleEditModalClose = () => {
     setIsModalEditOpen(false);
@@ -65,6 +75,7 @@ const DeliveryOptions = ({ handlePaymentOpen }) => {
             checked={selectedOption === 'standard'}
             onChange={() => setSelectedOption('standard')}
             className="h-4 w-4 border-gray-300 focus:ring-2 focus:ring-blue-300"
+            disabled={lockButton}
           />
           <label htmlFor="standardShipping" className="ml-2 block text-sm font-medium text-gray-700">
             Standard Shipping
@@ -84,6 +95,7 @@ const DeliveryOptions = ({ handlePaymentOpen }) => {
             checked={selectedOption === 'express'}
             onChange={() => setSelectedOption('express')}
             className="h-4 w-4 border-gray-300 focus:ring-2 focus:ring-blue-300"
+            disabled={lockButton}
           />
           <label htmlFor="expressShipping" className="ml-2 block text-sm font-medium text-gray-700">
             Express Shipping
@@ -112,11 +124,16 @@ const DeliveryOptions = ({ handlePaymentOpen }) => {
                   address.phoneNumber
                 }`}</p>
               </div>
+              {showButtons ? (
               <div className="w-[30%] flex justify-end">
                 <button className="w-[10vw] md:w-[10vw] lg:w-[10vw] h-[5vh] border border-gray-300 hover:bg-gray-100 rounded-md font-semibold" onClick={handleEditModalOpen}>
                   Edit
                 </button>
               </div>
+              ) : (
+                <div className="w-[30%] flex justify-end">
+                </div>
+              )}
             </div>
           ))}
         </>
@@ -126,14 +143,16 @@ const DeliveryOptions = ({ handlePaymentOpen }) => {
       </div>
       </div>
       {/* Buttons */}
+      {showButtons && (
       <div className="flex justify-between items-center pt-4">
-        <button className="bg-gray-900 enabled:hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" onClick={handlePaymentOpen}>
+        <button className="bg-gray-900 enabled:hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" onClick={handlePaymentMethodClick}>
           Payment Method
         </button>
         <button className="bg-white enabled:hover:bg-gray-100 text-black border border-gray-300 font-bold py-2 px-4 rounded" onClick={handleModalOpen}>
           Register New Address
         </button>
       </div>
+      )}
       <AddAddressModal isOpen={isModalOpen} onClose={handleModalClose} />
       <AddressListModal isOpen={isModalEditOpen} onClose={handleEditModalClose} username={username} />
     </div>
