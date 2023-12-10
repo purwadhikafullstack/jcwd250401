@@ -2,7 +2,7 @@ import api from "../../api";
 
 const createAdmin = async ({ username, email, password, isWarehouseAdmin }) => {
   try {
-    const response = await api.admin.post("/users/admin", {
+    const response = await api.admin.post("/api/users/admin", {
       username,
       email,
       password,

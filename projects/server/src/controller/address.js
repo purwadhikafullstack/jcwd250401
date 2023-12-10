@@ -75,11 +75,11 @@ exports.handleAddNewAddress = async (req, res) => {
   const { userId } = req.params;
   let { firstName, lastName, street, province, provinceId, city, cityId, district, subDistrict, phoneNumber, setAsDefault } = req.body;
 
-  firstName = firstName
-  lastName = lastName
+  firstName = firstName;
+  lastName = lastName;
   street = street.toString();
-  province = province
-  city = city
+  province = province;
+  city = city;
   setAsDefault = false;
 
   try {
@@ -231,7 +231,7 @@ exports.handleDeleteAddress = async (req, res) => {
 
 exports.handleUpdateAddress = async (req, res) => {
   const { userId, addressId } = req.params;
-  const { firstName, lastName, street, province, city, district, subDistrict, phoneNumber, setAsDefault } = req.body;
+  const { firstName, lastName, street, province, city, provinceId, cityId, district, subDistrict, phoneNumber, setAsDefault } = req.body;
 
   try {
     const address = await Address.findOne({
@@ -254,17 +254,43 @@ exports.handleUpdateAddress = async (req, res) => {
     const longitude = results[0].geometry.lng;
     const latitude = results[0].geometry.lat;
 
-    address.firstName = firstName
-    address.lastName = lastName
-    address.street = street.toString();
-    address.province = province
-    address.city = city
-    address.district = district;
-    address.subDistrict = subDistrict;
-    address.phoneNumber = 0 + phoneNumber;
+    if (firstName) {
+      address.firstName = firstName;
+    }
+    if (lastName) {
+      address.lastName = lastName;
+    }
+    if (street) {
+      address.street = street;
+    }
+    if (city) {
+      address.city = city;
+    }
+    if (province) {
+      address.province = province;
+    }
+    if (provinceId) {
+      address.provinceId = provinceId;
+    }
+    if (cityId) {
+      address.cityId = cityId;
+    }
+    if (district) {
+      address.district = district;
+    }
+    if (subDistrict) {
+      address.subDistrict = subDistrict;
+    }
+    if (phoneNumber) {
+      address.phoneNumber = phoneNumber;
+    }
+
+    if (setAsDefault) {
+      address.setAsDefault = setAsDefault;
+    }
+
     address.longitude = longitude;
     address.latitude = latitude;
-    address.setAsDefault = setAsDefault;
 
     await Address.update({ setAsDefault: false }, { where: { userId } });
     await Address.update({ setAsDefault }, { where: { id: addressId } });

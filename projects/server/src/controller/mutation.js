@@ -309,6 +309,7 @@ exports.getAllMutationsJournal = async (req, res) => {
     });
   }
 };
+
 exports.createManualStockMutation = async (req, res) => {
   const { adminId, warehouseId, destinationWarehouseId, productId, date } = req.body;
   let { mutationQuantity } = req.body;

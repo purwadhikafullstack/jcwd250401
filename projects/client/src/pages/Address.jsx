@@ -53,7 +53,7 @@ export const Address = () => {
       cityId: "",
       district: "",
       subDistrict: "",
-      phoneNumber: 0,
+      phoneNumber: "",
       setAsDefault: false,
     },
     validationSchema: yup.object({
@@ -64,7 +64,7 @@ export const Address = () => {
       city: yup.string().required("City is required"),
       district: yup.string().required("District is required"),
       subDistrict: yup.string().required("Sub District is required"),
-      phoneNumber: yup.number().min(8, "Phone number must be at least 8 characters").required("Phone number is required"),
+      phoneNumber: yup.string().min(8, "Phone number must be at least 8 characters").required("Phone number is required"),
     }),
     onSubmit: async (values) => {
       try {

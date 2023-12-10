@@ -2,7 +2,7 @@ import api from "../../api";
 
 const editAdmin = async ({ id, username, email, password, isWarehouseAdmin }) => {
   try {
-    const response = await api.admin.patch(`/users/admin/${id}`, {
+    const response = await api.admin.patch(`/api/users/admin/${id}`, {
       username,
       email,
       password,

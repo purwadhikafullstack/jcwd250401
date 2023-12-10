@@ -24,12 +24,12 @@ const mutationRoutes = require("./routes/mutation");
 
 //Routing
 app.use("/auth", authRouter);
-app.use("/profile", profileRouter);
-app.use("/address", addressRouter);
-app.use("/category", categoryRouter);
+app.use("/api/profile", profileRouter);
+app.use("/api/address", addressRouter);
+app.use("/api/category", categoryRouter);
 app.use("/order", orderRouter);
 app.use("/product", productRouter);
-app.use("/users", userRouter)
+app.use("/api/users", userRouter)
 app.use("/api/warehouse", WarehouseRoutes);
 app.use("/api/mutation", mutationRoutes);
 app.use("/cart", cartRouter);
