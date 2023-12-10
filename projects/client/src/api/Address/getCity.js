@@ -2,7 +2,7 @@ import api from "../../api";
 
 const getCity = async () => {
   try {
-    const response = await api.get("/address/city");
+    const response = await api.get("/api/address/city");
     return response.data;
   } catch (error) {
     console.error("Error in getCity:", error);

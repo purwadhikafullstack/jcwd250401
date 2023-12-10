@@ -2,7 +2,7 @@ import api from "../../api"
 
 const getAdmin = async ({page, size, sort, order, search, isWarehouseAdmin} = {}) => {
     try {
-        const url = "/users/admin" +
+        const url = "/api/users/admin" +
         (page ? `?page=${page}` : "") +
         (size ? `&size=${size}` : "") +
         (sort ? `&sort=${sort}` : "") +

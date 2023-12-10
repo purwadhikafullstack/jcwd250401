@@ -2,7 +2,7 @@ import api from "../../api";
 
 const getCustomers = async ({page, size, sort, order, search } = {}) => {
     try {
-        const url = "/users" +
+        const url = "/api/users" +
         (page ? `?page=${page}` : "") +
         (size ? `&size=${size}` : "") +
         (sort ? `&sort=${sort}` : "") +

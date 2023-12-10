@@ -251,8 +251,8 @@ export const Stock = () => {
                   </select>
                 </div>
               </Box>
-              <TableContainer bgColor={"white"} h={"15vh"} className="scrollbar-hide">
-                <Table>
+              <TableContainer bgColor={"white"} borderBottomRadius={"md"} overflowY={"auto"} h={"full"}>
+                <Table variant="striped" colorScheme="blackAlpha">
                   <Thead>
                     <Tr textColor={"#40403F"} fontWeight={"bold"} >
                       <Th>ID</Th>
@@ -278,10 +278,6 @@ export const Stock = () => {
                       <Th>Description</Th>
                     </Tr>
                   </Thead>
-                </Table>
-              </TableContainer>
-              <TableContainer bgColor={"white"} borderBottomRadius={"md"} overflowY={"auto"} h={"full"}>
-                <Table variant="striped" colorScheme="blackAlpha">
                   <Tbody>
                     {mutations.map((mutation, index) => (
                       <Tr key={index}>

@@ -1,6 +1,5 @@
 import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay } from "@chakra-ui/react";
 import { toast } from "sonner";
-import api from "../api";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { updateAddress } from "../slices/addressSlices";
