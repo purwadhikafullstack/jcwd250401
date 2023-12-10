@@ -64,28 +64,34 @@ const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
   }, []);
 
   const handleProvinceChange = (e) => {
-    const provinceId = e.target.value;
-    setSelectedProvince(provinceId);
-    setProvinceId(provinceId); // Set the province id state
-    setCityId(0); // Clear city id when province changes
-    setCities([]); // Clear cities when province changes
-    setSelectedCity(''); // Clear selected city when province changes
+    const selectedId = e.target.value;
+    setSelectedProvince(selectedId);
+    setProvinceId(selectedId);
+    setCityId(0);
+    setCities([]);
 
-    // Fetch cities based on the selected province
-    api.admin.get(`/address/city/${provinceId}`).then(response => {
+    api.admin.get(`/address/city/${selectedId}`).then(response => {
       if (response.data.ok) {
         setCities(response.data.detail);
       }
     });
 
-    // Set the province name
-    const province = provinces.find((province) => province.province_id === provinceId);
-    setProvince(province.province);
+    const selectedProvince = provinces.find(province => province.province_id.toString() === selectedId);
+    if (selectedProvince) {
+      setProvince(selectedProvince.province);
+    }
+  };
 
-    // Set the city id
-    const city = cities.find((city) => city.city_id === cityId);
-    setCityId(city.city_id);
-  };    
+  const handleCityChange = (e) => {
+    const selectedId = e.target.value;
+    setSelectedCity(selectedId);
+    setCityId(selectedId);
+
+    const selectedCity = cities.find(city => city.city_id.toString() === selectedId);
+    if (selectedCity) {
+      setCity(selectedCity.city_name);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -139,7 +145,7 @@ const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered size={{ base: 'full', md: 'xl' }}>
+    <Modal isOpen={isOpen} onClose={onClose} isCentered size={{ base: 'xl', md: 'xl' }}>
       <ModalOverlay />
       <ModalContent mx={{ base: '4', md: '12' }} my="auto" rounded="lg" overflow="hidden">
         <ModalHeader className="font-bold text-lg text-center">Edit Warehouse</ModalHeader>
@@ -174,9 +180,9 @@ const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
                   </Select>
                 </FormControl>
                 <FormControl id="city" flex="1">
-                  <Select placeholder='Select City' onChange={(e) => setCity(e.target.value)} value={city} disabled={!selectedProvince}>
+                  <Select placeholder='Select City' onChange={handleCityChange} value={selectedCity} disabled={!selectedProvince}>
                     {cities.map((city) => (
-                      <option key={city.city_id} value={city.city_name}>{city.city_name}</option>
+                      <option key={city.city_id} value={city.city_id}>{city.city_name}</option>
                     ))}
                   </Select>
                 </FormControl>
@@ -187,7 +193,7 @@ const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
             </FormControl>
           </VStack>
         </ModalBody>
-        <ModalFooter flexDirection={{ base: 'column', md: 'row' }} className="gap-2">
+        <ModalFooter className="gap-2">
           <Button variant="outline" onClick={onClose} flex="1" className="border-gray-300 text-black">
             Discard
           </Button>
