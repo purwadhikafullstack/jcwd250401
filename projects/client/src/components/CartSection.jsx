@@ -142,7 +142,8 @@ function CartSection() {
                       <NumberInput
                         defaultValue={cart.quantity}
                         size={"md"}
-                        min="1"
+                        min={1}
+                        max={cart.Product.Mutations[0].stock}
                         onChange={(valueString) => {
                           const value = Number(valueString);
                           handleQuantityChange(value, index);
