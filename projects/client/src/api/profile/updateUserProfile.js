@@ -2,7 +2,7 @@ import api from "../../api";
 
 const updateUserProfile = async ({ username, data } = {}) => {
   try {
-    const response = await api.patch(`/profile/${username}`, data, {
+    const response = await api.patch(`/api/profile/${username}`, data, {
       headers: {
         "Content-Type": "multipart/form-data",
       },

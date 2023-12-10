@@ -1,5 +1,4 @@
 import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay } from "@chakra-ui/react";
-import api from "../api";
 import { toast } from "sonner";
 import { useDispatch } from "react-redux";
 import { updateAddress } from "../slices/addressSlices";

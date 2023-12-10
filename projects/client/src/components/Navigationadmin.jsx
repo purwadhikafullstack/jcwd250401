@@ -1,19 +1,13 @@
 import React, { useState } from "react";
 import { GiHamburgerMenu } from "react-icons/gi";
-import { Button } from "flowbite-react";
-import rains from "../assets/rains.png";
-import AuthModal from "./AuthModal";
-import { useSelector, useDispatch } from "react-redux";
-import { showLoginModal, showSignUpModal } from "../slices/authModalSlices";
+import { useDispatch } from "react-redux";
 import { logoutAdmin } from "../slices/accountSlices";
-import { getAuth, signOut } from "firebase/auth"; // Import Firebase authentication functions
-import api from "../api";
 import { toast } from "sonner";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Link } from "react-router-dom";
 import { PiBell, PiMagnifyingGlass } from "react-icons/pi";
 import { useEffect } from "react";
 import { setIsWarehouseAdmin } from "../slices/accountSlices";
+import getAdminProfile from "../api/profile/getAdminProfile";
 
 function Navigationadmin() {
   const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -29,8 +23,8 @@ function Navigationadmin() {
     const getUserData = async () => {
       try {
         if (isLoggedInAdmin) {
-          const response = await api.get(`/profile/admin/${username}`);
-          const userDetail = response.data.detail;
+          const response = await getAdminProfile({ username });
+          const userDetail = response.detail;
           setUserData(userDetail);
 
           if (userDetail[0].isWarehouseAdmin === true) {
