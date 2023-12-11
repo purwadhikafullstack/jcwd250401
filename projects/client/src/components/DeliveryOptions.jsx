@@ -20,6 +20,7 @@ const DeliveryOptions = ({ handlePaymentOpen }) => {
   const [isModalEditOpen, setIsModalEditOpen] = useState(false);
   const [userData, setUserData] = useState({});
   const [address, setAddress] = useState([]);
+  const [shippingCost, setShippingCost] = useState([]);
   const dispatch = useDispatch();
 
   const fetchAddress = useCallback(async () => {
@@ -34,6 +35,16 @@ const DeliveryOptions = ({ handlePaymentOpen }) => {
       toast.error(error.message);
     }
   }, [username]);
+
+  const fetchShippingCost = useCallback(async () => {
+    try {
+      const shippingCost = await getShippingCost({ origin: '501', destination: '114', weight: '100' });
+      setShippingCost(shippingCost.detail);
+    } catch (error) {
+      toast.error(error.message);
+    }
+
+  }, []);
 
   const handleEditModalOpen = () => {
     setIsModalEditOpen(true);
@@ -59,52 +70,78 @@ const DeliveryOptions = ({ handlePaymentOpen }) => {
 
   useEffect(() => {
     fetchAddress();
-  }, [fetchAddress]);
+    fetchShippingCost();
+  }, [fetchAddress, fetchShippingCost]);
+
+  console.log(shippingCost);
 
   return (
     <div className="mt-2 lg:mt-4 p-6 flex flex-col h-62 border rounded-md lg:w-[48vw] bg-white">
       <div className="mb-4">
         <h2 className="font-bold text-xl mb-2">1. Delivery Option</h2>
         <hr className="border-gray-300 my-4 mx-[-1.5rem]" />
-        <div className="flex items-center">
-          <input
-            id="standardShipping"
-            type="radio"
-            name="delivery"
-            value="standard"
-            checked={selectedOption === 'standard'}
-            onChange={() => setSelectedOption('standard')}
-            className="h-4 w-4 border-gray-300 focus:ring-2 focus:ring-blue-300"
-            disabled={lockButton}
-          />
-          <label htmlFor="standardShipping" className="ml-2 block text-sm font-medium text-gray-700">
-            Standard Shipping
-          </label>
+        <div className="flex flex-row justify-between">
+          <div className="flex flex-col">
+            <div className="flex items-center">
+              <input
+                id="standardShipping"
+                type="radio"
+                name="delivery"
+                value="standard"
+                checked={selectedOption === 'standard'}
+                onChange={() => setSelectedOption('standard')}
+                className="h-4 w-4 border-gray-300 focus:ring-2 focus:ring-blue-300"
+                disabled={lockButton}
+              />
+              <label htmlFor="standardShipping" className="ml-2 block text-sm font-medium text-gray-700">
+                Standard Shipping
+              </label>
+            </div>
+            <div className="ml-6 pl-1 text-gray-600 text-sm">
+              JABODETABEK: next day <br />
+              Java: 1-5 working days <br />
+              Outside Java: 1-10 working days
+            </div>
+          </div>
+
+          {shippingCost.length > 0 && shippingCost[0].costs.length > 0 && (
+            <div className="flex flex-col justify-center items-end">
+              <p className="font-semibold text-gray-600 text-sm">
+                Rp {shippingCost[0].costs[0].cost[0].value}
+              </p>
+            </div>
+          )}
         </div>
-        <div className="ml-6 pl-1 text-gray-600 text-sm">
-          JABODETABEK: next day <br />
-          Java: 1-5 working days <br />
-          Outside Java: 1-10 working days
-        </div>
-        <div className="flex items-center mt-4">
-          <input
-            id="expressShipping"
-            type="radio"
-            name="delivery"
-            value="express"
-            checked={selectedOption === 'express'}
-            onChange={() => setSelectedOption('express')}
-            className="h-4 w-4 border-gray-300 focus:ring-2 focus:ring-blue-300"
-            disabled={lockButton}
-          />
-          <label htmlFor="expressShipping" className="ml-2 block text-sm font-medium text-gray-700">
-            Express Shipping
-          </label>
-        </div>
-        <div className="ml-6 pl-1 text-gray-600 text-sm">
-          JABODETABEK: next day <br />
-          Java: 1-3 working days <br />
-          Outside Java: 1-7 working days
+        <div className='flex flex-row justify-between'>
+          <div className='flex flex-col'>
+          <div className="flex items-center mt-4">
+            <input
+              id="expressShipping"
+              type="radio"
+              name="delivery"
+              value="express"
+              checked={selectedOption === 'express'}
+              onChange={() => setSelectedOption('express')}
+              className="h-4 w-4 border-gray-300 focus:ring-2 focus:ring-blue-300"
+              disabled={lockButton}
+            />
+            <label htmlFor="expressShipping" className="ml-2 block text-sm font-medium text-gray-700">
+              Express Shipping
+            </label>
+          </div>
+          <div className="ml-6 pl-1 text-gray-600 text-sm">
+            JABODETABEK: next day <br />
+            Java: 1-3 working days <br />
+            Outside Java: 1-7 working days
+          </div>
+          </div>
+          {shippingCost.length > 0 && shippingCost[0].costs.length > 0 && (
+            <div className="flex flex-col justify-center items-end">
+              <p className="font-semibold text-gray-600 text-sm">
+                Rp {shippingCost[0].costs[1].cost[0].value}
+              </p>
+            </div>
+          )}
         </div>
       </div>
       <div className="mb-4">
