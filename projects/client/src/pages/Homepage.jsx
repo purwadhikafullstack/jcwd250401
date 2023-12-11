@@ -33,7 +33,7 @@ export const Homepage = () => {
 
   return (
     <div className="font-sagoe">
-      <div className="block lg:hidden ">
+      <div className="flex justify-center lg:hidden ">
         <MenuListMobile />
       </div>
       <div className="h-screen w-full lg:hidden">
@@ -106,15 +106,15 @@ export const Homepage = () => {
           </Button>
         </div>
         {/* Mobile */}
-        <div className="w-[50vw] lg:hidden flex items-end px-4 py-10" style={{ backgroundImage: `url(${menexploremobile})`, backgroundSize: "cover", height: "50vh" }}>
-          <Button className="shadow-md shadow-gray-600 w-64 border border-gray-600" bg="white" color="light" size="md" as={Link} to={"/collections/men"}>
-            <span className="font-sans font-medium text-md">Men Collections</span>
-          </Button>
+        <div className="w-[50vw] lg:hidden flex items-end px-4 py-8" style={{ backgroundImage: `url(${menexploremobile})`, backgroundSize: "cover", height: "50vh" }}>
+        <Button className=" shadow-md shadow-gray-600 w-44 p-2 border border-gray-600" bg="white" color="light" size="md" as={Link} to={"/collections/men"}>
+          <span className="font-sans font-medium text-sm">Men Collections</span>
+        </Button>
         </div>
-        <div className="w-[50vw] lg:hidden flex items-end px-4 py-10" style={{ backgroundImage: `url(${womenexploremobile})`, backgroundSize: "cover", height: "50vh" }}>
-          <Button className="shadow-md shadow-gray-600 w-64 border border-gray-600" bg="white" color="light" size="md" as={Link} to={"/collections/women"}>
-            <span className="font-sans font-medium text-md">Women Collections</span>
-          </Button>
+        <div className="w-[50vw] lg:hidden flex items-end px-4 py-8" style={{ backgroundImage: `url(${womenexploremobile})`, backgroundSize: "cover", height: "50vh" }}>
+        <Button className=" shadow-md shadow-gray-600 w-44 p-2 border border-gray-600" bg="white" color="light" size="md" as={Link} to={"/collections/women"}>
+          <span className="font-sans font-medium text-sm">Women Collections</span>
+        </Button>
         </div>
       </div>
       <div className="w-full hidden lg:flex items-end px-20 py-10" style={{ backgroundImage: `url(${unisexexplore})`, backgroundSize: "cover", height: "80vh" }}>
@@ -124,8 +124,8 @@ export const Homepage = () => {
       </div>
       {/* Mobile */}
       <div className="w-full lg:hidden flex items-end px-4 py-10" style={{ backgroundImage: `url(${unisexexploremobile})`, backgroundSize: "cover", height: "80vh" }}>
-        <Button className=" shadow-md shadow-gray-600 w-44 border border-gray-600" bg="white" color="light" size="md" as={Link} to={"/collections/unisex"}>
-          <span className="font-sans font-medium text-md">Unisex Collections</span>
+        <Button className=" shadow-md shadow-gray-600 w-44 p-2 border border-gray-600" bg="white" color="light" size="md" as={Link} to={"/collections/unisex"}>
+          <span className="font-sans font-medium text-sm">Unisex Collections</span>
         </Button>
       </div>
       <Footer />

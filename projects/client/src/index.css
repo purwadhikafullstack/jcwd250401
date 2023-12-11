@@ -42,11 +42,52 @@ html {
   width: 90%;
 }
 
+
 /* New class to maintain the width after hover */
 .underline-on-hover.active::before,
 .underline-on-hover.active::after {
   width: 90%;
 }
+
+.underline-on-click {
+  text-decoration: none;
+  position: relative;
+  color: black;
+}
+
+.underline-on-click::before,
+.underline-on-click::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 3px;
+  border-radius: 60px;
+  bottom: 0;
+  background-color: black;
+  /* Adjust the color as needed */
+  transition: all 0.3s;
+}
+
+.underline-on-click::before {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.underline-on-click::after {
+  right: 50%;
+  transform: translateX(50%);
+}
+
+
+
+/* New class to maintain the width after click */
+.underline-on-click.active::before,
+.underline-on-click.active::after {
+  width: 90%;
+}
+
+
+
 
 
 .transition-dropdown {
@@ -78,57 +119,11 @@ html {
   display: none;
 }
 
-.search-icon {
-  transition: color 0.3s ease-in-out;
-  /* Example transition, adjust properties as needed */
-}
-
-/* Add transition for the search input */
-.search-input {
-  transition: all 0.3s ease-in-out;
-}
-
-/* Add styles for when the search input is visible */
-
-.search-input {
-  transition: all 0.8s ease-in-out;
-  opacity: 0;
-  width: 0;
-  visibility: hidden;
-}
-
-/* Styles for larger screens */
-@media (min-width: 768px) {
-  .search-input-visible {
-    opacity: 1;
-    transform: scale(1);
-    width: 300px; /* Adjust the width for larger screens */
-    visibility: visible;
-  }
-}
-
-/* Styles for smaller screens */
-@media (max-width: 767px) {
-  .search-input-visible {
-    opacity: 1;
-    transform: scale(1);
-    width: 130px; /* Adjust the width for smaller screens */
-    visibility: visible;
-  }
-}
-
-.search-input-hidden {
-  opacity: 0;
-  width: 0;
-  visibility: hidden;
-}
-
-
 .parallax {
   background-position: top;
   background-size: cover;
   background-attachment: fixed;
-  height: 100vh;
+  height: 95vh;
 }
 
 .menjackets {
