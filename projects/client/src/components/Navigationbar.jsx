@@ -18,6 +18,7 @@ import { PiHeart, PiMagnifyingGlass, PiShoppingCart } from "react-icons/pi";
 import getCart from "../api/cart/getCart";
 import { setCartItems } from "../slices/cartSlices";
 import api from "../api";
+import SearchModal from "./SearchModal";
 
 function Navigationbar() {
   const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -39,7 +40,7 @@ function Navigationbar() {
   const username = profile?.data?.profile?.username;
   let isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
   const location = useLocation();
-  const [isSearchBarVisible, setIsSearchBarVisible] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [carts, setCarts] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
@@ -173,8 +174,12 @@ function Navigationbar() {
     fetchCategoriesAccessories();
   }, [fetchCarts, fetchCategoriesJackets, fetchCategoriesTops, fetchCategoriesBottom, fetchCategoriesBags, fetchCategoriesAccessories, cartItem]);
 
-  const handleSearchIconEnter = () => {
-    setIsSearchBarVisible(!isSearchBarVisible);
+  const openSearchModal = () => {
+    setIsSearchModalOpen(true);
+  };
+
+  const closeSearchModal = () => {
+    setIsSearchModalOpen(false);
   };
 
   const openAuthModal = () => {
@@ -430,17 +435,8 @@ function Navigationbar() {
       {isLoggedIn ? (
         <>
           <div className="hidden gap-8 lg:flex items-center">
-            <div className={`flex items-center ${isSearchBarVisible ? "space-x-4" : "-space-x-7"}`}>
-              <div className="text-xl cursor-pointer search-icon" onClick={handleSearchIconEnter}>
-                <PiMagnifyingGlass />
-              </div>
-              <input
-                type="text"
-                placeholder="Search..."
-                className={`border-1 border-gray-500 rounded-lg shadow-sm shadow-gray-200 focus:ring-transparent focus:shadow-md focus:shadow-gray-300 focus:border-gray-800 search-input ${
-                  isSearchBarVisible ? "search-input-visible" : "search-input-hidden"
-                }`} // Add other input properties and styles as needed
-              />
+            <div className="text-xl cursor-pointer" onClick={openSearchModal}>
+              <PiMagnifyingGlass />
             </div>
             <img src={photoProfile ? `http://localhost:8000/public/${photoProfile}` : "https://via.placeholder.com/150"} alt="Profile" className="w-6 h-6 rounded-full cursor-pointer" onClick={handleIconClick} />
             {dropdownVisible && (
@@ -527,17 +523,8 @@ function Navigationbar() {
         </>
       ) : (
         <div className="flex items-center gap-4">
-          <div className={`flex items-center ${isSearchBarVisible ? "space-x-4" : "-space-x-6"}`}>
-            <div className="text-xl cursor-pointer search-icon" onClick={handleSearchIconEnter}>
-              <PiMagnifyingGlass />
-            </div>
-            <input
-              type="text"
-              placeholder="Search..."
-              className={`border-1 border-gray-500 rounded-lg shadow-sm shadow-gray-200 focus:ring-transparent focus:shadow-md focus:shadow-gray-300 focus:border-gray-800 search-input ${
-                isSearchBarVisible ? "search-input-visible" : "search-input-hidden"
-              }`}
-            />
+          <div className="text-xl cursor-pointer" onClick={openSearchModal}>
+            <PiMagnifyingGlass />
           </div>
           <div className="hidden lg:flex items-center gap-4">
             <a onClick={openAuthModal} className="text-black text-md font-semibold hover:underline cursor-pointer">
@@ -556,6 +543,7 @@ function Navigationbar() {
         </div>
       )}
       <AuthModal />
+      <SearchModal isOpen={isSearchModalOpen} isClose={closeSearchModal} />
     </div>
   );
 }
