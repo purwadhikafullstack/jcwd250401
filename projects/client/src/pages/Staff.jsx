@@ -126,7 +126,7 @@ export const Staff = () => {
             <InputLeftElement pointerEvents="none">
               <SearchIcon color="#40403F" />
             </InputLeftElement>
-            <Input type="text" placeholder="Search staff name" value={searchInput} onChange={handleSearchInputChange} bgColor={"white"} borderColor={"#40403F"} w={{ base: "100%", md: "300px" }} _hover={{ borderColor: "#40403F" }} />
+            <Input type="text" placeholder="Search by username or email" value={searchInput} onChange={handleSearchInputChange} bgColor={"white"} borderColor={"#40403F"} w={{ base: "100%", md: "300px" }} _hover={{ borderColor: "#40403F" }} />
           </InputGroup>
 
           <div className="flex flex-col gap-2">

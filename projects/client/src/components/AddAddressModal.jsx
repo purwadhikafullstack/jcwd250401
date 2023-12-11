@@ -33,7 +33,7 @@ export const AddAddressModal = ({ isOpen, onClose }) => {
       cityId: "",
       district: "",
       subDistrict: "",
-      phoneNumber: 0,
+      phoneNumber: "",
       setAsdefault: false,
     },
     validationSchema: yup.object({
@@ -44,7 +44,7 @@ export const AddAddressModal = ({ isOpen, onClose }) => {
       city: yup.string().required("City is required"),
       district: yup.string().required("District is required"),
       subDistrict: yup.string().required("Sub District is required"),
-      phoneNumber: yup.number().min(8, "Phone number must be at least 8 characters").required("Phone number is required"),
+      phoneNumber: yup.string().min(8, "Phone number must be at least 8 characters").required("Phone number is required"),
     }),
     onSubmit: async (values) => {
       try {

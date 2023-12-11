@@ -2,7 +2,7 @@ import api from "../../api";
 
 const addNewAddress = async ({ userId, street, firstName, lastName, province, provinceId, city, cityId, district, subDistrict, phoneNumber, setAsDefault }) => {
   try {
-    const response = await api.post(`/address/${userId}`, {
+    const response = await api.post(`/api/address/${userId}`, {
       firstName,
       lastName,
       province,

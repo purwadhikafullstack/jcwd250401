@@ -2,7 +2,7 @@ import api from "../../api";
 
  const getChildCategories = async ({} = {}) => {
   try {
-    const url = `/category?` + 
+    const url = `/api/category?` + 
     (minId ? `minId=${minId}` : "") + 
     (maxId ? `&maxId=${maxId}` : "") + 
     (page ? `&page=${page}` : "") + 

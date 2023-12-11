@@ -1,9 +1,9 @@
 import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay } from "@chakra-ui/react";
-import api from "../api";
 import { toast } from "sonner";
 import { useDispatch } from "react-redux";
 import { updateAddress } from "../slices/addressSlices";
 import { useFormik } from "formik";
+import editAddress from "../api/Address/editAddress";
 
 export const SetDefaultAddressModal = ({ isOpen, onClose, addressData, userId }) => {
   const dispatch = useDispatch();
@@ -13,21 +13,26 @@ export const SetDefaultAddressModal = ({ isOpen, onClose, addressData, userId })
     },
     onSubmit: async (values) => {
       try {
-        const response = await api.patch(`/address/${userId}/${addressData.id}`, {
+        const response = await editAddress({
+          userId,
+          addressId: addressData.id,
+          setAsDefault: values.setAsDefault,
           firstName: addressData?.firstName,
           lastName: addressData?.lastName,
           street: addressData?.street,
           province: addressData?.province,
+          provinceId: addressData?.provinceId,
           city: addressData?.city,
+          cityId: addressData?.cityId,
           district: addressData?.district,
           subDistrict: addressData?.subDistrict,
           phoneNumber: addressData?.phoneNumber,
           setAsDefault: values.setAsDefault,
-        });
+        })
 
         if (values.setAsDefault) {
-          if (response.data.ok) {
-            dispatch(updateAddress(response.data.detail));
+          if (response.ok) {
+            dispatch(updateAddress(response.detail));
             formik.resetForm();
             toast.success("Set as default address successfully");
             onClose();

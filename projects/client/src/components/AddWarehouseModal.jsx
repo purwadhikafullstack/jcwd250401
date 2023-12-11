@@ -65,29 +65,33 @@ const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
   }, []);
 
   const handleProvinceChange = (e) => {
-    const provinceId = e.target.value;
-    setSelectedProvince(provinceId);
-    setCities([]); // Clear cities when province changes
-    setSelectedCity(''); // Clear selected city when province changes
+    const selectedId = e.target.value;
+    setSelectedProvince(selectedId);
+    setProvinceId(selectedId);
+    setCityId(0); // Reset city id when province changes
+    setCities([]);
 
-    // Fetch cities based on the selected province
-    api.admin.get(`/address/city/${provinceId}`).then(response => {
+    api.admin.get(`/address/city/${selectedId}`).then(response => {
       if (response.data.ok) {
         setCities(response.data.detail);
       }
     });
 
-    // Set the province name
-    const province = provinces.find((province) => province.province_id === provinceId);
-    setProvince(province ? province.province : '');
-    setProvinceId(province ? province.province_id : 0);
-  };    
+    const selectedProvince = provinces.find(province => province.province_id.toString() === selectedId);
+    if (selectedProvince) {
+      setProvince(selectedProvince.province);
+    }
+  };
 
   const handleCityChange = (e) => {
-    const cityName = e.target.value;
-    const city = cities.find(c => c.city_name === cityName);
-    setCity(cityName);
-    setCityId(city ? city.city_id : 0); 
+    const selectedId = e.target.value;
+    setSelectedCity(selectedId);
+    setCityId(selectedId);
+
+    const selectedCity = cities.find(city => city.city_id.toString() === selectedId);
+    if (selectedCity) {
+      setCity(selectedCity.city_name);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -173,20 +177,20 @@ const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
             <VStack spacing="2" width="full" alignItems="flex-start">
               <FormLabel htmlFor="location" fontSize="1rem">Warehouse Location</FormLabel>
               <HStack spacing="2" width="full">
-                <FormControl id="province" flex="1">
-                  <Select placeholder='Select Province' onChange={handleProvinceChange} value={selectedProvince}>
-                    {provinces.map((province) => (
-                      <option key={province.province_id} value={province.province_id}>{province.province}</option>
-                    ))}
-                  </Select>
-                </FormControl>
-                <FormControl id="city" flex="1">
-                <Select placeholder='Select City' onChange={handleCityChange} value={city} disabled={!selectedProvince}>
+              <FormControl id="province" flex="1">
+              <Select placeholder='Select Province' onChange={handleProvinceChange} value={selectedProvince}>
+                {provinces.map((province) => (
+                  <option key={province.province_id} value={province.province_id}>{province.province}</option>
+                ))}
+              </Select>
+              </FormControl>
+              <FormControl id="city" flex="1">
+                <Select placeholder='Select City' onChange={handleCityChange} value={selectedCity} disabled={!selectedProvince}>
                   {cities.map((city) => (
-                    <option key={city.city_id} value={city.city_name}>{city.city_name}</option>
+                    <option key={city.city_id} value={city.city_id}>{city.city_name}</option>
                   ))}
                 </Select>
-                </FormControl>
+              </FormControl>
               </HStack>
             </VStack>
             <FormControl id="street">

@@ -1,12 +1,12 @@
 import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay } from "@chakra-ui/react";
 import { toast } from "sonner";
-import api from "../api";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { updateAddress } from "../slices/addressSlices";
 import { useDispatch } from "react-redux";
 import { AiFillCheckCircle } from "react-icons/ai";
 import { useState } from "react";
+import editAddress from "../api/Address/editAddress";
 
 export const EditAddressModal = ({ isOpen, onClose, addressData, userId, cityLists, provinceLists }) => {
   const [selectedProvince, setSelectedProvince] = useState("");
@@ -21,7 +21,9 @@ export const EditAddressModal = ({ isOpen, onClose, addressData, userId, cityLis
       lastName: addressData?.lastName,
       street: addressData?.street,
       province: addressData?.province,
+      provinceId: addressData?.provinceId,
       city: addressData?.city,
+      cityId: addressData?.cityId,
       district: addressData?.district,
       subDistrict: addressData?.subDistrict,
       phoneNumber: addressData?.phoneNumber,
@@ -35,25 +37,29 @@ export const EditAddressModal = ({ isOpen, onClose, addressData, userId, cityLis
       city: yup.string().required("City is required"),
       district: yup.string().required("District is required"),
       subDistrict: yup.string().required("Sub District is required"),
-      phoneNumber: yup.number().min(8, "Phone number must be at least 8 characters").required("Phone number is required"),
+      phoneNumber: yup.string().min(8, "Phone number must be at least 8 characters").required("Phone number is required"),
     }),
     onSubmit: async (values) => {
       try {
-        const response = await api.patch(`/address/${userId}/${addressData.id}`, {
+        const response = await editAddress({
+          userId,
+          addressId: addressData.id,
           firstName: values.firstName,
           lastName: values.lastName,
           street: values.street,
-          province: provinceIdToName,
+          province: values.province,
+          provinceId: values.provinceId,
           city: values.city,
+          cityId: values.cityId,
           district: values.district,
           subDistrict: values.subDistrict,
-          phoneNumber: values.phoneNumber.toString(),
+          phoneNumber: values.phoneNumber,
           setAsDefault: values.setAsDefault,
-        });
+        })
 
-        if (response.data.ok) {
+        if (response.ok) {
           toast.success("Update address success");
-          dispatch(updateAddress(response.data.detail));
+          dispatch(updateAddress(response.detail));
           formik.resetForm();
           onClose();
         }
@@ -72,10 +78,13 @@ export const EditAddressModal = ({ isOpen, onClose, addressData, userId, cityLis
 
   const handleProvinceChange = (e) => {
     const selectedValue = e.target.value;
-    setSelectedProvince(selectedValue);
     formik.setFieldValue("province", selectedValue);
 
-    setSelectedCityByProvince(cityLists.filter((city) => city.province_id === selectedValue));
+    setSelectedProvince(selectedValue);
+    const selectedProvinceDetails = provinceLists.filter((province) => province.province === selectedValue);
+    formik.setFieldValue("provinceId", selectedProvinceDetails[0]?.province_id);
+
+    setSelectedCityByProvince(cityLists.filter((city) => city.province === selectedValue));
   };
 
   const handleCityChange = (e) => {
@@ -84,12 +93,13 @@ export const EditAddressModal = ({ isOpen, onClose, addressData, userId, cityLis
     setSelectedCity(selectedValue);
 
     const selectedCityDetails = cityLists.find((city) => city.city_name === selectedValue);
+    formik.setFieldValue("cityId", selectedCityDetails?.city_id);
 
     if (selectedCityDetails) {
       const correspondingProvince = provinceLists.find((province) => province.province_id === selectedCityDetails.province_id);
       if (correspondingProvince) {
-        setSelectedProvince(correspondingProvince.province_id);
-        formik.setFieldValue("province", correspondingProvince.province_id);
+        setSelectedProvince(correspondingProvince.province);
+        formik.setFieldValue("province", correspondingProvince.province);
       }
     }
   };
@@ -158,11 +168,11 @@ export const EditAddressModal = ({ isOpen, onClose, addressData, userId, cityLis
 
                   <div className="w-[55%] sm:w-[65%]">
                     <select name="province" id="province" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500 cursor-pointer" {...formik.getFieldProps("province")} onChange={handleProvinceChange}>
-                      {selectedProvince ? <option value={selectedProvince}>{provinceIdToName}</option> : <option value={formik.values.province}>{formik.values.province}</option>}
+                      {selectedProvince ? <option value={selectedProvince}>{selectedProvince}</option> : <option value={formik.values.province}>{formik.values.province}</option>}
                       {provinceLists.map((province, index) => {
-                        if (province.province_id !== formik.values.province) {
+                        if (province.province_id !== formik.values.provinceId) {
                           return (
-                            <option key={index} value={province.province_id}>
+                            <option key={index} value={province.province}>
                               {province.province}
                             </option>
                           );
@@ -239,12 +249,18 @@ export const EditAddressModal = ({ isOpen, onClose, addressData, userId, cityLis
 
                   <div className="w-[55%] sm:w-[65%]">
                     <input
-                      type="number"
+                      type="tel"
                       id="phoneNumber"
                       name="phoneNumber"
+                      pattern="[0-9]*"
+                      inputMode="numeric"
                       placeholder="Enter your phone number"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500"
                       {...formik.getFieldProps("phoneNumber")}
+                      onChange={(e) => {
+                        const sanitizedValue = e.target.value.replace(/[^0-9]/g, ""); // Remove non-numeric characters
+                        formik.setFieldValue("phoneNumber", sanitizedValue);
+                      }}
                     />
                     {formik.touched.phoneNumber && formik.errors.phoneNumber ? <div className="text-red-500">{formik.errors.phoneNumber}</div> : null}
                   </div>
