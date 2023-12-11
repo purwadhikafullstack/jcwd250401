@@ -92,7 +92,7 @@ function SearchModal({ isOpen, isClose }) {
                 />
               </div>
             </div>
-            <div className="hidden lg:flex flex-col space-y-4 mt-10 h-[60vh] overflow-y-auto scrollbar-hide">
+            <div className="hidden lg:flex flex-col space-y-4 mt-10 h-[60vh] overflow-y-auto">
               <div className="flex flex-col justify-center items-center space-y-4">
                 {search === "" && (
                   <SimpleGrid columns={3} spacing={5} mt={16} p={1}>

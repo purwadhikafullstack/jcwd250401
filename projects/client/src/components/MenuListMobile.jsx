@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import api from "../api";
 import { useSelector } from "react-redux";
 import { debounce } from "lodash";
+import { Button } from "@chakra-ui/react";
 
 function MenuListMobile() {
   const [dropdownSubcategory, setDropdownSubcategory] = useState(null);
@@ -23,7 +24,7 @@ function MenuListMobile() {
 
   const fetchCategoriesBags = useCallback(async () => {
     try {
-      const response = await api.get(`/category/user/sub-categories?mainCategory=Bags`);
+      const response = await api.get(`/api/category/user/sub-categories?mainCategory=Bags`);
       const categoryData = response.data.detail;
       setBagsSubCategory(categoryData);
       console.log(categoryData);
@@ -36,7 +37,7 @@ function MenuListMobile() {
 
   const fetchCategoriesJackets = useCallback(async () => {
     try {
-      const response = await api.get(`/category/user/sub-categories?mainCategory=Jackets`);
+      const response = await api.get(`/api/category/user/sub-categories?mainCategory=Jackets`);
       const categoryData = response.data.detail;
       setJacketsSubCategory(categoryData);
       console.log(categoryData);
@@ -49,7 +50,7 @@ function MenuListMobile() {
 
   const fetchCategoriesTops = useCallback(async () => {
     try {
-      const response = await api.get(`/category/user/sub-categories?mainCategory=Tops`);
+      const response = await api.get(`/api/category/user/sub-categories?mainCategory=Tops`);
       const categoryData = response.data.detail;
       setTopsSubCategory(categoryData);
       console.log(categoryData);
@@ -62,7 +63,7 @@ function MenuListMobile() {
 
   const fetchCategoriesBottom = useCallback(async () => {
     try {
-      const response = await api.get(`/category/user/sub-categories?mainCategory=Bottom`);
+      const response = await api.get(`/api/category/user/sub-categories?mainCategory=Bottom`);
       const categoryData = response.data.detail;
       setBottomSubCategory(categoryData);
       console.log(categoryData);
@@ -75,7 +76,7 @@ function MenuListMobile() {
 
   const fetchCategoriesAccessories = useCallback(async () => {
     try {
-      const response = await api.get(`/category/user/sub-categories?mainCategory=Accessories`);
+      const response = await api.get(`/api/category/user/sub-categories?mainCategory=Accessories`);
       const categoryData = response.data.detail;
       setAccessoriesSubCategory(categoryData);
       console.log(categoryData);
@@ -124,7 +125,7 @@ function MenuListMobile() {
   }, [fetchCategoriesBags, fetchCategoriesJackets, fetchCategoriesTops, fetchCategoriesBottom, fetchCategoriesAccessories]);
 
   return (
-    <div className="flex h-14 w-[90vw] overflow-y-auto items-center space-x-8">
+    <div className="flex h-14 w-full overflow-y-auto items-center space-x-2 scrollbar-hide">
       {categories.map((category, index) => {
         const joinedCategories = category.toLowerCase().replace(" ", "-");
         const finalCategory = joinedCategories === "bags" || joinedCategories === "accessories" ? `unisex/${joinedCategories}` : joinedCategories;
@@ -140,9 +141,8 @@ function MenuListMobile() {
         };
         return (
           <>
-            <span
+            <Button
               key={index}
-              className={`text-md font-semibold cursor-pointer underline-on-click ${activeCategory === category ? "active" : ""}`}
               onClick={() => {
                 if (activeCategory === category) {
                   // If the clicked category is already active, reset both activeCategory and dropdownSubcategory
@@ -153,9 +153,11 @@ function MenuListMobile() {
                   handleSubcategoryClick(category);
                 }
               }}
+              minW={"150px"}
+              px={10}
             >
-              {category}
-            </span>
+              <span className={`text-md font-semibold cursor-pointer underline-on-click ${activeCategory === category ? "active" : ""}`}>{category}</span>
+            </Button>
 
             {dropdownSubcategory === category && (
               <div className={`absolute top-14 w-full right-0 h-50 bg-white ring-1 ring-black ring-opacity-5 z-10 flex-wrap transition-dropdown ${isDropdownTransitioning ? "dropdown-hidden" : "dropdown-visible"}`}>
