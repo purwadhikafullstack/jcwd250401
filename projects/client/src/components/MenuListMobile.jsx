@@ -2,11 +2,12 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import api from "../api";
 import { useSelector } from "react-redux";
+import { debounce } from "lodash";
 
 function MenuListMobile() {
   const [dropdownSubcategory, setDropdownSubcategory] = useState(null);
   const [isDropdownTransitioning, setIsDropdownTransitioning] = useState(false);
-  const categories = ["NEW IN", "MEN", "WOMEN", "BAGS", "ACCESSORIES"];
+  const categories = ["NEW", "MEN", "WOMEN", "BAGS", "ACCESSORIES"];
   const newIn = ["New Arrivals", "Best Sellers", "Rains Essentials"];
   const men = ["Jackets", "Tops", "Bottoms"];
   const women = ["Jackets", "Tops", "Bottoms"];
@@ -19,18 +20,6 @@ function MenuListMobile() {
   const [bottomSubCategory, setBottomSubCategory] = useState([]);
   const [activeCategory, setActiveCategory] = useState(null);
   const hoverTimeoutRef = useRef(null);
-
-  const handleMouseEnter = (category) => {
-    hoverTimeoutRef.current = setTimeout(() => {
-      if (dropdownSubcategory !== category) {
-        handleSubcategoryClick(category);
-      }
-    }, 500);
-  };
-
-  const handleMouseLeave = () => {
-    clearTimeout(hoverTimeoutRef.current);
-  };
 
   const fetchCategoriesBags = useCallback(async () => {
     try {
@@ -107,8 +96,24 @@ function MenuListMobile() {
   const handleSubcategoryClick = (category) => {
     setIsDropdownTransitioning(true);
     setDropdownSubcategory((prevSubcategory) => (prevSubcategory === category ? null : category));
-    setActiveCategory(category);
+
+    // Only set activeCategory if it's not the same as the clicked category
+    setActiveCategory((prevActiveCategory) => (prevActiveCategory === category ? null : category));
   };
+
+  useEffect(() => {
+    const handleScroll = debounce(() => {
+      // Close the dropdown and set activeCategory to null
+      setDropdownSubcategory(null);
+      setActiveCategory(null);
+    }, 1000); // Adjust the debounce delay as needed
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   useEffect(() => {
     fetchCategoriesBags();
@@ -119,7 +124,7 @@ function MenuListMobile() {
   }, [fetchCategoriesBags, fetchCategoriesJackets, fetchCategoriesTops, fetchCategoriesBottom, fetchCategoriesAccessories]);
 
   return (
-    <div className="flex h-10 items-center justify-center space-x-4">
+    <div className="flex h-14 w-[90vw] overflow-y-auto items-center space-x-8">
       {categories.map((category, index) => {
         const joinedCategories = category.toLowerCase().replace(" ", "-");
         const finalCategory = joinedCategories === "bags" || joinedCategories === "accessories" ? `unisex/${joinedCategories}` : joinedCategories;
@@ -137,7 +142,7 @@ function MenuListMobile() {
           <>
             <span
               key={index}
-              className={`text-md font-semibold cursor-pointer underline-on-hover ${activeCategory === category ? "active" : ""}`}
+              className={`text-md font-semibold cursor-pointer underline-on-click ${activeCategory === category ? "active" : ""}`}
               onClick={() => {
                 if (activeCategory === category) {
                   // If the clicked category is already active, reset both activeCategory and dropdownSubcategory
@@ -146,17 +151,15 @@ function MenuListMobile() {
                 } else {
                   // If the clicked category is not active, handleSubcategoryClick and set dropdownSubcategory
                   handleSubcategoryClick(category);
-                  setDropdownSubcategory(category);
                 }
               }}
             >
               {category}
             </span>
+
             {dropdownSubcategory === category && (
-              <div
-                className={`absolute top-10 w-full right-0 h-50 bg-white ring-1 ring-black ring-opacity-5 z-10 flex-wrap transition-dropdown ${isDropdownTransitioning ? "dropdown-hidden" : "dropdown-visible"}`}
-              >
-                <div className="flex flex-row h-full px-4">
+              <div className={`absolute top-14 w-full right-0 h-50 bg-white ring-1 ring-black ring-opacity-5 z-10 flex-wrap transition-dropdown ${isDropdownTransitioning ? "dropdown-hidden" : "dropdown-visible"}`}>
+                <div className="flex flex-row h-full px-2">
                   <div className="flex flex-col flex-wrap">
                     {(() => {
                       switch (category) {
@@ -164,7 +167,7 @@ function MenuListMobile() {
                           return newIn.map(renderSubcategory);
                         case "MEN":
                           return (
-                            <div className="flex space-x-4 ">
+                            <div className="flex ">
                               <div className=" flex flex-col font-bold font-sagoe">{men.map(renderSubcategory)}</div>
                               <div className="flex flex-col">
                                 <Link to={`/products/men/jackets`}>
@@ -209,7 +212,7 @@ function MenuListMobile() {
                           );
                         case "WOMEN":
                           return (
-                            <div className="flex space-x-4 ">
+                            <div className="flex">
                               <div className=" font-bold font-sagoe">{women.map(renderSubcategory)}</div>
                               <div className="flex flex-col">
                                 <Link to={`/products/women/jackets`}>

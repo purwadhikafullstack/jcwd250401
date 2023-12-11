@@ -17,7 +17,7 @@ function MenCollections() {
               <span className="font-sans font-medium text-md">Explore Men's Jackets</span>
             </Button>
           </div>
-          <div className="w-[60vw] text-white text-lg font-light">
+          <div className="w-[60vw] text-white text-xl font-light">
             <p className="bg-black bg-opacity-20 p-4">
               Discover a range of men's jackets that perfectly balance style and practicality. RAINS Jackets are all about keeping you comfortable while looking good. With modern designs and top-notch materials, these jackets are not only
               fashion-forward but also weather-resistant.
