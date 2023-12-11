@@ -3,7 +3,7 @@ import api from "../../api";
 const getShippingCost = async ({ origin, destination, weight } = {}) => {
     try {
         // Base URL
-        let url = `/shipping-cost`;
+        let url = `/order/cost`;
 
         // Array to hold query parameters
         const queryParams = [];
@@ -17,7 +17,7 @@ const getShippingCost = async ({ origin, destination, weight } = {}) => {
             url += '?' + queryParams.join('&') + '&courier=jne';
         }
 
-        const response = await api.admin.post(url);
+        const response = await api.post(url);
         return response.data;
     } catch (error) {
         console.error("Error in getShippingCost:", error);
