@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-const { User, Cart, CartItem, Product, ProductImage } = require("../models");
+const { User, Cart, CartItem, Product, ProductImage, Mutation } = require("../models");
 
 exports.handleAddToCart = async (req, res) => {
   const { id: userId } = req.user;
@@ -135,14 +135,20 @@ exports.handleGetCart = async (req, res) => {
                   as: "productImages",
                   attributes: ["id", "imageUrl"],
                 },
+                {
+                  model: Mutation,
+                  attributes: ["stock"],
+                  order: [['createdAt', 'DESC']],
+                  limit: 1
+                }
               ],
             },
           ],
         },
       ],
       order: [
-        [CartItem, 'createdAt', 'DESC'], // Order CartItem by createdAt in DESC order
-        ['createdAt', 'DESC'], // Order the main Cart query by createdAt in DESC order
+        [CartItem, 'createdAt', 'DESC'],
+        ['createdAt', 'DESC'],
       ],
     });
 
@@ -153,6 +159,12 @@ exports.handleGetCart = async (req, res) => {
         message: "Cart not found",
       });
     }
+
+    // Calculate total stock for each product in the cart
+    cart.CartItems.forEach(item => {
+      const mutations = item.Product.Mutations;
+      item.Product.totalStock = mutations.reduce((total, mutation) => total + mutation.stock, 0);
+    });
 
     return res.status(200).json({
       ok: true,
