@@ -793,17 +793,16 @@ exports.autoRequestStock = async (req, res) => {
         },
         attributes: ["stock"],
         order: [["createdAt", "DESC"]],
+        include: [
+          {
+            model: Warehouse,
+            attributes: ["id", "name"],
+          },
+        ],
         limit: 1,
       });
       const previousDestinationWarehouseStock = latestMutationFromDestinationWarehouse.stock || 0;
-
-      // Find the destination warehouse data to get the name
-      const destinationWarehouseData = Warehouse.findOne({
-        where: {
-          id: nearestWarehouse.id,
-        },
-        attributes: ["name"],
-      });
+      const newStock = previousDestinationWarehouseStock - requestedQuantity;
 
       // Get the name of the source warehouse
       const sourceWarehouseName = order.Warehouse.name;
@@ -811,16 +810,33 @@ exports.autoRequestStock = async (req, res) => {
       // create a new mutation for destination warehouse
       const newMutationForDestinationWarehouse = await Mutation.create({
         productId,
-        warehouseId: order.Warehouse.id,
+        warehouseId: nearestWarehouse.id,
         destinationWarehouseId: nearestWarehouse.id,
         mutationQuantity: requestedQuantity,
         previousStock: previousDestinationWarehouseStock,
-        mutationType: "add",
+        mutationType: "subtract",
         adminId: null,
-        stock: requestedQuantity,
+        stock: newStock,
         status: "success",
         isManual: false,
-        description: `Auto Request Stock from ${sourceWarehouseName} to ${destinationWarehouseData.name}`,
+        description: `Stock subtracted automatically to ${sourceWarehouseName}`,
+      });
+
+      // create a new journal for destination warehouse
+      await Journal.create({
+        mutationId: newMutationForDestinationWarehouse.id,
+        productId,
+        warehouseId: nearestWarehouse.id,
+        destinationWarehouseId: nearestWarehouse.id,
+        mutationId: newMutationForDestinationWarehouse.id,
+        mutationQuantity: requestedQuantity,
+        previousStock: previousDestinationWarehouseStock,
+        mutationType: "subtract",
+        adminId: null,
+        stock: newStock,
+        status: "success",
+        isManual: false,
+        description: `Stock subtracted automatically to ${sourceWarehouseName}`,
       });
 
       await t.commit();
@@ -846,6 +862,11 @@ exports.autoRequestStock = async (req, res) => {
 // Function to find the nearest warehouse using Haversine formula
 function findNearestWarehouse(sourceLatitude, sourceLongitude, warehouses, requiredStock) {
   const R = 6371; // Radius of the earth in km
+
+  // Helper function to convert degrees to radians
+  function toRad(degrees) {
+    return (degrees * Math.PI) / 180;
+  }
 
   for (const warehouse of warehouses) {
     const { latitude, longitude } = warehouse.WarehouseAddress;
@@ -876,11 +897,6 @@ function findNearestWarehouse(sourceLatitude, sourceLongitude, warehouses, requi
   return null; // if no warehouse with enough stock is found return null
 }
 
-// Helper function to convert degrees to radians
-function toRad(degrees) {
-  return (degrees * Math.PI) / 180;
-}
-
 // Function to update the source warehouse stock
 async function updateSourceWarehouseStock(productId, warehouseId, destinationWarehouseId, quantity) {
   const t = await sequelize.transaction();
@@ -896,13 +912,6 @@ async function updateSourceWarehouseStock(productId, warehouseId, destinationWar
       limit: 1,
     });
 
-    const sourceWarehouseData = Warehouse.findOne({
-      where: {
-        id: warehouseId,
-      },
-      attributes: ["name"],
-    });
-
     const destinationWarehouseData = Warehouse.findOne({
       where: {
         id: destinationWarehouseId,
@@ -911,7 +920,7 @@ async function updateSourceWarehouseStock(productId, warehouseId, destinationWar
     });
 
     let sourceWarehouseStock = findLatestMutationSourceWarehouse.stock || 0;
-    let newStock = sourceWarehouseStock - quantity;
+    let newStock = sourceWarehouseStock + quantity;
 
     // update the source warehouse stock by creating a new mutation
     const mutation = await Mutation.create({
@@ -919,12 +928,13 @@ async function updateSourceWarehouseStock(productId, warehouseId, destinationWar
       warehouseId,
       destinationWarehouseId,
       previousStock: sourceWarehouseStock,
-      mutationType: "subtract",
+      mutationQuantity: quantity,
+      mutationType: "add",
       adminId: null,
       stock: newStock,
       status: "success",
       isManual: false,
-      description: `Auto Request Stock mutation from ${sourceWarehouseData.name} to ${destinationWarehouseData.name}`,
+      description: `Get new stock automatically from ${destinationWarehouseData.name}`,
     });
 
     await Journal.create({
@@ -933,12 +943,13 @@ async function updateSourceWarehouseStock(productId, warehouseId, destinationWar
       warehouseId,
       destinationWarehouseId,
       previousStock: sourceWarehouseStock,
-      mutationType: "subtract",
+      mutationQuantity: quantity,
+      mutationType: "add",
       adminId: null,
       stock: newStock,
       status: "success",
       isManual: false,
-      description: `Stock mutation from ${sourceWarehouseData.name} to ${destinationWarehouseData.name}`,
+      description: ` Get new stock automatically from ${destinationWarehouseData.name}`,
     });
 
     await t.commit();
@@ -948,3 +959,8 @@ async function updateSourceWarehouseStock(productId, warehouseId, destinationWar
     throw error;
   }
 }
+
+module.exports = {
+  findNearestWarehouse,
+  updateSourceWarehouseStock,
+};
