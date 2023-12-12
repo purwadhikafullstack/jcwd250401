@@ -89,7 +89,7 @@ exports.getOrderLists = async (req, res) => {
         },
         {
           model: Product,
-          attributes: ["id", "name"],
+          attributes: ["id", "name", "description", "price", "gender", "weight"],
         },
       ],
       where: {
@@ -145,6 +145,10 @@ exports.getOrderLists = async (req, res) => {
           Product: {
             id: product.id,
             productName: product.name,
+            productDescription: product.description,
+            productPrice: product.price,
+            productGender: product.gender,
+            productWeight: product.weight,
             productImages: productImages,
           },
         };
@@ -182,7 +186,7 @@ exports.getAllOrderLists = async (req, res) => {
         },
         {
           model: Product,
-          attributes: ["id", "name"],
+          attributes: ["id", "name", "description", "price", "gender", "weight"],
         },
       ],
       where: {
@@ -261,6 +265,10 @@ exports.getAllOrderLists = async (req, res) => {
           Product: {
             id: product.id,
             productName: product.name,
+            productDescription: product.description,
+            productPrice: product.price,
+            productGender: product.gender,
+            productWeight: product.weight,
             productImages: productImages,
           },
           
