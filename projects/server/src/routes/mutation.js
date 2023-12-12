@@ -10,5 +10,8 @@ router.get("/", authMiddleware.validateToken, mutationController.getAllMutations
 router.get("/total-stock", authMiddleware.validateToken, mutationController.summaryTotalStock);
 router.get("/journal", authMiddleware.validateToken, mutationController.getAllMutationsJournal);
 router.get("/stock/:productId/:warehouseId", authMiddleware.validateToken, mutationController.getTotalStockByWarehouseProductId);
+router.get("/order-data", authMiddleware.validateToken, mutationController.testGetOrderData);
+router.get("/warehouses", authMiddleware.validateToken, mutationController.testGetWarehouses);
+router.get("/nearest-warehouse", authMiddleware.validateToken, mutationController.testFindNearestWarehouse);
 
 module.exports = router;

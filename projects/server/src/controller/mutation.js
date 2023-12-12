@@ -769,9 +769,9 @@ exports.autoRequestStock = async (req, res) => {
     });
 
     // check if the stock is greater than or equal to the requested quantity
-    if (order.quantity > order.Warehouse.Mutation.stock) {
+    if (order.quantity > order.Order.Warehouse.Mutations[0].stock) {
       // Find the nearest warehouse using Haversine formula
-      const nearestWarehouse = findNearestWarehouse(order.Warehouse.WarehouseAddress.latitude, order.Warehouse.WarehouseAddress.longitude, allWarehouses);
+      const nearestWarehouse = findNearestWarehouse(order.Order.Warehouse.WarehouseAddress.latitude, order.Order.Warehouse.WarehouseAddress.longitude, allWarehouses, requestedQuantity);
 
       if (!nearestWarehouse) {
         await t.rollback();
@@ -861,7 +861,7 @@ exports.autoRequestStock = async (req, res) => {
 
 // Function to find the nearest warehouse using Haversine formula
 function findNearestWarehouse(sourceLatitude, sourceLongitude, warehouses, requiredStock) {
-  const R = 6371; // Radius of the earth in km
+  const earthRadius = 6371; // Radius of the earth in km
 
   // Helper function to convert degrees to radians
   function toRad(degrees) {
@@ -870,7 +870,7 @@ function findNearestWarehouse(sourceLatitude, sourceLongitude, warehouses, requi
 
   for (const warehouse of warehouses) {
     const { latitude, longitude } = warehouse.WarehouseAddress;
-    const { stock } = warehouse.Mutation || { stock: 0 };
+    const { stock } = warehouse.Mutations[0] || { stock: 0 };
 
     // Haversine formula (menentukan jarak antara dua titik pada permukaan bola)
     const dLat = toRad(latitude - sourceLatitude); // Calculate the difference in latitude in radians
@@ -881,9 +881,9 @@ function findNearestWarehouse(sourceLatitude, sourceLongitude, warehouses, requi
       Math.sin(dLat / 2) * Math.sin(dLat / 2) + // kuadrat setengah jarak lingkaran besar sepanjang garis lintang
       Math.cos(toRad(sourceLatitude)) * Math.cos(toRad(latitude)) * Math.sin(dLon / 2) * Math.sin(dLon / 2); // kuadrat setengah jarak lingkaran sepanjang garis bujur
 
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); // Menghitung sudut sentral antara dua titik pada lingkaran besar
+    const centralAngle = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); // Menghitung sudut sentral antara dua titik pada lingkaran besar
 
-    const distance = R * c; // Menghitung jarak antara dua titik pada permukaan bola
+    const distance = earthRadius * centralAngle; // Menghitung jarak antara dua titik pada permukaan bola
 
     if (stock >= requiredStock) {
       // check if the stock is greater than or equal to the required stock
@@ -960,7 +960,194 @@ async function updateSourceWarehouseStock(productId, warehouseId, destinationWar
   }
 }
 
-module.exports = {
-  findNearestWarehouse,
-  updateSourceWarehouseStock,
+// module.exports = {
+//   findNearestWarehouse,
+//   updateSourceWarehouseStock,
+// };
+
+// TESTING
+exports.testGetOrderData = async (req, res) => {
+  const t = await sequelize.transaction();
+  const { productId, orderId } = req.body;
+  try {
+    // get the selected order to get Warehouse & quantity
+    const order = await OrderItem.findOne({
+      where: {
+        orderId,
+        productId,
+      },
+      include: [
+        {
+          model: Order,
+          include: [
+            {
+              model: Warehouse,
+              attributes: ["id", "name", "warehouseAddressId"],
+              include: [
+                {
+                  model: WarehouseAddress,
+                  attributes: ["street", "city", "province", "latitude", "longitude"],
+                },
+                {
+                  model: Mutation,
+                  attributes: ["id", "stock"],
+                  where: {
+                    status: "success",
+                    productId,
+                  },
+                  order: [["createdAt", "DESC"]],
+                  limit: 1,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!order) {
+      await t.rollback();
+      return res.status(404).json({
+        ok: false,
+        message: "Order not found",
+      });
+    }
+    const requestedQuantity = order.quantity;
+    const stock = order.Order.Warehouse.Mutations[0].stock;
+
+    await t.commit();
+    res.status(200).json({
+      ok: true,
+      message: "Order data retrieved successfully",
+      detail: {
+        order,
+        requestedQuantity,
+        stock,
+      },
+    });
+  } catch (error) {
+    await t.rollback();
+    throw error;
+  }
+};
+
+exports.testGetWarehouses = async (req, res) => {
+  const { productId } = req.body;
+  try {
+    const allWarehouses = await Warehouse.findAll({
+      attributes: ["id", "name", "warehouseAddressId"],
+      include: [
+        {
+          model: WarehouseAddress,
+          attributes: ["street", "city", "province", "latitude", "longitude"],
+        },
+        {
+          model: Mutation,
+          attributes: ["id", "stock"],
+          where: {
+            status: "success",
+            productId,
+          },
+          order: [["createdAt", "DESC"]],
+          limit: 1,
+        },
+      ],
+    });
+
+    res.status(200).json({
+      ok: true,
+      message: "Warehouses retrieved successfully",
+      detail: allWarehouses,
+    });
+  } catch (error) {
+    throw error;
+  }
+};
+
+exports.testFindNearestWarehouse = async (req, res) => {
+  try {
+    const t = await sequelize.transaction();
+    const { productId, orderId } = req.body;
+
+    const order = await OrderItem.findOne({
+      where: {
+        orderId,
+        productId,
+      },
+      include: [
+        {
+          model: Order,
+          include: [
+            {
+              model: Warehouse,
+              attributes: ["id", "name", "warehouseAddressId"],
+              include: [
+                {
+                  model: WarehouseAddress,
+                  attributes: ["street", "city", "province", "latitude", "longitude"],
+                },
+                {
+                  model: Mutation,
+                  attributes: ["id", "stock"],
+                  where: {
+                    status: "success",
+                    productId,
+                  },
+                  order: [["createdAt", "DESC"]],
+                  limit: 1,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!order) {
+      await t.rollback();
+      return res.status(404).json({
+        ok: false,
+        message: "Order not found",
+      });
+    }
+    const requestedQuantity = order.quantity;
+
+    const allWarehouses = await Warehouse.findAll({
+      attributes: ["id", "name", "warehouseAddressId"],
+      include: [
+        {
+          model: WarehouseAddress,
+          attributes: ["street", "city", "province", "latitude", "longitude"],
+        },
+        {
+          model: Mutation,
+          attributes: ["id", "stock"],
+          where: {
+            status: "success",
+            productId,
+          },
+          order: [["createdAt", "DESC"]],
+          limit: 1,
+        },
+      ],
+    });
+
+    const nearestWarehouse = findNearestWarehouse(order.Order.Warehouse.WarehouseAddress.latitude, order.Order.Warehouse.WarehouseAddress.longitude, allWarehouses, requestedQuantity);
+
+    if (!nearestWarehouse) {
+      await t.rollback();
+      return res.status(404).json({
+        ok: false,
+        message: "Nearest warehouse not found",
+      });
+    }
+
+    res.status(200).json({
+      ok: true,
+      message: "Nearest warehouse retrieved successfully",
+      detail: nearestWarehouse,
+    })
+  } catch (error) {
+    throw error;
+  }
 };
