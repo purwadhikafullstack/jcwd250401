@@ -15,6 +15,8 @@ import updatePassword from "../api/profile/updatePassword";
 export const ChangePassword = () => {
   const isLogin = useSelector((state) => state?.account?.isLogin);
   const username = useSelector((state) => state?.account?.profile?.data?.profile?.username);
+  const token = useSelector((state) => state?.account?.profile?.data?.token);
+
   const listsMenu = ["Profile", "Address Book", "My Order", "Change Password"];
   const [showPassword, setShowPassword] = useState(false);
   const [openModal, setOpenModal] = useState(false);
@@ -78,7 +80,7 @@ export const ChangePassword = () => {
 
   const fetchUserProfile = async () => {
     try {
-      const response = await getProfile({ username });
+      const response = await getProfile({ username, token });
       setUserData(response.detail);
     } catch (error) {
       if (error.response && (error.response.status === 404 || error.response.status === 401 || error.response.status === 403 || error.response.status === 500)) {
@@ -99,7 +101,7 @@ export const ChangePassword = () => {
   }, []);
   return (
     <>
-      <NavPage pageName={"Change my Password"} />
+      <NavPage pageName={"Change Password"} />
       <div className="flex justify-center">
         <div className="min-h-[70vh] lg:h-[70vh] w-[90vw] lg:w-[76vw] flex flex-row overflow-y-auto lg:overflow-y-hidden">
           <div className="hidden lg:flex flex-col w-[20vw]">

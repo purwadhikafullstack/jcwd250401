@@ -21,6 +21,7 @@ import getCity from "../api/Address/getCity";
 export const Address = () => {
   const isLogin = useSelector((state) => state?.account?.isLogin);
   const username = useSelector((state) => state?.account?.profile?.data?.profile?.username);
+  const token = useSelector((state) => state?.account?.profile?.data?.token);
   const listsMenu = ["Profile", "Address Book", "My Order", "Change Password"];
   const [addressForm, setAddressForm] = useState(false);
   const [provinceLists, setProvinceLists] = useState([]);
@@ -152,7 +153,7 @@ export const Address = () => {
 
   const fetchUserData = useCallback(async () => {
     try {
-      const response = await getProfile({ username });
+      const response = await getProfile({ username, token });
       setUserData(response.detail);
 
       const responseLists = await getUserAddress({ userId: response.detail.id });

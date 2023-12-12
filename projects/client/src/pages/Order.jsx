@@ -12,6 +12,7 @@ import getUserOrder from "../api/order/getUserOrder";
 export const Order = () => {
   const isLogin = useSelector((state) => state?.account?.isLogin);
   const userName = useSelector((state) => state?.account?.profile?.data?.profile?.username);
+  const token = useSelector((state) => state?.account?.profile?.data?.token);
   const listsMenu = ["Profile", "Address Book", "My Order", "Change Password"];
   const orderStatus = ["All", "Waiting for Payment", "Waiting for Payment Confirmation", "On Process", "On Delivery", "Delivered", "Cancelled"];
   const [selectedStatus, setSelectedStatus] = useState("all");
@@ -59,7 +60,7 @@ export const Order = () => {
 
   const getUserData = async () => {
     try {
-      const response = await getProfile({ username: userName });
+      const response = await getProfile({ username: userName, token });
 
       getOrderLists(response.detail.id);
     } catch (error) {

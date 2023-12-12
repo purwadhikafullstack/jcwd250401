@@ -14,12 +14,13 @@ export const Profile = () => {
   const isLogin = JSON.parse(localStorage.getItem("isLoggedIn"));
   const userDetail = useSelector((state) => state?.account?.profile?.data?.profile);
   const username = useSelector((state) => state?.account?.username);
+  const token = useSelector((state) => state?.account?.profile?.data?.token);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const fetchUserData = async () => {
     try {
-      const response = await getProfile({ username });
+      const response = await getProfile({ username, token });
       setUserData(response.detail);
     } catch (error) {
       if (error.response && (error.response.status === 401 || error.response.status === 403 || error.response.status === 404 || error.response.status === 500)) {

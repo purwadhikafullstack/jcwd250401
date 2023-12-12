@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 
 exports.handleUpdateProfile = async (req, res) => {
   const { username } = req.params;
-  const { userName, firstName, lastName, email } = req.body;
+  const { userName, firstName, lastName, email, token } = req.body;
 
   try {
     const account = await User.findOne({
@@ -52,6 +52,7 @@ exports.handleUpdateProfile = async (req, res) => {
     await account.save();
 
     const response = {
+      token,
       profile: {
         firstName: account.firstName,
         lastName: account.lastName,
@@ -89,7 +90,7 @@ exports.handleGetSingleUser = async (req, res) => {
     if (!account) {
       return res.status(404).json({
         ok: false,
-        msg: "Account not found",
+        message: "Account not found",
       });
     }
 
