@@ -5,7 +5,7 @@ import { updateAddress } from "../slices/addressSlices";
 import { useFormik } from "formik";
 import editAddress from "../api/Address/editAddress";
 
-export const SetDefaultAddressModal = ({ isOpen, onClose, addressData, userId }) => {
+export const SetDefaultAddressModal = ({ isOpen, onClose, addressData, userId, onSuccess}) => {
   const dispatch = useDispatch();
   const formik = useFormik({
     initialValues: {
@@ -36,6 +36,7 @@ export const SetDefaultAddressModal = ({ isOpen, onClose, addressData, userId })
             formik.resetForm();
             toast.success("Set as default address successfully");
             onClose();
+            onSuccess();
           }
         } else {
           toast.info("Please select the checkbox");

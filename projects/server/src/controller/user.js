@@ -88,7 +88,7 @@ exports.getAllAdmin = async (req, res) => {
 
 exports.updateAdmin = async (req, res) => {
   const { id } = req.params;
-  const { username, email, password, isWarehouseAdmin } = req.body;
+  const { username, email, password, isWarehouseAdmin, token } = req.body;
   const salt = await bcrypt.genSalt(10);
   try {
     const admin = await Admin.findByPk(id);
@@ -118,10 +118,19 @@ exports.updateAdmin = async (req, res) => {
     }
     await admin.save();
 
+    const response = {
+      profile: {
+        username: admin.username,
+        email: admin.email,
+        isWarehouseAdmin: admin.isWarehouseAdmin,
+      },
+      token
+    }
+
     return res.status(200).json({
       ok: true,
       message: "Update admin successfully",
-      detail: admin,
+      data: response,
     });
   } catch (error) {
     console.error(error);

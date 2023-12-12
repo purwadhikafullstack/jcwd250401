@@ -12,6 +12,8 @@ import { updateProfileAdmin } from "../slices/accountSlices";
 export const AddEditAdminModal = ({ isOpen, onClose, data, modalFor }) => {
   const [toggleInput, setToggleInput] = useState(false);
   const adminData = useSelector((state) => state?.account?.adminProfile?.data?.profile);
+  const token = useSelector((state) => state?.account?.adminProfile?.data?.token);
+  console.log(token)
   const dispatch = useDispatch();
 
   const handleToggleInput = () => setToggleInput(!toggleInput);
@@ -45,6 +47,7 @@ export const AddEditAdminModal = ({ isOpen, onClose, data, modalFor }) => {
             email: values.email,
             password: values.password,
             isWarehouseAdmin: values.role,
+            token: token
           });
           if (response.ok) {
             toast.success("Update admin success");

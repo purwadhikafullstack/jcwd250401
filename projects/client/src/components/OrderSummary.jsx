@@ -6,12 +6,11 @@ import getCart from "../api/cart/getCart";
 import { showLoginModal } from "../slices/authModalSlices";
 import { toast } from "sonner";
 
-function OrderSummary() {
+function OrderSummary({ shippingCost }) {
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [carts, setCarts] = useState([]);
   const isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
-
   const dispatch = useDispatch();
 
   const fetchCarts = useCallback(async () => {
@@ -78,27 +77,55 @@ function OrderSummary() {
   };
 
   return (
-    <div className="mt-2 lg:mt-4 p-6 flex flex-col h-62 border rounded-md lg:w-[30vw] bg-white">
-      <div className="flex-col space-y-2">
-        <span className="font-bold text-2xl">Order Summary {totalQuantity} item(s) </span>
-        <div className="flex justify-between">
-          <span className="text-md ">Item(s) subtotal:</span>
-          <span>{formatToRupiah(totalPrice)}</span>
+    <>
+      {shippingCost !== 0 ? (
+        <div className="mt-2 lg:mt-4 p-6 flex flex-col h-72 border rounded-md lg:w-[30vw] bg-white">
+          <div className="flex-col space-y-2">
+            <span className="font-bold text-2xl">Order Summary {totalQuantity} item(s) </span>
+            <div className="flex justify-between">
+              <span className="text-md ">Item(s) subtotal:</span>
+              <span>{formatToRupiah(totalPrice)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-md ">Tax included:</span>
+              <span>{formatToRupiah(totalPrice * 0.1)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-md ">Delivery cost:</span>
+              <span>{formatToRupiah(shippingCost)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-md font-bold ">Subtotal:</span>
+              <span className="text-md font-bold">{formatToRupiah(totalPrice + shippingCost)}</span>
+            </div>
+          </div>
+          <div className="flex mt-6 ">
+            <span className="text-sm">Prices and delivery cost are not confirmed until you've choose delivery options.</span>
+          </div>
         </div>
-        <div className="flex justify-between">
-          <span className="text-md ">Tax included:</span>
-          <span>{formatToRupiah(totalPrice * 0.1)}</span>
+      ) : (
+        <div className="mt-2 lg:mt-4 p-6 flex flex-col h-62 border rounded-md lg:w-[30vw] bg-white">
+          <div className="flex-col space-y-2">
+            <span className="font-bold text-2xl">Order Summary {totalQuantity} item(s) </span>
+            <div className="flex justify-between">
+              <span className="text-md ">Item(s) subtotal:</span>
+              <span>{formatToRupiah(totalPrice)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-md ">Tax included:</span>
+              <span>{formatToRupiah(totalPrice * 0.1)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-md font-bold ">Subtotal:</span>
+              <span className="text-md font-bold">{formatToRupiah(totalPrice)}</span>
+            </div>
+          </div>
+          <div className="flex mt-6 ">
+            <span className="text-sm">Prices and delivery cost are not confirmed until you've choose delivery options.</span>
+          </div>
         </div>
-        <div className="flex justify-between">
-          <span className="text-md font-bold ">Subtotal:</span>
-          <span className="text-md font-bold">{formatToRupiah(totalPrice)}</span>
-        </div>
-      </div>
-
-      <div className="flex mt-6 ">
-        <span className="text-sm">Prices and delivery cost are not confirmed until you've choose delivery options.</span>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
 

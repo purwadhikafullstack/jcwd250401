@@ -60,7 +60,7 @@ html {
   content: "";
   position: absolute;
   width: 0;
-  height: 3px;
+  height: 1px;
   border-radius: 60px;
   bottom: 0;
   background-color: black;
@@ -85,10 +85,6 @@ html {
 .underline-on-click.active::after {
   width: 90%;
 }
-
-
-
-
 
 .transition-dropdown {
   transition-property: opacity, max-height;
@@ -117,6 +113,28 @@ html {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* For WebKit browsers (Chrome, Safari) */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #888; /* Color of the thumb */
+  border-radius: 6px; /* Rounded corners of the thumb */
+}
+
+::-webkit-scrollbar-track {
+  background-color: #f1f1f1; /* Color of the track */
+}
+
+/* For Firefox */
+/* Note: Firefox currently supports only scrollbar-color property */
+/* and does not support styling the track separately */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
 }
 
 .parallax {

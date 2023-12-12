@@ -11,14 +11,16 @@ import PaymentOptions from "../components/PaymentOptions";
 
 function CheckoutPage() {
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [shippingCost, setShippingCost] = useState(0);
 
   const handlePaymentOpen = () => {
-    setIsPaymentOpen(true);
+    setIsPaymentOpen(!isPaymentOpen);
   };
 
-  const handlePaymentClose = () => {
-    setIsPaymentOpen(false);
+  const handleShippingCost = (cost) => {
+    setShippingCost(cost);
   };
+
 
   return (
     <div className="w-full min-h-screen bg-gray-100">
@@ -28,19 +30,17 @@ function CheckoutPage() {
       <div className="px-6 w-full lg:pl-32 mt-4 flex lg:flex-row flex-col justify-between">
         {/* Main content area with DeliveryOptions, adjusted for responsive width */}
         <div className="w-full lg:flex-col">
-          <DeliveryOptions handlePaymentOpen={handlePaymentOpen} />
+          <DeliveryOptions handlePaymentOpen={handlePaymentOpen} onShippingCost={handleShippingCost} />
           {!isPaymentOpen && (
             <div className="mt-2 lg:mt-4 p-6 flex flex-col h-62 border rounded-md lg:w-[48vw]  bg-gray-200">
               <h2 className="font-bold text-xl mb-2">2. Payment Method</h2>
             </div>
           )}
-          {isPaymentOpen && (
-            <PaymentOptions />
-          )}
+          {isPaymentOpen && <PaymentOptions />}
         </div>
         {/* Sidebar area with OrderSummary */}
         <div className="w-full lg:px-6 flex justify-start lg:justify-center lg:h-64">
-          <OrderSummary />
+          <OrderSummary shippingCost={shippingCost} />
         </div>
       </div>
       <div className="mt-32">

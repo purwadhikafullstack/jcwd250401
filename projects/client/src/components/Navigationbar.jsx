@@ -38,6 +38,8 @@ function Navigationbar() {
   const navigate = useNavigate();
   const profile = JSON.parse(localStorage.getItem("profile"));
   const username = profile?.data?.profile?.username;
+  const token = useSelector((state) => state?.account?.profile?.data?.token);
+  console.log("token", token);
   let isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
   const location = useLocation();
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
@@ -69,7 +71,7 @@ function Navigationbar() {
 
   const fetchCategoriesBags = useCallback(async () => {
     try {
-      const response = await api.get(`/category/user/sub-categories?mainCategory=Bags`);
+      const response = await api.get(`/api/category/user/sub-categories?mainCategory=Bags`);
       const categoryData = response.data.detail;
       setBagsSubCategory(categoryData);
       console.log(categoryData);
@@ -82,7 +84,7 @@ function Navigationbar() {
 
   const fetchCategoriesJackets = useCallback(async () => {
     try {
-      const response = await api.get(`/category/user/sub-categories?mainCategory=Jackets`);
+      const response = await api.get(`/api/category/user/sub-categories?mainCategory=Jackets`);
       const categoryData = response.data.detail;
       setJacketsSubCategory(categoryData);
       console.log(categoryData);
@@ -95,7 +97,7 @@ function Navigationbar() {
 
   const fetchCategoriesTops = useCallback(async () => {
     try {
-      const response = await api.get(`/category/user/sub-categories?mainCategory=Tops`);
+      const response = await api.get(`/api/category/user/sub-categories?mainCategory=Tops`);
       const categoryData = response.data.detail;
       setTopsSubCategory(categoryData);
       console.log(categoryData);
@@ -108,7 +110,7 @@ function Navigationbar() {
 
   const fetchCategoriesBottom = useCallback(async () => {
     try {
-      const response = await api.get(`/category/user/sub-categories?mainCategory=Bottom`);
+      const response = await api.get(`/api/category/user/sub-categories?mainCategory=Bottom`);
       const categoryData = response.data.detail;
       setBottomSubCategory(categoryData);
       console.log(categoryData);
@@ -121,7 +123,7 @@ function Navigationbar() {
 
   const fetchCategoriesAccessories = useCallback(async () => {
     try {
-      const response = await api.get(`/category/user/sub-categories?mainCategory=Accessories`);
+      const response = await api.get(`/api/category/user/sub-categories?mainCategory=Accessories`);
       const categoryData = response.data.detail;
       setAccessoriesSubCategory(categoryData);
       console.log(categoryData);
@@ -213,7 +215,7 @@ function Navigationbar() {
   const getUserData = async () => {
     if (isLoggedIn) {
       try {
-        const response = await getProfile({ username });
+        const response = await getProfile({ username, token });
         setUserData(response.detail);
         dispatch(setUsername(response.detail.username));
       } catch (error) {
@@ -487,32 +489,46 @@ function Navigationbar() {
             {dropdownVisible && (
               <div className={`absolute top-20 w-full h-70 bg-white ring-1 ring-black ring-opacity-5 right-0 lg:hidden ${isDropdownTransitioning ? "dropdown-hidden" : "dropdown-visible"}`}>
                 {/* Categories sm */}
-                <div className="flex flex-row">
+                <div className="flex px-2 flex-row">
                   <div className="w-[50vw]">
                     {categories.map((category, index) => {
-                      const joinedCategories = category.toLowerCase().replace(" ", "-");
                       return (
-                        <Link key={index} to={`/${joinedCategories}`}>
+                        <Link to={category === "MEN" || category === "WOMEN" ? `/collections/${category.toLowerCase()}` : `/products/unisex/${category.toLowerCase()}`} onClick={handleIconClick}>
                           <p className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm">{category}</p>
                         </Link>
                       );
                     })}
                   </div>
+
                   {/* Profile sm */}
                   <div className="w-[50vw]">
                     {accountsDropdown.map((account, index) => {
                       const joinedAccounts = account.toLowerCase().replace(" ", "-");
                       return (
-                        <Link key={index} to={`/account/${joinedAccounts}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <Link key={index} to={`/account/${joinedAccounts}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={handleIconClick}>
                           {account}
                         </Link>
                       );
                     })}
 
-                    <span className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" role="menuitem" onClick={() => navigate("/account/shopping-cart")}>
+                    <span
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                      role="menuitem"
+                      onClick={() => {
+                        navigate("/account/shopping-cart");
+                        handleIconClick();
+                      }}
+                    >
                       Shopping Cart {cartItem > 0 && <span className="text-sm font-bold">{cartItem}</span>}
                     </span>
-                    <p className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" role="menuitem" onClick={handleLogout}>
+                    <p
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                      role="menuitem"
+                      onClick={() => {
+                        handleLogout();
+                        handleIconClick();
+                      }}
+                    >
                       Log Out
                     </p>
                   </div>
@@ -535,10 +551,47 @@ function Navigationbar() {
               <HiOutlineArrowRight className="ml-2 h-5 w-5 hover:block" />
             </Button>
           </div>
-          <div className="flex lg:hidden items-center gap-4">
-            <a onClick={openAuthModal} className="text-black text-md font-semibold hover:underline cursor-pointer">
-              Sign In
-            </a>
+          <div className="flex lg:hidden gap-3 z-10">
+            {/* Category sm */}
+            <GiHamburgerMenu className="text-xl cursor-pointer flex lg:hidden" onClick={handleIconClick} />
+            {dropdownVisible && (
+              <div className={`absolute top-20 w-full h-70 bg-white ring-1 ring-black ring-opacity-5 right-0 lg:hidden ${isDropdownTransitioning ? "dropdown-hidden" : "dropdown-visible"}`}>
+                {/* Categories sm */}
+                <div className="flex px-2 flex-row">
+                  <div className="w-[50vw]">
+                    {categories.map((category, index) => {
+                      return (
+                        <Link to={category === "MEN" || category === "WOMEN" ? `/collections/${category.toLowerCase()}` : `/products/unisex/${category.toLowerCase()}`} onClick={handleIconClick}>
+                          <p className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm">{category}</p>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                  <div className="w-[50vw] flex ml-20">
+                    <div className="flex flex-col">
+                      <a
+                        onClick={() => {
+                          openAuthModal();
+                          handleIconClick();
+                        }}
+                        className="text-sm py-2 hover:underline cursor-pointer"
+                      >
+                        Log In
+                      </a>
+                      <a
+                        onClick={() => {
+                          openSignUpModal();
+                          handleIconClick();
+                        }}
+                        className="text-sm py-2 hover:underline cursor-pointer"
+                      >
+                        Sign Up
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
