@@ -15,9 +15,16 @@ function OrderList({ orders, fetchOrders }) {
     <div className="container mx-auto px-4">
       {orders.map(({ Order, Product, quantity, createdAt }, index) => (
         <div key={index} className="p-4 bg-white rounded-lg shadow-lg w-[1000px] lg:w-[100%] mb-5 lg:mb-5">
-          <div className="flex items-center gap-2">
-            {Order.status === "Waiting for Payment" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting for Payment</span>}
-            <p>ID {Order.id} / {new Date(createdAt).toLocaleDateString()} / {Order.warehouse.warehouseName}</p>
+          <div className="flex justify-between">
+            <div className="flex items-center gap-2">
+              {Order.status === "Waiting for Payment" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting for Payment</span>}
+              <p>ID {Order.id} / {new Date(createdAt).toLocaleDateString()} / {Order.warehouse.warehouseName}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm">
+                Payment Proof
+              </Button>
+            </div>
           </div>
           <hr className="my-2" />
           <div className="flex mt-4">
