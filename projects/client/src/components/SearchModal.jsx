@@ -92,7 +92,7 @@ function SearchModal({ isOpen, isClose }) {
                 />
               </div>
             </div>
-            <div className="hidden lg:flex flex-col space-y-4 mt-10 h-[60vh] overflow-y-auto scrollbar-hide">
+            <div className="hidden lg:flex flex-col space-y-4 mt-10 h-[60vh] overflow-y-auto">
               <div className="flex flex-col justify-center items-center space-y-4">
                 {search === "" && (
                   <SimpleGrid columns={3} spacing={5} mt={16} p={1}>
@@ -132,7 +132,7 @@ function SearchModal({ isOpen, isClose }) {
                 {products.map((product) => (
                   <div key={product.id} className="flex flex-col justify-center items-center space-y-4">
                     <div className="flex lg:flex-row flex-col items-center space-y-4 lg:space-y-0 lg:space-x-8 px-4 py-4 rounded-2xl  w-[40vw]">
-                      <div className="h-[140px] w-[140px] lg:h-[120px] lg:w-[120px] opacity-100  relative">
+                      <div className="h-[140px] w-[140px] lg:h-[120px] lg:w-[120px] opacity-100 relative">
                         {product.totalStockAllWarehouses !== 0 ? (
                           <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl rounded-lg" loading="lazy" alt="Product Image" />
                         ) : (

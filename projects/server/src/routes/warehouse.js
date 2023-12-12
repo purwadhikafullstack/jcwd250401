@@ -28,4 +28,7 @@ router.patch("/admin/:warehouseId", authMiddleware.validateToken, authMiddleware
 router.patch("/unassign-admin/:warehouseId", authMiddleware.validateToken, authMiddleware.checkRoleSuperAdmin, warehouseController.unassignWarehouseAdmin);
 router.get("/:adminId", authMiddleware.validateToken, warehouseController.getWarehouseByAdmin);
 
+router.get("/user/nearest-warehouse", authMiddleware.validateToken, warehouseController.getNearestWarehouse);
+
 module.exports = router;
+

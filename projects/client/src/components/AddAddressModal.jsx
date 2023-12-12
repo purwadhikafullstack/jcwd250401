@@ -11,7 +11,7 @@ import getProvince from "../api/Address/getProvince";
 import getCity from "../api/Address/getCity";
 import getProfile from "../api/profile/getProfile";
 
-export const AddAddressModal = ({ isOpen, onClose }) => {
+export const AddAddressModal = ({ isOpen, onClose, onSuccess }) => {
   const username = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const [userData, setUserData] = useState(null);
   const [provinceLists, setProvinceLists] = useState([]);
@@ -58,6 +58,7 @@ export const AddAddressModal = ({ isOpen, onClose }) => {
           dispatch(addAddress(response.detail));
           formik.resetForm();
           onClose();
+          onSuccess();
         }
       } catch (error) {
         if (error.response && error.response.status === 400) {

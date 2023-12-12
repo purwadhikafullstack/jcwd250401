@@ -33,7 +33,7 @@ export const Homepage = () => {
 
   return (
     <div className="font-sagoe">
-      <div className="flex justify-center lg:hidden ">
+      <div className="flex px-4 lg:hidden ">
         <MenuListMobile />
       </div>
       <div className="h-screen w-full lg:hidden">

@@ -1,5 +1,7 @@
 const axios = require("axios");
-const { Warehouse, WarehouseAddress, Admin } = require("../models"); // Adjust the path as necessary4
+const { Warehouse, WarehouseAddress, Admin, User, Address } = require("../models"); // Adjust the path as necessary4
+const { Op, Sequelize } = require("sequelize");
+
 
 exports.getAllWarehouses = async (req, res) => {
   try {
@@ -15,7 +17,7 @@ exports.getAllWarehouses = async (req, res) => {
       include: [
         {
           model: WarehouseAddress,
-          attributes: ["street", "city", "province", "longitude", "latitude"],
+          attributes: ["street", "city", "cityId", "province", "provinceId", "longitude", "latitude"],
         },
       ],
     });
@@ -116,14 +118,12 @@ exports.addWarehouse = async (req, res) => {
         warehouseImage,
       },
     });
-    
   } catch (error) {
     res.status(500).json({
       ok: false,
       message: "Error adding warehouse: " + error.message,
-    })
+    });
   }
-  
 };
 
 exports.updateWarehouse = async (req, res) => {
@@ -203,12 +203,11 @@ exports.updateWarehouse = async (req, res) => {
         warehouseImage,
       },
     });
-    
   } catch (error) {
     res.status(500).json({
       ok: false,
       message: "Error updating warehouse: " + error.message,
-    })
+    });
   }
 };
 
@@ -378,3 +377,76 @@ exports.getWarehouseByAdmin = async (req, res) => {
     });
   }
 };
+
+exports.getNearestWarehouse = async (req, res) => {
+  const { id: userId } = req.user;
+
+  // Find the user with their default address
+  const userAddress = await Address.findOne({
+    attributes: ['street', 'city', 'cityId', 'province', 'provinceId', 'longitude', 'latitude'],
+    where: {
+      userId,
+      setAsDefault: true,
+    },
+  });
+
+  if (!userAddress) {
+    return res.status(404).json({
+      ok: false,
+      message: 'User not found',
+    });
+  }
+
+  // Extract user's latitude and longitude from the default address
+  const userLatitude = userAddress.latitude;
+  const userLongitude = userAddress.longitude;
+  
+  console.log(userLatitude, userLongitude);
+
+  // Find the nearest warehouses
+  const nearestWarehouses = await findNearestWarehouses(userLatitude, userLongitude);
+
+  return res.status(200).json({
+    ok: true,
+    data: nearestWarehouses,
+  });
+};
+
+async function findNearestWarehouses(userLatitude, userLongitude, radius = 10) {
+  const warehouses = await Warehouse.findAll({
+    attributes: [
+      'id',
+      'name',
+      [
+        Sequelize.literal(
+          `AVG(WarehouseAddress.latitude)`
+        ),
+        'latitude',
+      ],
+      [
+        Sequelize.literal(
+          `AVG(WarehouseAddress.longitude)`
+        ),
+        'longitude',
+      ],
+      [
+        Sequelize.literal(
+          `6371 * acos(cos(radians(${userLatitude})) * cos(radians(latitude)) * cos(radians(longitude) - radians(${userLongitude})) + sin(radians(${userLatitude})) * sin(radians(latitude)))`
+        ),
+        'distance',
+      ],
+    ],
+    include: [
+      {
+        model: WarehouseAddress,
+        as: 'WarehouseAddress', // Use the correct alias
+        attributes: ["cityId", "provinceId"],
+      },
+    ],
+    group: ['Warehouse.id'], // Group by warehouse to get average latitude and longitude
+    having: Sequelize.literal('distance <= ' + radius),
+    order: Sequelize.literal('distance'),
+  });
+
+  return warehouses;
+}

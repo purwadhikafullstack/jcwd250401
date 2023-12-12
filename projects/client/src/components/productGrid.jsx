@@ -72,7 +72,7 @@ function ProductGrid() {
 
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await api.get(`/category/user/sub-categories?mainCategory=${mainCategory}`);
+      const response = await api.get(`/api/category/user/sub-categories?mainCategory=${mainCategory}`);
       const categoryData = response.data.detail;
       setCategoriesData(categoryData);
       console.log(categoryData);
