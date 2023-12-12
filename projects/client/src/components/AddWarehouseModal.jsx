@@ -57,7 +57,7 @@ const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
 
   useEffect(() => {
     // Fetch provinces
-    api.admin.get('/address/province').then(response => {
+    api.admin.get('/api/address/province').then(response => {
       if (response.data.ok) {
         setProvinces(response.data.detail);
       }
@@ -71,7 +71,7 @@ const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
     setCityId(0); // Reset city id when province changes
     setCities([]);
 
-    api.admin.get(`/address/city/${selectedId}`).then(response => {
+    api.admin.get(`/api/address/city/${selectedId}`).then(response => {
       if (response.data.ok) {
         setCities(response.data.detail);
       }

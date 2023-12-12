@@ -54,7 +54,7 @@ const WarehouseCard = ({ warehouse, onSuccess }) => {
         <HStack spacing={4} mb={4}>
         <VStack align="start" spacing={1} flex="1">
         <Text fontSize="2xl" fontWeight="bold" className="text-gray-800">
-          Warehouse {warehouse.name}
+         {warehouse.name}
         </Text>
         <Flex align="center" mt={2} className="text-gray-600 text-sm">
           <FaUser className="mr-2" />

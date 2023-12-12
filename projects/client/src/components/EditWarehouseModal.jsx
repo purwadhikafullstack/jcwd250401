@@ -56,7 +56,7 @@ const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
 
   useEffect(() => {
     // Fetch provinces
-    api.admin.get('/address/province').then(response => {
+    api.admin.get('/api/address/province').then(response => {
       if (response.data.ok) {
         setProvinces(response.data.detail);
       }
@@ -70,7 +70,7 @@ const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
     setCityId(0);
     setCities([]);
 
-    api.admin.get(`/address/city/${selectedId}`).then(response => {
+    api.admin.get(`/api/address/city/${selectedId}`).then(response => {
       if (response.data.ok) {
         setCities(response.data.detail);
       }
