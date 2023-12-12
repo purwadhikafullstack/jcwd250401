@@ -27,7 +27,7 @@ function OrderList({ orders, fetchOrders }) {
             </div>
           </div>
           <hr className="my-2" />
-          <div className="flex mt-4">
+          <div className="flex mt-4 mb-4">
             <img src={`http://localhost:8000/public/${Product.productImages[0].imageUrl}`} alt={Product.productName} className="w-20 h-20 object-cover" />
             <div className="ml-2">
               <p className="text-sm font-bold">{Product.productName}</p>
@@ -47,6 +47,12 @@ function OrderList({ orders, fetchOrders }) {
               <p className="text-sm w-[25vw]">{Product.productDescription}</p>
             </div>
           </div>
+          <hr className="my-2" />
+          <div className='flex ml-2 mr-2'>
+            <p className="text-lg font-bold">TOTAL</p>
+            <p className="text-lg font-bold ml-auto">{formatToRupiah(Order.totalPrice)}</p>
+          </div>
+          <hr className="my-2" /> 
           <div className="flex justify-end gap-2">
             {/* Action buttons here, if needed */}
             <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
