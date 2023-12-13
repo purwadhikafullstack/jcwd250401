@@ -19,6 +19,7 @@ import getCart from "../api/cart/getCart";
 import { setCartItems } from "../slices/cartSlices";
 import api from "../api";
 import SearchModal from "./SearchModal";
+import { set } from "lodash";
 
 function Navigationbar() {
   const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -51,9 +52,10 @@ function Navigationbar() {
   const [jacketsSubCategory, setJacketsSubCategory] = useState([]);
   const [topsSubCategory, setTopsSubCategory] = useState([]);
   const [bottomSubCategory, setBottomSubCategory] = useState([]);
-  const cartItem = useSelector((state) => state.cart.items);
+  const cart = useSelector((state) => state.cart.items);
   const [activeCategory, setActiveCategory] = useState(null);
   const hoverTimeoutRef = useRef(null);
+
 
   const handleMouseEnter = (category) => {
     hoverTimeoutRef.current = setTimeout(() => {
@@ -72,7 +74,7 @@ function Navigationbar() {
       const response = await api.get(`/api/category/user/sub-categories?mainCategory=Bags`);
       const categoryData = response.data.detail;
       setBagsSubCategory(categoryData);
-      console.log(categoryData);
+      
     } catch (error) {
       if (error?.response?.status === 404) {
         setBagsSubCategory([]);
@@ -85,7 +87,7 @@ function Navigationbar() {
       const response = await api.get(`/api/category/user/sub-categories?mainCategory=Jackets`);
       const categoryData = response.data.detail;
       setJacketsSubCategory(categoryData);
-      console.log(categoryData);
+      
     } catch (error) {
       if (error?.response?.status === 404) {
         setJacketsSubCategory([]);
@@ -98,7 +100,7 @@ function Navigationbar() {
       const response = await api.get(`/api/category/user/sub-categories?mainCategory=Tops`);
       const categoryData = response.data.detail;
       setTopsSubCategory(categoryData);
-      console.log(categoryData);
+      
     } catch (error) {
       if (error?.response?.status === 404) {
         setTopsSubCategory([]);
@@ -111,7 +113,7 @@ function Navigationbar() {
       const response = await api.get(`/api/category/user/sub-categories?mainCategory=Bottom`);
       const categoryData = response.data.detail;
       setBottomSubCategory(categoryData);
-      console.log(categoryData);
+      
     } catch (error) {
       if (error?.response?.status === 404) {
         setBottomSubCategory([]);
@@ -124,7 +126,7 @@ function Navigationbar() {
       const response = await api.get(`/api/category/user/sub-categories?mainCategory=Accessories`);
       const categoryData = response.data.detail;
       setAccessoriesSubCategory(categoryData);
-      console.log(categoryData);
+      
     } catch (error) {
       if (error?.response?.status === 404) {
         setAccessoriesSubCategory([]);
@@ -134,6 +136,7 @@ function Navigationbar() {
 
   const fetchCarts = useCallback(async () => {
     try {
+      console.log("refetching...")
       const result = await getCart({});
       setCarts(result.detail.CartItems);
       // Calculate total price and quantity
@@ -141,16 +144,27 @@ function Navigationbar() {
     } catch (error) {
       if (error?.response?.status === 404) {
         setCarts([]);
+        setTotalQuantity(0);
         dispatch(setCartItems(0));
       } else if (error.response && error.response.status === 401) {
         setCarts([]);
+        setTotalQuantity(0);
         dispatch(setCartItems(0));
       } else if (error.response && error.response.status === 403) {
         setCarts([]);
         dispatch(setCartItems(0));
       }
     }
-  }, [isLoggedIn, cartItem]);
+  }, [isLoggedIn, cart]);
+
+  useEffect(() => {
+    fetchCarts();
+    fetchCategoriesJackets();
+    fetchCategoriesBags();
+    fetchCategoriesTops();
+    fetchCategoriesBottom();
+    fetchCategoriesAccessories();
+  }, [fetchCarts, fetchCategoriesJackets, fetchCategoriesTops, fetchCategoriesBottom, fetchCategoriesBags, fetchCategoriesAccessories]);
 
   const calculateTotal = (cartItems) => {
     let total = 0;
@@ -165,14 +179,6 @@ function Navigationbar() {
     setTotalQuantity(quantity);
   };
 
-  useEffect(() => {
-    fetchCarts();
-    fetchCategoriesJackets();
-    fetchCategoriesBags();
-    fetchCategoriesTops();
-    fetchCategoriesBottom();
-    fetchCategoriesAccessories();
-  }, [fetchCarts, fetchCategoriesJackets, fetchCategoriesTops, fetchCategoriesBottom, fetchCategoriesBags, fetchCategoriesAccessories, cartItem]);
 
   const openSearchModal = () => {
     setIsSearchModalOpen(true);
@@ -517,7 +523,7 @@ function Navigationbar() {
                         handleIconClick();
                       }}
                     >
-                      Shopping Cart {cartItem > 0 && <span className="text-sm font-bold">{cartItem}</span>}
+                      Shopping Cart {cart > 0 && <span className="text-sm font-bold">{cart}</span>}
                     </span>
                     <p
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
