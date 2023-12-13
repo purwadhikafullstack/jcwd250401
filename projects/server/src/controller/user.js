@@ -45,7 +45,7 @@ exports.getAllAdmin = async (req, res) => {
   const limit = parseInt(size);
   const offset = (parseInt(page) - 1) * limit;
   try {
-    const orderClause = [[sort, order]];
+    let orderClause = [[sort, order]];
 
     let whereClause = {};
     if (isWarehouseAdmin !== null && isWarehouseAdmin !== undefined && isWarehouseAdmin !== "") {
@@ -58,6 +58,11 @@ exports.getAllAdmin = async (req, res) => {
         [Op.or]: [{ username: { [Op.like]: `%${search}%` } }, { email: { [Op.like]: `%${search}%` } }],
       };
     }
+
+    if (sort === "isWarehouseAdmin") {
+      orderClause = [["username", order]];
+    }
+
     const admins = await Admin.findAll({
       where: whereClause,
       order: orderClause,
@@ -99,18 +104,19 @@ exports.updateAdmin = async (req, res) => {
       });
     }
 
-    if (email) {
-      const existingAdmin = await Admin.findOne({ where: { username, email, isWarehouseAdmin } });
+    // Check if email or username already exists except the current admin
+    if (email !== admin.email || username !== admin.username || isWarehouseAdmin !== admin.isWarehouseAdmin) {
+      const existingAdmin = await Admin.findOne({ where: { [Op.and]: [{ email }, { username }, { isWarehouseAdmin }] } });
       if (existingAdmin) {
         return res.status(400).json({
           ok: false,
-          message: "Admin with this username, email and role already exists",
+          message: "Admin with this email or username at this role already exists",
         });
       }
-      admin.email = email;
     }
-
+    admin.email = email;
     admin.username = username;
+
     isWarehouseAdmin ? (admin.isWarehouseAdmin = isWarehouseAdmin) : admin.isWarehouseAdmin;
     if (password !== undefined && password !== null && password !== "") {
       const hashPassword = await bcrypt.hash(password, salt);
@@ -124,8 +130,8 @@ exports.updateAdmin = async (req, res) => {
         email: admin.email,
         isWarehouseAdmin: admin.isWarehouseAdmin,
       },
-      token
-    }
+      token,
+    };
 
     return res.status(200).json({
       ok: true,

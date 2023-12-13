@@ -37,7 +37,7 @@ export const Staff = () => {
     try {
       let isWarehouseAdminValue = isWarehouseAdmin;
 
-      // If "All Admin" is selected, set isWarehouseAdminValue to null
+      // If "All Admin" is selected, set isWarehouseAdminValue to ""
       if (isWarehouseAdmin === "" || isWarehouseAdmin === undefined || isWarehouseAdmin === null) {
         isWarehouseAdminValue = "";
       }
@@ -136,7 +136,7 @@ export const Staff = () => {
 
             <div className="flex gap-2">
               <select value={sort} onChange={(e) => setSort(e.target.value)} className="bg-white text-[#40403F] border boder-[#40403F]-1 py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none w-full lg:w-auto">
-                <option value={"createdAt"} disabled defaultChecked>
+                <option value={"createdAt"} defaultChecked>
                   Select Sort
                 </option>
                 <option value={"username"}>Username</option>
@@ -144,8 +144,8 @@ export const Staff = () => {
                 <option value={"isWarehouseAdmin"}>Role</option>
               </select>
 
-              <select value={order} onChange={(e) => setOrder(e.target.value)} className={`bg-white ${sort === "isWarehouseAdmin" ? "hidden" : ""} text-[#40403F] border boder-[#40403F]-1 py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none w-full lg:w-auto`}>
-                <option value={""} disabled defaultChecked>
+              <select value={order} onChange={(e) => setOrder(e.target.value)} className={`bg-white text-[#40403F] border boder-[#40403F]-1 py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none w-full lg:w-auto`}>
+                <option value={""} defaultChecked>
                   Select Order
                 </option>
                 <option value={"ASC"}>A to Z</option>
