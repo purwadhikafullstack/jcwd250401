@@ -40,11 +40,13 @@ exports.handleRegister = async (req, res) => {
     }
 
     const verifyCode = generateRandomLetterString(6);
+    const verifyCodeCreatedAt = new Date();
     const username = email.split("@")[0];
     const user = await User.create({
       email,
       username,
       verifyCode,
+      verifyCodeCreatedAt,
       isVerify: false,
       registBy: "email",
     });
@@ -146,6 +148,18 @@ exports.handleVerify = async (req, res) => {
         return res.status(400).json({
           ok: false,
           message: "User is already verified",
+        });
+      }
+
+      // Check if the code has expired (e.g., within the last hour)
+      const currentTimestamp = Date.now(); // Get the current timestamp in milliseconds
+      const codeCreationTimestamp = user.verifyCodeCreatedAt.getTime(); // Assuming verifyCodeCreatedAt is a Date object
+
+      const codeValidityDuration = 60 * 60 * 1000; // 1 hour in milliseconds
+      if (currentTimestamp - codeCreationTimestamp > codeValidityDuration) {
+        return res.status(400).json({
+          ok: false,
+          message: "Verification code has expired, please request again",
         });
       }
 
@@ -467,8 +481,10 @@ exports.handleSendVerifyEmail = async (req, res) => {
     }
 
     const verifyCode = generateRandomLetterString(6);
+    const verifyCodeCreatedAt = new Date();
     const username = email.split("@")[0];
 
+    user.verifyCodeCreatedAt = verifyCodeCreatedAt;
     user.verifyCode = verifyCode;
     await user.save();
 

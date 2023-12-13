@@ -1,6 +1,6 @@
 const { Op } = require("sequelize");
 const axios = require("axios");
-const { Order, OrderItem, Product, ProductImage, Warehouse } = require("../models");
+const { Order, OrderItem, Product, ProductImage, Warehouse, Shipment, Cart, CartItem } = require("../models");
 
 // Config default axios with rajaongkir
 axios.defaults.baseURL = "https://api.rajaongkir.com/starter";
@@ -173,7 +173,7 @@ exports.getOrderLists = async (req, res) => {
 
 exports.getAllOrderLists = async (req, res) => {
   try {
-    const { status = "all", page = 1, size = 10, sort = "createdAt", order = "DESC", warehouseId, month} = req.query;
+    const { status = "all", page = 1, size = 10, sort = "createdAt", order = "DESC", warehouseId, month } = req.query;
     const limit = parseInt(size);
     const offset = (parseInt(page) - 1) * limit;
 
@@ -214,10 +214,7 @@ exports.getAllOrderLists = async (req, res) => {
       filter.where = {
         ...filter.where,
         createdAt: {
-          [Op.and]: [
-            { [Op.gte]: new Date(new Date().getFullYear(), monthInt - 1, 1) },
-            { [Op.lte]: new Date(new Date().getFullYear(), monthInt, 0) },
-          ],
+          [Op.and]: [{ [Op.gte]: new Date(new Date().getFullYear(), monthInt - 1, 1) }, { [Op.lte]: new Date(new Date().getFullYear(), monthInt, 0) }],
         },
       };
     }
@@ -271,7 +268,6 @@ exports.getAllOrderLists = async (req, res) => {
             productWeight: product.weight,
             productImages: productImages,
           },
-          
         };
       })
     );
@@ -288,4 +284,84 @@ exports.getAllOrderLists = async (req, res) => {
       detail: String(error),
     });
   }
-}
+};
+
+// create order
+
+exports.createOrder = async (req, res) => {
+  try {
+    const { id: userId } = req.user;
+    const { addressId, warehouseId, productOnCart, shippingCost, paymentBy } = req.body;
+
+    const order = await Order.create({
+      userId,
+      warehouseId,
+      paymentBy,
+      status: "waiting for payment",
+    });
+
+    const orderItems = await Promise.all(
+      productOnCart.map(async (item) => {
+        const product = await Product.findOne({
+          where: { id: item.productId },
+          attributes: ["id", "price"],
+        });
+
+        return {
+          orderId: order.id,
+          productId: product.id,
+          quantity: item.quantity,
+          price: product.price,
+        };
+      })
+    );
+
+    await OrderItem.bulkCreate(orderItems);
+
+    // Calculate the total price of all products
+    const totalProductPrice = orderItems.reduce((acc, item) => acc + item.quantity * item.price, 0);
+
+    // Access the shipping cost directly from the array
+    const shippingCostValue = shippingCost[1];
+
+    // Calculate the total order price by adding the total product price and the shipping cost
+    const totalOrderPrice = totalProductPrice + shippingCostValue;
+
+    // Update the totalPrice column in the Order table
+    await order.update({ totalPrice: totalOrderPrice });
+
+    // Create shipment
+
+    const shipment = await Shipment.create({
+      name: shippingCost[0],  // Accessing the shipping method directly
+      cost: shippingCost[1],  // Accessing the cost directly
+      addressId: addressId,
+    });
+
+    // Update shipmentId in Order table
+    await order.update({ shipmentId: shipment.id });
+
+    // delete cart
+    const cartIdsToDelete = productOnCart.map((item) => item.cartId);
+
+    await CartItem.destroy({
+      where: { cartId: cartIdsToDelete },
+    });
+
+    await Cart.destroy({
+      where: { userId },
+    });
+
+    return res.status(201).json({
+      ok: true,
+      message: "Order created successfully",
+      detail: { order, orderItems, shipment },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+      detail: String(error),
+    });
+  }
+};

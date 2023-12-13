@@ -93,6 +93,8 @@ function CartSection() {
   useEffect(() => {
     fetchCarts();
   }, [fetchCarts]);
+
+  
   const formatToRupiah = (price) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",

@@ -13,7 +13,7 @@ import AddressListModal from "./UserAddressModal";
 import getNearestWarehouses from "../api/warehouse/getNearestWarehouse";
 import { Button } from "flowbite-react";
 
-const DeliveryOptions = ({ handlePaymentOpen, onShippingCost }) => {
+const DeliveryOptions = ({ handlePaymentOpen, onShippingCost, nearestWarehouseId}) => {
   const username = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const [selectedOption, setSelectedOption] = useState("standard");
   const [showButtons, setShowButtons] = useState(true);
@@ -35,23 +35,23 @@ const DeliveryOptions = ({ handlePaymentOpen, onShippingCost }) => {
       const warehouseResponse = await getNearestWarehouses({});
       const addressResponse = await getProfile({ username });
       const addressLists = await getUserAddress({ userId: addressResponse.detail.id });
-
       const defaultAddress = addressLists.detail.find((address) => address.setAsDefault);
-
       setUserData(addressResponse.detail);
       setAddress(addressLists.detail);
       // Get the destination city id
       const destinationCityId = String(defaultAddress.cityId);
       const cityIdAsString = String(warehouseResponse.data[0].WarehouseAddress.cityId);
+      const warehouseId = warehouseResponse.data[0].id;
       const originId = cityIdAsString;
       const destinationId = destinationCityId;
       const shippingCost = await getShippingCost({ origin: originId, destination: destinationId, weight: "100" });
       setShippingCost(shippingCost.detail);
+      nearestWarehouseId(warehouseId);
     } catch (error) {
       toast.error(error.message);
     }
   };
-
+  
   useEffect(() => {
     fetchAddressAndCost();
   }, []);
@@ -67,10 +67,13 @@ const DeliveryOptions = ({ handlePaymentOpen, onShippingCost }) => {
     setEditDeliveryButton(true);
     setDeliveryCheckmarks(true);
 
+    
     if (selectedOption === "standard") {
-      onShippingCost(shippingCost[0].costs[0].cost[0].value);
+      const cost = shippingCost[0].costs[0].cost[0].value;
+      onShippingCost([selectedOption, cost]);
     } else {
-      onShippingCost(shippingCost[0].costs[1].cost[0].value);
+      const cost = shippingCost[0].costs[1].cost[0].value;
+      onShippingCost([selectedOption, cost]);
     }
   };
 

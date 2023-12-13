@@ -96,7 +96,7 @@ function VerifyModal({ isOpen, isClose }) {
           }, 2000);
         } else if (error.response.status === 400) {
           setTimeout(() => {
-            toast.error("This account is already verified");
+            toast.error(error.response.data.message);
             setIsSubmitting(false);
           }, 2000);
         } else if (error.request) {
@@ -151,7 +151,7 @@ function VerifyModal({ isOpen, isClose }) {
                 </div>
                 <div className="flex items-center justify-center gap-4 mt-4">
                   <span className="text-sm font-medium text-[#777777]">
-                    Didn't get the code ? {""}
+                    Didn't get the code / code expired ? {""}
                     {resendCooldown === 0 ? ( // Show "Resend" when the cooldown is 0
                       <a className="text-sm font-bold text-gray-900 hover:underline hover:cursor-pointer" onClick={handleResend}>
                         Resend

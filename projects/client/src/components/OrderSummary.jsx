@@ -6,7 +6,7 @@ import getCart from "../api/cart/getCart";
 import { showLoginModal } from "../slices/authModalSlices";
 import { toast } from "sonner";
 
-function OrderSummary({ shippingCost }) {
+function OrderSummary({ shippingCost, onCartItem, onTotalPrice}) {
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [carts, setCarts] = useState([]);
@@ -17,6 +17,18 @@ function OrderSummary({ shippingCost }) {
     try {
       const result = await getCart({});
       setCarts(result.detail.CartItems);
+      console.log(result.detail.CartItems)
+      const cartItemsData = result.detail.CartItems
+      .filter((cart) => cart.quantity > 0)
+      .map((cart) => ({
+        cartId: cart.cartId,
+        productId: cart.Product.id,
+        quantity: cart.quantity,
+      }));
+
+      onCartItem(cartItemsData);
+
+      
       // Calculate total price and quantity
       calculateTotal(result.detail.CartItems);
     } catch (error) {
@@ -76,9 +88,12 @@ function OrderSummary({ shippingCost }) {
     }).format(price);
   };
 
+  const cost  = shippingCost[1];
+  onTotalPrice(totalPrice + cost);
+
   return (
     <>
-      {shippingCost !== 0 ? (
+      {shippingCost.length !== 0 ? (
         <div className="mt-2 lg:mt-4 p-6 flex flex-col h-72 border rounded-md lg:w-[30vw] bg-white">
           <div className="flex-col space-y-2">
             <span className="font-bold text-2xl">Order Summary {totalQuantity} item(s) </span>
@@ -92,11 +107,11 @@ function OrderSummary({ shippingCost }) {
             </div>
             <div className="flex justify-between">
               <span className="text-md ">Delivery cost:</span>
-              <span>{formatToRupiah(shippingCost)}</span>
+              <span>{formatToRupiah(cost)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-md font-bold ">Subtotal:</span>
-              <span className="text-md font-bold">{formatToRupiah(totalPrice + shippingCost)}</span>
+              <span className="text-md font-bold">{formatToRupiah(totalPrice + cost)}</span>
             </div>
           </div>
           <div className="flex mt-6 ">

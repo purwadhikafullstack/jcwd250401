@@ -11,7 +11,10 @@ import PaymentOptions from "../components/PaymentOptions";
 
 function CheckoutPage() {
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
-  const [shippingCost, setShippingCost] = useState(0);
+  const [shippingCost, setShippingCost] = useState([]);
+  const [productOnCart, setProductOnCart] = useState([]);
+  const [warehouseId, setWarehouseId] = useState(null);
+  const [totalPrice, setTotalPrice] = useState(0);
 
   const handlePaymentOpen = () => {
     setIsPaymentOpen(!isPaymentOpen);
@@ -21,6 +24,17 @@ function CheckoutPage() {
     setShippingCost(cost);
   };
 
+  const handleProductOnCart = (product) => {
+    setProductOnCart(product);
+  };
+
+  const handleWarehouseId = (id) => {
+    setWarehouseId(id);
+  }
+
+  const handleTotalPrice = (price) => {
+    setTotalPrice(price);
+  }
 
   return (
     <div className="w-full min-h-screen bg-gray-100">
@@ -30,17 +44,17 @@ function CheckoutPage() {
       <div className="px-6 w-full lg:pl-32 mt-4 flex lg:flex-row flex-col justify-between">
         {/* Main content area with DeliveryOptions, adjusted for responsive width */}
         <div className="w-full lg:flex-col">
-          <DeliveryOptions handlePaymentOpen={handlePaymentOpen} onShippingCost={handleShippingCost} />
+          <DeliveryOptions handlePaymentOpen={handlePaymentOpen} onShippingCost={handleShippingCost} nearestWarehouseId={handleWarehouseId} />
           {!isPaymentOpen && (
             <div className="mt-2 lg:mt-4 p-6 flex flex-col h-62 border rounded-md lg:w-[48vw]  bg-gray-200">
               <h2 className="font-bold text-xl mb-2">2. Payment Method</h2>
             </div>
           )}
-          {isPaymentOpen && <PaymentOptions />}
+          {isPaymentOpen && <PaymentOptions shippingCost={shippingCost} productOnCart={productOnCart} warehouseId={warehouseId} totalPrice={totalPrice} />}
         </div>
         {/* Sidebar area with OrderSummary */}
         <div className="w-full lg:px-6 flex justify-start lg:justify-center lg:h-64">
-          <OrderSummary shippingCost={shippingCost} />
+          <OrderSummary shippingCost={shippingCost} onCartItem={handleProductOnCart} onTotalPrice = {handleTotalPrice} />
         </div>
       </div>
       <div className="mt-32">
