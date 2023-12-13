@@ -7,7 +7,7 @@ import { deleteAllCartItem } from "../slices/cartSlices";
 import { useDispatch } from "react-redux";
 import { set } from "lodash";
 
-function OrderCreatedModal({ isOpen, onClose, paymentMethod }) {
+function OrderCreatedModal({ isOpen, onClose, paymentMethod, totalPrice }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -21,6 +21,15 @@ function OrderCreatedModal({ isOpen, onClose, paymentMethod }) {
     onClose();
   };
 
+  const formatToRupiah = (price) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0,
+    }).format(price);
+  };
+
   return (
     <Modal closeOnOverlayClick={false} isOpen={isOpen} size="md" onClose={handleContinueShopping} isCentered>
       <ModalOverlay />
@@ -31,7 +40,7 @@ function OrderCreatedModal({ isOpen, onClose, paymentMethod }) {
         <ModalCloseButton />
         <ModalBody>
           <div className="flex flex-col justify-center items-center">
-            <AiOutlineCheckCircle size="100px" className=" text-green-500" />
+            <AiOutlineCheckCircle size="160px" className=" text-green-500" />
             <span className="text-center mt-4 mb-4">Your order has been created</span>
             <span> Please transfer to :</span>
             {paymentMethod === "MANDIRI" && (
@@ -52,8 +61,12 @@ function OrderCreatedModal({ isOpen, onClose, paymentMethod }) {
                 <span>PT. RAINS INDONESIA Tbk.</span>
               </div>
             )}
+            <div className="flex flex-col items-center mt-2">
+              <span className="text-md font-sans"> Payment total : </span>
+              <span className="text-lg font-bold font-sans"> {formatToRupiah(totalPrice)}</span>
+            </div>
           </div>
-          <div className="flex flex-col mt-8 space-y-4">
+          <div className="flex flex-col mt-4 space-y-4">
             <p className="text-sm text-left">
               After your bank transfer payment has been successfully completed, our system will take approximately 2 working day <br /> for verification and confirmation status of your payment.{" "}
             </p>
@@ -67,7 +80,7 @@ function OrderCreatedModal({ isOpen, onClose, paymentMethod }) {
             <Button className="w-full border border-gray-500" color="light" size="sm" onClick={handleContinueShopping}>
               Continue Shopping
             </Button>
-            <Button className="w-full bg-gray-900 enabled:hover:bg-gray-700" size="sm" onClick={() => navigate("/account/shopping-cart")}>
+            <Button className="w-full bg-gray-900 enabled:hover:bg-gray-700" size="sm">
               Upload Payment Proof
             </Button>
           </div>
