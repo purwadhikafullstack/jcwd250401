@@ -28,6 +28,7 @@ module.exports = (sequelize, DataTypes) => {
     verifyCode: DataTypes.STRING,
     uniqueCode: DataTypes.STRING,
     uniqueCodeCreatedAt: DataTypes.DATE,
+    verifyCodeCreatedAt: DataTypes.DATE,
   }, {
     sequelize,
     modelName: 'User',
