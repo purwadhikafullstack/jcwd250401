@@ -965,7 +965,7 @@ async function updateSourceWarehouseStock(productId, warehouseId, destinationWar
 //   updateSourceWarehouseStock,
 // };
 
-// TESTING
+// TESTING FUNCTION
 exports.testGetOrderData = async (req, res) => {
   const t = await sequelize.transaction();
   const { productId, orderId } = req.body;
