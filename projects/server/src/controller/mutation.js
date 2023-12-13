@@ -1,4 +1,4 @@
-const { Op, literal, where } = require("sequelize");
+const { Op, literal } = require("sequelize");
 const { Mutation, Product, Warehouse, Admin, ProductImage, Category, sequelize, Journal, OrderItem, Order, WarehouseAddress } = require("../models");
 
 exports.getTotalStockByWarehouseProductId = async (req, res) => {
@@ -965,7 +965,7 @@ async function updateSourceWarehouseStock(productId, warehouseId, destinationWar
 //   updateSourceWarehouseStock,
 // };
 
-// TESTING
+// TESTING FUNCTION
 exports.testGetOrderData = async (req, res) => {
   const t = await sequelize.transaction();
   const { productId, orderId } = req.body;
