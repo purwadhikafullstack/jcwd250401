@@ -43,7 +43,7 @@ function OrderCreatedModal({ isOpen, onClose, paymentMethod, totalPrice, orderId
         <ModalCloseButton />
         <ModalBody>
           <div className="flex flex-col justify-center items-center">
-          <Checkmark size='130px' color='#223344'/>
+          <Checkmark size='130px' color='#212121'/>
             <span className="text-center mt-4 mb-4">Your order has been created</span>
             <span> Please transfer to :</span>
             {paymentMethod === "MANDIRI" && (

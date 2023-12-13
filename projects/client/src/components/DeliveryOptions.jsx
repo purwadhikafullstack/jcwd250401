@@ -12,8 +12,9 @@ import { useDispatch, useSelector } from "react-redux";
 import AddressListModal from "./UserAddressModal";
 import getNearestWarehouses from "../api/warehouse/getNearestWarehouse";
 import { Button } from "flowbite-react";
+import getCart from "../api/cart/getCart";
 
-const DeliveryOptions = ({ handlePaymentOpen, onShippingCost, nearestWarehouseId}) => {
+const DeliveryOptions = ({ handlePaymentOpen, onShippingCost, nearestWarehouseId, totalQuantity}) => {
   const username = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const [selectedOption, setSelectedOption] = useState("standard");
   const [showButtons, setShowButtons] = useState(true);
@@ -25,33 +26,33 @@ const DeliveryOptions = ({ handlePaymentOpen, onShippingCost, nearestWarehouseId
   const [shippingCost, setShippingCost] = useState([]);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [originId, setOriginId] = useState("");
-  const [destinationId, setDestinationId] = useState("");
   const [editDeliveryButton, setEditDeliveryButton] = useState(false);
   const [deliveryCheckmarks, setDeliveryCheckmarks] = useState(false);
 
+  
   const fetchAddressAndCost = async () => {
     try {
       const warehouseResponse = await getNearestWarehouses({});
       const addressResponse = await getProfile({ username });
+      const cartResponse = await getCart({});
+      const totalWeight = cartResponse.detail.CartItems.reduce((acc, item) => acc + 1000 * item.quantity, 0);
       const addressLists = await getUserAddress({ userId: addressResponse.detail.id });
       const defaultAddress = addressLists.detail.find((address) => address.setAsDefault);
       setUserData(addressResponse.detail);
       setAddress(addressLists.detail);
-      // Get the destination city id
       const destinationCityId = String(defaultAddress.cityId);
       const cityIdAsString = String(warehouseResponse.data[0].WarehouseAddress.cityId);
       const warehouseId = warehouseResponse.data[0].id;
       const originId = cityIdAsString;
       const destinationId = destinationCityId;
-      const shippingCost = await getShippingCost({ origin: originId, destination: destinationId, weight: "100" });
+      const shippingCost = await getShippingCost({ origin: originId, destination: destinationId, weight: totalWeight });
       setShippingCost(shippingCost.detail);
       nearestWarehouseId(warehouseId);
     } catch (error) {
       toast.error(error.message);
     }
   };
-  
+
   useEffect(() => {
     fetchAddressAndCost();
   }, []);

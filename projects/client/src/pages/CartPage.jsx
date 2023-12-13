@@ -7,6 +7,12 @@ import Footer from "../components/Footer";
 function CartPage() {
   const { gender, mainCategory, subCategory, productName } = useParams();
 
+
+  useEffect(() => {
+    // Scroll to the top when the component is first rendered
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="w-full">
       <div className="px-6 lg:px-32 pt-4">
