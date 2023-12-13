@@ -14,7 +14,7 @@ import getNearestWarehouses from "../api/warehouse/getNearestWarehouse";
 import { Button } from "flowbite-react";
 import getCart from "../api/cart/getCart";
 
-const DeliveryOptions = ({ handlePaymentOpen, onShippingCost, nearestWarehouseId, totalQuantity}) => {
+const DeliveryOptions = ({ handlePaymentOpen, onShippingCost, nearestWarehouseId, totalQuantity }) => {
   const username = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const [selectedOption, setSelectedOption] = useState("standard");
   const [showButtons, setShowButtons] = useState(true);
@@ -29,7 +29,6 @@ const DeliveryOptions = ({ handlePaymentOpen, onShippingCost, nearestWarehouseId
   const [editDeliveryButton, setEditDeliveryButton] = useState(false);
   const [deliveryCheckmarks, setDeliveryCheckmarks] = useState(false);
 
-  
   const fetchAddressAndCost = async () => {
     try {
       const warehouseResponse = await getNearestWarehouses({});
@@ -68,7 +67,6 @@ const DeliveryOptions = ({ handlePaymentOpen, onShippingCost, nearestWarehouseId
     setEditDeliveryButton(true);
     setDeliveryCheckmarks(true);
 
-    
     if (selectedOption === "standard") {
       const cost = shippingCost[0].costs[0].cost[0].value;
       onShippingCost([selectedOption, cost]);
@@ -104,7 +102,6 @@ const DeliveryOptions = ({ handlePaymentOpen, onShippingCost, nearestWarehouseId
     handleModalClose();
     handleEditModalClose();
   };
-
 
   return (
     <div className="mt-2 lg:mt-4 p-6 flex flex-col h-62 border rounded-md lg:w-[48vw] bg-white">
@@ -147,41 +144,43 @@ const DeliveryOptions = ({ handlePaymentOpen, onShippingCost, nearestWarehouseId
               Outside Java: 1-10 working days
             </div>
           </div>
-          {shippingCost.length > 0 && shippingCost[0].costs.length > 0 && (
+          {shippingCost?.length > 0 && shippingCost[0]?.costs.length > 0 && (
             <div className="flex flex-col justify-center items-end">
-              <p className="font-semibold text-gray-600 text-sm">Rp {shippingCost[0].costs[0].cost[0].value}</p>
+              <p className="font-semibold text-gray-600 text-sm">Rp {shippingCost[0]?.costs[0]?.cost[0]?.value}</p>
             </div>
           )}
         </div>
-        <div className="flex flex-row justify-between">
-          <div className="flex flex-col">
-            <div className="flex items-center mt-4">
-              <input
-                id="expressShipping"
-                type="radio"
-                name="delivery"
-                value="express"
-                checked={selectedOption === "express"}
-                onChange={() => setSelectedOption("express")}
-                className="h-4 w-4 border-gray-300 focus:ring-2 focus:ring-blue-300"
-                disabled={lockButton}
-              />
-              <label htmlFor="expressShipping" className="ml-2 block text-sm font-medium text-gray-700">
-                Express Shipping
-              </label>
+        {shippingCost[0]?.costs[1]?.cost && (
+          <div className="flex flex-row justify-between">
+            <div className="flex flex-col">
+              <div className="flex items-center mt-4">
+                <input
+                  id="expressShipping"
+                  type="radio"
+                  name="delivery"
+                  value="express"
+                  checked={selectedOption === "express"}
+                  onChange={() => setSelectedOption("express")}
+                  className="h-4 w-4 border-gray-300 focus:ring-2 focus:ring-blue-300"
+                  disabled={lockButton}
+                />
+                <label htmlFor="expressShipping" className="ml-2 block text-sm font-medium text-gray-700">
+                  Express Shipping
+                </label>
+              </div>
+              <div className="ml-6 pl-1 text-gray-600 text-sm">
+                JABODETABEK: next day <br />
+                Java: 1-3 working days <br />
+                Outside Java: 1-7 working days
+              </div>
             </div>
-            <div className="ml-6 pl-1 text-gray-600 text-sm">
-              JABODETABEK: next day <br />
-              Java: 1-3 working days <br />
-              Outside Java: 1-7 working days
-            </div>
+            {shippingCost?.length > 0 && shippingCost[0]?.costs?.length > 0 && (
+              <div className="flex flex-col justify-center items-end">
+                <p className="font-semibold text-gray-600 text-sm">Rp {shippingCost[0]?.costs[1]?.cost[0]?.value}</p>
+              </div>
+            )}
           </div>
-          {shippingCost.length > 0 && shippingCost[0].costs.length > 0 && (
-            <div className="flex flex-col justify-center items-end">
-              <p className="font-semibold text-gray-600 text-sm">Rp {shippingCost[0].costs[1].cost[0].value}</p>
-            </div>
-          )}
-        </div>
+        )}
       </div>
       <div className="mb-4">
         {/* Show the default address */}

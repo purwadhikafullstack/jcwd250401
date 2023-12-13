@@ -412,7 +412,7 @@ exports.getNearestWarehouse = async (req, res) => {
   });
 };
 
-async function findNearestWarehouses(userLatitude, userLongitude, radius = 10) {
+async function findNearestWarehouses(userLatitude, userLongitude, radius = 8000) {
   const warehouses = await Warehouse.findAll({
     attributes: [
       'id',
