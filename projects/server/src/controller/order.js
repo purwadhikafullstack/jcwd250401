@@ -54,7 +54,14 @@ exports.paymentProof = async (req, res) => {
 
     if (req.file) {
       order.paymentProofImage = req.file.filename;
+    } else {
+      return res.status(400).json({
+        ok: false,
+        message: "Payment proof image is required",
+      });
     }
+
+    order.status = "waiting-for-payment-confirmation";
 
     await order.save();
     return res.status(200).json({

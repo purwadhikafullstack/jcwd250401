@@ -9,10 +9,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { showLoginModal } from "../slices/authModalSlices";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton, ModalFooter } from "@chakra-ui/react";
+import getProfile from "../api/profile/getProfile";
+import uploadPayProof from "../api/order/uploadPayProof";
 
 export const PaymentProofModal = ({ orderId, isOpen, onClose }) => {
   const isLogin = useSelector((state) => state?.account?.isLogin);
   const userName = useSelector((state) => state?.account?.profile?.data?.profile?.username);
+  const token = useSelector((state) => state?.account?.profile?.data?.token);
   const userDataInformation = useSelector((state) => state?.account?.profile?.data?.profile);
   const [userData, setUserData] = useState(null);
   const [selectedImageName, setSelectedImageName] = useState(null);
@@ -59,19 +62,20 @@ export const PaymentProofModal = ({ orderId, isOpen, onClose }) => {
         data.append("paymentProofImage", values.paymentProofImage);
         setIsUploading(true);
 
-        const response = await api.put(`/order/${userData.id}/${orderId}`, data, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        const response = await uploadPayProof({
+          orderId,
+          data,
+          userDataId: userData?.id,
+        })
 
-        if (response.data.ok) {
+        if (response.ok) {
           setTimeout(() => {
-            toast.success(response.data.message);
+            toast.success(response.message);
             formik.resetForm();
             setSelectedImageName(null);
             setPreview(null);
             setIsUploading(false);
+            navigate("/account/my-order");
             onClose();
           }, 2000);
         }
@@ -95,8 +99,8 @@ export const PaymentProofModal = ({ orderId, isOpen, onClose }) => {
     } else {
       const getUserData = async () => {
         try {
-          const response = await api.get(`/profile/${userName}`);
-          setUserData(response.data.detail);
+          const response = await getProfile({ username: userName, token });
+          setUserData(response.detail);
         } catch (error) {
           if (error.response && error.response.status === 400) {
             toast.error(error.response.data.message);
@@ -152,7 +156,7 @@ export const PaymentProofModal = ({ orderId, isOpen, onClose }) => {
             </div>
           </ModalBody>
           <ModalFooter>
-            <button type="submit" className="bg-[#40403F] hover:bg-[#555554] text-white p-2 rounded-md font-semibold ">
+            <button type="submit" disabled={!selectedImageName} className={`bg-[#40403F] hover:bg-[#555554] text-white p-2 rounded-md font-semibold ${selectedImageName ? "cursor-pointer" : "cursor-not-allowed"} `}>
               Submit
             </button>
           </ModalFooter>
