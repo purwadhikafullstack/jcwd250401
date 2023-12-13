@@ -40,7 +40,6 @@ function Navigationbar() {
   const profile = JSON.parse(localStorage.getItem("profile"));
   const username = profile?.data?.profile?.username;
   const token = useSelector((state) => state?.account?.profile?.data?.token);
-  console.log("token", token);
   let isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
   const location = useLocation();
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);

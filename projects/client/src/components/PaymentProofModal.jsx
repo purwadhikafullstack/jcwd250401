@@ -30,11 +30,19 @@ export const PaymentProofModal = ({ orderId, isOpen, onClose }) => {
   };
 
   const { getRootProps, getInputProps } = useDropzone({
-    accept: "image/jpeg, image/png, image/jpg",
+    accept: {
+      "image/jpeg": [],
+      "image/png": [],
+    },
     maxSize: 2000000,
-    onDrop: (acceptedFiles) => {
+    onDrop: (acceptedFiles, fileRejections) => {
+      if (fileRejections && fileRejections.length > 0) {
+        toast.error("Invalid file type. Please upload a JPEG or PNG file.");
+      }
+
       formik.setFieldValue("paymentProofImage", acceptedFiles[0]);
       setSelectedImageName(acceptedFiles[0].name);
+      
       setTimeout(() => {
         setPreview(createObjectURL(acceptedFiles[0]));
       }, 1000);

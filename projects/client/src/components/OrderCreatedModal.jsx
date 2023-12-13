@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Modal, ModalOverlay, ModalContent, ModalBody, Box, Text, Flex, Spinner, ModalCloseButton, ModalFooter, ModalHeader } from "@chakra-ui/react";
+import { Modal, ModalOverlay, ModalContent, ModalBody, ModalCloseButton, ModalHeader } from "@chakra-ui/react";
 import { AiOutlineCheckCircle } from "react-icons/ai";
 import { Button } from "flowbite-react";
 import { useNavigate } from "react-router-dom";
 import { deleteAllCartItem } from "../slices/cartSlices";
 import { useDispatch } from "react-redux";
-import { set } from "lodash";
+import { PaymentProofModal } from "./PaymentProofModal";
 
 function OrderCreatedModal({ isOpen, onClose, paymentMethod, totalPrice }) {
+  const [PaymentProofModal, setPaymentProofModal] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
