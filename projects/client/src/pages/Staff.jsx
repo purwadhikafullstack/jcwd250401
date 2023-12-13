@@ -37,7 +37,7 @@ export const Staff = () => {
     try {
       let isWarehouseAdminValue = isWarehouseAdmin;
 
-      // If "All Admin" is selected, set isWarehouseAdminValue to null
+      // If "All Admin" is selected, set isWarehouseAdminValue to ""
       if (isWarehouseAdmin === "" || isWarehouseAdmin === undefined || isWarehouseAdmin === null) {
         isWarehouseAdminValue = "";
       }
@@ -135,8 +135,8 @@ export const Staff = () => {
             </button>
 
             <div className="flex gap-2">
-              <select value={sort} onChange={(e) => setSort(e.target.value)} className="bg-white text-[#40403F] border boder-[#40403F]-1 py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none">
-                <option value={"createdAt"} disabled defaultChecked>
+              <select value={sort} onChange={(e) => setSort(e.target.value)} className="bg-white text-[#40403F] border boder-[#40403F]-1 py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none w-full lg:w-auto">
+                <option value={"createdAt"} defaultChecked>
                   Select Sort
                 </option>
                 <option value={"username"}>Username</option>
@@ -144,8 +144,8 @@ export const Staff = () => {
                 <option value={"isWarehouseAdmin"}>Role</option>
               </select>
 
-              <select value={order} onChange={(e) => setOrder(e.target.value)} className="bg-white text-[#40403F] border boder-[#40403F]-1 py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none">
-                <option value={""} disabled defaultChecked>
+              <select value={order} onChange={(e) => setOrder(e.target.value)} className={`bg-white text-[#40403F] border boder-[#40403F]-1 py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none w-full lg:w-auto`}>
+                <option value={""} defaultChecked>
                   Select Order
                 </option>
                 <option value={"ASC"}>A to Z</option>
@@ -153,7 +153,7 @@ export const Staff = () => {
               </select>
 
               {sort === "isWarehouseAdmin" && (
-                <select value={isWarehouseAdmin} onChange={(e) => setIsWarehouseAdmin(e.target.value)} className="bg-white text-[#40403F] border boder-[#40403F]-1 py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none">
+                <select value={isWarehouseAdmin} onChange={(e) => setIsWarehouseAdmin(e.target.value)} className="bg-white text-[#40403F] border boder-[#40403F]-1 py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none w-full lg:w-auto">
                   <option value={""}>All Admin</option>
                   <option value={true}>Warehouse Admin</option>
                   <option value={false}>Super Admin</option>

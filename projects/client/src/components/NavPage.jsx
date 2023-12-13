@@ -4,7 +4,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 
 export const NavPage = ({ pageName }) => {
   const joinnedPageName = pageName.toLowerCase().replace(/\s/g, "-");
-  const listsMenu = ["Profile", "Address Book", "My Order", "Change password"];
+  const listsMenu = ["Profile", "Address Book", "My Order", "Change Password"];
   const navigate = useNavigate();
   const handleSelectChange = (e) => {
     const selectedList = e.target.value.toLowerCase().replace(/\s/g, "-");

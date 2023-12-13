@@ -51,12 +51,14 @@ const accountSlices = createSlice({
     },
     updateProfile(state, action) {
       state.profile = action.payload;
+      window.localStorage.setItem("profile", JSON.stringify(action.payload));
     },
     updatePhotoProfile(state, action) {
       state.userPhotoProfile = action.payload;
     },
     updateProfileAdmin(state, action) {
       state.adminProfile = action.payload;
+      window.localStorage.setItem("adminProfile", JSON.stringify(action.payload));
     },
     setIsWarehouseAdmin(state, action) {
       state.isWarehouseAdmin = action.payload;

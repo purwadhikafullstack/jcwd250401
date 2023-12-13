@@ -14,7 +14,8 @@ import updateUserProfile from "../api/profile/updateUserProfile";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export const UpdateProfileModal = ({ isOpen, onClose }) => {
-  const username = useSelector((state) => state?.account?.profile?.data?.profile?.username);
+  const username = useSelector((state) => state?.account?.username);
+  const token = useSelector((state) => state?.account?.profile?.data?.token);
   const [selectedImage, setSelectedImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,11 +31,19 @@ export const UpdateProfileModal = ({ isOpen, onClose }) => {
   };
 
   const { getRootProps, getInputProps } = useDropzone({
-    accept: "image/jpeg, image/png, image/jpg",
+    accept: {
+      'image/jpeg': [],
+      'image/png': []
+    },
     maxSize: 2000000,
-    onDrop: (acceptedFiles) => {
+    onDrop: (acceptedFiles, fileRejections) => {
+      if (fileRejections && fileRejections.length > 0) {
+        toast.error("Invalid file type. Please upload a JPEG or PNG file.");
+      }
+
       formik.setFieldValue("photoProfile", acceptedFiles[0]);
-      setSelectedImage(acceptedFiles[0].name);
+      setSelectedImage(acceptedFiles[0]?.name);
+
       setTimeout(() => {
         setPreview(createObjectURL(acceptedFiles[0]));
       }, 1000);
@@ -73,10 +82,10 @@ export const UpdateProfileModal = ({ isOpen, onClose }) => {
           data.append("photoProfile", values.photoProfile);
         }
 
+        data.append("token", token);
         const response = await updateUserProfile({ username, data });
 
         if (response.ok) {
-          navigate(location.pathname);
           setTimeout(() => {
             toast.success("Update profile success", {
               autoClose: 2000,
@@ -84,9 +93,11 @@ export const UpdateProfileModal = ({ isOpen, onClose }) => {
                 setSelectedImage(null);
                 setPreview(null);
                 setIsSubmitting(false);
-                dispatch(updateProfile(response));
-                dispatch(updatePhotoProfile(response.data.profile.photoProfile));
                 dispatch(setUsername(values.userName));
+                dispatch(updateProfile(response));
+                if(values.photoProfile) {
+                  dispatch(updatePhotoProfile(values.photoProfile));
+                }
                 onClose();
               },
             });
@@ -128,9 +139,9 @@ export const UpdateProfileModal = ({ isOpen, onClose }) => {
     },
   });
 
-  const fetchProfileDetail = useCallback(async () => {
+  const fetchProfileDetail = async () => {
     try {
-      const response = await getProfile({ username });
+      const response = await getProfile({ username, token });
       const profile = response.detail;
 
       const values = {
@@ -149,7 +160,7 @@ export const UpdateProfileModal = ({ isOpen, onClose }) => {
 
       formik.setValues(values);
     } catch (error) {
-      if (error?.response?.status === 401) {
+      if ( error.response && error?.response?.status === 401) {
         toast.error("You are not authorized to access this page. Please login first.", {
           duration: 1500,
         });
@@ -159,11 +170,11 @@ export const UpdateProfileModal = ({ isOpen, onClose }) => {
         });
       }
     }
-  }, [username]);
+  }
 
   useEffect(() => {
     fetchProfileDetail();
-  }, [fetchProfileDetail]);
+  }, [username]);
 
   return (
     <>

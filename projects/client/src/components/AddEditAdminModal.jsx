@@ -12,21 +12,22 @@ import { updateProfileAdmin } from "../slices/accountSlices";
 export const AddEditAdminModal = ({ isOpen, onClose, data, modalFor }) => {
   const [toggleInput, setToggleInput] = useState(false);
   const adminData = useSelector((state) => state?.account?.adminProfile?.data?.profile);
+  const token = useSelector((state) => state?.account?.adminProfile?.data?.token);
   const dispatch = useDispatch();
 
   const handleToggleInput = () => setToggleInput(!toggleInput);
   const formik = useFormik({
     initialValues: {
-      username: data?.username,
-      email: data?.email,
-      role: data?.isWarehouseAdmin,
+      username: modalFor === "Create" ? "" : data?.username,
+      email: modalFor === "Create" ? "" : data?.email,
+      role: modalFor === "Create" ? "" : data?.isWarehouseAdmin,
       password: modalFor === "Create" ? "" : undefined,
       confirmPassword: "",
     },
     validationSchema: yup.object({
       username: yup.string().required("Please enter your username"),
       email: yup.string().required("Please enter your email"),
-      role: yup.boolean().required("Please select role"),
+      role: modalFor === "Create" && yup.string().required("Please select a role") ,
       password: modalFor === "Create" ? yup.string().required("Please enter your password") : yup.string(),
       confirmPassword:
         modalFor === "Create"
@@ -45,6 +46,7 @@ export const AddEditAdminModal = ({ isOpen, onClose, data, modalFor }) => {
             email: values.email,
             password: values.password,
             isWarehouseAdmin: values.role,
+            token: token
           });
           if (response.ok) {
             toast.success("Update admin success");
@@ -145,8 +147,8 @@ export const AddEditAdminModal = ({ isOpen, onClose, data, modalFor }) => {
                   Role
                 </label>
                 <div className="w-full">
-                  <select name="role" id="role" {...formik.getFieldProps("role")} className="border border-black rounded-md p-2 w-full">
-                    <option value={""}>Select Role</option>
+                  <select name="role" id="role" {...formik.getFieldProps("role")} className="border border-black rounded-md p-2 w-full cursor-pointer">
+                    <option value={modalFor === "Edit" ? data?.isWarehouseAdmin : ""} disabled defaultChecked>Select Role</option>
                     <option value={1}>Warehouse Admin</option>
                     <option value={0}>Super Admin</option>
                   </select>

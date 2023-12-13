@@ -39,6 +39,7 @@ function Navigationbar() {
   const navigate = useNavigate();
   const profile = JSON.parse(localStorage.getItem("profile"));
   const username = profile?.data?.profile?.username;
+  const token = useSelector((state) => state?.account?.profile?.data?.token);
   let isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
   const location = useLocation();
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
@@ -219,7 +220,7 @@ function Navigationbar() {
   const getUserData = async () => {
     if (isLoggedIn) {
       try {
-        const response = await getProfile({ username });
+        const response = await getProfile({ username, token });
         setUserData(response.detail);
         dispatch(setUsername(response.detail.username));
       } catch (error) {

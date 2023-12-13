@@ -9,7 +9,6 @@ import { SearchIcon } from "@chakra-ui/icons";
 import getCustomers from "../api/users/getCustomers";
 
 export const Customers = () => {
-  const isMounted = useRef(true); // useRef to track whether the component is mounted
   const [customers, setCustomers] = useState([]);
   const [page, setPage] = useState(1);
   const size = 5;
@@ -46,13 +45,6 @@ export const Customers = () => {
   },[page, size, sort, order, debouncedSearchInput]);
   
   useEffect(() => {
-
-    // if (isMounted.current) {
-    //   fetchCustomers();
-    // }
-    // return () => {
-    //   isMounted.current = false;
-    // };
     fetchCustomers();
   }, [fetchCustomers]);
   return (
@@ -72,7 +64,7 @@ export const Customers = () => {
           </InputGroup>
 
           <div className="flex gap-2">
-            <select value={sort} onChange={(e) => setSort(e.target.value)} className="bg-white text-[#40403F] py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none">
+            <select value={sort} onChange={(e) => setSort(e.target.value)} className="bg-white text-[#40403F] py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none w-full lg:w-auto">
               <option value={"createdAt"} disabled defaultChecked>
                 Select Sort
               </option>
@@ -80,7 +72,7 @@ export const Customers = () => {
               <option value={"email"}>Email</option>
             </select>
 
-            <select value={order} onChange={(e) => setOrder(e.target.value)} className="bg-white text-[#40403F] py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none">
+            <select value={order} onChange={(e) => setOrder(e.target.value)} className="bg-white text-[#40403F] py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none w-full lg:w-auto">
               <option value={""} disabled defaultChecked>
                 Select Order
               </option>

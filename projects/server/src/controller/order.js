@@ -54,7 +54,14 @@ exports.paymentProof = async (req, res) => {
 
     if (req.file) {
       order.paymentProofImage = req.file.filename;
+    } else {
+      return res.status(400).json({
+        ok: false,
+        message: "Payment proof image is required",
+      });
     }
+
+    order.status = "waiting-for-payment-confirmation";
 
     await order.save();
     return res.status(200).json({
@@ -89,7 +96,7 @@ exports.getOrderLists = async (req, res) => {
         },
         {
           model: Product,
-          attributes: ["id", "name"],
+          attributes: ["id", "name", "description", "price", "gender", "weight"],
         },
       ],
       where: {
@@ -145,6 +152,10 @@ exports.getOrderLists = async (req, res) => {
           Product: {
             id: product.id,
             productName: product.name,
+            productDescription: product.description,
+            productPrice: product.price,
+            productGender: product.gender,
+            productWeight: product.weight,
             productImages: productImages,
           },
         };
@@ -182,7 +193,7 @@ exports.getAllOrderLists = async (req, res) => {
         },
         {
           model: Product,
-          attributes: ["id", "name"],
+          attributes: ["id", "name", "description", "price", "gender", "weight"],
         },
       ],
       where: {
@@ -258,6 +269,10 @@ exports.getAllOrderLists = async (req, res) => {
           Product: {
             id: product.id,
             productName: product.name,
+            productDescription: product.description,
+            productPrice: product.price,
+            productGender: product.gender,
+            productWeight: product.weight,
             productImages: productImages,
           },
         };
