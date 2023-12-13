@@ -72,7 +72,7 @@ export const Customers = () => {
           </InputGroup>
 
           <div className="flex gap-2">
-            <select value={sort} onChange={(e) => setSort(e.target.value)} className="bg-white text-[#40403F] py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none">
+            <select value={sort} onChange={(e) => setSort(e.target.value)} className="bg-white text-[#40403F] py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none w-full lg:w-auto">
               <option value={"createdAt"} disabled defaultChecked>
                 Select Sort
               </option>
@@ -80,7 +80,7 @@ export const Customers = () => {
               <option value={"email"}>Email</option>
             </select>
 
-            <select value={order} onChange={(e) => setOrder(e.target.value)} className="bg-white text-[#40403F] py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none">
+            <select value={order} onChange={(e) => setOrder(e.target.value)} className="bg-white text-[#40403F] py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none w-full lg:w-auto">
               <option value={""} disabled defaultChecked>
                 Select Order
               </option>

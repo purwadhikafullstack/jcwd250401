@@ -102,19 +102,19 @@ function Navigationadmin() {
             <span className="text-gray-700 text-sm font-medium">{data.isWarehouseAdmin ? "Warehouse Admin" : "Super Admin"}</span>
           </div>
         ))}
+      </div>
 
-        {/* Mobile */}
-        <div className="flex lg:hidden gap-3 z-10">
-          {/* Category sm */}
-          <GiHamburgerMenu className="text-xl cursor-pointer flex lg:hidden" onClick={handleIconClick} />
-          {dropdownVisible && (
-            <div className="w-[50vw]">
-              <p className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" role="menuitem" onClick={handleLogout}>
-                Log Out
-              </p>
-            </div>
-          )}
-        </div>
+      {/* Mobile */}
+      <div className="flex lg:hidden gap-3 z-10">
+        {/* Category sm */}
+        <GiHamburgerMenu className="text-xl cursor-pointer flex lg:hidden" onClick={handleIconClick} />
+        {dropdownVisible && (
+          <div className="absolute top-16 right-4 w-[30vw] bg-white ring-1 ring-black ring-opacity-5">
+            <p className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer" role="menuitem" onClick={handleLogout}>
+              Log Out
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -122,7 +122,7 @@ function AdminLoginPage() {
                   <Switch id="rememberme" colorScheme="gray" isChecked={formik.values.remember} onChange={() => formik.setFieldValue("remember", !formik.values.remember)} />
                   <span className="text-sm text-gray-900 dark:text-white">Remember me</span>
                 </div>
-                <a className="text-sm hover:underline mr-2 font-normal font-sagoe text-[#007AFF] cursor-pointer" onClick={handleShowForgotPasswordModal}>
+                <a className="text-sm hover:underline mr-2 font-normal font-sagoe text-gray-900 cursor-pointer" onClick={handleShowForgotPasswordModal}>
                   Forgot password?
                 </a>
               </div>
