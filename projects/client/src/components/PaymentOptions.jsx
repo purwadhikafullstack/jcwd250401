@@ -64,6 +64,9 @@ const PaymentOptions = ({ shippingCost, productOnCart, warehouseId, totalPrice }
     fetchAddress();
   }, [fetchAddress]);
 
+  const handleScrollToTop = () => {
+    window.scrollTo(0, 0);
+  };
 
   const handleConfirm = async () => {
     try {
@@ -74,10 +77,7 @@ const PaymentOptions = ({ shippingCost, productOnCart, warehouseId, totalPrice }
         addressId: address,
         paymentBy: selectedOption,
       });
-
-      toast.success("Order created successfully");
       handleOrderModalOpen();
-      
     } catch (error) {
       console.log(error);
     }
@@ -115,9 +115,17 @@ const PaymentOptions = ({ shippingCost, productOnCart, warehouseId, totalPrice }
       </div>
       {/* Buttons */}
       <div className="flex justify-between items-center pt-4">
-        <button className="bg-gray-900 enabled:hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" onClick={handleConfirm}>Confirm</button>
+        <button
+          className="bg-gray-900 enabled:hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+          onClick={() => {
+            handleConfirm();
+            handleScrollToTop();
+          }}
+        >
+          Confirm
+        </button>
       </div>
-      <OrderCreatedModal isOpen={isOrderCreatedOpen} onClose={handleOrderModalClose} paymentMethod = {selectedOption} />
+      <OrderCreatedModal isOpen={isOrderCreatedOpen} onClose={handleOrderModalClose} paymentMethod={selectedOption} totalPrice={totalPrice} />
     </div>
   );
 };

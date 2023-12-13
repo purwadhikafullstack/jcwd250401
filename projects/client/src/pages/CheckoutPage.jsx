@@ -54,7 +54,7 @@ function CheckoutPage() {
         </div>
         {/* Sidebar area with OrderSummary */}
         <div className="w-full lg:px-6 flex justify-start lg:justify-center lg:h-64">
-          <OrderSummary shippingCost={shippingCost} onCartItem={handleProductOnCart} onTotalPrice = {handleTotalPrice} />
+          <OrderSummary shippingCost={shippingCost} onCartItem={handleProductOnCart} onTotalPrice= {handleTotalPrice} />
         </div>
       </div>
       <div className="mt-32">
