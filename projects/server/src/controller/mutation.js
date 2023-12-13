@@ -1,4 +1,4 @@
-const { Op, literal, where } = require("sequelize");
+const { Op, literal } = require("sequelize");
 const { Mutation, Product, Warehouse, Admin, ProductImage, Category, sequelize, Journal, OrderItem, Order, WarehouseAddress } = require("../models");
 
 exports.getTotalStockByWarehouseProductId = async (req, res) => {
