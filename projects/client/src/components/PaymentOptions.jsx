@@ -21,6 +21,7 @@ const PaymentOptions = ({ shippingCost, productOnCart, warehouseId, totalPrice }
   const [address, setAddress] = useState(null);
   const dispatch = useDispatch();
   const [isOrderCreatedOpen, setIsOrderCreatedOpen] = useState(false);
+  const [orderId, setOrderId] = useState(null);
 
   const fetchAddress = useCallback(async () => {
     try {
@@ -70,14 +71,16 @@ const PaymentOptions = ({ shippingCost, productOnCart, warehouseId, totalPrice }
 
   const handleConfirm = async () => {
     try {
-      const response = await createOrder({
+      const result = await createOrder({
         shippingCost: shippingCost,
         productOnCart: productOnCart,
         warehouseId: warehouseId,
         addressId: address,
         paymentBy: selectedOption,
       });
+
       handleOrderModalOpen();
+      setOrderId(result.order.id);
     } catch (error) {
       console.log(error);
     }
@@ -125,7 +128,7 @@ const PaymentOptions = ({ shippingCost, productOnCart, warehouseId, totalPrice }
           Confirm
         </button>
       </div>
-      <OrderCreatedModal isOpen={isOrderCreatedOpen} onClose={handleOrderModalClose} paymentMethod={selectedOption} totalPrice={totalPrice} />
+      <OrderCreatedModal isOpen={isOrderCreatedOpen} onClose={handleOrderModalClose} paymentMethod={selectedOption} totalPrice={totalPrice} orderId={orderId} />
     </div>
   );
 };

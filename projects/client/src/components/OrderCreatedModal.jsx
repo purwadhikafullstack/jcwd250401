@@ -5,13 +5,15 @@ import { Button } from "flowbite-react";
 import { useNavigate } from "react-router-dom";
 import { deleteAllCartItem } from "../slices/cartSlices";
 import { useDispatch } from "react-redux";
-import { PaymentProofModal } from "./PaymentProofModal";
+import { set } from "lodash";
+import { Checkmark } from "react-checkmark";
 
-function OrderCreatedModal({ isOpen, onClose, paymentMethod, totalPrice }) {
-  const [PaymentProofModal, setPaymentProofModal] = useState(false);
+function OrderCreatedModal({ isOpen, onClose, paymentMethod, totalPrice, orderId }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+
+  console.log(orderId)
   const handleDeleteAll = () => {
     dispatch(deleteAllCartItem());
   };
@@ -41,7 +43,7 @@ function OrderCreatedModal({ isOpen, onClose, paymentMethod, totalPrice }) {
         <ModalCloseButton />
         <ModalBody>
           <div className="flex flex-col justify-center items-center">
-            <AiOutlineCheckCircle size="160px" className=" text-green-500" />
+          <Checkmark size='130px' color='#223344'/>
             <span className="text-center mt-4 mb-4">Your order has been created</span>
             <span> Please transfer to :</span>
             {paymentMethod === "MANDIRI" && (
