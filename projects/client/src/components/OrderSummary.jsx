@@ -6,7 +6,7 @@ import getCart from "../api/cart/getCart";
 import { showLoginModal } from "../slices/authModalSlices";
 import { toast } from "sonner";
 
-function OrderSummary({ shippingCost, onCartItem, onTotalPrice}) {
+function OrderSummary({ shippingCost, onCartItem, onTotalPrice, onQuantityProduct}) {
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [carts, setCarts] = useState([]);
@@ -90,6 +90,8 @@ function OrderSummary({ shippingCost, onCartItem, onTotalPrice}) {
 
   const cost  = shippingCost[1];
   onTotalPrice(totalPrice + cost);
+  
+  onQuantityProduct(totalQuantity);
 
   return (
     <>

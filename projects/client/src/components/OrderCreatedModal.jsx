@@ -38,6 +38,7 @@ function OrderCreatedModal({ isOpen, onClose, paymentMethod, totalPrice, orderId
     onClose();
   };
 
+
   return (
     <>
       <Modal closeOnOverlayClick={false} isOpen={isOpen} size="md" onClose={handleContinueShopping} isCentered>
