@@ -9,7 +9,6 @@ import { SearchIcon } from "@chakra-ui/icons";
 import getCustomers from "../api/users/getCustomers";
 
 export const Customers = () => {
-  const isMounted = useRef(true); // useRef to track whether the component is mounted
   const [customers, setCustomers] = useState([]);
   const [page, setPage] = useState(1);
   const size = 5;
@@ -46,13 +45,6 @@ export const Customers = () => {
   },[page, size, sort, order, debouncedSearchInput]);
   
   useEffect(() => {
-
-    // if (isMounted.current) {
-    //   fetchCustomers();
-    // }
-    // return () => {
-    //   isMounted.current = false;
-    // };
     fetchCustomers();
   }, [fetchCustomers]);
   return (
