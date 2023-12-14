@@ -26,6 +26,8 @@ export const Order = () => {
   const [totalPages, setTotalPages] = useState(1);
   const location = useLocation();
 
+  document.title = "RAINS - My Order";
+
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setPage(newPage);
@@ -223,23 +225,23 @@ export const Order = () => {
                     const time = updatedAt.toLocaleTimeString();
 
                     return (
-                      <div key={index} className="border border-gray-200 rounded-md px-6 py-4 bg-gray-100">
-                        <div className="flex justify-between items-center">
+                      <div key={index} className="border border-gray-200 rounded-md px-4 lg:px-6 py-10 lg:py-4 bg-gray-100">
+                        <div className="flex lg:flex-row flex-col justify-between items-center">
                           <span className="bg-gray-900 text-white px-4 rounded-full">{orderItem.status}</span>
                           <span>
                             {date}, {time}
                           </span>
                         </div>
                         <div className="mt-6 flex justify-between">
-                          <div className="flex justify-between w-full">
+                          <div className="flex lg:flex-row flex-col justify-between w-full">
                             <div className="flex flex-col space-y-4 mb-4">
                               {orderItem.Products.slice(0, expandedOrders[index] ? orderItem.Products.length : 1).map((product, productIndex) => (
-                                <div className="flex items-center space-x-4" key={productIndex}>
-                                  <img src={`http://localhost:8000/public/${product.Product.productImages[0].imageUrl}`} alt="product" className="w-[100px] h-[100px] object-cover rounded-md" />
+                                <div className="flex lg:flex-row flex-col items-center justify-center lg:justify-normal lg:space-x-4 space-y-2 lg:space-y-0" key={productIndex}>
+                                  <img src={`http://localhost:8000/public/${product.Product.productImages[0].imageUrl}`} loading="lazy" alt="product" className="w-[200px] h-[200px] lg:w-[100px] lg:h-[100px] object-cover shadow-md rounded-md" />
                                   <span>{product.quantity}x</span>
                                   <div className="flex flex-col">
                                     <span>{product.Product.productName}</span>
-                                    <span>{formatToRupiah(product.Product.productPrice)}</span>
+                                    <span className="font-bold text-center lg:text-left">{formatToRupiah(product.Product.productPrice)}</span>
                                   </div>
                                 </div>
                               ))}

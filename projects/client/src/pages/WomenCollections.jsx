@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import { useEffect } from "react";
 
 function WomenCollections() {
+
+  document.title = "RAINS - Women Collections";
   useEffect(() => {
     // Scroll to the top when the component is first rendered
     window.scrollTo(0, 0);
