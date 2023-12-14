@@ -737,6 +737,7 @@ exports.autoRequestStock = async (req, res) => {
           ],
         },
       ],
+      transaction: t,
     });
 
     if (!order) {
@@ -766,6 +767,7 @@ exports.autoRequestStock = async (req, res) => {
           limit: 1,
         },
       ],
+      transaction: t,
     });
 
     // check if the stock is greater than or equal to the requested quantity
@@ -800,6 +802,7 @@ exports.autoRequestStock = async (req, res) => {
           },
         ],
         limit: 1,
+        transaction: t,
       });
       const previousDestinationWarehouseStock = latestMutationFromDestinationWarehouse.stock || 0;
       const newStock = previousDestinationWarehouseStock - requestedQuantity;
@@ -910,13 +913,15 @@ async function updateSourceWarehouseStock(productId, warehouseId, destinationWar
       },
       order: [["createdAt", "DESC"]],
       limit: 1,
+      transaction: t,
     });
 
-    const destinationWarehouseData = Warehouse.findOne({
+    const destinationWarehouseData = await Warehouse.findOne({
       where: {
         id: destinationWarehouseId,
       },
       attributes: ["name"],
+      transaction: t,
     });
 
     let sourceWarehouseStock = findLatestMutationSourceWarehouse.stock || 0;
