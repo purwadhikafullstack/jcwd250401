@@ -117,6 +117,7 @@ html {
 
 /* For WebKit browsers (Chrome, Safari) */
 ::-webkit-scrollbar {
+  height: 4px; 
   width: 4px;
 }
 

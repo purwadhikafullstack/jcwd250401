@@ -44,7 +44,7 @@ export const Profile = () => {
   return (
     <>
       <NavPage pageName={"Profile"} />
-      <div className="flex justify-center font-sagoe">
+      <div className="flex lg:px-36 lg:justify-normal justify-center font-sagoe">
         <div className="min-h-[70vh] lg:h-[72vh] w-[90vw] lg:w-[76vw] flex flex-row overflow-y-auto lg:overflow-y-hidden">
           <div className="hidden lg:flex flex-col w-[20vw]">
             {listsMenu.map((list, index) => {
