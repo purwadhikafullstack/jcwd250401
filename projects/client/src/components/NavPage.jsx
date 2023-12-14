@@ -20,7 +20,7 @@ export const NavPage = ({ pageName }) => {
   return (
     <>
       <div className="h-[17vh] w-full mb-5 sm:mb-0">
-        <div className="flex justify-center">
+        <div className="flex lg:px-36 lg:justify-normal justify-center">
           <div className="w-[90vw] lg:w-[76vw] mt-4">
             <p className="flex gap-3 ml-1">
               <Link to="/">Home</Link> /<Link to="/account/profile">Account</Link> /<Link to={`/account/${joinnedPageName}`}><b>{pageName}</b></Link>

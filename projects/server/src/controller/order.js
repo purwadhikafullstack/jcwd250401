@@ -1,6 +1,7 @@
-const { Op } = require("sequelize");
+const { Sequelize, Op } = require("sequelize");
 const axios = require("axios");
-const { Address, Order, OrderItem, Product, ProductImage, Warehouse, Shipment, Cart, CartItem, User } = require("../models");
+const fs = require("fs").promises;
+const { Address, Order, OrderItem, Product, ProductImage, Warehouse, Shipment, Cart, CartItem, User, sequelize } = require("../models");
 
 // Config default axios with rajaongkir
 axios.defaults.baseURL = "https://api.rajaongkir.com/starter";
@@ -36,6 +37,7 @@ exports.getOrderCost = async (req, res) => {
 
 exports.paymentProof = async (req, res) => {
   const { id, userId } = req.params;
+  const t = sequelize.transaction();
 
   try {
     const order = await Order.findOne({
@@ -43,9 +45,11 @@ exports.paymentProof = async (req, res) => {
         id,
         userId,
       },
+      transaction: t,
     });
 
     if (!order) {
+      await t.rollback();
       return res.status(404).json({
         ok: false,
         message: "Order not found",
@@ -55,6 +59,7 @@ exports.paymentProof = async (req, res) => {
     if (req.file) {
       order.paymentProofImage = req.file.filename;
     } else {
+      await t.rollback();
       return res.status(400).json({
         ok: false,
         message: "Payment proof image is required",
@@ -62,15 +67,22 @@ exports.paymentProof = async (req, res) => {
     }
 
     order.status = "waiting-for-payment-confirmation";
+    await order.save({ transaction: t });
+    await t.commit();
 
-    await order.save();
     return res.status(200).json({
       ok: true,
       message: "Payment proof uploaded successfully",
       detail: order,
     });
   } catch (error) {
+    await t.rollback();
     console.error(error);
+
+    if (req.file) {
+      const filePath = `../public/${req.file.filename}`;
+      await fs.unlink(filePath); // Delete file from public folder
+    }
     return res.status(500).json({
       ok: false,
       message: "Internal server error",
@@ -351,102 +363,161 @@ exports.createOrder = async (req, res) => {
 exports.getOrderLists = async (req, res) => {
   try {
     const { id: userId } = req.user;
-    const { status = "all", page = 1, size = 10, sort = "createdAt", order = "DESC" } = req.query;
+    const { status = "all", page = 1, size = 10, sort } = req.query;
     const limit = parseInt(size);
     const offset = (parseInt(page) - 1) * limit;
 
-    const filter = {
+    const orderFilter = {
+      attributes: ["id", "status", "totalPrice", "userId", "createdAt", "updatedAt"],
+      where: status !== "all" ? { status } : undefined,
       include: [
         {
-          model: Order,
-          attributes: ["id", "status", "totalPrice", "userId", "createdAt", "updatedAt"],
-          where: status !== "all" ? { status } : undefined,
-        },
-        {
-          model: Product,
-          attributes: ["id", "name", "description", "price", "gender", "weight"],
+          model: OrderItem,
+          attributes: ["id", "quantity", "createdAt", "updatedAt"],
           include: [
             {
-              model: ProductImage,
-              as: "productImages",
-              attributes: ["id", "imageUrl"],
+              model: Product,
+              attributes: ["id", "name", "description", "price", "gender", "weight"],
+              include: [
+                {
+                  model: ProductImage,
+                  as: "productImages",
+                  attributes: ["id", "imageUrl"],
+                },
+              ],
             },
           ],
         },
       ],
-      where: {
-        "$Order.status$": status !== "all" ? status : { [Op.ne]: null },
-      },
-      limit: limit,
-      offset: offset,
     };
 
-    if (sort) {
-      if (sort === "totalPrice") {
-        filter.order = [[{ model: Order, as: "Order" }, sort, order]];
-      } else {
-        filter.order = [[sort, order]];
-      }
-    }
-
     if (userId) {
-      filter.include[0].where = { userId };
+      orderFilter.where = { ...orderFilter.where, userId };
     }
 
-    const orderLists = await OrderItem.findAll(filter);
+    const orders = await Order.findAll(orderFilter);
 
-    if (orderLists.length === 0) {
+    if (orders.length === 0) {
       return res.status(404).json({
         ok: false,
         message: "No Data matches",
       });
     }
 
-    const groupedOrderListsWithImages = orderLists.reduce((acc, orderItem) => {
-      const orderId = orderItem.Order.id;
-      if (!acc[orderId]) {
-        acc[orderId] = {
-          orderId: orderItem.Order.id,
-          totalPrice: orderItem.Order.totalPrice,
-          status: orderItem.Order.status,
-          createdAt: orderItem.Order.createdAt,
-          updatedAt: orderItem.Order.updatedAt,
+    // Create an array for grouped order lists
+    let groupedOrderListsWithImages = [];
+
+    orders.forEach((order) => {
+      const orderId = order.id;
+      const existingOrder = groupedOrderListsWithImages.find((groupedOrder) => groupedOrder.orderId === orderId);
+
+      if (!existingOrder) {
+        const newOrder = {
+          orderId,
+          totalPrice: order.totalPrice,
+          status: order.status,
+          createdAt: order.createdAt,
+          updatedAt: order.updatedAt,
           totalQuantity: 0,
           Products: [],
         };
+
+        order.OrderItems.forEach((orderItem) => {
+          const product = orderItem.Product;
+          const productImages = product.productImages.map((image) => ({
+            id: image.id,
+            imageUrl: image.imageUrl,
+          }));
+
+          newOrder.Products.push({
+            orderItemId: orderItem.id,
+            productId: product.id,
+            quantity: orderItem.quantity,
+            createdAt: orderItem.createdAt,
+            updatedAt: orderItem.updatedAt,
+            Product: {
+              id: product.id,
+              productName: product.name,
+              productPrice: product.price,
+              productGender: product.gender,
+              productImages: productImages,
+            },
+          });
+
+          newOrder.totalQuantity += orderItem.quantity;
+        });
+
+        groupedOrderListsWithImages.push(newOrder);
+      } else {
+        // Order already exists, update information
+        order.OrderItems.forEach((orderItem) => {
+          const product = orderItem.Product;
+          const productImages = product.productImages.map((image) => ({
+            id: image.id,
+            imageUrl: image.imageUrl,
+          }));
+
+          const existingProduct = existingOrder.Products.find((p) => p.productId === product.id);
+
+          if (!existingProduct) {
+            // Product doesn't exist in the order, add it
+            existingOrder.Products.push({
+              orderItemId: orderItem.id,
+              productId: product.id,
+              quantity: orderItem.quantity,
+              createdAt: orderItem.createdAt,
+              updatedAt: orderItem.updatedAt,
+              Product: {
+                id: product.id,
+                productName: product.name,
+                productPrice: product.price,
+                productGender: product.gender,
+                productImages: productImages,
+              },
+            });
+
+            existingOrder.totalQuantity += orderItem.quantity;
+          } else {
+            // Product already exists in the order, update quantity
+            existingProduct.quantity += orderItem.quantity;
+            existingOrder.totalQuantity += orderItem.quantity;
+          }
+        });
       }
+    });
 
-      const product = orderItem.Product;
-
-      const productImages = product.productImages.map((image) => ({
-        id: image.id,
-        imageUrl: image.imageUrl,
-      }));
-
-      acc[orderId].Products.push({
-        orderItemId: orderItem.id,
-        productId: product.id,
-        quantity: orderItem.quantity,
-        createdAt: orderItem.createdAt,
-        updatedAt: orderItem.updatedAt,
-        Product: {
-          id: product.id,
-          productName: product.name,
-          productPrice: product.price,
-          productGender: product.gender,
-          productImages: productImages,
-        },
+    // Sorting the array
+    if (sort) {
+      groupedOrderListsWithImages.sort((a, b) => {
+        if (sort === "date-asc") {
+          return new Date(a.updatedAt) - new Date(b.updatedAt);
+        } else if (sort === "date-desc") {
+          return new Date(b.updatedAt) - new Date(a.updatedAt);
+        } else if (sort === "price-asc") {
+          return a.totalPrice - b.totalPrice;
+        } else if (sort === "price-desc") {
+          return b.totalPrice - a.totalPrice;
+        } else {
+          return 0;
+        }
       });
+    }
 
-      acc[orderId].totalQuantity += orderItem.quantity;
+    const totalUniqueOrders = orders.length;
 
-      return acc;
-    }, {});
+    const totalPages = Math.ceil(totalUniqueOrders / limit);
+
+    const paginationInfo = {
+      totalRecords: totalUniqueOrders,
+      totalPages: totalPages,
+      currentPage: parseInt(page),
+    };
 
     return res.status(200).json({
       ok: true,
       message: "Get all order successfully",
       detail: Object.values(groupedOrderListsWithImages),
+      pagination: paginationInfo,
     });
   } catch (error) {
     return res.status(500).json({

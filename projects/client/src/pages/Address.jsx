@@ -197,7 +197,7 @@ export const Address = () => {
   return (
     <>
       <NavPage pageName={"Address Book"} />
-      <div className="flex justify-center">
+      <div className="flex lg:px-36 lg:justify-normal justify-center">
         <div className="h-[70vh] w-[90vw] lg:w-[76vw] flex flex-row overflow-y-hidden">
           <div className="hidden lg:flex flex-col w-[20vw]">
             {listsMenu.map((list, index) => {

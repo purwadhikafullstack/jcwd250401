@@ -102,7 +102,7 @@ export const ChangePassword = () => {
   return (
     <>
       <NavPage pageName={"Change Password"} />
-      <div className="flex justify-center">
+      <div className="flex lg:px-36 lg:justify-normal justify-center ">
         <div className="min-h-[70vh] lg:h-[70vh] w-[90vw] lg:w-[76vw] flex flex-row overflow-y-auto lg:overflow-y-hidden">
           <div className="hidden lg:flex flex-col w-[20vw]">
             {listsMenu.map((list, index) => {
