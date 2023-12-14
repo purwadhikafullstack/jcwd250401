@@ -201,7 +201,7 @@ export const Order = () => {
           )}
         </div>
       </div>
-      {/* <PaymentProofModal isOpen={openModalProof} onClose={() => setOpenModalProof(false)} orderId={selectedOrder} /> */}
+      <PaymentProofModal isOpen={openModalProof} onClose={() => setOpenModalProof(false)} orderId={selectedOrder} />
     </>
   );
 };

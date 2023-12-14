@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { BsImage } from "react-icons/bs";
-import api from "../api";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -45,7 +44,7 @@ export const PaymentProofModal = ({ orderId, isOpen, onClose }) => {
 
       formik.setFieldValue("paymentProofImage", acceptedFiles[0]);
       setSelectedImageName(acceptedFiles[0].name);
-      
+
       setTimeout(() => {
         setPreview(createObjectURL(acceptedFiles[0]));
       }, 1000);
@@ -66,7 +65,7 @@ export const PaymentProofModal = ({ orderId, isOpen, onClose }) => {
           orderId,
           data,
           userDataId: userData?.id,
-        })
+        });
 
         if (response.ok) {
           setTimeout(() => {
@@ -142,8 +141,8 @@ export const PaymentProofModal = ({ orderId, isOpen, onClose }) => {
 
             <div className="flex justify-center mt-5">
               {isUploading ? (
-                <div className="flex justify-center items-center">
-                  <div className="animate-spin rounded-full h-20 w-20 border-t-2 border-b-2 border-gray-900"></div>
+                <div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] text-[#40403F] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
+                  <span class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
                 </div>
               ) : (
                 selectedImageName && (
