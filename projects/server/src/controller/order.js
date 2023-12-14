@@ -1,6 +1,6 @@
 const { Op } = require("sequelize");
 const axios = require("axios");
-const { Order, OrderItem, Product, ProductImage, Warehouse, Shipment, Cart, CartItem } = require("../models");
+const { Address, Order, OrderItem, Product, ProductImage, Warehouse, Shipment, Cart, CartItem, User } = require("../models");
 
 // Config default axios with rajaongkir
 axios.defaults.baseURL = "https://api.rajaongkir.com/starter";
@@ -79,8 +79,43 @@ exports.paymentProof = async (req, res) => {
   }
 };
 
-// Get all order lists from all users
+exports.confirmPayment = async (req, res) => {
+  const { id } = req.params;
 
+  try {
+    const order = await Order.findOne({
+      where: {
+        id,
+      },
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        ok: false,
+        message: "Order not found",
+      });
+    }
+
+    order.status = "paid";
+
+    await order.save();
+    return res.status(200).json({
+      ok: true,
+      message: "Payment confirmed successfully",
+      detail: order,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+      detail: String(error),
+    });
+  }
+};
+
+
+// Get all order lists from all users
 exports.getAllOrderLists = async (req, res) => {
   try {
     const { status = "all", page = 1, size = 10, sort = "createdAt", order = "DESC", warehouseId, month } = req.query;
@@ -91,7 +126,7 @@ exports.getAllOrderLists = async (req, res) => {
       include: [
         {
           model: Order,
-          attributes: ["id", "status", "totalPrice", "userId", "warehouseId"],
+          attributes: ["id", "status", "paymentProofImage", "totalPrice", "userId", "warehouseId", "shipmentId", "createdAt", "updatedAt"],
           where: status !== "all" ? { status } : undefined,
         },
         {
@@ -147,6 +182,21 @@ exports.getAllOrderLists = async (req, res) => {
           attributes: ["id", "name"],
         });
 
+        const shipment = await Shipment.findOne({
+          where: { id: orderItem.Order.shipmentId },
+          attributes: ["id", "name", "cost", "addressId"],
+        });
+
+        const address = await Address.findOne({
+          where: { id: shipment.addressId },
+          attributes: ["id", "firstName", "lastName", "phoneNumber", "street", "city", "province", "district", "subDistrict"],
+        });
+
+        const user = await User.findOne({
+          where: { id: orderItem.Order.userId },
+          attributes: ["id", "username", "firstName", "lastName"],
+        });
+
         const productImages = await ProductImage.findAll({
           where: { productId: product.id },
           attributes: ["id", "imageUrl"],
@@ -159,14 +209,36 @@ exports.getAllOrderLists = async (req, res) => {
           quantity: orderItem.quantity,
           createdAt: orderItem.createdAt,
           updatedAt: orderItem.updatedAt,
+          paymentProofImage: orderItem.Order.paymentProofImage,
           Order: {
             id: orderItem.Order.id,
             status: orderItem.Order.status,
             totalPrice: orderItem.Order.totalPrice,
-            userId: orderItem.Order.userId,
+            user: {
+              id: user.id,
+              username: user.username,
+              firstName: user.firstName,
+              lastName: user.lastName,
+            },
             warehouse: {
               id: warehouse.id,
               warehouseName: warehouse.name,
+            },
+            shipment: {
+              id: shipment.id,
+              shipmentName: shipment.name,
+              shipmentCost: shipment.cost,
+              address: {
+                id: address.id,
+                firstName: address.firstName,
+                lastName: address.lastName,
+                phoneNumber: address.phoneNumber,
+                street: address.street,
+                city: address.city,
+                province: address.province,
+                district: address.district,
+                subDistrict: address.subDistrict,
+              },
             },
           },
           Product: {
