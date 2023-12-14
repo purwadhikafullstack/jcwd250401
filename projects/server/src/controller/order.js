@@ -1,6 +1,7 @@
 const { Op } = require("sequelize");
 const axios = require("axios");
-const { Order, OrderItem, Product, ProductImage, Warehouse, Shipment, Cart, CartItem } = require("../models");
+const fs = require("fs").promises;
+const { Order, OrderItem, Product, ProductImage, Warehouse, Shipment, Cart, CartItem, sequelize } = require("../models");
 
 // Config default axios with rajaongkir
 axios.defaults.baseURL = "https://api.rajaongkir.com/starter";
@@ -36,6 +37,7 @@ exports.getOrderCost = async (req, res) => {
 
 exports.paymentProof = async (req, res) => {
   const { id, userId } = req.params;
+  const t = sequelize.transaction();
 
   try {
     const order = await Order.findOne({
@@ -43,9 +45,11 @@ exports.paymentProof = async (req, res) => {
         id,
         userId,
       },
+      transaction: t,
     });
 
     if (!order) {
+      await t.rollback();
       return res.status(404).json({
         ok: false,
         message: "Order not found",
@@ -55,6 +59,7 @@ exports.paymentProof = async (req, res) => {
     if (req.file) {
       order.paymentProofImage = req.file.filename;
     } else {
+      await t.rollback();
       return res.status(400).json({
         ok: false,
         message: "Payment proof image is required",
@@ -62,15 +67,22 @@ exports.paymentProof = async (req, res) => {
     }
 
     order.status = "waiting-for-payment-confirmation";
+    await order.save({ transaction: t });
+    await t.commit();
 
-    await order.save();
     return res.status(200).json({
       ok: true,
       message: "Payment proof uploaded successfully",
       detail: order,
     });
   } catch (error) {
+    await t.rollback();
     console.error(error);
+
+    if (req.file) {
+      const filePath = `../public/${req.file.filename}`;
+      await fs.unlink(filePath); // Delete file from public folder
+    }
     return res.status(500).json({
       ok: false,
       message: "Internal server error",
