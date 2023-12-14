@@ -162,7 +162,7 @@ export const Order = () => {
           })}
         </div>
 
-        <div className="w-full min-h-[72.5vh] lg:w-[60vw] overflow-y-hidden shadow-md">
+        <div className="w-full min-h-[40vh] lg:w-[60vw] overflow-y-hidden shadow-md">
           {isLoggedIn ? (
             <div className="p-4 w-full">
               <div id="orderStatus" className="hidden sm:flex flex-col">
@@ -269,51 +269,53 @@ export const Order = () => {
                   </div>
                 )}
               </div>
-              <Box display="flex" justifyContent="right" gap={2} mt={4} textAlign="right" mr={4}>
-                <Flex alignItems={"center"} gap={2}>
-                  <Text mr={2} fontWeight={"bold"}>
-                    {" "}
-                    Page{" "}
-                  </Text>
-                  <Box>
-                    <Button
-                      boxShadow="md"
-                      key={1}
-                      size="xs"
-                      w="30px"
-                      borderRadius="lg"
-                      onClick={() => handlePageChange(1)}
-                      variant={page === 1 ? "solid" : "solid"}
-                      bgColor={page === 1 ? "gray.900" : "white"}
-                      textColor={page === 1 ? "white" : "gray.900"}
-                      _hover={{ bgColor: "gray.900", textColor: "white" }}
-                      mr="5px"
-                      transition={"ease-in-out 0.3s"}
-                    >
-                      1
-                    </Button>
-                    {totalPages > 1 &&
-                      Array.from({ length: totalPages - 1 }, (_, index) => (
-                        <Button
-                          boxShadow="md"
-                          key={index + 2}
-                          size="xs"
-                          w="30px"
-                          borderRadius="lg"
-                          onClick={() => handlePageChange(index + 2)}
-                          variant={page === index + 2 ? "solid" : "solid"}
-                          bgColor={page === index + 2 ? "gray.900" : "gray.white"}
-                          textColor={page === index + 2 ? "white" : "gray.900"}
-                          _hover={{ bgColor: "gray.900", textColor: "white" }}
-                          mr="5px"
-                          transition={"ease-in-out 0.3s"}
-                        >
-                          {index + 2}
-                        </Button>
-                      ))}
-                  </Box>
-                </Flex>
-              </Box>
+              {totalPages > 1 && (
+                <Box display="flex" justifyContent="right" gap={2} mt={4} textAlign="right" mr={4}>
+                  <Flex alignItems={"center"} gap={2}>
+                    <Text mr={2} fontWeight={"bold"}>
+                      {" "}
+                      Page{" "}
+                    </Text>
+                    <Box>
+                      <Button
+                        boxShadow="md"
+                        key={1}
+                        size="xs"
+                        w="30px"
+                        borderRadius="lg"
+                        onClick={() => handlePageChange(1)}
+                        variant={page === 1 ? "solid" : "solid"}
+                        bgColor={page === 1 ? "gray.900" : "white"}
+                        textColor={page === 1 ? "white" : "gray.900"}
+                        _hover={{ bgColor: "gray.900", textColor: "white" }}
+                        mr="5px"
+                        transition={"ease-in-out 0.3s"}
+                      >
+                        1
+                      </Button>
+                      {totalPages > 1 &&
+                        Array.from({ length: totalPages - 1 }, (_, index) => (
+                          <Button
+                            boxShadow="md"
+                            key={index + 2}
+                            size="xs"
+                            w="30px"
+                            borderRadius="lg"
+                            onClick={() => handlePageChange(index + 2)}
+                            variant={page === index + 2 ? "solid" : "solid"}
+                            bgColor={page === index + 2 ? "gray.900" : "gray.white"}
+                            textColor={page === index + 2 ? "white" : "gray.900"}
+                            _hover={{ bgColor: "gray.900", textColor: "white" }}
+                            mr="5px"
+                            transition={"ease-in-out 0.3s"}
+                          >
+                            {index + 2}
+                          </Button>
+                        ))}
+                    </Box>
+                  </Flex>
+                </Box>
+              )}
             </div>
           ) : (
             <div className="flex justify-center items-center h-full">
