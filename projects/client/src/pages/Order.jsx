@@ -10,9 +10,7 @@ import getProfile from "../api/profile/getProfile";
 import getUserOrder from "../api/order/getUserOrder";
 
 export const Order = () => {
-  const isLogin = useSelector((state) => state?.account?.isLogin);
-  const userName = useSelector((state) => state?.account?.profile?.data?.profile?.username);
-  const token = useSelector((state) => state?.account?.profile?.data?.token);
+  let isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
   const listsMenu = ["Profile", "Address Book", "My Order", "Change Password"];
   const orderStatus = ["All", "Waiting for Payment", "Waiting for Payment Confirmation", "On Process", "On Delivery", "Delivered", "Cancelled"];
   const [selectedStatus, setSelectedStatus] = useState("all");
@@ -27,15 +25,14 @@ export const Order = () => {
   const dispatch = useDispatch();
 
   const handleStatusChange = (status) => setSelectedStatus(status);
-  // const handleOpenModalProof = (orderId) => {
-  //   setSelectedOrder(orderId);
-  //   setOpenModalProof(true);
-  // };
+  const handleOpenModalProof = (orderId) => {
+    setSelectedOrder(orderId);
+    setOpenModalProof(true);
+  };
 
-  const getOrderLists = async (userId) => {
+  const getOrderLists = async () => {
     try {
       const response = await getUserOrder({
-        userId,
         status: selectedStatus,
         page,
         size,
@@ -43,43 +40,37 @@ export const Order = () => {
         order,
       });
       setOrderLists(response.detail);
+
+      console.log(response.detail);
     } catch (error) {
-      if (error.response && (error.response.status === 404 || error.response.status === 401 || error.response.status === 403 || error.response.status === 500)) {
+      if (error.response.status === 401 || error.response.status === 403) {
         toast.error(error.response.data.message);
         setOrderLists([]);
-        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-          setTimeout(() => {
-            navigate("/");
-            dispatch(showLoginModal());
-          }, 2000);
-        }
-        if (error.response.status === 500) console.error(error.response.data.detail);
-      }
-    }
-  };
-
-  const getUserData = async () => {
-    try {
-      const response = await getProfile({ username: userName, token });
-
-      getOrderLists(response.detail.id);
-    } catch (error) {
-      if (error.response && (error.response.status === 404 || error.response.status === 401 || error.response.status === 403 || error.response.status === 500)) {
+        navigate("/");
+        dispatch(showLoginModal());
+      } else if (error.response.status === 404) {
+        setOrderLists([]);
+      } else if (error.response.status === 500) {
         toast.error(error.response.data.message);
-        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-          setTimeout(() => {
-            navigate("/");
-            dispatch(showLoginModal());
-          }, 2000);
-        }
-        if (error.response.status === 500) console.error(error.response.data.detail);
+        setOrderLists([]);
       }
     }
   };
 
   useEffect(() => {
-    getUserData();
-  }, [userName, selectedStatus, page, size, sort, order]);
+    if (isLoggedIn) {
+      getOrderLists();
+    }
+  }, [selectedStatus, page, size, sort, order]);
+
+  const formatToRupiah = (number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(number);
+  };
 
   return (
     <>
@@ -98,7 +89,7 @@ export const Order = () => {
         </div>
 
         <div className="w-full min-h-[72.5vh] lg:w-[53vw] overflow-y-hidden shadow-md">
-          {isLogin ? (
+          {isLoggedIn ? (
             <div className="p-3">
               <div id="orderStatus" className="hidden sm:flex flex-col flex-wrap overflow-x-auto">
                 <p className="font-bold">Status</p>
@@ -150,35 +141,39 @@ export const Order = () => {
               <div id="orderList" className="overflow-y-auto gap-2">
                 {orderLists.length > 0 ? (
                   orderLists.map((orderItem, index) => {
-                    const createdAt = new Date(orderItem.createdAt);
+                    const updatedAt = new Date(orderItem.updatedAt);
 
-                    const date = createdAt.toLocaleDateString();
-                    const time = createdAt.toLocaleTimeString();
+                    const date = updatedAt.toLocaleDateString();
+                    const time = updatedAt.toLocaleTimeString();
                     return (
-                      <div key={index} className="border border-gray-200 rounded-md p-2 my-2">
+                      <div key={index} className="border border-gray-200 rounded-md p-4 my-2">
                         <div className="flex justify-between h-[5vh]">
-                          <p>{orderItem.Order.status}</p>
+                          <p>{orderItem.status}</p>
                           <p>
                             {date}, {time}
                           </p>
                         </div>
-
                         <div className="flex justify-between">
-                          <div className="flex">
-                            <img src={`http://localhost:8000/public/${orderItem.Product.productImages[0].imageUrl}`} alt={orderItem.Product.name} className="w-[30vw] h-[20vh] lg:w-[10vw] lg:h-[20vh] object-cover rounded-md" />
-                            <div className="flex justify-between w-full items-center ml-2">
-                              <div className="w-[25vw] lg:w-[20vw]">
-                                <p className="font-bold">{orderItem.Product.productName}</p>
-                                <p>Quantity: {orderItem.quantity}</p>
-                              </div>
-                              <p>
-                                <span className="font-bold">Total:</span> Rp{orderItem.Order.totalPrice}
-                              </p>
+                          <div className="flex justify-between w-full items-center">
+                            <div>
+                              {orderItem.Products.map((product, index) => (
+                                <div className="flex space-x-2" key={index}>
+                                  <span>{product.quantity}x</span>
+                                  <span>{product.Product.productName}</span>
+                                  <span>{formatToRupiah(product.Product.productPrice)}</span>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="flex flex-col">
+                              <span>Total Quantity: {orderItem.totalQuantity}</span>
+                              <span className="font-bold"> Subtotal: {formatToRupiah(orderItem.totalPrice)} </span>
+                              {orderItem.status === "waiting-for-payment" && (
+                                <button onClick={() => handleOpenModalProof(orderItem.orderId)} className="px-2 py-1 bg-gray-100 rounded-md text-sm font-sagoe text-gray-700 hover:bg-gray-200 w-full h-[5vh] self-end">
+                                  Upload Payment Proof
+                                </button>
+                              )}
                             </div>
                           </div>
-                          {/* <button onClick={() => handleOpenModalProof(orderItem.Order.id)} className="px-2 py-1 bg-gray-100 rounded-md text-sm font-sagoe text-gray-700 hover:bg-gray-200 w-full h-[5vh] self-end">
-                            Upload Payment Proof
-                          </button> */}
                         </div>
                       </div>
                     );
