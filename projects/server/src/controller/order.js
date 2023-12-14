@@ -79,103 +79,6 @@ exports.paymentProof = async (req, res) => {
   }
 };
 
-// get user order
-exports.getOrderLists = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const { status = "all", page = 1, size = 10, sort = "createdAt", order = "DESC" } = req.query;
-    const limit = parseInt(size);
-    const offset = (parseInt(page) - 1) * limit;
-
-    const filter = {
-      include: [
-        {
-          model: Order,
-          attributes: ["id", "status", "totalPrice", "userId"],
-          where: status !== "all" ? { status } : undefined,
-        },
-        {
-          model: Product,
-          attributes: ["id", "name", "description", "price", "gender", "weight"],
-        },
-      ],
-      where: {
-        "$Order.status$": status !== "all" ? status : { [Op.ne]: null },
-      },
-      limit: limit,
-      offset: offset,
-    };
-
-    if (sort) {
-      if (sort === "totalPrice") {
-        filter.order = [[{ model: Order, as: "Order" }, sort, order]];
-      } else {
-        filter.order = [[sort, order]];
-      }
-    }
-
-    if (userId) {
-      filter.include[0].where = { userId };
-    }
-
-    const orderLists = await OrderItem.findAll(filter);
-
-    if (orderLists.length === 0) {
-      return res.status(404).json({
-        ok: false,
-        message: "No Data matches",
-      });
-    }
-
-    const orderListsWithImages = await Promise.all(
-      orderLists.map(async (orderItem) => {
-        const product = orderItem.Product;
-
-        const productImages = await ProductImage.findAll({
-          where: { productId: product.id },
-          attributes: ["id", "imageUrl"],
-        });
-
-        return {
-          id: orderItem.id,
-          productId: product.id,
-          orderId: orderItem.Order.id,
-          quantity: orderItem.quantity,
-          createdAt: orderItem.createdAt,
-          updatedAt: orderItem.updatedAt,
-          Order: {
-            id: orderItem.Order.id,
-            status: orderItem.Order.status,
-            totalPrice: orderItem.Order.totalPrice,
-            userId: orderItem.Order.userId,
-          },
-          Product: {
-            id: product.id,
-            productName: product.name,
-            productDescription: product.description,
-            productPrice: product.price,
-            productGender: product.gender,
-            productWeight: product.weight,
-            productImages: productImages,
-          },
-        };
-      })
-    );
-
-    return res.status(200).json({
-      ok: true,
-      message: "Get all order successfully",
-      detail: orderListsWithImages,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      ok: false,
-      message: "Internal server error",
-      detail: String(error),
-    });
-  }
-};
-
 // Get all order lists from all users
 
 exports.getAllOrderLists = async (req, res) => {
@@ -304,7 +207,7 @@ exports.createOrder = async (req, res) => {
       userId,
       warehouseId,
       paymentBy,
-      status: "waiting for payment",
+      status: "waiting-for-payment",
     });
 
     const orderItems = await Promise.all(
@@ -340,8 +243,8 @@ exports.createOrder = async (req, res) => {
     // Create shipment
 
     const shipment = await Shipment.create({
-      name: shippingCost[0],  // Accessing the shipping method directly
-      cost: shippingCost[1],  // Accessing the cost directly
+      name: shippingCost[0], // Accessing the shipping method directly
+      cost: shippingCost[1], // Accessing the cost directly
       addressId: addressId,
     });
 
@@ -363,6 +266,115 @@ exports.createOrder = async (req, res) => {
       ok: true,
       message: "Order created successfully",
       detail: { order, orderItems, shipment },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+      detail: String(error),
+    });
+  }
+};
+
+exports.getOrderLists = async (req, res) => {
+  try {
+    const { id: userId } = req.user;
+    const { status = "all", page = 1, size = 10, sort = "createdAt", order = "DESC" } = req.query;
+    const limit = parseInt(size);
+    const offset = (parseInt(page) - 1) * limit;
+
+    const filter = {
+      include: [
+        {
+          model: Order,
+          attributes: ["id", "status", "totalPrice", "userId", "createdAt", "updatedAt"],
+          where: status !== "all" ? { status } : undefined,
+        },
+        {
+          model: Product,
+          attributes: ["id", "name", "description", "price", "gender", "weight"],
+          include: [
+            {
+              model: ProductImage,
+              as: "productImages",
+              attributes: ["id", "imageUrl"],
+            },
+          ],
+        },
+      ],
+      where: {
+        "$Order.status$": status !== "all" ? status : { [Op.ne]: null },
+      },
+      limit: limit,
+      offset: offset,
+    };
+
+    if (sort) {
+      if (sort === "totalPrice") {
+        filter.order = [[{ model: Order, as: "Order" }, sort, order]];
+      } else {
+        filter.order = [[sort, order]];
+      }
+    }
+
+    if (userId) {
+      filter.include[0].where = { userId };
+    }
+
+    const orderLists = await OrderItem.findAll(filter);
+
+    if (orderLists.length === 0) {
+      return res.status(404).json({
+        ok: false,
+        message: "No Data matches",
+      });
+    }
+
+    const groupedOrderListsWithImages = orderLists.reduce((acc, orderItem) => {
+      const orderId = orderItem.Order.id;
+      if (!acc[orderId]) {
+        acc[orderId] = {
+          orderId: orderItem.Order.id,
+          totalPrice: orderItem.Order.totalPrice,
+          status: orderItem.Order.status,
+          createdAt: orderItem.Order.createdAt,
+          updatedAt: orderItem.Order.updatedAt,
+          totalQuantity: 0,
+          Products: [],
+        };
+      }
+
+      const product = orderItem.Product;
+
+      const productImages = product.productImages.map((image) => ({
+        id: image.id,
+        imageUrl: image.imageUrl,
+      }));
+
+      acc[orderId].Products.push({
+        orderItemId: orderItem.id,
+        productId: product.id,
+        quantity: orderItem.quantity,
+        createdAt: orderItem.createdAt,
+        updatedAt: orderItem.updatedAt,
+        Product: {
+          id: product.id,
+          productName: product.name,
+          productPrice: product.price,
+          productGender: product.gender,
+          productImages: productImages,
+        },
+      });
+
+      acc[orderId].totalQuantity += orderItem.quantity;
+
+      return acc;
+    }, {});
+
+    return res.status(200).json({
+      ok: true,
+      message: "Get all order successfully",
+      detail: Object.values(groupedOrderListsWithImages),
     });
   } catch (error) {
     return res.status(500).json({

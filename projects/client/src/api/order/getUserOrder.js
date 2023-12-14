@@ -1,8 +1,8 @@
 import api from "../../api"
 
-const getUserOrder = async ({ userId, status,page, size, sort, order } = {}) => {
+const getUserOrder = async ({status,page, size, sort, order } = {}) => {
     try {
-        const url = `/order/${userId}` +
+        const url = `/order/my-order` +
         (status ? `?status=${status}` : "") +
         (page ? `&page=${page}` : "") +
         (size ? `&size=${size}` : "") +
