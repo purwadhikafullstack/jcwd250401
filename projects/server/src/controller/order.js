@@ -37,7 +37,7 @@ exports.getOrderCost = async (req, res) => {
 
 exports.paymentProof = async (req, res) => {
   const { id, userId } = req.params;
-  const t = sequelize.transaction();
+  const t = await sequelize.transaction();
 
   try {
     const order = await Order.findOne({
