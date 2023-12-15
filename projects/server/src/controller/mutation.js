@@ -344,7 +344,6 @@ exports.createManualStockMutation = async (req, res) => {
         warehouseId,
         destinationWarehouseId,
         productId,
-        mutationQuantity,
         status: "pending",
       },
       transaction: t,
@@ -354,7 +353,7 @@ exports.createManualStockMutation = async (req, res) => {
       await t.rollback();
       return res.status(400).json({
         ok: false,
-        message: "Mutation with the same quantity already exists, please wait for it to be processed",
+        message: "Mutation with same product, and source warehouse already exists",
       });
     }
 
@@ -588,39 +587,46 @@ exports.processStockMutationByWarehouse = async (req, res) => {
           // update the latest mutation stock from the destination warehouse
           const updatedStock = existingDestinationWarehouseMutation.stock + stockForDestinationWarehouse;
           // create a new mutation at destination warehouse
-          const updatedMutation = await Mutation.create({
-            productId,
-            warehouseId: mutation.destinationWarehouseId,
-            destinationWarehouseId: mutation.destinationWarehouseId,
-            mutationQuantity: stockForDestinationWarehouse,
-            previousStock: existingDestinationWarehouseMutation.stock,
-            mutationType: "add",
-            adminId: mutation.adminId,
-            stock: updatedStock,
-            status: "success",
-            isManual: true,
-            description: `Warehouse Admin mutation, Get new stock from ${sourceWarehouseName.name}`,
-          });
+          const updatedMutation = await Mutation.create(
+            {
+              productId,
+              warehouseId: mutation.destinationWarehouseId,
+              destinationWarehouseId: mutation.destinationWarehouseId,
+              mutationQuantity: stockForDestinationWarehouse,
+              previousStock: existingDestinationWarehouseMutation.stock,
+              mutationType: "add",
+              adminId: mutation.adminId,
+              stock: updatedStock,
+              status: "success",
+              isManual: true,
+              description: `Warehouse Admin mutation, Get new stock from ${sourceWarehouseName.name}`,
+            },
+            { transaction: t }
+          );
 
           // update the latest status in the mutation journal
           updatedMutationJournal.status = "success";
+          updatedMutationJournal.stock = mutation.stock;
           await updatedMutationJournal.save({ transaction: t });
 
           // create a new mutation journal at destination warehouse
-          const newMutationForDestinationWarehouse = await Journal.create({
-            mutationId: updatedMutation.id,
-            productId,
-            warehouseId: mutation.destinationWarehouseId,
-            destinationWarehouseId: mutation.destinationWarehouseId,
-            mutationQuantity: stockForDestinationWarehouse,
-            previousStock: existingDestinationWarehouseMutation.stock,
-            mutationType: "add",
-            adminId: mutation.adminId,
-            stock: updatedStock,
-            status: "success",
-            isManual: true,
-            description: `Warehouse Admin mutation, Get new stock from ${sourceWarehouseName.name}`,
-          });
+          const newMutationForDestinationWarehouse = await Journal.create(
+            {
+              mutationId: updatedMutation.id,
+              productId,
+              warehouseId: mutation.destinationWarehouseId,
+              destinationWarehouseId: mutation.destinationWarehouseId,
+              mutationQuantity: stockForDestinationWarehouse,
+              previousStock: existingDestinationWarehouseMutation.stock,
+              mutationType: "add",
+              adminId: mutation.adminId,
+              stock: updatedStock,
+              status: "success",
+              isManual: true,
+              description: `Warehouse Admin mutation, Get new stock from ${sourceWarehouseName.name}`,
+            },
+            { transaction: t }
+          );
 
           await t.commit();
           return res.status(200).json({
@@ -651,6 +657,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
 
           // create a new mutation journal at destination warehouse
           const newMutationForDestinationWarehouse = await Journal.create({
+            mutationId: updatedMutation.id,
             productId,
             warehouseId: mutation.destinationWarehouseId,
             destinationWarehouseId: mutation.destinationWarehouseId,
@@ -871,6 +878,8 @@ function findNearestWarehouse(sourceLatitude, sourceLongitude, warehouses, requi
     return (degrees * Math.PI) / 180;
   }
 
+  let nearestWarehouse = null;
+  let minDistance = Infinity;
   for (const warehouse of warehouses) {
     const { latitude, longitude } = warehouse.WarehouseAddress;
     const { stock } = warehouse.Mutations[0] || { stock: 0 };
@@ -885,23 +894,20 @@ function findNearestWarehouse(sourceLatitude, sourceLongitude, warehouses, requi
       Math.cos(toRad(sourceLatitude)) * Math.cos(toRad(latitude)) * Math.sin(dLon / 2) * Math.sin(dLon / 2); // kuadrat setengah jarak lingkaran sepanjang garis bujur
 
     const centralAngle = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); // Menghitung sudut sentral antara dua titik pada lingkaran besar
-
     const distance = earthRadius * centralAngle; // Menghitung jarak antara dua titik pada permukaan bola
 
-    if (stock >= requiredStock) {
+    if (stock >= requiredStock && distance < minDistance) {
       // check if the stock is greater than or equal to the required stock
-      return {
-        warehouse,
-        distance,
-      };
+      minDistance = distance;
+      nearestWarehouse = warehouse;
     }
   }
 
-  return null; // if no warehouse with enough stock is found return null
+  return nearestWarehouse;
 }
 
 // Function to update the source warehouse stock
-async function updateSourceWarehouseStock(productId, warehouseId, destinationWarehouseId, quantity) {
+async function updateSourceWarehouseStock(productId, warehouseId, destinationWarehouseId, quantity, sourceWarehouseAdminId) {
   const t = await sequelize.transaction();
   try {
     // get the latest mutation from the source warehouse in order to get the stock
@@ -928,34 +934,44 @@ async function updateSourceWarehouseStock(productId, warehouseId, destinationWar
     let newStock = sourceWarehouseStock + quantity;
 
     // update the source warehouse stock by creating a new mutation
-    const mutation = await Mutation.create({
-      productId,
-      warehouseId,
-      destinationWarehouseId,
-      previousStock: sourceWarehouseStock,
-      mutationQuantity: quantity,
-      mutationType: "add",
-      adminId: null,
-      stock: newStock,
-      status: "success",
-      isManual: false,
-      description: `Get new stock automatically from ${destinationWarehouseData.name}`,
-    });
+    const mutation = await Mutation.create(
+      {
+        productId,
+        warehouseId,
+        destinationWarehouseId,
+        previousStock: sourceWarehouseStock,
+        mutationQuantity: quantity,
+        mutationType: "add",
+        adminId: sourceWarehouseAdminId,
+        stock: newStock,
+        status: "success",
+        isManual: false,
+        description: `Auto request, get new stock automatically from ${destinationWarehouseData.name}.`,
+      },
+      {
+        transaction: t,
+      }
+    );
 
-    await Journal.create({
-      mutationId: mutation.id,
-      productId,
-      warehouseId,
-      destinationWarehouseId,
-      previousStock: sourceWarehouseStock,
-      mutationQuantity: quantity,
-      mutationType: "add",
-      adminId: null,
-      stock: newStock,
-      status: "success",
-      isManual: false,
-      description: ` Get new stock automatically from ${destinationWarehouseData.name}`,
-    });
+    await Journal.create(
+      {
+        mutationId: mutation.id,
+        productId,
+        warehouseId,
+        destinationWarehouseId,
+        previousStock: sourceWarehouseStock,
+        mutationQuantity: quantity,
+        mutationType: "add",
+        adminId: sourceWarehouseAdminId,
+        stock: newStock,
+        status: "success",
+        isManual: false,
+        description: `Auto request, get new stock automatically from ${destinationWarehouseData.name}.`,
+      },
+      {
+        transaction: t,
+      }
+    );
 
     await t.commit();
     return mutation;
@@ -1151,8 +1167,215 @@ exports.testFindNearestWarehouse = async (req, res) => {
       ok: true,
       message: "Nearest warehouse retrieved successfully",
       detail: nearestWarehouse,
-    })
+    });
   } catch (error) {
     throw error;
+  }
+};
+
+exports.testConfirmPaymentProofUser = async (req, res) => {
+  const t = await sequelize.transaction();
+  const { orderId, productId } = req.body;
+
+  try {
+    const orderItem = await OrderItem.findOne({
+      where: {
+        orderId,
+      },
+      include: [
+        {
+          model: Order,
+          where: {
+            status: "waiting-for-confirmation",
+          },
+          include: [
+            {
+              model: Warehouse,
+              include: [
+                {
+                  model: Mutation,
+                  where: {
+                    status: "success",
+                    productId,
+                  },
+                  order: [["createdAt", "DESC"]],
+                  limit: 1,
+                },
+                {
+                  model: WarehouseAddress,
+                  attributes: ["latitude", "longitude"],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      transaction: t,
+    });
+
+    if (!orderItem) {
+      await t.rollback();
+      return res.status(404).json({
+        ok: false,
+        message: "Order not found",
+        detail: "Order with status waiting-for-confirmation not found",
+      });
+    }
+
+    orderItem.Order.status = "processed";
+    await orderItem.Order.save({ transaction: t });
+
+    const stockProductAtCurrentWarehouse = orderItem.Order.Warehouse.Mutations[0].stock;
+    const warehouselatitude = orderItem.Order.Warehouse.WarehouseAddress.latitude;
+    const warehouseLongitude = orderItem.Order.Warehouse.WarehouseAddress.longitude;
+    const orderQuantity = orderItem.quantity;
+    const requiredStock = orderQuantity - stockProductAtCurrentWarehouse;
+    const sourceWarehouseName = orderItem.Order.Warehouse.name;
+    const sourceWarehouseId = orderItem.Order.Warehouse.id;
+    const sourceWarehouseAdminId = orderItem.Order.Warehouse.adminId;
+
+    const allWarehouses = await Warehouse.findAll({
+      attributes: ["id", "name", "warehouseAddressId"],
+      include: [
+        {
+          model: WarehouseAddress,
+          attributes: ["street", "city", "province", "latitude", "longitude"],
+        },
+        {
+          model: Mutation,
+          attributes: ["id", "stock"],
+          where: {
+            status: "success",
+            productId,
+          },
+          order: [["createdAt", "DESC"]],
+          limit: 1,
+        },
+      ],
+      transaction: t,
+    });
+
+    let nearest;
+    if (orderItem.Order.status === "processed") {
+      if (orderQuantity > stockProductAtCurrentWarehouse) {
+        // insufficient stock
+        const nearestWarehouse = findNearestWarehouse(warehouselatitude, warehouseLongitude, allWarehouses, orderQuantity);
+        nearest = nearestWarehouse;
+
+        if (!nearestWarehouse) {
+          await t.rollback();
+          return res.status(404).json({
+            ok: false,
+            message: "Nearest warehouse with sufficient stock not found",
+          });
+        }
+
+        // Create mutation for update stock at source warehouse
+        const newMutationForSourceWarehouse = await updateSourceWarehouseStock(productId, sourceWarehouseId, nearestWarehouse.id, requiredStock, sourceWarehouseAdminId);
+
+        // Create mutation for update stock at destination warehouse
+        let currentDestinationWarehouseStock = nearestWarehouse.Mutations[0].stock;
+
+        const newMutationForDestinationWarehouse = await Mutation.create(
+          {
+            productId,
+            warehouseId: nearestWarehouse.id,
+            destinationWarehouseId: nearestWarehouse.id,
+            mutationQuantity: requiredStock,
+            previousStock: currentDestinationWarehouseStock,
+            mutationType: "subtract",
+            adminId: sourceWarehouseAdminId,
+            stock: (currentDestinationWarehouseStock -= requiredStock),
+            status: "success",
+            isManual: false,
+            description: `Auto request, stock subtracted automatically to ${sourceWarehouseName} for user order.`,
+          },
+          { transaction: t }
+        );
+
+        await Journal.create(
+          {
+            productId,
+            warehouseId: nearestWarehouse.id,
+            destinationWarehouseId: nearestWarehouse.id,
+            mutationId: newMutationForDestinationWarehouse.id,
+            mutationQuantity: requiredStock,
+            previousStock: newMutationForDestinationWarehouse.previousStock,
+            mutationType: "subtract",
+            adminId: sourceWarehouseAdminId,
+            stock: newMutationForDestinationWarehouse.stock,
+            status: "success",
+            isManual: false,
+            description: `Auto request, stock subtracted automatically to ${sourceWarehouseName} for user order.`,
+          },
+          { transaction: t }
+        );
+
+        await t.commit();
+        return res.status(200).json({
+          ok: true,
+          message: "Payment proof confirmed successfully",
+          detail: {
+            orderItem,
+            newMutationForSourceWarehouse,
+          },
+          nearest,
+        });
+      }
+      // sufficient stock
+      // Create mutation for update stock at source warehouse
+      const newMutationForSourceWarehouse = await Mutation.create(
+        {
+          productId,
+          warehouseId: sourceWarehouseId,
+          destinationWarehouseId: sourceWarehouseId,
+          mutationQuantity: orderQuantity,
+          previousStock: stockProductAtCurrentWarehouse,
+          mutationType: "subtract",
+          adminId: sourceWarehouseAdminId,
+          stock: stockProductAtCurrentWarehouse - orderQuantity,
+          status: "success",
+          isManual: false,
+          description: "Auto request, stock subtracted automatically for user order.",
+        },
+        { transaction: t }
+      );
+
+      await Journal.create(
+        {
+          mutationId: newMutationForSourceWarehouse.id,
+          productId,
+          warehouseId: sourceWarehouseId,
+          destinationWarehouseId: sourceWarehouseId,
+          mutationId: newMutationForSourceWarehouse.id,
+          mutationQuantity: orderQuantity,
+          previousStock: stockProductAtCurrentWarehouse,
+          mutationType: "subtract",
+          adminId: sourceWarehouseAdminId,
+          stock: stockProductAtCurrentWarehouse - orderQuantity,
+          status: "success",
+          isManual: false,
+          description: "Auto request, stock subtracted automatically for user order.",
+        },
+        { transaction: t }
+      );
+
+      await t.commit();
+      return res.status(200).json({
+        ok: true,
+        message: "Payment proof confirmed successfully",
+        detail: {
+          orderItem,
+          newMutationForSourceWarehouse,
+        },
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    await t.rollback();
+    return res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+    });
   }
 };
