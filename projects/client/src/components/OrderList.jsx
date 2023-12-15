@@ -2,10 +2,34 @@ import React from 'react';
 import { Button } from 'flowbite-react';
 import { useState, useEffect } from 'react';
 import PaymentModal from './PaymentModal';
+import confirmPayment from '../api/order/confirmPayment';
+import rejectPayment from '../api/order/rejectPayment';
 
 function OrderList({ orders, fetchOrders }) { 
   const [paymentModalIsOpen, setPaymentModalIsOpen] = useState(false);
   const [paymentProof, setPaymentProof] = useState('');
+
+  const handleConfirmPayment = async (orderId) => {
+    try {
+      const response = await confirmPayment({ orderId });
+      // Update state and UI based on response
+      fetchOrders();
+    } catch (error) {
+      // Handle error
+      console.error('Error confirming payment:', error);
+    }
+  };
+
+  const handleRejectPayment = async (orderId) => {
+    try {
+      const response = await rejectPayment({ orderId });
+      // Update state and UI based on response
+      fetchOrders();
+    } catch (error) {
+      // Handle error
+      console.error('Error rejecting payment:', error);
+    }
+  };
 
   const handlePaymentModalOpen = (paymentProof) => {
     setPaymentModalIsOpen(true);
@@ -35,8 +59,10 @@ function OrderList({ orders, fetchOrders }) {
         <div key={index} className="p-4 bg-white rounded-lg shadow-lg w-[1000px] lg:w-[100%] mb-5 lg:mb-5">
           <div className="flex justify-between">
             <div className="flex items-center gap-2">
-              {Order.status === "Waiting for Payment" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting for Payment</span>}
+              {Order.status === "waiting-for-payment" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting for Payment</span>}
               {Order.status === "waiting-for-payment-confirmation" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting for Payment Confirmation</span>}
+              {Order.status === "processed" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Order Processed</span>}
+              {Order.status === "payment-rejected" && <span className="bg-[#FF7A7A66] text-[#FF0000] py-1 px-2 rounded-md font-bold">Order Rejected</span>}
               <p>ID {Order.id} / {new Date(createdAt).toLocaleDateString()} / {Order.warehouse.warehouseName} </p>
             </div>
             <div className="flex items-center gap-2">
@@ -92,18 +118,22 @@ function OrderList({ orders, fetchOrders }) {
             <p className="text-lg font-bold">TOTAL</p>
             <p className="text-lg font-bold ml-auto">{formatToRupiah(Order.totalPrice)}</p>
           </div>
-          <hr className="my-2" /> 
-          <div className="flex justify-end gap-2">
-            {/* Action buttons here, if needed */}
-            <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
-              <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm">
-                Reject Order
-              </Button>
-              <Button color="dark" size="small" className="md:p-2 w-full md:w-52 shadow-sm">
-                Accept Order
-              </Button>
-            </div>
-          </div>
+          {Order.status === "waiting-for-payment-confirmation" && (
+            <>
+              <hr className="my-2" /> 
+              <div className="flex justify-end gap-2">
+                {/* Action buttons here, if needed */}
+                <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
+                  <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleRejectPayment(Order.id)}>
+                    Reject Order
+                  </Button>
+                  <Button color="dark" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleConfirmPayment(Order.id)}>
+                    Accept Order
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       ))}
       <PaymentModal isOpen={paymentModalIsOpen} onClose={handlePaymentModalClose} paymentProof={paymentProof} />

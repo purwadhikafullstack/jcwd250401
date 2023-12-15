@@ -91,6 +91,42 @@ exports.paymentProof = async (req, res) => {
   }
 };
 
+exports.rejectPayment = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const order = await Order.findOne({
+      where: {
+        id,
+      },
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        ok: false,
+        message: "Order not found",
+      });
+    }
+
+    order.status = "payment-rejected";
+
+    await order.save();
+
+    return res.status(200).json({
+      ok: true,
+      message: "Payment rejected successfully",
+      detail: order,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+      detail: String(error),
+    });
+  }
+};
+
 exports.confirmPayment = async (req, res) => {
   const { id } = req.params;
 
@@ -108,7 +144,7 @@ exports.confirmPayment = async (req, res) => {
       });
     }
 
-    order.status = "paid";
+    order.status = "processed";
 
     await order.save();
     return res.status(200).json({
