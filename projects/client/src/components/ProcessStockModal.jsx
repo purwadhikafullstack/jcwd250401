@@ -15,6 +15,7 @@ export const ProcessStockModal = ({ isOpen, onClose, data, action }) => {
         onClose();
       }
     } catch (error) {
+      onClose();
       if ((error.response && error.response.status === 400) || error.response.status === 404 || error.response.status === 500) {
         toast.error(error.response.data.message);
       }
@@ -33,7 +34,9 @@ export const ProcessStockModal = ({ isOpen, onClose, data, action }) => {
           <p>Are you sure you want to {action} this order?</p>
           <div className="font-bold rounded-md mt-2">
             <p className="text-md text-gray-600">{data?.Product?.name}</p>
-            <p className="text-md text-gray-600">Product ID: {data?.Product?.id}</p>
+            <p className="text-md text-gray-600">Total Request: {data?.mutationQuantity}</p>
+            <p className="text-md text-gray-600">Sent From: {data?.sourceWarehouseData.name}</p>
+            <p className="text-md text-gray-600">Sent To: {data?.destinationWarehouseData.name}</p>
           </div>
         </ModalBody>
 

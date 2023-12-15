@@ -13,5 +13,6 @@ router.get("/stock/:productId/:warehouseId", authMiddleware.validateToken, mutat
 router.get("/order-data", authMiddleware.validateToken, mutationController.testGetOrderData);
 router.get("/warehouses", authMiddleware.validateToken, mutationController.testGetWarehouses);
 router.get("/nearest-warehouse", authMiddleware.validateToken, mutationController.testFindNearestWarehouse);
+// router.patch("/test-confirm-payment", authMiddleware.validateToken, mutationController.testConfirmPaymentProofUser);
 
 module.exports = router;

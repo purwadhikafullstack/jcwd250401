@@ -303,7 +303,10 @@ export const WarehouseOrder = () => {
                 return (
                   <div key={index} className="p-4 bg-white rounded-lg shadow-lg w-[1000px] lg:w-[100%] mb-5 lg:mb-0">
                     <div className="flex items-center gap-2">
-                      {mutation.status === "pending" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">New Order</span>}
+                      {mutation.status === "pending" && <span className="bg-[#d3820066] text-[#d38200cb] py-1 px-2 rounded-md font-bold">Pending</span>}
+                      {mutation.status === "success" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Success</span>}
+                      {mutation.status === "failed" && <span className="bg-[#92191966] text-[#921919cb] py-1 px-2 rounded-md font-bold">Failed</span>}
+                      {mutation.status === "cancelled" && <span className="bg-[#92191966] text-[#921919cb] py-1 px-2 rounded-md font-bold">Cancelled</span>}
                       <p>
                         {mutation.createdAt.slice(0, 10)} / {mutation.Warehouse.name}
                       </p>
@@ -313,7 +316,6 @@ export const WarehouseOrder = () => {
                       <img src={`http://localhost:8000/public/${mutation.Product.productImages[0].imageUrl}`} alt={mutation.Product.name} className="w-20 h-20 object-cover" />
                       <div className="ml-2">
                         <p className="text-sm font-bold">{mutation.Product.name}</p>
-                        <p className="text-sm font-bold">Product ID: {mutation.Product.id}</p>
                       </div>
                       <div className="ml-10">
                         <div>
