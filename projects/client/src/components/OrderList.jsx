@@ -62,7 +62,6 @@ function OrderList({ orders, fetchOrders }) {
               {Order.status === "waiting-for-payment" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting for Payment</span>}
               {Order.status === "waiting-for-payment-confirmation" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting for Payment Confirmation</span>}
               {Order.status === "processed" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Order Processed</span>}
-              {Order.status === "payment-rejected" && <span className="bg-[#FF7A7A66] text-[#FF0000] py-1 px-2 rounded-md font-bold">Order Rejected</span>}
               <p>ID {Order.id} / {new Date(createdAt).toLocaleDateString()} / {Order.warehouse.warehouseName} </p>
             </div>
             <div className="flex items-center gap-2">
