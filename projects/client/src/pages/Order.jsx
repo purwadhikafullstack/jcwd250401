@@ -268,7 +268,7 @@ export const Order = () => {
                               <span className="font-bold font-sm"> Subtotal: {formatToRupiah(orderItem.totalPrice)} </span>
                               {orderItem.status === "unpaid" && (
                                 <div className="w-[180px]">
-                                  <button onClick={() => handleOpenModalProof(orderItem.orderId)} className="w-full px-0 mt-2 lg:px-2 py-1 bg-gray-900 rounded-full text-sm font-sagoe text-gray-100 hover:bg-gray-700 w-full">
+                                  <button onClick={() => handleOpenModalProof(orderItem.orderId)} className="w-full px-0 mt-2 lg:px-2 py-1 bg-gray-900 rounded-full text-sm font-sagoe text-gray-100 hover:bg-gray-700">
                                     Upload Payment Proof
                                   </button>
                                 </div>
