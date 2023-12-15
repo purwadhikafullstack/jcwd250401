@@ -11,4 +11,7 @@ router.put("/:userId/:id", authMiddleware.validateToken, multerUpload.single("pa
 router.post("/cost", authMiddleware.validateToken, orderController.getOrderCost);
 router.post("/", authMiddleware.validateToken, orderController.createOrder);
 router.patch("/confirm-payment", authMiddleware.validateToken, orderController.confirmPaymentProofUser);
+router.patch("/:id", authMiddleware.validateToken, orderController.confirmPayment);
+router.patch("/reject/:id", authMiddleware.validateToken, orderController.rejectPayment);
+
 module.exports = router;

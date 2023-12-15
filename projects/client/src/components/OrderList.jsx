@@ -1,7 +1,45 @@
 import React from 'react';
 import { Button } from 'flowbite-react';
+import { useState, useEffect } from 'react';
+import PaymentModal from './PaymentModal';
+import confirmPayment from '../api/order/confirmPayment';
+import rejectPayment from '../api/order/rejectPayment';
 
-function OrderList({ orders, fetchOrders }) {
+function OrderList({ orders, fetchOrders }) { 
+  const [paymentModalIsOpen, setPaymentModalIsOpen] = useState(false);
+  const [paymentProof, setPaymentProof] = useState('');
+
+  const handleConfirmPayment = async (orderId) => {
+    try {
+      const response = await confirmPayment({ orderId });
+      // Update state and UI based on response
+      fetchOrders();
+    } catch (error) {
+      // Handle error
+      console.error('Error confirming payment:', error);
+    }
+  };
+
+  const handleRejectPayment = async (orderId) => {
+    try {
+      const response = await rejectPayment({ orderId });
+      // Update state and UI based on response
+      fetchOrders();
+    } catch (error) {
+      // Handle error
+      console.error('Error rejecting payment:', error);
+    }
+  };
+
+  const handlePaymentModalOpen = (paymentProof) => {
+    setPaymentModalIsOpen(true);
+    setPaymentProof(paymentProof);
+  }
+
+  const handlePaymentModalClose = () => {
+    setPaymentModalIsOpen(false);
+  }
+
   const formatToRupiah = (price) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -11,17 +49,23 @@ function OrderList({ orders, fetchOrders }) {
     }).format(price);
   };
 
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
   return (
     <div className="container mx-auto px-4">
-      {orders.map(({ Order, Product, quantity, createdAt }, index) => (
+      {orders.map(({ Order, Product, quantity, createdAt, paymentProofImage }, index) => (
         <div key={index} className="p-4 bg-white rounded-lg shadow-lg w-[1000px] lg:w-[100%] mb-5 lg:mb-5">
           <div className="flex justify-between">
             <div className="flex items-center gap-2">
-              {Order.status === "Waiting for Payment" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting for Payment</span>}
-              <p>ID {Order.id} / {new Date(createdAt).toLocaleDateString()} / {Order.warehouse.warehouseName}</p>
+              {Order.status === "waiting-for-payment" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting for Payment</span>}
+              {Order.status === "waiting-for-payment-confirmation" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting for Payment Confirmation</span>}
+              {Order.status === "processed" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Order Processed</span>}
+              <p>ID {Order.id} / {new Date(createdAt).toLocaleDateString()} / {Order.warehouse.warehouseName} </p>
             </div>
             <div className="flex items-center gap-2">
-              <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm">
+              <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handlePaymentModalOpen(paymentProofImage)}>
                 Payment Proof
               </Button>
             </div>
@@ -35,16 +79,37 @@ function OrderList({ orders, fetchOrders }) {
               <p className="text-sm">{formatToRupiah(Product.productPrice)} x {quantity}</p>
             </div>
             <div className="ml-10">
-              <p className="font-bold">Quantity</p>
-              <p>{quantity}</p>
+              <div className='mb-5'>
+                <p className="font-bold">Customer</p>
+                  {Order.user.firstName && Order.user.lastName ? (
+                    <p>{Order.user.firstName} {Order.user.lastName}</p>
+                  ) : (
+                    <p>{Order.user.username}</p>
+                  )}
+              </div>
+              <div className='mb-5'>
+                <p className="font-bold">Total Checkout</p>
+                <p>{quantity}</p>
+              </div>
             </div>
             <div className="ml-20">
-              <p className="font-bold">Status</p>
-              <p>{Order.status}</p>
+              <div className='mb-5'>
+                <p className="font-bold">Sent From</p>
+                <p>{Order.warehouse.warehouseName}</p>
+              </div>
+              <div className='mb-5'>
+                <p className="font-bold">Delivery Option</p>
+                <p>{Order.shipment.shipmentName}</p>
+                <p>{formatToRupiah(Order.shipment.shipmentCost)}</p>
+              </div>
             </div>
             <div className="ml-auto">
-              <p className="font-bold">Product Details</p>
-              <p className="text-sm w-[25vw]">{Product.productDescription}</p>
+              <div className='mb-5'>
+                <p className="font-bold">Shipping Information</p>
+                <p className="text-sm w-[25vw]">{`${Order.shipment.address.firstName} ${Order.shipment.address.lastName} (${Order.shipment.address.phoneNumber})`}</p>
+                <p className="text-sm w-[25vw]">{Order.shipment.address.street}, {Order.shipment.address.subDistrict}, {Order.shipment.address.district}</p>
+                <p className="text-sm w-[25vw]">{Order.shipment.address.city}, {Order.shipment.address.province}</p>
+              </div>
             </div>
           </div>
           <hr className="my-2" />
@@ -52,20 +117,25 @@ function OrderList({ orders, fetchOrders }) {
             <p className="text-lg font-bold">TOTAL</p>
             <p className="text-lg font-bold ml-auto">{formatToRupiah(Order.totalPrice)}</p>
           </div>
-          <hr className="my-2" /> 
-          <div className="flex justify-end gap-2">
-            {/* Action buttons here, if needed */}
-            <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
-              <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm">
-                Reject Order
-              </Button>
-              <Button color="dark" size="small" className="md:p-2 w-full md:w-52 shadow-sm">
-                Accept Order
-              </Button>
-            </div>
-          </div>
+          {Order.status === "waiting-for-payment-confirmation" && (
+            <>
+              <hr className="my-2" /> 
+              <div className="flex justify-end gap-2">
+                {/* Action buttons here, if needed */}
+                <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
+                  <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleRejectPayment(Order.id)}>
+                    Reject Order
+                  </Button>
+                  <Button color="dark" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleConfirmPayment(Order.id)}>
+                    Accept Order
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       ))}
+      <PaymentModal isOpen={paymentModalIsOpen} onClose={handlePaymentModalClose} paymentProof={paymentProof} />
     </div>
   );
 }
