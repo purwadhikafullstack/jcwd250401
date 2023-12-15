@@ -108,7 +108,7 @@ exports.rejectPayment = async (req, res) => {
       });
     }
 
-    order.status = "payment-rejected";
+    order.status = "waiting-for-payment";
 
     await order.save();
 
