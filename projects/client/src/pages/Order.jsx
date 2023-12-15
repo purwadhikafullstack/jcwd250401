@@ -13,7 +13,7 @@ import { Box, Button, Flex, Text } from "@chakra-ui/react";
 export const Order = () => {
   let isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
   const listsMenu = ["Profile", "Address Book", "My Order", "Change Password"];
-  const orderStatus = ["All", "Waiting for Payment", "Waiting for Payment Confirmation", "On Process", "On Delivery", "Delivered", "Cancelled"];
+  const orderStatus = ["All", "Unpaid", "Waiting for Confirmation", "Processed", "On Delivery", "Delivered", "Cancelled"];
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [openModalProof, setOpenModalProof] = useState(false);
@@ -148,6 +148,11 @@ export const Order = () => {
     { label: "Price DESC", value: "price-desc" },
   ];
 
+  const getStatusLabel = (status) => {
+    // Use a regular expression to capitalize the first letter of each word
+    return status.replace(/-/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+  };
+
   return (
     <>
       <NavPage pageName={"Order"} />
@@ -222,42 +227,51 @@ export const Order = () => {
                   orderLists.map((orderItem, index) => {
                     const updatedAt = new Date(orderItem.updatedAt);
                     const date = `${updatedAt.getDate()} ${updatedAt.toLocaleString("default", { month: "short" })} ${updatedAt.getFullYear()}`;
-                    const time = updatedAt.toLocaleTimeString();
+                    const time = updatedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                     return (
-                      <div key={index} className="border border-gray-200 rounded-md px-4 lg:px-6 py-10 lg:py-4 bg-gray-100">
-                        <div className="flex lg:flex-row flex-col justify-between items-center">
-                          <span className="bg-gray-900 text-white px-4 rounded-full">{orderItem.status}</span>
-                          <span>
+                      <div key={index} className="border border-gray-200 rounded-md px-4 lg:px-6 py-4 lg:py-2 bg-gray-50">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-900 font-bold text-sm lg:text-md ">{getStatusLabel(orderItem.status)}</span>
+                          <span className="text-gray-900 text-sm lg:text-md">
                             {date}, {time}
                           </span>
                         </div>
-                        <div className="mt-6 flex justify-between">
+                        <div className="mt-4 flex justify-between">
                           <div className="flex lg:flex-row flex-col justify-between w-full">
                             <div className="flex flex-col space-y-4 mb-4">
                               {orderItem.Products.slice(0, expandedOrders[index] ? orderItem.Products.length : 1).map((product, productIndex) => (
-                                <div className="flex lg:flex-row flex-col items-center justify-center lg:justify-normal lg:space-x-4 space-y-2 lg:space-y-0" key={productIndex}>
-                                  <img src={`http://localhost:8000/public/${product.Product.productImages[0].imageUrl}`} loading="lazy" alt="product" className="w-[200px] h-[200px] lg:w-[100px] lg:h-[100px] object-cover shadow-md rounded-md" />
-                                  <span>{product.quantity}x</span>
-                                  <div className="flex flex-col">
-                                    <span>{product.Product.productName}</span>
-                                    <span className="font-bold text-center lg:text-left">{formatToRupiah(product.Product.productPrice)}</span>
+                                <div className="flex flex-1 flex-row items-center justify-between lg:justify-normal lg:space-x-4 space-x-6 lg:space-y-0" key={productIndex}>
+                                  <img src={`http://localhost:8000/public/${product.Product.productImages[0].imageUrl}`} loading="lazy" alt="product" className="w-[100px] h-[100px]  object-cover shadow-md rounded-md" />
+
+                                  <div className="flex flex-1 flex-col text-sm">
+                                    <span className="text-left">
+                                      {product.Product.productName} ({product.Product.productGender})
+                                    </span>
+                                    <span className="mb-2 lg:text-sm lg:text-left">
+                                      {product.quantity} x {formatToRupiah(product.Product.productPrice)}
+                                    </span>
+                                    <hr />
+                                    <span className=" mt-2 text-sm lg:text-left">Total Price</span>
+                                    <span className=" text-sm font-bold lg:text-left">{formatToRupiah(product.quantity * product.Product.productPrice)}</span>
                                   </div>
                                 </div>
                               ))}
                               {orderItem.Products.length > 1 && (
-                                <button onClick={() => toggleExpand(index)} className="text-blue-500 cursor-pointer focus:outline-none">
-                                  {expandedOrders[index] ? `Collapse` : `+${orderItem.Products.length - 1} Other${orderItem.Products.length > 2 ? "s" : ""}`}
+                                <button onClick={() => toggleExpand(index)} className="text-blue-500 text-sm cursor-pointer focus:outline-none">
+                                  {expandedOrders[index] ? `Show less` : `+${orderItem.Products.length - 1} Other${orderItem.Products.length > 2 ? "s" : ""}`}
                                 </button>
                               )}
                             </div>
                             <div className="flex flex-col">
-                              <span>Total Quantity: {orderItem.totalQuantity}</span>
-                              <span className="font-bold"> Subtotal: {formatToRupiah(orderItem.totalPrice)} </span>
-                              {orderItem.status === "waiting-for-payment" && (
-                                <button onClick={() => handleOpenModalProof(orderItem.orderId)} className="px-2 py-1 bg-gray-900 rounded-md text-sm font-sagoe text-gray-100 hover:bg-gray-700 w-full">
-                                  Upload Payment Proof
-                                </button>
+                              <span className="font-sm">Total Quantity: {orderItem.totalQuantity}</span>
+                              <span className="font-bold font-sm"> Subtotal: {formatToRupiah(orderItem.totalPrice)} </span>
+                              {orderItem.status === "unpaid" && (
+                                <div className="w-[180px]">
+                                  <button onClick={() => handleOpenModalProof(orderItem.orderId)} className="w-full px-0 mt-2 lg:px-2 py-1 bg-gray-900 rounded-full text-sm font-sagoe text-gray-100 hover:bg-gray-700 w-full">
+                                    Upload Payment Proof
+                                  </button>
+                                </div>
                               )}
                             </div>
                           </div>

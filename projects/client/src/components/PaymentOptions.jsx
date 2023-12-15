@@ -11,6 +11,7 @@ import AddressListModal from "./UserAddressModal";
 import createOrder from "../api/order/createOrder";
 import OrderCreatedModal from "./OrderCreatedModal";
 import { setCartItems } from "../slices/cartSlices";
+import InsufficientStockModal from "./InsufficientStockModal";
 
 const PaymentOptions = ({ shippingCost, productOnCart, warehouseId, totalPrice }) => {
   const username = useSelector((state) => state?.account?.profile?.data?.profile?.username);
@@ -22,6 +23,7 @@ const PaymentOptions = ({ shippingCost, productOnCart, warehouseId, totalPrice }
   const dispatch = useDispatch();
   const [isOrderCreatedOpen, setIsOrderCreatedOpen] = useState(false);
   const [orderId, setOrderId] = useState(null);
+  const [isInsufficientModalOpen, setIsInsufficientModalOpen] = useState(false);
 
   const fetchAddress = useCallback(async () => {
     try {
@@ -61,6 +63,14 @@ const PaymentOptions = ({ shippingCost, productOnCart, warehouseId, totalPrice }
     setIsOrderCreatedOpen(false);
   };
 
+  const handleInsufficientModalOpen = () => {
+    setIsInsufficientModalOpen(true);
+  }
+
+  const handleInsufficientModalClose = () => {
+    setIsInsufficientModalOpen(false);
+  }
+
   useEffect(() => {
     fetchAddress();
   }, [fetchAddress]);
@@ -82,7 +92,9 @@ const PaymentOptions = ({ shippingCost, productOnCart, warehouseId, totalPrice }
       handleOrderModalOpen();
       setOrderId(result.order.id);
     } catch (error) {
-      console.log(error);
+      if (error.response && error.response.status === 400) {
+        handleInsufficientModalOpen();
+      }
     }
   };
 
@@ -129,6 +141,7 @@ const PaymentOptions = ({ shippingCost, productOnCart, warehouseId, totalPrice }
         </button>
       </div>
       <OrderCreatedModal isOpen={isOrderCreatedOpen} onClose={handleOrderModalClose} paymentMethod={selectedOption} totalPrice={totalPrice} orderId={orderId} />
+      <InsufficientStockModal isOpen={isInsufficientModalOpen} onClose={handleInsufficientModalClose} />
     </div>
   );
 };
