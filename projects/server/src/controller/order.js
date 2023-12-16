@@ -1,9 +1,9 @@
 const { Sequelize, Op } = require("sequelize");
 const axios = require("axios");
 const fs = require("fs").promises;
+const { isAfter, differenceInMinutes } = require("date-fns");
 
 const { Address, Order, OrderItem, Product, ProductImage, Warehouse, Shipment, Cart, CartItem, User, sequelize } = require("../models");
-
 
 // Config default axios with rajaongkir
 axios.defaults.baseURL = "https://api.rajaongkir.com/starter";
@@ -163,7 +163,6 @@ exports.confirmPayment = async (req, res) => {
     });
   }
 };
-
 
 // Get all order lists from all users
 exports.getAllOrderLists = async (req, res) => {
@@ -655,5 +654,49 @@ exports.getOrderLists = async (req, res) => {
       message: "Internal server error",
       detail: String(error),
     });
+  }
+};
+
+exports.automaticCancelUnpaidOrder = async (req, res) => {
+  try {
+    // Fetch unpaid orders
+    const orders = await Order.findAll({
+      where: {
+        status: "unpaid",
+      },
+    });
+
+    // Check if there are no unpaid orders
+    if (!orders.length) {
+      return console.log("No unpaid orders found");
+    }
+
+    const now = Date.now();
+
+    // Filter orders that need to be canceled (created more than 24 hours ago)
+    const ordersToCancel = orders.filter((order) => {
+      const orderCreatedAt = new Date(order.createdAt).getTime();
+      const diffInMinutes = differenceInMinutes(now, orderCreatedAt);
+
+      return diffInMinutes >= 24 * 60; // 24 hours in minutes
+    });
+
+    // Check if there are no orders to cancel
+    if (ordersToCancel.length === 0) {
+      return console.log("No expire orders to cancel");
+    }
+
+    // Update the status of orders to 'cancelled'
+    await Promise.all(
+      ordersToCancel.map(async (order) => {
+        // Ensure order is not undefined before updating
+        if (order && order.update) {
+          await order.update({ status: "cancelled" });
+        }
+      })
+    );
+    return console.log("Unpaid expired orders cancelled successfully");
+  } catch (error) {
+    console.error(error);
   }
 };
