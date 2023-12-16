@@ -31,7 +31,7 @@ function OrderReadyToShip({ orders, fetchOrders }) {
 
   return (
     <div className="container mx-auto px-4">
-      {orders.length === 0 ? (
+      {orders.filter(({ Order }) => Order.status === "processed").length === 0 ? (
         <div className="flex justify-center items-center h-96">
           <p className="text-2xl">You don't have any orders yet.</p>
         </div>
