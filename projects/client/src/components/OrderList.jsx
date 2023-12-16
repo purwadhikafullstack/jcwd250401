@@ -2,21 +2,21 @@ import React from 'react';
 import { Button } from 'flowbite-react';
 import { useState, useEffect } from 'react';
 import PaymentModal from './PaymentModal';
-import confirmPayment from '../api/order/confirmPayment';
 import rejectPayment from '../api/order/rejectPayment';
+import confirmOrder from '../api/order/confirmOrder';
 
 function OrderList({ orders, fetchOrders }) { 
   const [paymentModalIsOpen, setPaymentModalIsOpen] = useState(false);
   const [paymentProof, setPaymentProof] = useState('');
 
-  const handleConfirmPayment = async (orderId) => {
+  const handleConfirmOrder = async (orderId, productId) => {
     try {
-      const response = await confirmPayment({ orderId });
+      const response = await confirmOrder({ orderId, productId });
       // Update state and UI based on response
       fetchOrders();
     } catch (error) {
       // Handle error
-      console.error('Error confirming payment:', error);
+      console.error('Error confirming order:', error);
     }
   };
 
@@ -60,7 +60,7 @@ function OrderList({ orders, fetchOrders }) {
           <div className="flex justify-between">
             <div className="flex items-center gap-2">
               {Order.status === "waiting-for-payment" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting for Payment</span>}
-              {Order.status === "waiting-for-payment-confirmation" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting for Payment Confirmation</span>}
+              {Order.status === "waiting-for-confirmation" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting for Payment Confirmation</span>}
               {Order.status === "processed" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Order Processed</span>}
               <p>ID {Order.id} / {new Date(createdAt).toLocaleDateString()} / {Order.warehouse.warehouseName} </p>
             </div>
@@ -117,7 +117,7 @@ function OrderList({ orders, fetchOrders }) {
             <p className="text-lg font-bold">TOTAL</p>
             <p className="text-lg font-bold ml-auto">{formatToRupiah(Order.totalPrice)}</p>
           </div>
-          {Order.status === "waiting-for-payment-confirmation" && (
+          {Order.status === "waiting-for-confirmation" && (
             <>
               <hr className="my-2" /> 
               <div className="flex justify-end gap-2">
@@ -126,7 +126,7 @@ function OrderList({ orders, fetchOrders }) {
                   <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleRejectPayment(Order.id)}>
                     Reject Order
                   </Button>
-                  <Button color="dark" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleConfirmPayment(Order.id)}>
+                  <Button color="dark" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleConfirmOrder(Order.id, Product.id)}>
                     Accept Order
                   </Button>
                 </div>

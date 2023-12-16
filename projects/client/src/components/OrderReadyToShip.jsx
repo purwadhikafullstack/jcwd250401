@@ -2,34 +2,10 @@ import React from 'react';
 import { Button } from 'flowbite-react';
 import { useState, useEffect } from 'react';
 import PaymentModal from './PaymentModal';
-import confirmPayment from '../api/order/confirmPayment';
-import rejectPayment from '../api/order/rejectPayment';
 
 function OrderReadyToShip({ orders, fetchOrders }) { 
   const [paymentModalIsOpen, setPaymentModalIsOpen] = useState(false);
   const [paymentProof, setPaymentProof] = useState('');
-
-  const handleConfirmPayment = async (orderId) => {
-    try {
-      const response = await confirmPayment({ orderId });
-      // Update state and UI based on response
-      fetchOrders();
-    } catch (error) {
-      // Handle error
-      console.error('Error confirming payment:', error);
-    }
-  };
-
-  const handleRejectPayment = async (orderId) => {
-    try {
-      const response = await rejectPayment({ orderId });
-      // Update state and UI based on response
-      fetchOrders();
-    } catch (error) {
-      // Handle error
-      console.error('Error rejecting payment:', error);
-    }
-  };
 
   const handlePaymentModalOpen = (paymentProof) => {
     setPaymentModalIsOpen(true);
@@ -124,11 +100,11 @@ function OrderReadyToShip({ orders, fetchOrders }) {
               <div className="flex justify-end gap-2">
                 {/* Action buttons here, if needed */}
                 <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
-                  <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleRejectPayment(Order.id)}>
+                  <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm">
                     Reject Order
                   </Button>
-                  <Button color="dark" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleConfirmPayment(Order.id)}>
-                    Accept Order
+                  <Button color="dark" size="small" className="md:p-2 w-full md:w-52 shadow-sm">
+                    Ship Order
                   </Button>
                 </div>
               </div>
