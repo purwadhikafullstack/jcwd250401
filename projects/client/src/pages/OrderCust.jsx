@@ -11,6 +11,7 @@ import { useSelector } from "react-redux";
 import getWarehouses from "../api/warehouse/getWarehouses";
 import getAllOrders from "../api/order/getAllOrder";
 import OrderList from "../components/OrderList";
+import OrderReadyToShip from "../components/OrderReadyToShip";
 
 function OrderCust() {
   const navList = ["All Orders", "New Orders", "Ready to Ship", "On Delivery", "Completed", "Cancelled"];
@@ -152,7 +153,7 @@ function OrderCust() {
           <div className="flex items-center mt-4">
             {selectedComponent === "All Orders" && <OrderList orders={orders} fetchOrders={fetchOrders}/>}
             {selectedComponent === "New Orders"}
-            {selectedComponent === "Ready to Ship"}
+            {selectedComponent === "Ready to Ship" && <OrderReadyToShip orders={orders} fetchOrders={fetchOrders}/>}
             {selectedComponent === "On Delivery"}
             {selectedComponent === "Completed"}
             {selectedComponent === "Cancelled"}
