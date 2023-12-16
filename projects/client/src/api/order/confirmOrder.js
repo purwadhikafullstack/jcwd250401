@@ -2,7 +2,7 @@ import api from "../../api";
 
 const confirmOrder = async ({ orderId, productId }) => {
   try {
-    const response = await api.patch("/order/confirm-payment", {
+    const response = await api.admin.patch("/order/confirm-payment", {
       orderId,
       productId,
     });
