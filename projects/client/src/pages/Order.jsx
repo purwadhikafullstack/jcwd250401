@@ -265,10 +265,13 @@ export const Order = () => {
 
               <div>
                 <p className="font-bold sm:hidden">Status</p>
-                <select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)} className="block sm:hidden px-2 py-1 my-2 bg-gray-100 rounded-md text-sm font-sagoe text-gray-700 hover:bg-gray-200">
+                <select value={selectedStatus} onChange={(e) => handleStatusChange(e.target.value)} className="block sm:hidden px-2 py-1 my-2 bg-gray-100 rounded-md text-sm font-sagoe text-gray-700 hover:bg-gray-200">
                   {orderStatus.map((status, index) => {
+                    const joinedStatus = status.toLowerCase().replace(/\s/g, "-");
+                    const isSelected = selectedStatus === joinedStatus;
+
                     return (
-                      <option key={index} value={status}>
+                      <option key={index} value={joinedStatus}>
                         {status}
                       </option>
                     );
@@ -280,7 +283,7 @@ export const Order = () => {
                   // Display the skeleton loading effect during the loading period
                   Array.from({ length: 5 }, (_, index) => (
                     <div key={index} className="border border-gray-200 rounded-md px-4 lg:px-6 py-4 lg:py-2">
-                      <div className="flex lg:flex-row flex-col justify-between items-center">
+                      <div className="flex flex-row justify-between items-center">
                         <div className="w-[100px] lg:w-[160px]">
                           <Skeleton height={24} />
                         </div>

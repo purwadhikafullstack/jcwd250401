@@ -3,10 +3,9 @@ const axios = require("axios");
 const fs = require("fs").promises;
 
 const { isAfter, differenceInMinutes } = require("date-fns");
-
+const { startOfMonth, endOfMonth } = require("date-fns");
 
 const { Address, Order, OrderItem, Product, ProductImage, Warehouse, Shipment, Cart, CartItem, User, Mutation, WarehouseAddress, Journal, sequelize } = require("../models");
-
 
 // Config default axios with rajaongkir
 axios.defaults.baseURL = "https://api.rajaongkir.com/starter";
@@ -660,7 +659,6 @@ exports.getOrderLists = async (req, res) => {
   }
 };
 
-
 exports.automaticCancelUnpaidOrder = async (req, res) => {
   try {
     // Fetch unpaid orders
@@ -704,7 +702,6 @@ exports.automaticCancelUnpaidOrder = async (req, res) => {
     console.error(error);
   }
 };
-
 
 // Function to find the nearest warehouse using Haversine formula
 function findNearestWarehouse(sourceLatitude, sourceLongitude, warehouses, requiredStock) {
@@ -1018,6 +1015,129 @@ exports.confirmPaymentProofUser = async (req, res) => {
     return res.status(500).json({
       ok: false,
       message: "Internal server error",
+    });
+  }
+};
+
+// Function to convert warehouseName from URL format to database format
+const convertWarehouseName = (name) => {
+  return name
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
+
+exports.getSalesReport = async (req, res) => {
+  try {
+    const { month, year, warehouse } = req.query;
+
+    // Validate month and year parameters
+    if (!month || !year) {
+      return res.status(400).json({
+        ok: false,
+        message: "Month and year are required parameters.",
+      });
+    }
+
+    // Convert warehouse to match the format in the database
+    const formattedWarehouseName = warehouse ? convertWarehouseName(warehouse) : null;
+
+    // Define start and end dates for the given month and year using date-fns
+    const startDate = startOfMonth(new Date(year, month - 1));
+    const endDate = endOfMonth(new Date(year, month - 1));
+
+    // Define additional conditions for warehouse filtering
+    const warehouseCondition = formattedWarehouseName
+      ? { name: { [Op.like]: `${formattedWarehouseName}` } }
+      : {};
+
+    // Fetch warehouse details based on the name
+    const warehouseDetails = await Warehouse.findOne({
+      where: warehouseCondition,
+    });
+
+    // Find all delivered orders within the specified date range and optional warehouse filter
+    const deliveredOrders = await Order.findAll({
+      attributes: ["id", "userId"],
+      where: {
+        status: "delivered",
+        createdAt: {
+          [Op.between]: [startDate, endDate],
+        },
+        warehouseId: warehouseDetails ? warehouseDetails.id : null,
+      },
+      raw: true,
+    });
+
+    // Calculate total transaction count and total number of unique customers
+    const totalTransactions = deliveredOrders.length;
+    const uniqueCustomers = new Set(deliveredOrders.map((order) => order.userId)).size;
+
+    // Fetch order items for each delivered order
+    const orderItems = await Promise.all(
+      deliveredOrders.map(async (order) => {
+        const items = await OrderItem.findAll({
+          attributes: ["productId", "quantity"],
+          where: {
+            orderId: order.id,
+          },
+          raw: true,
+        });
+        return items;
+      })
+    );
+
+    // Flatten the array of order items
+    const flattenedOrderItems = orderItems.flat();
+
+    // Calculate total sales and total quantity sold for each product
+    const salesReport = await Promise.all(
+      flattenedOrderItems.map(async (orderItem) => {
+        const product = await Product.findByPk(orderItem.productId);
+        const productPrice = product ? product.price : 0;
+        const totalSales = orderItem.quantity * productPrice;
+
+        return {
+          productId: orderItem.productId,
+          productName: product ? product.name : "Unknown Product",
+          totalSales,
+          totalQuantity: orderItem.quantity,
+        };
+      })
+    );
+
+    // Summing up total sales and total quantity sold for all products
+    const aggregatedSalesReport = salesReport.reduce(
+      (result, item) => {
+        result.totalSales += item.totalSales;
+        result.totalQuantity += item.totalQuantity;
+        return result;
+      },
+      { totalSales: 0, totalQuantity: 0 }
+    );
+
+    return res.status(200).json({
+      ok: true,
+      message: "Sales report generated successfully",
+      detail: [
+        {
+          warehouse: warehouseDetails ? warehouseDetails.name : "All Warehouses",
+          month,
+          year,
+          totalTransactions,
+          totalCustomers: uniqueCustomers,
+          totalSales: aggregatedSalesReport.totalSales,
+          itemSold: aggregatedSalesReport.totalQuantity,
+          salesReport: salesReport,
+        },
+      ],
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+      detail: String(error),
     });
   }
 };
