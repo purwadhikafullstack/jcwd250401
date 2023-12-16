@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { useSelector } from "react-redux";
 import getWarehouses from "../api/warehouse/getWarehouses";
 import getAllOrders from "../api/order/getAllOrder";
+import getSingleAdmin from "../api/users/getSingleAdmin";
+import getWarehouseByAdmin from "../api/warehouse/getWarehouseByAdmin";
 import OrderList from "../components/OrderList";
 import OrderReadyToShip from "../components/OrderReadyToShip";
 
@@ -31,6 +33,8 @@ function OrderCust() {
   ];
   const [selectedComponent, setSelectedComponent] = useState("All Orders");
   const [warehouses, setWarehouses] = useState([]);
+  const [warehouseList, setWarehouseList] = useState([]);
+  const [warehouseId, setWarehouseId] = useState('');
   const [selectedWarehouseId, setSelectedWarehouseId] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('');
   const [orders, setOrders] = useState([]);
@@ -41,6 +45,7 @@ function OrderCust() {
   const dispatch = useDispatch();
 
   const isWarehouseAdmin = useSelector((state) => state?.account?.isWarehouseAdmin);
+  const adminData = useSelector((state) => state?.account?.adminProfile?.data?.profile);
 
   const fetchOrders = () => {
     getAllOrders({ month: selectedMonth, warehouseId: selectedWarehouseId })
@@ -71,6 +76,35 @@ function OrderCust() {
     }
   };
 
+  const fetchAdminWarehouseData = async () => {
+    try {
+      const response = await getSingleAdmin({
+        username: adminData?.username,
+        email: adminData?.email,
+      });
+      if (response.ok) {
+        const adminIdFromResponse = response.detail.id;
+
+        const response2 = await getWarehouseByAdmin({ adminId: adminIdFromResponse });
+
+        if (response2.ok) {
+          const warehouseIdFromResponse = response2.detail.id;
+          setWarehouses([response2.detail]);
+          setSelectedWarehouseId(warehouseIdFromResponse);
+          fetchOrders();
+        }
+      }
+    } catch (error) {
+      if (error.response && (error.response.status === 404 || error.response.status === 401 || error.response.status === 403 || error.response.status === 500)) {
+        toast.error(error.response.data.message);
+        if (error.response.status === 500) console.error(error);
+        if (error.response.status === 401 || error.response.status === 403) {
+          navigate("/adminlogin");
+        }
+      }
+    }
+  };
+
   const handleWarehouseChange = (e) => {
     setSelectedWarehouseId(e.target.value);
   }
@@ -84,7 +118,11 @@ function OrderCust() {
   }, []);
 
   useEffect(() => {
-    fetchOrders();
+    if (isWarehouseAdmin) {
+      fetchAdminWarehouseData();
+    } else {
+      fetchOrders();
+    }
   }, [selectedMonth, selectedWarehouseId]);
 
   useEffect(() => {
@@ -102,16 +140,26 @@ function OrderCust() {
           <Navigationadmin />
         </div>
         <div className="flex flex-col mt-16 py-8 px-4 md:p-8">
-          <div className="flex flex-col sm:flex-row justify-end items-center gap-4">
+          <div className="flex flex-row justify-end items-center gap-4 w-[80vw] md:w-[100%] ">
             <select value={selectedWarehouseId} onChange={handleWarehouseChange} className="bg-white text-[#40403F] py-2 px-10 rounded-md cursor-pointer focus:ring-0 focus:border-none">
-              <option value={""} defaultChecked>
-                All Warehouses
-              </option>
-              {warehouses.map((warehouse) => (
-                <option key={warehouse.id} value={warehouse.id}>
-                  {warehouse.name}
-                </option>
-              ))}
+              {isWarehouseAdmin ? (
+                <>
+                  <option value={selectedWarehouseId} defaultChecked>
+                    {warehouses[0]?.name}
+                  </option>
+                </>
+              ) : (
+                <>
+                  <option value={""} defaultChecked>
+                    All Warehouses
+                  </option>
+                  {warehouses.map((warehouse, index) => (
+                    <option key={index} value={warehouse.id}>
+                      {warehouse.name}
+                    </option>
+                  ))}
+                </>
+              )}
             </select>
 
             <select value={selectedMonth} onChange={handleMonthChange} className="bg-white text-[#40403F] py-2 px-12 rounded-md cursor-pointer focus:ring-0 focus:border-none">
