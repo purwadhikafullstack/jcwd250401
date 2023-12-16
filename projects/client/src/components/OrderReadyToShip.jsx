@@ -31,6 +31,12 @@ function OrderReadyToShip({ orders, fetchOrders }) {
 
   return (
     <div className="container mx-auto px-4">
+      {orders.length === 0 ? (
+        <div className="flex justify-center items-center h-96">
+          <p className="text-2xl">You don't have any orders yet.</p>
+        </div>
+      ) : (
+      <>
       {orders.filter(({ Order }) => Order.status === "processed")
       .map(({ Order, Product, quantity, createdAt, paymentProofImage }, index) => (
         <div key={index} className="p-4 bg-white rounded-lg shadow-lg w-[1000px] lg:w-[100%] mb-5 lg:mb-5">
@@ -112,6 +118,7 @@ function OrderReadyToShip({ orders, fetchOrders }) {
           )}
         </div>
       ))}
+      </>)}
       <PaymentModal isOpen={paymentModalIsOpen} onClose={handlePaymentModalClose} paymentProof={paymentProof} />
     </div>
   );
