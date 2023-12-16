@@ -116,8 +116,6 @@ export const RequestStockModal = ({ isOpen, onClose }) => {
         setSelectedDate(new Date().toISOString().split("T")[0]);
         setSelectedWarehouseIdOrigin(null);
         setSelectedWarehouseNameOrigin(null);
-        setSelectedWarehouseIdDestination(null);
-        setSelectedWarehouseNameDestination(null);
         setSelectedProductId(null);
         setSelectedProductName(null);
         setQuantity(0);
