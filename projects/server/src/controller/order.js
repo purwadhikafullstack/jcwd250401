@@ -132,7 +132,7 @@ exports.rejectPayment = async (req, res) => {
   }
 };
 
-exports.confirmPayment = async (req, res) => {
+exports.confirmShip = async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -149,12 +149,12 @@ exports.confirmPayment = async (req, res) => {
       });
     }
 
-    order.status = "processed";
+    order.status = "waiting-approval";
 
     await order.save();
     return res.status(200).json({
       ok: true,
-      message: "Payment confirmed successfully",
+      message: "Shipping confirmed successfully",
       detail: order,
     });
   } catch (error) {
@@ -164,6 +164,51 @@ exports.confirmPayment = async (req, res) => {
       message: "Internal server error",
       detail: String(error),
     });
+  }
+};
+
+exports.automaticConfirmShipping = async (req, res) => {
+  try {
+    // Fetch orders with status 'waiting-approval' 
+    const orders = await Order.findAll({
+      where: {
+        status: "waiting-approval",
+      },
+    });
+
+    // Check if there are no orders with status 'waiting-approval'
+    if (!orders.length) {
+      return console.log("No orders with status 'waiting-approval' found");
+    }
+
+    const now = Date.now();
+
+    // Filter orders that need to be confirmed (updated more than 7 days ago)
+    const ordersToConfirm = orders.filter((order) => {
+      const orderUpdatedAt = new Date(order.updatedAt).getTime();
+      const diffInMinutes = differenceInMinutes(now, orderUpdatedAt);
+
+      return diffInMinutes >= 7 * 24 * 60; // 7 days in minutes
+    });
+
+    // Check if there are no orders to confirm
+    if (ordersToConfirm.length === 0) {
+      return console.log("No orders to confirm");
+    }
+
+    // Update the status of orders to 'shipped'
+    await Promise.all(
+      ordersToConfirm.map(async (order) => {
+        // Ensure order is not undefined before updating
+        
+        if (order && order.update) {
+          await order.update({ status: "shipped" });
+        }
+      })
+    );
+    return console.log("Orders confirmed successfully");
+  } catch (error) {
+    console.error(error);
   }
 };
 
