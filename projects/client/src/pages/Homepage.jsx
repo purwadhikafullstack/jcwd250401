@@ -23,6 +23,9 @@ import { useEffect } from "react";
 import MenuListMobile from "../components/MenuListMobile";
 
 export const Homepage = () => {
+
+  document.title = "RAINS - Homepage";
+
   useEffect(() => {
     // Scroll to the top when the component is first rendered
     window.scrollTo(0, 0);

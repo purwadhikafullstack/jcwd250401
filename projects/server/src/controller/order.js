@@ -1,6 +1,10 @@
 const { Sequelize, Op } = require("sequelize");
 const axios = require("axios");
 const fs = require("fs").promises;
+
+const { isAfter, differenceInMinutes } = require("date-fns");
+
+
 const { Address, Order, OrderItem, Product, ProductImage, Warehouse, Shipment, Cart, CartItem, User, Mutation, WarehouseAddress, Journal, sequelize } = require("../models");
 
 
@@ -67,7 +71,7 @@ exports.paymentProof = async (req, res) => {
       });
     }
 
-    order.status = "waiting-for-payment-confirmation";
+    order.status = "waiting-for-confirmation";
     await order.save({ transaction: t });
     await t.commit();
 
@@ -162,7 +166,6 @@ exports.confirmPayment = async (req, res) => {
     });
   }
 };
-
 
 // Get all order lists from all users
 exports.getAllOrderLists = async (req, res) => {
@@ -319,16 +322,109 @@ exports.getAllOrderLists = async (req, res) => {
 
 // create order
 
+const getProductStock = async (products) => {
+  return await Promise.all(
+    products.map(async (item) => {
+      try {
+        const product = await Product.findOne({
+          where: { id: item.productId },
+          attributes: ["id", "price"],
+        });
+
+        if (!product) {
+          console.error(`Product not found for productId ${item.productId}`);
+          throw new Error(`Product not found for productId ${item.productId}`);
+        }
+
+        const warehouses = await Warehouse.findAll();
+
+        const mutations = await Promise.all(
+          warehouses.map(async (warehouse) => {
+            try {
+              const latestMutation = await Mutation.findOne({
+                attributes: ["stock"],
+                where: {
+                  productId: product.id,
+                  warehouseId: warehouse.id,
+                },
+                order: [["createdAt", "DESC"]],
+                limit: 1,
+              });
+
+              return {
+                warehouseId: warehouse.id,
+                warehouseName: warehouse.name,
+                totalStock: latestMutation ? latestMutation.stock : 0,
+              };
+            } catch (mutationError) {
+              console.error(`Error in getProductStock for productId ${product.id} and warehouseId ${warehouse.id}:`, mutationError);
+              throw mutationError;
+            }
+          })
+        );
+
+        // Calculate the total stock from all warehouses
+        const totalStockAllWarehouses = mutations.reduce((total, mutation) => total + mutation.totalStock, 0);
+
+        return {
+          ...product.toJSON(),
+          Mutations: mutations || [],
+          totalStockAllWarehouses: totalStockAllWarehouses || 0,
+        };
+      } catch (error) {
+        console.error(`Error in getProductStock for productId ${item.productId}:`, error);
+        throw error; // Rethrow the error to be caught by the caller
+      }
+    })
+  );
+};
+
 exports.createOrder = async (req, res) => {
   try {
     const { id: userId } = req.user;
     const { addressId, warehouseId, productOnCart, shippingCost, paymentBy } = req.body;
 
+    // Calculate product stock
+    const productStock = await getProductStock(productOnCart);
+
+    // Check if the quantity in the order is sufficient based on available stock
+    const insufficientStockProducts = [];
+    for (const item of productOnCart) {
+      const product = productStock.find((p) => p.id === item.productId);
+      const totalStockForProduct = product ? product.totalStockAllWarehouses : 0;
+
+      if (item.quantity > totalStockForProduct) {
+        insufficientStockProducts.push({
+          productId: item.productId,
+          productName: product.name,
+          requestedQuantity: item.quantity,
+          availableStock: totalStockForProduct,
+        });
+
+        // updating cartItem quantity
+
+        const cartItem = await CartItem.findOne({
+          where: { productId: item.productId, cartId: item.cartId },
+        });
+
+        await cartItem.update({ quantity: totalStockForProduct });
+      }
+    }
+
+    if (insufficientStockProducts.length > 0) {
+      return res.status(400).json({
+        ok: false,
+        message: "Insufficient stock for some products in the order, redirecting you to the cart page",
+      });
+    }
+
+    // If there is sufficient stock, continue with order creation
+
     const order = await Order.create({
       userId,
       warehouseId,
       paymentBy,
-      status: "waiting-for-payment",
+      status: "unpaid",
     });
 
     const orderItems = await Promise.all(
@@ -362,17 +458,16 @@ exports.createOrder = async (req, res) => {
     await order.update({ totalPrice: totalOrderPrice });
 
     // Create shipment
-
     const shipment = await Shipment.create({
       name: shippingCost[0], // Accessing the shipping method directly
       cost: shippingCost[1], // Accessing the cost directly
-      addressId: addressId,
+      addressId,
     });
 
     // Update shipmentId in Order table
     await order.update({ shipmentId: shipment.id });
 
-    // delete cart
+    // Delete cart
     const cartIdsToDelete = productOnCart.map((item) => item.cartId);
 
     await CartItem.destroy({
@@ -562,6 +657,51 @@ exports.getOrderLists = async (req, res) => {
       message: "Internal server error",
       detail: String(error),
     });
+  }
+};
+
+
+exports.automaticCancelUnpaidOrder = async (req, res) => {
+  try {
+    // Fetch unpaid orders
+    const orders = await Order.findAll({
+      where: {
+        status: "unpaid",
+      },
+    });
+
+    // Check if there are no unpaid orders
+    if (!orders.length) {
+      return console.log("No unpaid orders found");
+    }
+
+    const now = Date.now();
+
+    // Filter orders that need to be canceled (created more than 24 hours ago)
+    const ordersToCancel = orders.filter((order) => {
+      const orderCreatedAt = new Date(order.createdAt).getTime();
+      const diffInMinutes = differenceInMinutes(now, orderCreatedAt);
+
+      return diffInMinutes >= 24 * 60; // 24 hours in minutes
+    });
+
+    // Check if there are no orders to cancel
+    if (ordersToCancel.length === 0) {
+      return console.log("No expire orders to cancel");
+    }
+
+    // Update the status of orders to 'cancelled'
+    await Promise.all(
+      ordersToCancel.map(async (order) => {
+        // Ensure order is not undefined before updating
+        if (order && order.update) {
+          await order.update({ status: "cancelled" });
+        }
+      })
+    );
+    return console.log("Unpaid expired orders cancelled successfully");
+  } catch (error) {
+    console.error(error);
   }
 };
 
