@@ -12,8 +12,21 @@ router.put("/:userId/:id", authMiddleware.validateToken, multerUpload.single("pa
 router.post("/cost", authMiddleware.validateToken, orderController.getOrderCost);
 router.post("/", authMiddleware.validateToken, orderController.createOrder);
 router.patch("/confirm-payment", authMiddleware.validateToken, orderController.confirmPaymentProofUser);
-router.patch("/:id", authMiddleware.validateToken, orderController.confirmPayment);
+router.patch("/:id", authMiddleware.validateToken, orderController.confirmShip);
 router.patch("/reject/:id", authMiddleware.validateToken, orderController.rejectPayment);
+
+// Automatic confirmation of shipping testing 1 min interval
+
+// Schedule job to run every 1 day
+schedule.scheduleJob('*/1440 * * * *', async () => {
+    try {
+      // Call your function to automatically confirm shipping
+      await orderController.automaticConfirmShipping();
+      console.log('Automatic confirm job executed successfully');
+    } catch (error) {
+      console.error('Error executing automatic confirm job:', error);
+    }
+  });
 
 // Automatic cancellation of unpaid orders testing 1 min interval
 

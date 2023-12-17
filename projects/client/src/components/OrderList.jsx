@@ -55,6 +55,12 @@ function OrderList({ orders, fetchOrders }) {
 
   return (
     <div className="container mx-auto px-4">
+      {orders.length === 0 ? (
+        <div className="flex justify-center items-center h-96">
+          <p className="text-2xl">You don't have any orders yet.</p>
+        </div>
+      ) : (
+      <>
       {orders.map(({ Order, Product, quantity, createdAt, paymentProofImage }, index) => (
         <div key={index} className="p-4 bg-white rounded-lg shadow-lg w-[1000px] lg:w-[100%] mb-5 lg:mb-5">
           <div className="flex justify-between">
@@ -62,6 +68,8 @@ function OrderList({ orders, fetchOrders }) {
               {Order.status === "waiting-for-payment" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting for Payment</span>}
               {Order.status === "waiting-for-confirmation" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting for Payment Confirmation</span>}
               {Order.status === "processed" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Order Processed</span>}
+              {Order.status === "waiting-approval" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting User Approval</span>}
+              {Order.status === "shipped" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Shipped</span>}
               <p>ID {Order.id} / {new Date(createdAt).toLocaleDateString()} / {Order.warehouse.warehouseName} </p>
             </div>
             <div className="flex items-center gap-2">
@@ -135,6 +143,7 @@ function OrderList({ orders, fetchOrders }) {
           )}
         </div>
       ))}
+      </>)}
       <PaymentModal isOpen={paymentModalIsOpen} onClose={handlePaymentModalClose} paymentProof={paymentProof} />
     </div>
   );
