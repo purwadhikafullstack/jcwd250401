@@ -3,9 +3,9 @@ const axios = require("axios");
 const fs = require("fs").promises;
 
 const { isAfter, differenceInMinutes } = require("date-fns");
-const { startOfMonth, endOfMonth } = require("date-fns");
+const { startOfMonth, endOfMonth, format, eachDayOfInterval, isValid, parseISO } = require("date-fns");
 
-const { Address, Order, OrderItem, Product, ProductImage, Warehouse, Shipment, Cart, CartItem, User, Mutation, WarehouseAddress, Journal, sequelize } = require("../models");
+const { Address, Order, OrderItem, Product, ProductImage, Category, ProductCategory, Warehouse, Shipment, Cart, CartItem, User, Mutation, WarehouseAddress, Journal, sequelize } = require("../models");
 
 // Config default axios with rajaongkir
 axios.defaults.baseURL = "https://api.rajaongkir.com/starter";
@@ -499,7 +499,7 @@ exports.getOrderLists = async (req, res) => {
     const offset = (parseInt(page) - 1) * limit;
 
     const orderFilter = {
-      attributes: ["id", "status", "totalPrice", "userId", "createdAt", "updatedAt"],
+      attributes: ["id", "status", "totalPrice", "userId", "shipmentId", "createdAt", "updatedAt"],
       where: status !== "all" ? { status } : undefined,
       include: [
         {
@@ -535,12 +535,27 @@ exports.getOrderLists = async (req, res) => {
       });
     }
 
-    // Create an array for grouped order lists
     let groupedOrderListsWithImages = [];
 
-    orders.forEach((order) => {
+    const getShipmentDetails = async (shipmentId) => {
+      const shipment = await Shipment.findByPk(shipmentId, {
+        attributes: ["id", "addressId", "name"],
+      });
+
+      return shipment;
+    };
+
+    const getAddressDetails = async (addressId) => {
+      const address = await Address.findByPk(addressId);
+      return address;
+    };
+
+    for (const order of orders) {
       const orderId = order.id;
       const existingOrder = groupedOrderListsWithImages.find((groupedOrder) => groupedOrder.orderId === orderId);
+
+      const shipmentDetails = await getShipmentDetails(order.shipmentId);
+      const addressDetails = await getAddressDetails(shipmentDetails.addressId);
 
       if (!existingOrder) {
         const newOrder = {
@@ -551,6 +566,8 @@ exports.getOrderLists = async (req, res) => {
           updatedAt: order.updatedAt,
           totalQuantity: 0,
           Products: [],
+          Shipment: shipmentDetails,
+          Address: addressDetails,
         };
 
         order.OrderItems.forEach((orderItem) => {
@@ -580,7 +597,6 @@ exports.getOrderLists = async (req, res) => {
 
         groupedOrderListsWithImages.push(newOrder);
       } else {
-        // Order already exists, update information
         order.OrderItems.forEach((orderItem) => {
           const product = orderItem.Product;
           const productImages = product.productImages.map((image) => ({
@@ -591,7 +607,6 @@ exports.getOrderLists = async (req, res) => {
           const existingProduct = existingOrder.Products.find((p) => p.productId === product.id);
 
           if (!existingProduct) {
-            // Product doesn't exist in the order, add it
             existingOrder.Products.push({
               orderItemId: orderItem.id,
               productId: product.id,
@@ -609,15 +624,13 @@ exports.getOrderLists = async (req, res) => {
 
             existingOrder.totalQuantity += orderItem.quantity;
           } else {
-            // Product already exists in the order, update quantity
             existingProduct.quantity += orderItem.quantity;
             existingOrder.totalQuantity += orderItem.quantity;
           }
         });
       }
-    });
+    }
 
-    // Sorting the array
     if (sort) {
       groupedOrderListsWithImages.sort((a, b) => {
         if (sort === "date-asc") {
@@ -658,6 +671,7 @@ exports.getOrderLists = async (req, res) => {
     });
   }
 };
+
 
 exports.automaticCancelUnpaidOrder = async (req, res) => {
   try {
@@ -1019,7 +1033,6 @@ exports.confirmPaymentProofUser = async (req, res) => {
   }
 };
 
-// Function to convert warehouseName from URL format to database format
 const convertWarehouseName = (name) => {
   return name
     .split("-")
@@ -1047,64 +1060,115 @@ exports.getSalesReport = async (req, res) => {
     const endDate = endOfMonth(new Date(year, month - 1));
 
     // Define additional conditions for warehouse filtering
-    const warehouseCondition = formattedWarehouseName
-      ? { name: { [Op.like]: `${formattedWarehouseName}` } }
-      : {};
+    const warehouseCondition = formattedWarehouseName ? { name: formattedWarehouseName } : {};
 
     // Fetch warehouse details based on the name
-    const warehouseDetails = await Warehouse.findOne({
-      where: warehouseCondition,
-    });
+    const warehouseDetails = formattedWarehouseName ? await Warehouse.findOne({ where: warehouseCondition }) : null;
+
+    // Define conditions for date range filtering
+    const dateRangeCondition = {
+      createdAt: { [Op.between]: [startDate, endDate] },
+    };
+
+    // Add warehouse condition if a specific warehouse is provided
+    if (warehouseDetails) {
+      dateRangeCondition.warehouseId = warehouseDetails.id;
+    }
 
     // Find all delivered orders within the specified date range and optional warehouse filter
     const deliveredOrders = await Order.findAll({
-      attributes: ["id", "userId"],
+      attributes: ["id", "userId", "createdAt"], // Include necessary attributes
+      include: [
+        {
+          model: OrderItem, // Include the associated OrderItem model
+          attributes: ["productId", "quantity"], // Include the necessary attributes from OrderItem
+        },
+      ],
       where: {
         status: "delivered",
-        createdAt: {
-          [Op.between]: [startDate, endDate],
-        },
-        warehouseId: warehouseDetails ? warehouseDetails.id : null,
+        ...dateRangeCondition,
       },
       raw: true,
     });
 
     // Calculate total transaction count and total number of unique customers
-    const totalTransactions = deliveredOrders.length;
+    const uniqueOrders = new Set(deliveredOrders.map((order) => order.id));
+    const totalTransactions = uniqueOrders.size;
     const uniqueCustomers = new Set(deliveredOrders.map((order) => order.userId)).size;
+
+    const uniqueOrderIds = new Set();
 
     // Fetch order items for each delivered order
     const orderItems = await Promise.all(
       deliveredOrders.map(async (order) => {
-        const items = await OrderItem.findAll({
-          attributes: ["productId", "quantity"],
-          where: {
-            orderId: order.id,
-          },
-          raw: true,
-        });
-        return items;
+        // Add the order ID to the set if it hasn't been added before
+        if (!uniqueOrderIds.has(order.id)) {
+          uniqueOrderIds.add(order.id);
+
+          const items = await OrderItem.findAll({
+            attributes: ["productId", "quantity", "createdAt"],
+            where: {
+              orderId: order.id,
+            },
+            raw: true,
+          });
+          return items;
+        }
+
+        return []; // Return an empty array for orders that have already been counted
       })
     );
 
-    // Flatten the array of order items
+    // Filter out empty arrays from orderItems
     const flattenedOrderItems = orderItems.flat();
 
-    // Calculate total sales and total quantity sold for each product
-    const salesReport = await Promise.all(
-      flattenedOrderItems.map(async (orderItem) => {
-        const product = await Product.findByPk(orderItem.productId);
-        const productPrice = product ? product.price : 0;
-        const totalSales = orderItem.quantity * productPrice;
+    // Aggregate sales data based on productId and orderDate
+    const salesReportMap = new Map();
 
-        return {
+    for (const orderItem of flattenedOrderItems) {
+      const product = await Product.findByPk(orderItem.productId);
+      const productPrice = product ? product.price : 0;
+
+      // Ensure that orderItem.createdAt is a valid Date object
+      const orderDate = orderItem.createdAt;
+
+      const salesKey = `${orderItem.productId}_${format(orderDate, "yyyy-MM-dd")}`;
+
+      if (salesReportMap.has(salesKey)) {
+        // Update existing entry
+        salesReportMap.set(salesKey, {
+          ...salesReportMap.get(salesKey),
+          totalSales: salesReportMap.get(salesKey).totalSales + orderItem.quantity * productPrice,
+          totalQuantity: salesReportMap.get(salesKey).totalQuantity + orderItem.quantity,
+        });
+      } else {
+        // Create a new entry
+        salesReportMap.set(salesKey, {
           productId: orderItem.productId,
           productName: product ? product.name : "Unknown Product",
-          totalSales,
+          totalSales: orderItem.quantity * productPrice,
           totalQuantity: orderItem.quantity,
-        };
-      })
-    );
+          orderDate,
+        });
+      }
+    }
+    // Convert the map values to an array
+    const salesReport = Array.from(salesReportMap.values());
+
+    // Daily Sales Calculation
+    const intervalDates = eachDayOfInterval({ start: startDate, end: endDate });
+
+    const dailySales = intervalDates.map((date) => {
+      const formattedDate = format(date, "yyyy-MM-dd");
+      const totalSalesForDate = salesReport.reduce((total, item) => {
+        if (format(item.orderDate, "yyyy-MM-dd") === formattedDate) {
+          return total + item.totalSales;
+        }
+        return total;
+      }, 0);
+
+      return { date: formattedDate, totalSales: totalSalesForDate };
+    });
 
     // Summing up total sales and total quantity sold for all products
     const aggregatedSalesReport = salesReport.reduce(
@@ -1115,6 +1179,82 @@ exports.getSalesReport = async (req, res) => {
       },
       { totalSales: 0, totalQuantity: 0 }
     );
+
+    const categoryCounts = {};
+
+    // Iterate over each order item
+    for (const orderItem of flattenedOrderItems) {
+      const productId = orderItem.productId;
+      const quantity = orderItem.quantity;
+
+      // Find ProductCategories for the productId
+      const productCategories = await ProductCategory.findAll({
+        attributes: ["categoryId"],
+        where: {
+          productId: productId,
+        },
+        raw: true,
+      });
+
+      // Fetch category names based on categoryId and count them
+      for (const productCategory of productCategories) {
+        const categoryId = productCategory.categoryId;
+
+        // Find Category for the categoryId
+        const category = await Category.findByPk(categoryId);
+
+        if (category) {
+          const categoryName = category.name;
+
+          // Exclude specific categories from counting
+          const excludedCategories = ["Jackets", "Tops", "Bottom", "Accessories", "Bags"];
+          if (!excludedCategories.includes(categoryName)) {
+            // Count category names, considering the quantity
+            categoryCounts[categoryName] = (categoryCounts[categoryName] || 0) + quantity;
+          }
+        }
+      }
+    }
+
+    // Convert the category counts to an array
+    const categoryData = Object.entries(categoryCounts).map(([categoryName, count]) => ({
+      categoryName,
+      count,
+    }));
+
+    // Initialize a map to store product counts by name and gender
+    const productCountsByNameAndGender = new Map();
+
+    // Iterate over each order item
+    for (const orderItem of flattenedOrderItems) {
+      const productId = orderItem.productId;
+      const quantity = orderItem.quantity;
+
+      const product = await Product.findByPk(productId);
+
+      if (product) {
+        const productNameWithGender = `${product.name} (${product.gender})`;
+
+        // Exclude specific products from counting
+        const excludedProducts = ["Unknown Product"];
+        if (!excludedProducts.includes(productNameWithGender)) {
+          // Count product names and gender, considering the quantity
+          if (productCountsByNameAndGender.has(productNameWithGender)) {
+            // Update existing entry
+            productCountsByNameAndGender.set(productNameWithGender, productCountsByNameAndGender.get(productNameWithGender) + quantity);
+          } else {
+            // Create a new entry
+            productCountsByNameAndGender.set(productNameWithGender, quantity);
+          }
+        }
+      }
+    }
+
+    // Convert the product counts to an array
+    const productData = Array.from(productCountsByNameAndGender.entries()).map(([productName, count]) => ({
+      productName,
+      count,
+    }));
 
     return res.status(200).json({
       ok: true,
@@ -1129,6 +1269,9 @@ exports.getSalesReport = async (req, res) => {
           totalSales: aggregatedSalesReport.totalSales,
           itemSold: aggregatedSalesReport.totalQuantity,
           salesReport: salesReport,
+          dailySales: dailySales,
+          productCategoryData: categoryData,
+          productData: productData,
         },
       ],
     });

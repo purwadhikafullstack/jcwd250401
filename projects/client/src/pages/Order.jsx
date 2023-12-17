@@ -11,6 +11,7 @@ import getUserOrder from "../api/order/getUserOrder";
 import { Box, Button, Flex, Text } from "@chakra-ui/react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { PiCamera, PiUploadSimple, PiUploadSimpleBold } from "react-icons/pi";
 
 export const Order = () => {
   let isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
@@ -22,7 +23,7 @@ export const Order = () => {
   const [orderLists, setOrderLists] = useState([]);
   const [page, setPage] = useState(1);
   const size = 5;
-  const [sort, setSort] = useState("date-asc");
+  const [sort, setSort] = useState("date-desc");
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [totalPages, setTotalPages] = useState(1);
@@ -159,8 +160,8 @@ export const Order = () => {
   };
 
   const sortingOptions = [
-    { label: "Oldest", value: "date-desc" },
-    { label: "Latest", value: "date-asc" },
+    { label: "Latest", value: "date-desc" },
+    { label: "Oldest", value: "date-asc" },
     { label: "Lowest Price", value: "price-asc" },
     { label: "Highest Price", value: "price-desc" },
   ];
@@ -284,7 +285,7 @@ export const Order = () => {
                   Array.from({ length: 5 }, (_, index) => (
                     <div key={index} className="border border-gray-200 rounded-md px-4 lg:px-6 py-4 lg:py-2">
                       <div className="flex flex-row justify-between items-center">
-                        <div className="w-[100px] lg:w-[160px]">
+                        <div className="w-[100px] lg:w-[300px]">
                           <Skeleton height={24} />
                         </div>
                         <div className="w-[100px] lg:w-[160px]">
@@ -310,7 +311,7 @@ export const Order = () => {
                           </div>
                           <div className="hidden lg:flex flex-col">
                             <div className="w-[50px] lg:w-[200px]">
-                              <Skeleton height={20} count={3} />
+                              <Skeleton height={18} count={5} />
                             </div>
                           </div>
                         </div>
@@ -326,12 +327,25 @@ export const Order = () => {
                     const remainingTime = remainingTimes[orderItem.orderId];
 
                     return (
-                      <div key={index} className="border border-gray-200 rounded-md px-4 lg:px-6 py-4 lg:py-4 bg-gray-50">
+                      <div key={index} className="border border-gray-200 rounded-md px-4 lg:px-4 py-4 lg:py-4 bg-gray-50">
                         <div className="flex justify-between items-center">
                           <div className="flex space-x-4 items-center ">
-                            <span className="bg-gray-900 text-gray-100 px-4 py-1 rounded-full  text-sm lg:text-md">{getStatusLabel(orderItem.status)}</span>
+                            <span className="bg-gray-900 text-gray-100 px-4 py-1 rounded-md  text-sm lg:text-md">{getStatusLabel(orderItem.status)}</span>
+                            <div className={`${remainingTime && remainingTime.hours < 0 ? "text-red-500" : ""}`}>
+                              <span className="font-bold text-sm">
+                                {remainingTime ? `${formatTime(Math.max(remainingTime.hours, 0))}:${formatTime(Math.max(remainingTime.minutes, 0))}:${formatTime(Math.max(remainingTime.seconds, 0))}` : ""}
+                              </span>
+                            </div>
+                            {orderItem.status === "unpaid" && (
+                              <>
+                                {remainingTime && remainingTime.hours > 0 && (
+                                  <span onClick={() => handleOpenModalProof(orderItem.orderId)} className="text-sm cursor-pointer font-semibold">
+                                    Upload payment proof
+                                  </span>
+                                )}
+                              </>
+                            )}
                           </div>
-
                           <span className="text-gray-900 text-sm lg:text-md">
                             {date}, {time}
                           </span>
@@ -340,7 +354,7 @@ export const Order = () => {
                           <div className="flex lg:flex-row flex-col justify-between w-full">
                             <div className="flex flex-col space-y-4 mb-4">
                               {orderItem.Products.slice(0, expandedOrders[index] ? orderItem.Products.length : 1).map((product, productIndex) => (
-                                <div className="flex flex-1 flex-row items-center justify-between lg:justify-normal lg:space-x-4 space-x-6 lg:space-y-0" key={productIndex}>
+                                <div className="flex flex-1 flex-row justify-between lg:justify-normal lg:space-x-4 space-x-6 lg:space-y-0" key={productIndex}>
                                   <img
                                     src={`http://localhost:8000/public/${product.Product.productImages[0].imageUrl}`}
                                     loading="lazy"
@@ -367,25 +381,20 @@ export const Order = () => {
                                 </button>
                               )}
                             </div>
-                            <div className="flex flex-col w-[180px]">
-                              <span className="text-sm">Total Quantity: {orderItem.totalQuantity}</span>
-                              <span className="font-bold text-sm"> Subtotal: {formatToRupiah(orderItem.totalPrice)} </span>
-                              {orderItem.status === "unpaid" && (
-                                <div className="w-[180px] mt-4 lg:mt-2">
-                                  {remainingTime && remainingTime.hours > 0 && (
-                                    <Button onClick={() => handleOpenModalProof(orderItem.orderId)} bgColor="gray.900" _hover={{ bgColor: "gray.700" }} size="sm" boxShadow="lg" borderRadius="md" color="gray.100">
-                                      <span className="text-sm font-light">Upload Payment Proof</span>
-                                    </Button>
-                                  )}
-
-                                  <div className={`flex flex-col mt-2 ${remainingTime && remainingTime.hours < 0 ? "text-red-500" : ""}`}>
-                                    <span className="text-sm">Remaining time</span>
-                                    <span className="font-bold text-sm">
-                                      {remainingTime ? `${formatTime(Math.max(remainingTime.hours, 0))}:${formatTime(Math.max(remainingTime.minutes, 0))}:${formatTime(Math.max(remainingTime.seconds, 0))}` : ""}
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
+                            <div className="flex flex-col space-y-1 w-[200px]">
+                              <div className="flex flex-col">
+                                <span className="font-bold text-xs">Shipping Information:</span>
+                                <p className="text-xs">
+                                  {orderItem.Address.firstName} {orderItem.Address.lastName} ({orderItem.Address.phoneNumber}) <br />
+                                  {orderItem.Address.street}, {orderItem.Address.subDistrict}, {orderItem.Address.district}, {orderItem.Address.city}, {orderItem.Address.province}
+                                </p>
+                                <span className="text-xs font-bold">{orderItem.Shipment.name.charAt(0).toUpperCase() + orderItem.Shipment.name.slice(1)} Shipment</span>
+                              </div>
+                              <hr />
+                              <div className="flex flex-col">
+                                <span className="text-xs">Total Quantity: {orderItem.totalQuantity}</span>
+                                <span className="font-bold text-xs"> Subtotal: {formatToRupiah(orderItem.totalPrice)} </span>
+                              </div>
                             </div>
                           </div>
                         </div>

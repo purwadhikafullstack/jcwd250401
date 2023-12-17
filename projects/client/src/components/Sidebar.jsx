@@ -40,6 +40,7 @@ const menuList = [
   {
     name: "Order",
     icon: <PiReceipt size={24} />,
+    link: "/dashboard/order/customers" || "/dashboard/order/warehouse",
     subItems: [
       {
         name: "Customers",
@@ -54,6 +55,7 @@ const menuList = [
   {
     name: "Report",
     icon: <PiChartLine size={24} />,
+    link: "/dashboard/report/sales" || "/dashboard/report/stock",
     subItems: [
       {
         name: "Sales",
