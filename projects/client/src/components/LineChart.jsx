@@ -52,7 +52,7 @@ const LineChart = ({ dailySales }) => {
         ticks: {
           beginAtZero: true,
           stepSize: 10000000,
-          callback: (value) => `${value / 1000000}M`,
+          callback: (value) => `${value / 1000000} mil`,
         },
       },
       x: {
@@ -79,7 +79,7 @@ const LineChart = ({ dailySales }) => {
   };
 
   return (
-    <div className="w-full h-[185px]">
+    <div className="w-full h-[500px]">
       <Line data={data} options={options} />
     </div>
   );

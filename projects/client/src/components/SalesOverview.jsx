@@ -193,13 +193,13 @@ function SalesOverview() {
             ))}
           </div>
           <div>
-            <Skeleton height="400px" />
+            <Skeleton height="300px" />
           </div>
           <div className="flex lg:flex-row flex-col w-full  space-y-4 lg:space-y-0 lg:space-x-4">
-            <div className="lg:w-[50%]">
+            <div className="lg:w-[48%]">
               <Skeleton height="400px" />
             </div>
-            <div className="lg:w-[50%]">
+            <div className="lg:w-[48%]">
               <Skeleton height="400px" />
             </div>
           </div>
@@ -211,7 +211,7 @@ function SalesOverview() {
           </div>
         </div>
       ) : (
-        <div className="flex w-full flex-col space-y-4 lg:h-[79vh] h-[72vh] overflow-y-auto  scrollbar-hide">
+        <div className="flex w-full flex-col space-y-4 lg:h-[79vh] rounded-md h-[72vh] overflow-y-auto  scrollbar-hide">
           {salesReports.map((report) => (
             <>
               {/* Desktop View */}
