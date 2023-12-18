@@ -228,13 +228,13 @@ function ProductCard() {
                   <Skeleton height="480px" />
                 </div>
               </div>
-              <div className="flex flex-col space-y-4 ml-28 w-[30vw]">
+              <div className="flex flex-col space-y-4 ml-40 w-[30vw]">
                 <div>
-                  <Skeleton height="40px" width="300px" />
+                  <Skeleton height="40px" width="280px" />
                 </div>
                 <div>
                   <div>
-                    <Skeleton height="24px" width="400px" count={3} />
+                    <Skeleton height="24px" width="380px" count={3} />
                   </div>
                   <div>
                     <Skeleton height="24px" width="300px" />
@@ -253,18 +253,18 @@ function ProductCard() {
                     <Skeleton height="40px" width="100px" />
                   </div>
                   <div>
-                    <Skeleton height="40px" width="190px" />
+                    <Skeleton height="40px" width="160px" />
                   </div>
                 </div>
                 <div className="flex space-x-4">
                   <div>
-                    <Skeleton height="40px" width="190px" />
+                    <Skeleton height="40px" width="170px" />
                   </div>
                   <div>
-                    <Skeleton height="40px" width="190px" />
+                    <Skeleton height="40px" width="170px" />
                   </div>
                 </div>
-                <div className="flex flex-col space-y-2 w-[400px]">
+                <div className="flex flex-col space-y-2 w-[380px]">
                   <div>
                     <Skeleton height="40px" />
                   </div>

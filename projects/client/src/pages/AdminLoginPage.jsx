@@ -19,9 +19,7 @@ function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
-
   const dispatch = useDispatch();
-
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };

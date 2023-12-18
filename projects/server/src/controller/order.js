@@ -3,10 +3,9 @@ const axios = require("axios");
 const fs = require("fs").promises;
 
 const { isAfter, differenceInMinutes } = require("date-fns");
+const { startOfMonth, endOfMonth, format, eachDayOfInterval, isValid, parseISO } = require("date-fns");
 
-
-const { Address, Order, OrderItem, Product, ProductImage, Warehouse, Shipment, Cart, CartItem, User, Mutation, WarehouseAddress, Journal, sequelize } = require("../models");
-
+const { Address, Order, OrderItem, Product, ProductImage, Category, ProductCategory, Warehouse, Shipment, Cart, CartItem, User, Mutation, WarehouseAddress, Journal, sequelize } = require("../models");
 
 // Config default axios with rajaongkir
 axios.defaults.baseURL = "https://api.rajaongkir.com/starter";
@@ -576,12 +575,12 @@ exports.createOrder = async (req, res) => {
 exports.getOrderLists = async (req, res) => {
   try {
     const { id: userId } = req.user;
-    const { status = "all", page = 1, size = 10, sort } = req.query;
+    const { status = "all", page = 1, size = 5, sort } = req.query;
     const limit = parseInt(size);
     const offset = (parseInt(page) - 1) * limit;
 
     const orderFilter = {
-      attributes: ["id", "status", "totalPrice", "userId", "createdAt", "updatedAt"],
+      attributes: ["id", "status", "totalPrice", "paymentBy", "userId", "shipmentId", "warehouseId", "createdAt", "updatedAt"],
       where: status !== "all" ? { status } : undefined,
       include: [
         {
@@ -608,7 +607,23 @@ exports.getOrderLists = async (req, res) => {
       orderFilter.where = { ...orderFilter.where, userId };
     }
 
-    const orders = await Order.findAll(orderFilter);
+    if (sort) {
+      if (sort === "price-asc") {
+        orderFilter.order = [["totalPrice", "ASC"]];
+      } else if (sort === "price-desc") {
+        orderFilter.order = [["totalPrice", "DESC"]];
+      } else if (sort === "date-desc") {
+        orderFilter.order = [["updatedAt", "DESC"]];
+      } else if (sort === "date-asc") {
+        orderFilter.order = [["updatedAt", "ASC"]];
+      }
+    }
+
+    const orders = await Order.findAll({
+      ...orderFilter, // Order by updatedAt in descending order
+      limit,
+      offset,
+    });
 
     if (orders.length === 0) {
       return res.status(404).json({
@@ -617,32 +632,64 @@ exports.getOrderLists = async (req, res) => {
       });
     }
 
-    // Create an array for grouped order lists
-    let groupedOrderListsWithImages = [];
+    // Use a Map for better grouping
+    let groupedOrdersMap = new Map();
 
-    orders.forEach((order) => {
+    const getShipmentDetails = async (shipmentId) => {
+      const shipment = await Shipment.findByPk(shipmentId, {
+        attributes: ["id", "addressId", "name", "cost"],
+      });
+
+      return shipment;
+    };
+
+    const getAddressDetails = async (addressId) => {
+      const address = await Address.findByPk(addressId);
+      return address;
+    };
+
+    const getWarehouseDetails = async (warehouseId) => {
+      const warehouse = await Warehouse.findByPk(warehouseId, {
+        attributes: ["id", "name"],
+      });
+      return warehouse;
+    };
+
+    for (const order of orders) {
       const orderId = order.id;
-      const existingOrder = groupedOrderListsWithImages.find((groupedOrder) => groupedOrder.orderId === orderId);
 
-      if (!existingOrder) {
-        const newOrder = {
+      if (!groupedOrdersMap.has(orderId)) {
+        groupedOrdersMap.set(orderId, {
           orderId,
+          paymentBy: order.paymentBy,
           totalPrice: order.totalPrice,
+          totalPriceBeforeCost: 0,
           status: order.status,
           createdAt: order.createdAt,
           updatedAt: order.updatedAt,
           totalQuantity: 0,
           Products: [],
-        };
+          Shipment: await getShipmentDetails(order.shipmentId),
+          Address: await getAddressDetails((await getShipmentDetails(order.shipmentId)).addressId),
+          Warehouse: await getWarehouseDetails(order.warehouseId),
+        });
+      }
 
-        order.OrderItems.forEach((orderItem) => {
-          const product = orderItem.Product;
-          const productImages = product.productImages.map((image) => ({
-            id: image.id,
-            imageUrl: image.imageUrl,
-          }));
+      const existingOrder = groupedOrdersMap.get(orderId);
 
-          newOrder.Products.push({
+      order.OrderItems.forEach((orderItem) => {
+        const product = orderItem.Product;
+        const productImages = product.productImages.map((image) => ({
+          id: image.id,
+          imageUrl: image.imageUrl,
+        }));
+
+        const existingProduct = existingOrder.Products.find((p) => p.productId === product.id);
+
+        if (!existingProduct) {
+          const productPriceBeforeCost = orderItem.quantity * product.price; // Calculate totalPriceBeforeCost
+
+          existingOrder.Products.push({
             orderItemId: orderItem.id,
             productId: product.id,
             quantity: orderItem.quantity,
@@ -657,66 +704,21 @@ exports.getOrderLists = async (req, res) => {
             },
           });
 
-          newOrder.totalQuantity += orderItem.quantity;
-        });
-
-        groupedOrderListsWithImages.push(newOrder);
-      } else {
-        // Order already exists, update information
-        order.OrderItems.forEach((orderItem) => {
-          const product = orderItem.Product;
-          const productImages = product.productImages.map((image) => ({
-            id: image.id,
-            imageUrl: image.imageUrl,
-          }));
-
-          const existingProduct = existingOrder.Products.find((p) => p.productId === product.id);
-
-          if (!existingProduct) {
-            // Product doesn't exist in the order, add it
-            existingOrder.Products.push({
-              orderItemId: orderItem.id,
-              productId: product.id,
-              quantity: orderItem.quantity,
-              createdAt: orderItem.createdAt,
-              updatedAt: orderItem.updatedAt,
-              Product: {
-                id: product.id,
-                productName: product.name,
-                productPrice: product.price,
-                productGender: product.gender,
-                productImages: productImages,
-              },
-            });
-
-            existingOrder.totalQuantity += orderItem.quantity;
-          } else {
-            // Product already exists in the order, update quantity
-            existingProduct.quantity += orderItem.quantity;
-            existingOrder.totalQuantity += orderItem.quantity;
-          }
-        });
-      }
-    });
-
-    // Sorting the array
-    if (sort) {
-      groupedOrderListsWithImages.sort((a, b) => {
-        if (sort === "date-asc") {
-          return new Date(a.updatedAt) - new Date(b.updatedAt);
-        } else if (sort === "date-desc") {
-          return new Date(b.updatedAt) - new Date(a.updatedAt);
-        } else if (sort === "price-asc") {
-          return a.totalPrice - b.totalPrice;
-        } else if (sort === "price-desc") {
-          return b.totalPrice - a.totalPrice;
+          existingOrder.totalPriceBeforeCost += productPriceBeforeCost; // Update totalPriceBeforeCost
+          existingOrder.totalQuantity += orderItem.quantity;
         } else {
-          return 0;
+          existingProduct.quantity += orderItem.quantity;
+          existingOrder.totalQuantity += orderItem.quantity;
         }
       });
     }
 
-    const totalUniqueOrders = orders.length;
+    // Convert the map values back to an array
+    let groupedOrderListsWithImages = Array.from(groupedOrdersMap.values());
+
+    const totalUniqueOrders = await Order.count({
+      where: orderFilter.where,
+    });
 
     const totalPages = Math.ceil(totalUniqueOrders / limit);
 
@@ -740,7 +742,6 @@ exports.getOrderLists = async (req, res) => {
     });
   }
 };
-
 
 exports.automaticCancelUnpaidOrder = async (req, res) => {
   try {
@@ -785,7 +786,6 @@ exports.automaticCancelUnpaidOrder = async (req, res) => {
     console.error(error);
   }
 };
-
 
 // Function to find the nearest warehouse using Haversine formula
 function findNearestWarehouse(sourceLatitude, sourceLongitude, warehouses, requiredStock) {
@@ -1103,6 +1103,259 @@ exports.confirmPaymentProofUser = async (req, res) => {
   }
 };
 
+const convertWarehouseName = (name) => {
+  return name
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
+
+exports.getSalesReport = async (req, res) => {
+  try {
+    const { month, year, warehouse } = req.query;
+
+    // Validate month and year parameters
+    if (!month || !year) {
+      return res.status(400).json({
+        ok: false,
+        message: "Month and year are required parameters.",
+      });
+    }
+
+    // Convert warehouse to match the format in the database
+    const formattedWarehouseName = warehouse ? convertWarehouseName(warehouse) : null;
+
+    // Define start and end dates for the given month and year using date-fns
+    const startDate = startOfMonth(new Date(year, month - 1));
+    const endDate = endOfMonth(new Date(year, month - 1));
+
+    // Define additional conditions for warehouse filtering
+    const warehouseCondition = formattedWarehouseName ? { name: formattedWarehouseName } : {};
+
+    // Fetch warehouse details based on the name
+    const warehouseDetails = formattedWarehouseName ? await Warehouse.findOne({ where: warehouseCondition }) : null;
+
+    // Define conditions for date range filtering
+    const dateRangeCondition = {
+      createdAt: { [Op.between]: [startDate, endDate] },
+    };
+
+    // Add warehouse condition if a specific warehouse is provided
+    if (warehouseDetails) {
+      dateRangeCondition.warehouseId = warehouseDetails.id;
+    }
+
+    // Find all delivered orders within the specified date range and optional warehouse filter
+    const deliveredOrders = await Order.findAll({
+      attributes: ["id", "userId", "createdAt"], // Include necessary attributes
+      include: [
+        {
+          model: OrderItem, // Include the associated OrderItem model
+          attributes: ["productId", "quantity"], // Include the necessary attributes from OrderItem
+        },
+      ],
+      where: {
+        status: "delivered",
+        ...dateRangeCondition,
+      },
+      raw: true,
+    });
+
+    // Calculate total transaction count and total number of unique customers
+    const uniqueOrders = new Set(deliveredOrders.map((order) => order.id));
+    const totalTransactions = uniqueOrders.size;
+    const uniqueCustomers = new Set(deliveredOrders.map((order) => order.userId)).size;
+
+    const uniqueOrderIds = new Set();
+
+    // Fetch order items for each delivered order
+    const orderItems = await Promise.all(
+      deliveredOrders.map(async (order) => {
+        // Add the order ID to the set if it hasn't been added before
+        if (!uniqueOrderIds.has(order.id)) {
+          uniqueOrderIds.add(order.id);
+
+          const items = await OrderItem.findAll({
+            attributes: ["productId", "quantity", "createdAt"],
+            where: {
+              orderId: order.id,
+            },
+            raw: true,
+          });
+          return items;
+        }
+
+        return []; // Return an empty array for orders that have already been counted
+      })
+    );
+
+    // Filter out empty arrays from orderItems
+    const flattenedOrderItems = orderItems.flat();
+
+    // Aggregate sales data based on productId and orderDate
+    const salesReportMap = new Map();
+
+    for (const orderItem of flattenedOrderItems) {
+      const product = await Product.findByPk(orderItem.productId);
+      const productPrice = product ? product.price : 0;
+
+      // Ensure that orderItem.createdAt is a valid Date object
+      const orderDate = orderItem.createdAt;
+
+      const salesKey = `${orderItem.productId}_${format(orderDate, "yyyy-MM-dd")}`;
+
+      if (salesReportMap.has(salesKey)) {
+        // Update existing entry
+        salesReportMap.set(salesKey, {
+          ...salesReportMap.get(salesKey),
+          totalSales: salesReportMap.get(salesKey).totalSales + orderItem.quantity * productPrice,
+          totalQuantity: salesReportMap.get(salesKey).totalQuantity + orderItem.quantity,
+        });
+      } else {
+        // Create a new entry
+        salesReportMap.set(salesKey, {
+          productId: orderItem.productId,
+          productName: product ? product.name : "Unknown Product",
+          totalSales: orderItem.quantity * productPrice,
+          totalQuantity: orderItem.quantity,
+          orderDate,
+        });
+      }
+    }
+    // Convert the map values to an array
+    const salesReport = Array.from(salesReportMap.values());
+
+    // Daily Sales Calculation
+    const intervalDates = eachDayOfInterval({ start: startDate, end: endDate });
+
+    const dailySales = intervalDates.map((date) => {
+      const formattedDate = format(date, "yyyy-MM-dd");
+      const totalSalesForDate = salesReport.reduce((total, item) => {
+        if (format(item.orderDate, "yyyy-MM-dd") === formattedDate) {
+          return total + item.totalSales;
+        }
+        return total;
+      }, 0);
+
+      return { date: formattedDate, totalSales: totalSalesForDate };
+    });
+
+    // Summing up total sales and total quantity sold for all products
+    const aggregatedSalesReport = salesReport.reduce(
+      (result, item) => {
+        result.totalSales += item.totalSales;
+        result.totalQuantity += item.totalQuantity;
+        return result;
+      },
+      { totalSales: 0, totalQuantity: 0 }
+    );
+
+    const categoryCounts = {};
+
+    // Iterate over each order item
+    for (const orderItem of flattenedOrderItems) {
+      const productId = orderItem.productId;
+      const quantity = orderItem.quantity;
+
+      // Find ProductCategories for the productId
+      const productCategories = await ProductCategory.findAll({
+        attributes: ["categoryId"],
+        where: {
+          productId: productId,
+        },
+        raw: true,
+      });
+
+      // Fetch category names based on categoryId and count them
+      for (const productCategory of productCategories) {
+        const categoryId = productCategory.categoryId;
+
+        // Find Category for the categoryId
+        const category = await Category.findByPk(categoryId);
+
+        if (category) {
+          const categoryName = category.name;
+
+          // Exclude specific categories from counting
+          const excludedCategories = ["Jackets", "Tops", "Bottom", "Accessories", "Bags"];
+          if (!excludedCategories.includes(categoryName)) {
+            // Count category names, considering the quantity
+            categoryCounts[categoryName] = (categoryCounts[categoryName] || 0) + quantity;
+          }
+        }
+      }
+    }
+
+    // Convert the category counts to an array
+    const categoryData = Object.entries(categoryCounts).map(([categoryName, count]) => ({
+      categoryName,
+      count,
+    }));
+
+    // Initialize a map to store product counts by name and gender
+    const productCountsByNameAndGender = new Map();
+
+    // Iterate over each order item
+    for (const orderItem of flattenedOrderItems) {
+      const productId = orderItem.productId;
+      const quantity = orderItem.quantity;
+
+      const product = await Product.findByPk(productId);
+
+      if (product) {
+        const productNameWithGender = `${product.name} (${product.gender})`;
+
+        // Exclude specific products from counting
+        const excludedProducts = ["Unknown Product"];
+        if (!excludedProducts.includes(productNameWithGender)) {
+          // Count product names and gender, considering the quantity
+          if (productCountsByNameAndGender.has(productNameWithGender)) {
+            // Update existing entry
+            productCountsByNameAndGender.set(productNameWithGender, productCountsByNameAndGender.get(productNameWithGender) + quantity);
+          } else {
+            // Create a new entry
+            productCountsByNameAndGender.set(productNameWithGender, quantity);
+          }
+        }
+      }
+    }
+
+    // Convert the product counts to an array
+    const productData = Array.from(productCountsByNameAndGender.entries()).map(([productName, count]) => ({
+      productName,
+      count,
+    }));
+
+    return res.status(200).json({
+      ok: true,
+      message: "Sales report generated successfully",
+      detail: [
+        {
+          warehouse: warehouseDetails ? warehouseDetails.name : "All Warehouses",
+          month,
+          year,
+          totalTransactions,
+          totalCustomers: uniqueCustomers,
+          totalSales: aggregatedSalesReport.totalSales,
+          itemSold: aggregatedSalesReport.totalQuantity,
+          salesReport: salesReport,
+          dailySales: dailySales,
+          productCategoryData: categoryData,
+          productData: productData,
+        },
+      ],
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+      detail: String(error),
+    });
+  }
+};
+
+
 exports.cancelOrderUser = async (req, res) => {
   const t = await sequelize.transaction();
   const { orderId, productId } = req.body;
@@ -1210,3 +1463,4 @@ exports.cancelOrderUser = async (req, res) => {
     });
   }
 };
+

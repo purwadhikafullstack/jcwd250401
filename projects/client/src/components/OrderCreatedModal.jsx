@@ -13,7 +13,6 @@ function OrderCreatedModal({ isOpen, onClose, paymentMethod, totalPrice, orderId
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  
   const handleDeleteAll = () => {
     dispatch(deleteAllCartItem());
   };
@@ -37,7 +36,6 @@ function OrderCreatedModal({ isOpen, onClose, paymentMethod, totalPrice, orderId
     setPaymentProofModalOpen(true);
     onClose();
   };
-
 
   return (
     <>
@@ -97,7 +95,7 @@ function OrderCreatedModal({ isOpen, onClose, paymentMethod, totalPrice, orderId
           </ModalBody>
         </ModalContent>
       </Modal>
-      <PaymentProofModal isOpen={paymentProofModalOpen} onClose={() => setPaymentProofModalOpen(false)} orderId={orderId} />
+      <PaymentProofModal isOpen={paymentProofModalOpen} onClose={() => setPaymentProofModalOpen(false)} totalPrice={totalPrice} orderId={orderId} paymentBy={paymentMethod} />
     </>
   );
 }

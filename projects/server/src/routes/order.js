@@ -16,6 +16,7 @@ router.patch("/cancel-order", authMiddleware.validateToken, orderController.canc
 router.patch("/:id", authMiddleware.validateToken, orderController.confirmShip);
 router.patch("/user/:id", authMiddleware.validateToken, orderController.confirmShipUser);
 router.patch("/reject/:id", authMiddleware.validateToken, orderController.rejectPayment);
+router.get("/sales-report", authMiddleware.validateToken, orderController.getSalesReport);
 
 // Automatic confirmation of shipping testing 1 min interval
 
@@ -32,16 +33,15 @@ schedule.scheduleJob('*/1440 * * * *', async () => {
 
 // Automatic cancellation of unpaid orders testing 1 min interval
 
-// Schedule job to run every 10 minutes
-schedule.scheduleJob('*/10 * * * *', async () => {
-    try {
-      // Call your function to automatically cancel unpaid orders
-      await orderController.automaticCancelUnpaidOrder();
-      console.log('Automatic cancel job executed successfully');
-    } catch (error) {
-      console.error('Error executing automatic cancel job:', error);
-    }
-  });
-
+// Schedule job to run every 30 minutes
+schedule.scheduleJob("*/30 * * * *", async () => {
+  try {
+    // Call your function to automatically cancel unpaid orders
+    await orderController.automaticCancelUnpaidOrder();
+    console.log("Automatic cancel job executed successfully");
+  } catch (error) {
+    console.error("Error executing automatic cancel job:", error);
+  }
+});
 
 module.exports = router;

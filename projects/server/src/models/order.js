@@ -1,7 +1,5 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+"use strict";
+const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Order extends Model {
     /**
@@ -11,34 +9,37 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       Order.belongsTo(models.User, {
-        foreignKey: 'userId',
+        foreignKey: "userId",
       });
       Order.belongsTo(models.Shipment, {
-        foreignKey: 'shipmentId',
+        foreignKey: "shipmentId",
       });
       Order.belongsTo(models.Warehouse, {
-        foreignKey: 'warehouseId',
+        foreignKey: "warehouseId",
       });
       Order.belongsToMany(models.Product, {
-        through: 'OrderItems',
-        foreignKey: 'orderId',
+        through: "OrderItems",
+        foreignKey: "orderId",
       });
       Order.hasMany(models.OrderItem, {
-        foreignKey: 'orderId',
+        foreignKey: "orderId",
       });
     }
   }
-  Order.init({
-    totalPrice: DataTypes.INTEGER,
-    paymentProofImage: DataTypes.STRING,
-    paymentBy: DataTypes.ENUM('MANDIRI', 'BCA', 'BNI'),
-    userId: DataTypes.INTEGER,
-    shipmentId: DataTypes.INTEGER,
-    status: DataTypes.STRING,
-    warehouseId: DataTypes.INTEGER
-  }, {
-    sequelize,
-    modelName: 'Order',
-  });
+  Order.init(
+    {
+      totalPrice: DataTypes.INTEGER,
+      paymentProofImage: DataTypes.STRING,
+      paymentBy: DataTypes.ENUM("MANDIRI", "BCA", "BNI"),
+      userId: DataTypes.INTEGER,
+      shipmentId: DataTypes.INTEGER,
+      status: DataTypes.STRING,
+      warehouseId: DataTypes.INTEGER,
+    },
+    {
+      sequelize,
+      modelName: "Order",
+    }
+  );
   return Order;
 };

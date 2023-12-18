@@ -19,7 +19,7 @@ export const NavPage = ({ pageName }) => {
     .join(" ");
   return (
     <>
-      <div className="h-[17vh] w-full mb-5 sm:mb-0">
+      <div className="lg:h-[17vh] w-full mb-5 sm:mb-0">
         <div className="flex lg:px-36 lg:justify-normal justify-center">
           <div className="w-[90vw] lg:w-[76vw] mt-4">
             <p className="flex gap-3 ml-1">

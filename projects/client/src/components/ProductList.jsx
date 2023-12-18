@@ -536,7 +536,7 @@ function ProductList() {
                     </div>
                   </div>
                   <div className="hidden lg:flex flex-col justify-center">
-                    <div className="w-[50px] lg:w-[200px]">
+                    <div className="w-[50px] lg:w-[100px]">
                       <Skeleton height={40} />
                     </div>
                   </div>
