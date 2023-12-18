@@ -1108,7 +1108,7 @@ exports.cancelOrderUser = async (req, res) => {
       });
     }
 
-    if (orderItem.Order.status === "waiting-for-confirmation") {
+    if (orderItem.Order.status === "unpaid") {
       // Update status to 'cancelled' for orders that are not yet processed
       orderItem.Order.status = "cancelled";
       await orderItem.Order.save({ transaction: t });
