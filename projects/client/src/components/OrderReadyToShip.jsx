@@ -3,6 +3,8 @@ import { Button } from 'flowbite-react';
 import { useState, useEffect } from 'react';
 import PaymentModal from './PaymentModal';
 import confirmShip from '../api/order/confirmShip';
+import { FaEllipsisV } from 'react-icons/fa';
+import { Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
 
 function OrderReadyToShip({ orders, fetchOrders }) { 
   const [paymentModalIsOpen, setPaymentModalIsOpen] = useState(false);
@@ -64,6 +66,14 @@ function OrderReadyToShip({ orders, fetchOrders }) {
               <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handlePaymentModalOpen(paymentProofImage)}>
                 Payment Proof
               </Button>
+              <Menu>
+                <MenuButton className="focus:outline-none">
+                  <FaEllipsisV className="text-xl" />
+                </MenuButton>
+                <MenuList>
+                  <MenuItem onClick={() => handleConfirmShip(Order.id)}>Ship Order</MenuItem>
+                </MenuList>
+              </Menu>
             </div>
           </div>
           <hr className="my-2" />

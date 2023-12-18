@@ -2,48 +2,11 @@ import React from 'react';
 import { Button } from 'flowbite-react';
 import { useState, useEffect } from 'react';
 import PaymentModal from './PaymentModal';
-import rejectPayment from '../api/order/rejectPayment';
-import confirmOrder from '../api/order/confirmOrder';
-import cancelOrder from '../api/order/cancelOrder';
-import { FaEllipsisV } from 'react-icons/fa';
-import { Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
+import confirmShip from '../api/order/confirmShip';
 
-function OrderList({ orders, fetchOrders }) { 
+function OrderShipped({ orders, fetchOrders }) { 
   const [paymentModalIsOpen, setPaymentModalIsOpen] = useState(false);
   const [paymentProof, setPaymentProof] = useState('');
-
-  const handleConfirmOrder = async (orderId, productId) => {
-    try {
-      const response = await confirmOrder({ orderId, productId });
-      // Update state and UI based on response
-      fetchOrders();
-    } catch (error) {
-      // Handle error
-      console.error('Error confirming order:', error);
-    }
-  };
-
-  const handleCancelOrder = async (orderId, productId) => {
-    try { 
-      const response = await cancelOrder({ orderId, productId });
-      // Update state and UI based on response
-      fetchOrders();
-    } catch (error) {
-      // Handle error
-      console.error('Error cancelling order:', error);
-    }
-  };
-
-  const handleRejectPayment = async (orderId) => {
-    try {
-      const response = await rejectPayment({ orderId });
-      // Update state and UI based on response
-      fetchOrders();
-    } catch (error) {
-      // Handle error
-      console.error('Error rejecting payment:', error);
-    }
-  };
 
   const handlePaymentModalOpen = (paymentProof) => {
     setPaymentModalIsOpen(true);
@@ -63,28 +26,34 @@ function OrderList({ orders, fetchOrders }) {
     }).format(price);
   };
 
+  const handleConfirmShip = async (orderId) => {
+    try {
+      const response = await confirmShip({ orderId });
+      // Update state and UI based on response
+      fetchOrders();
+    } catch (error) {
+      // Handle error
+      console.error('Error rejecting payment:', error);
+    }
+  };
+
   useEffect(() => {
     fetchOrders();
   }, []);
 
   return (
     <div className="container mx-auto px-4">
-      {orders.length === 0 ? (
+      {orders.filter(({ Order }) => Order.status === "shipped").length === 0 ? (
         <div className="flex justify-center items-center h-96">
           <p className="text-2xl">You don't have any orders yet.</p>
         </div>
       ) : (
       <>
-      {orders.map(({ Order, Product, quantity, createdAt, paymentProofImage }, index) => (
+      {orders.filter(({ Order }) => Order.status === "shipped")
+      .map(({ Order, Product, quantity, createdAt, paymentProofImage }, index) => (
         <div key={index} className="p-4 bg-white rounded-lg shadow-lg w-[1000px] lg:w-[100%] mb-5 lg:mb-5">
           <div className="flex justify-between">
             <div className="flex items-center gap-2">
-              {Order.status === "cancelled" && <span className="bg-[#FF7A7A66] text-[#FF0000] py-1 px-2 rounded-md font-bold">Cancelled</span>}
-              {Order.status === "unpaid" && <span className="bg-[#FF7A7A66] text-[#FF0000] py-1 px-2 rounded-md font-bold">Unpaid</span>}
-              {Order.status === "waiting-for-payment" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting for Payment</span>}
-              {Order.status === "waiting-for-confirmation" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting for Payment Confirmation</span>}
-              {Order.status === "processed" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Order Processed</span>}
-              {Order.status === "waiting-approval" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting User Approval</span>}
               {Order.status === "shipped" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Shipped</span>}
               <p>ID {Order.id} / {new Date(createdAt).toLocaleDateString()} / {Order.warehouse.warehouseName} </p>
             </div>
@@ -92,18 +61,6 @@ function OrderList({ orders, fetchOrders }) {
               <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handlePaymentModalOpen(paymentProofImage)}>
                 Payment Proof
               </Button>
-              {Order.status === "cancelled" || Order.status === "shipped" ? (
-                <></>
-              ) : (
-                <Menu>
-                <MenuButton className="focus:outline-none">
-                  <FaEllipsisV className="text-xl" />
-                </MenuButton>
-                <MenuList>
-                  <MenuItem onClick={() => handleCancelOrder(Order.id, Product.id)}>Cancel Order</MenuItem>
-                </MenuList>
-              </Menu>
-              )}
             </div>
           </div>
           <hr className="my-2" />
@@ -153,22 +110,6 @@ function OrderList({ orders, fetchOrders }) {
             <p className="text-lg font-bold">TOTAL</p>
             <p className="text-lg font-bold ml-auto">{formatToRupiah(Order.totalPrice)}</p>
           </div>
-          {Order.status === "waiting-for-confirmation" && (
-            <>
-              <hr className="my-2" /> 
-              <div className="flex justify-end gap-2">
-                {/* Action buttons here, if needed */}
-                <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
-                  <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleRejectPayment(Order.id)}>
-                    Reject Order
-                  </Button>
-                  <Button color="dark" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleConfirmOrder(Order.id, Product.id)}>
-                    Accept Order
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
         </div>
       ))}
       </>)}
@@ -177,4 +118,4 @@ function OrderList({ orders, fetchOrders }) {
   );
 }
 
-export default OrderList;
+export default OrderShipped;
