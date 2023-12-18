@@ -167,6 +167,42 @@ exports.confirmShip = async (req, res) => {
   }
 };
 
+exports.confirmShipUser = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const order = await Order.findOne({
+      where: {
+        id,
+      },
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        ok: false,
+        message: "Order not found",
+      });
+    }
+
+    order.status = "shipped";
+
+    await order.save();
+
+    return res.status(200).json({
+      ok: true,
+      message: "Shipping confirmed successfully",
+      
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+      detail: String(error),
+    });
+  }
+};
+
 exports.automaticConfirmShipping = async (req, res) => {
   try {
     // Fetch orders with status 'waiting-approval' 

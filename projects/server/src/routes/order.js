@@ -14,6 +14,7 @@ router.post("/", authMiddleware.validateToken, orderController.createOrder);
 router.patch("/confirm-payment", authMiddleware.validateToken, orderController.confirmPaymentProofUser);
 router.patch("/cancel-order", authMiddleware.validateToken, orderController.cancelOrderUser);
 router.patch("/:id", authMiddleware.validateToken, orderController.confirmShip);
+router.patch("/user/:id", authMiddleware.validateToken, orderController.confirmShipUser);
 router.patch("/reject/:id", authMiddleware.validateToken, orderController.rejectPayment);
 
 // Automatic confirmation of shipping testing 1 min interval

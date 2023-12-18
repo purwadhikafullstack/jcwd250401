@@ -8,9 +8,12 @@ import { toast } from "sonner";
 import { PaymentProofModal } from "../components/PaymentProofModal";
 import getProfile from "../api/profile/getProfile";
 import getUserOrder from "../api/order/getUserOrder";
+import cancelOrder from "../api/order/cancelOrder";
 import { Box, Button, Flex, Text } from "@chakra-ui/react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { FaEllipsisV } from "react-icons/fa";
+import { Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
 
 export const Order = () => {
   let isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
@@ -44,6 +47,17 @@ export const Order = () => {
   }, []);
 
   document.title = "RAINS - My Order";
+
+  const handleCancelOrder = async (orderId, productId) => {
+    try {
+      const response = await cancelOrder({ orderId, productId });
+      // Update state and UI based on response
+      getOrderLists();
+    } catch (error) {
+      // Handle error
+      console.error("Error cancelling order:", error);
+    }
+  };
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -329,9 +343,24 @@ export const Order = () => {
                             <span className="bg-gray-900 text-gray-100 px-4 py-1 rounded-full  text-sm lg:text-md">{getStatusLabel(orderItem.status)}</span>
                           </div>
 
-                          <span className="text-gray-900 text-sm lg:text-md">
-                            {date}, {time}
-                          </span>
+                          <div className="flex space-x-4 items-center ">
+                            <span className="text-gray-900 text-sm lg:text-md">
+                              {date}, {time}
+                            </span>
+
+                            {orderItem.status === "shipped" || orderItem.status === "cancelled" ? (
+                              <></>
+                            ) : (
+                            <Menu>
+                              <MenuButton className="focus:outline-none">
+                                <FaEllipsisV className="text-sm" />
+                              </MenuButton>
+                              <MenuList>
+                                <MenuItem onClick={() => handleCancelOrder(orderItem.orderId, orderItem.Products[0].productId)}>Cancel Order</MenuItem>
+                              </MenuList>
+                            </Menu>
+                            )}
+                          </div>
                         </div>
                         <div className={`mt-4 flex justify-between ${orderItem.status === "cancelled" ? "opacity-60" : ""}`}>
                           <div className="flex lg:flex-row flex-col justify-between w-full">
