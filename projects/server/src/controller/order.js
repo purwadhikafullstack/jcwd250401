@@ -112,7 +112,7 @@ exports.rejectPayment = async (req, res) => {
       });
     }
 
-    order.status = "waiting-for-payment";
+    order.status = "unpaid";
 
     await order.save();
 
@@ -131,7 +131,7 @@ exports.rejectPayment = async (req, res) => {
   }
 };
 
-exports.confirmPayment = async (req, res) => {
+exports.confirmShip = async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -148,12 +148,12 @@ exports.confirmPayment = async (req, res) => {
       });
     }
 
-    order.status = "processed";
+    order.status = "waiting-approval";
 
     await order.save();
     return res.status(200).json({
       ok: true,
-      message: "Payment confirmed successfully",
+      message: "Shipping confirmed successfully",
       detail: order,
     });
   } catch (error) {
@@ -163,6 +163,87 @@ exports.confirmPayment = async (req, res) => {
       message: "Internal server error",
       detail: String(error),
     });
+  }
+};
+
+exports.confirmShipUser = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const order = await Order.findOne({
+      where: {
+        id,
+      },
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        ok: false,
+        message: "Order not found",
+      });
+    }
+
+    order.status = "shipped";
+
+    await order.save();
+
+    return res.status(200).json({
+      ok: true,
+      message: "Shipping confirmed successfully",
+      
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+      detail: String(error),
+    });
+  }
+};
+
+exports.automaticConfirmShipping = async (req, res) => {
+  try {
+    // Fetch orders with status 'waiting-approval' 
+    const orders = await Order.findAll({
+      where: {
+        status: "waiting-approval",
+      },
+    });
+
+    // Check if there are no orders with status 'waiting-approval'
+    if (!orders.length) {
+      return console.log("No orders with status 'waiting-approval' found");
+    }
+
+    const now = Date.now();
+
+    // Filter orders that need to be confirmed (updated more than 7 days ago)
+    const ordersToConfirm = orders.filter((order) => {
+      const orderUpdatedAt = new Date(order.updatedAt).getTime();
+      const diffInMinutes = differenceInMinutes(now, orderUpdatedAt);
+
+      return diffInMinutes >= 7 * 24 * 60; // 7 days in minutes
+    });
+
+    // Check if there are no orders to confirm
+    if (ordersToConfirm.length === 0) {
+      return console.log("No orders to confirm");
+    }
+
+    // Update the status of orders to 'shipped'
+    await Promise.all(
+      ordersToConfirm.map(async (order) => {
+        // Ensure order is not undefined before updating
+        
+        if (order && order.update) {
+          await order.update({ status: "shipped" });
+        }
+      })
+    );
+    return console.log("Orders confirmed successfully");
+  } catch (error) {
+    console.error(error);
   }
 };
 
@@ -1273,3 +1354,113 @@ exports.getSalesReport = async (req, res) => {
     });
   }
 };
+
+
+exports.cancelOrderUser = async (req, res) => {
+  const t = await sequelize.transaction();
+  const { orderId, productId } = req.body;
+
+  try {
+    const orderItem = await OrderItem.findOne({
+      where: { orderId, productId },
+      include: [
+        {
+          model: Order,
+          include: [
+            {
+              model: Warehouse,
+              include: [
+                {
+                  model: Mutation,
+                  where: { productId, status: "success" },
+                  order: [["createdAt", "DESC"]],
+                  limit: 1,
+                },
+                {
+                  model: WarehouseAddress,
+                  attributes: ["latitude", "longitude"],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      transaction: t,
+    });
+
+    if (!orderItem) {
+      await t.rollback();
+      return res.status(404).json({
+        ok: false,
+        message: "Order not found",
+        detail: "Order not found with the given ID",
+      });
+    }
+
+    if (orderItem.Order.status === "unpaid") {
+      // Update status to 'cancelled' for orders that are not yet processed
+      orderItem.Order.status = "cancelled";
+      await orderItem.Order.save({ transaction: t });
+    } else if (orderItem.Order.status === "processed") {
+      // Handle stock adjustment for orders that have been processed
+      const stockProductAtCurrentWarehouse = orderItem.Order.Warehouse.Mutations[0].stock;
+      const orderQuantity = orderItem.quantity;
+
+      // Create mutation for reverting stock at source warehouse
+      const newMutationForSourceWarehouse = await Mutation.create(
+        {
+          productId,
+          warehouseId: orderItem.Order.Warehouse.id,
+          mutationQuantity: orderQuantity,
+          previousStock: stockProductAtCurrentWarehouse,
+          mutationType: "add", // Revert the stock subtraction
+          adminId: orderItem.Order.Warehouse.adminId,
+          stock: stockProductAtCurrentWarehouse + orderQuantity,
+          status: "success",
+          isManual: false,
+          description: "Order cancellation, stock added back due to order cancellation.",
+        },
+        { transaction: t }
+      );
+
+      // Create a corresponding journal entry
+      await Journal.create(
+        {
+          mutationId: newMutationForSourceWarehouse.id,
+          productId,
+          warehouseId: orderItem.Order.Warehouse.id,
+          mutationQuantity: orderQuantity,
+          previousStock: stockProductAtCurrentWarehouse,
+          mutationType: "add",
+          adminId: orderItem.Order.Warehouse.adminId,
+          stock: stockProductAtCurrentWarehouse + orderQuantity,
+          status: "success",
+          isManual: false,
+          description: "Order cancellation, stock added back due to order cancellation.",
+        },
+        { transaction: t }
+      );
+
+      orderItem.Order.status = "cancelled";
+      await orderItem.Order.save({ transaction: t });
+    }
+
+    await t.commit();
+    return res.status(200).json({
+      ok: true,
+      message: "Order cancelled successfully",
+      detail: {
+        orderItem,
+        statusUpdated: orderItem.Order.status,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    await t.rollback();
+    return res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+    });
+  }
+};
+

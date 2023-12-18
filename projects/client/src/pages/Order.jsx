@@ -8,10 +8,15 @@ import { toast } from "sonner";
 import { PaymentProofModal } from "../components/PaymentProofModal";
 import getProfile from "../api/profile/getProfile";
 import getUserOrder from "../api/order/getUserOrder";
+import cancelOrder from "../api/order/cancelOrder";
+import confirmShipUser from "../api/order/confirmShipUser";
 import { Box, Button, Flex, Text } from "@chakra-ui/react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { PiCamera, PiUploadSimple, PiUploadSimpleBold } from "react-icons/pi";
+import { FaEllipsisV } from "react-icons/fa";
+import { Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
+
 
 export const Order = () => {
   let isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
@@ -47,6 +52,28 @@ export const Order = () => {
   }, []);
 
   document.title = "RAINS - My Order";
+
+  const handleConfirmOrder = async (orderId, productId) => {
+    try {
+      const response = await confirmShipUser({ orderId, productId });
+      // Update state and UI based on response
+      getOrderLists();
+    } catch (error) {
+      // Handle error
+      console.error("Error confirming order:", error);
+    }
+  };
+
+  const handleCancelOrder = async (orderId, productId) => {
+    try {
+      const response = await cancelOrder({ orderId, productId });
+      // Update state and UI based on response
+      getOrderLists();
+    } catch (error) {
+      // Handle error
+      console.error("Error cancelling order:", error);
+    }
+  };
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -386,9 +413,30 @@ export const Order = () => {
                               </>
                             )}
                           </div>
-                          <span className="text-gray-900 text-sm lg:text-md">
-                            {date}, {time}
-                          </span>
+
+
+                          <div className="flex space-x-4 items-center ">
+                            <span className="text-gray-900 text-sm lg:text-md">
+                              {date}, {time}
+                            </span>
+
+                            {orderItem.status === "shipped" || orderItem.status === "cancelled" ? (
+                              <></>
+                            ) : (
+                            <Menu>
+                              <MenuButton className="focus:outline-none">
+                                <FaEllipsisV className="text-sm" />
+                              </MenuButton>
+                              <MenuList>
+                                {orderItem.status === "waiting-approval" ? (
+                                <></>
+                                ) : (
+                                <MenuItem onClick={() => handleCancelOrder(orderItem.orderId, orderItem.Products[0].productId)}>Cancel Order</MenuItem>
+                                )}
+                              </MenuList>
+                            </Menu>
+                            )}
+                          </div>
                         </div>
                         <div className={`mt-4 flex justify-between ${orderItem.status === "cancelled" ? "opacity-60" : ""}`}>
                           <div className="flex lg:flex-row flex-col justify-between w-full">
@@ -451,8 +499,16 @@ export const Order = () => {
                                       </Button>
                                     )}
                                   </div>
-                                )}
-                              </div>
+                  </div>
+                              )}
+                              {orderItem.status === "waiting-approval" && (
+                                <div className="w-[180px] mt-4 lg:mt-2">
+                                  <Button onClick={() => handleConfirmOrder(orderItem.orderId, orderItem.Products[0].productId)} bgColor="gray.900" _hover={{ bgColor: "gray.700" }} size="sm" boxShadow="lg" borderRadius="md" color="gray.100">
+                                    <span className="text-sm font-light">Confirm</span>
+                                  </Button>
+                                </div>
+                              )}
+
                             </div>
                           </div>
                         </div>
