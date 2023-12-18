@@ -494,12 +494,12 @@ exports.createOrder = async (req, res) => {
 exports.getOrderLists = async (req, res) => {
   try {
     const { id: userId } = req.user;
-    const { status = "all", page = 1, size = 10, sort } = req.query;
+    const { status = "all", page = 1, size = 5, sort } = req.query;
     const limit = parseInt(size);
     const offset = (parseInt(page) - 1) * limit;
 
     const orderFilter = {
-      attributes: ["id", "status", "totalPrice", "userId", "shipmentId", "createdAt", "updatedAt"],
+      attributes: ["id", "status", "totalPrice", "paymentBy", "userId", "shipmentId", "warehouseId", "createdAt", "updatedAt"],
       where: status !== "all" ? { status } : undefined,
       include: [
         {
@@ -526,7 +526,23 @@ exports.getOrderLists = async (req, res) => {
       orderFilter.where = { ...orderFilter.where, userId };
     }
 
-    const orders = await Order.findAll(orderFilter);
+    if (sort) {
+      if (sort === "price-asc") {
+        orderFilter.order = [["totalPrice", "ASC"]];
+      } else if (sort === "price-desc") {
+        orderFilter.order = [["totalPrice", "DESC"]];
+      } else if (sort === "date-desc") {
+        orderFilter.order = [["updatedAt", "DESC"]];
+      } else if (sort === "date-asc") {
+        orderFilter.order = [["updatedAt", "ASC"]];
+      }
+    }
+
+    const orders = await Order.findAll({
+      ...orderFilter, // Order by updatedAt in descending order
+      limit,
+      offset,
+    });
 
     if (orders.length === 0) {
       return res.status(404).json({
@@ -535,11 +551,12 @@ exports.getOrderLists = async (req, res) => {
       });
     }
 
-    let groupedOrderListsWithImages = [];
+    // Use a Map for better grouping
+    let groupedOrdersMap = new Map();
 
     const getShipmentDetails = async (shipmentId) => {
       const shipment = await Shipment.findByPk(shipmentId, {
-        attributes: ["id", "addressId", "name"],
+        attributes: ["id", "addressId", "name", "cost"],
       });
 
       return shipment;
@@ -550,34 +567,48 @@ exports.getOrderLists = async (req, res) => {
       return address;
     };
 
+    const getWarehouseDetails = async (warehouseId) => {
+      const warehouse = await Warehouse.findByPk(warehouseId, {
+        attributes: ["id", "name"],
+      });
+      return warehouse;
+    };
+
     for (const order of orders) {
       const orderId = order.id;
-      const existingOrder = groupedOrderListsWithImages.find((groupedOrder) => groupedOrder.orderId === orderId);
 
-      const shipmentDetails = await getShipmentDetails(order.shipmentId);
-      const addressDetails = await getAddressDetails(shipmentDetails.addressId);
-
-      if (!existingOrder) {
-        const newOrder = {
+      if (!groupedOrdersMap.has(orderId)) {
+        groupedOrdersMap.set(orderId, {
           orderId,
+          paymentBy: order.paymentBy,
           totalPrice: order.totalPrice,
+          totalPriceBeforeCost: 0,
           status: order.status,
           createdAt: order.createdAt,
           updatedAt: order.updatedAt,
           totalQuantity: 0,
           Products: [],
-          Shipment: shipmentDetails,
-          Address: addressDetails,
-        };
+          Shipment: await getShipmentDetails(order.shipmentId),
+          Address: await getAddressDetails((await getShipmentDetails(order.shipmentId)).addressId),
+          Warehouse: await getWarehouseDetails(order.warehouseId),
+        });
+      }
 
-        order.OrderItems.forEach((orderItem) => {
-          const product = orderItem.Product;
-          const productImages = product.productImages.map((image) => ({
-            id: image.id,
-            imageUrl: image.imageUrl,
-          }));
+      const existingOrder = groupedOrdersMap.get(orderId);
 
-          newOrder.Products.push({
+      order.OrderItems.forEach((orderItem) => {
+        const product = orderItem.Product;
+        const productImages = product.productImages.map((image) => ({
+          id: image.id,
+          imageUrl: image.imageUrl,
+        }));
+
+        const existingProduct = existingOrder.Products.find((p) => p.productId === product.id);
+
+        if (!existingProduct) {
+          const productPriceBeforeCost = orderItem.quantity * product.price; // Calculate totalPriceBeforeCost
+
+          existingOrder.Products.push({
             orderItemId: orderItem.id,
             productId: product.id,
             quantity: orderItem.quantity,
@@ -592,62 +623,21 @@ exports.getOrderLists = async (req, res) => {
             },
           });
 
-          newOrder.totalQuantity += orderItem.quantity;
-        });
-
-        groupedOrderListsWithImages.push(newOrder);
-      } else {
-        order.OrderItems.forEach((orderItem) => {
-          const product = orderItem.Product;
-          const productImages = product.productImages.map((image) => ({
-            id: image.id,
-            imageUrl: image.imageUrl,
-          }));
-
-          const existingProduct = existingOrder.Products.find((p) => p.productId === product.id);
-
-          if (!existingProduct) {
-            existingOrder.Products.push({
-              orderItemId: orderItem.id,
-              productId: product.id,
-              quantity: orderItem.quantity,
-              createdAt: orderItem.createdAt,
-              updatedAt: orderItem.updatedAt,
-              Product: {
-                id: product.id,
-                productName: product.name,
-                productPrice: product.price,
-                productGender: product.gender,
-                productImages: productImages,
-              },
-            });
-
-            existingOrder.totalQuantity += orderItem.quantity;
-          } else {
-            existingProduct.quantity += orderItem.quantity;
-            existingOrder.totalQuantity += orderItem.quantity;
-          }
-        });
-      }
-    }
-
-    if (sort) {
-      groupedOrderListsWithImages.sort((a, b) => {
-        if (sort === "date-asc") {
-          return new Date(a.updatedAt) - new Date(b.updatedAt);
-        } else if (sort === "date-desc") {
-          return new Date(b.updatedAt) - new Date(a.updatedAt);
-        } else if (sort === "price-asc") {
-          return a.totalPrice - b.totalPrice;
-        } else if (sort === "price-desc") {
-          return b.totalPrice - a.totalPrice;
+          existingOrder.totalPriceBeforeCost += productPriceBeforeCost; // Update totalPriceBeforeCost
+          existingOrder.totalQuantity += orderItem.quantity;
         } else {
-          return 0;
+          existingProduct.quantity += orderItem.quantity;
+          existingOrder.totalQuantity += orderItem.quantity;
         }
       });
     }
 
-    const totalUniqueOrders = orders.length;
+    // Convert the map values back to an array
+    let groupedOrderListsWithImages = Array.from(groupedOrdersMap.values());
+
+    const totalUniqueOrders = await Order.count({
+      where: orderFilter.where,
+    });
 
     const totalPages = Math.ceil(totalUniqueOrders / limit);
 
@@ -671,7 +661,6 @@ exports.getOrderLists = async (req, res) => {
     });
   }
 };
-
 
 exports.automaticCancelUnpaidOrder = async (req, res) => {
   try {

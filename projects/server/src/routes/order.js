@@ -18,8 +18,8 @@ router.get("/sales-report", authMiddleware.validateToken, orderController.getSal
 
 // Automatic cancellation of unpaid orders testing 1 min interval
 
-// Schedule job to run every 10 minutes
-schedule.scheduleJob("*/10 * * * *", async () => {
+// Schedule job to run every 30 minutes
+schedule.scheduleJob("*/30 * * * *", async () => {
   try {
     // Call your function to automatically cancel unpaid orders
     await orderController.automaticCancelUnpaidOrder();
