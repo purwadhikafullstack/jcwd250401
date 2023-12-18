@@ -9,6 +9,7 @@ import { PaymentProofModal } from "../components/PaymentProofModal";
 import getProfile from "../api/profile/getProfile";
 import getUserOrder from "../api/order/getUserOrder";
 import cancelOrder from "../api/order/cancelOrder";
+import confirmShipUser from "../api/order/confirmShipUser";
 import { Box, Button, Flex, Text } from "@chakra-ui/react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -47,6 +48,17 @@ export const Order = () => {
   }, []);
 
   document.title = "RAINS - My Order";
+
+  const handleConfirmOrder = async (orderId, productId) => {
+    try {
+      const response = await confirmShipUser({ orderId, productId });
+      // Update state and UI based on response
+      getOrderLists();
+    } catch (error) {
+      // Handle error
+      console.error("Error confirming order:", error);
+    }
+  };
 
   const handleCancelOrder = async (orderId, productId) => {
     try {
@@ -356,7 +368,11 @@ export const Order = () => {
                                 <FaEllipsisV className="text-sm" />
                               </MenuButton>
                               <MenuList>
+                                {orderItem.status === "waiting-approval" ? (
+                                <></>
+                                ) : (
                                 <MenuItem onClick={() => handleCancelOrder(orderItem.orderId, orderItem.Products[0].productId)}>Cancel Order</MenuItem>
+                                )}
                               </MenuList>
                             </Menu>
                             )}
@@ -410,6 +426,13 @@ export const Order = () => {
                                       {remainingTime ? `${formatTime(Math.max(remainingTime.hours, 0))}:${formatTime(Math.max(remainingTime.minutes, 0))}:${formatTime(Math.max(remainingTime.seconds, 0))}` : ""}
                                     </span>
                                   </div>
+                                </div>
+                              )}
+                              {orderItem.status === "waiting-approval" && (
+                                <div className="w-[180px] mt-4 lg:mt-2">
+                                  <Button onClick={() => handleConfirmOrder(orderItem.orderId, orderItem.Products[0].productId)} bgColor="gray.900" _hover={{ bgColor: "gray.700" }} size="sm" boxShadow="lg" borderRadius="md" color="gray.100">
+                                    <span className="text-sm font-light">Confirm</span>
+                                  </Button>
                                 </div>
                               )}
                             </div>
