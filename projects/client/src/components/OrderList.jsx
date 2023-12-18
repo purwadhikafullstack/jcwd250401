@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import PaymentModal from './PaymentModal';
 import rejectPayment from '../api/order/rejectPayment';
 import confirmOrder from '../api/order/confirmOrder';
+import cancelOrder from '../api/order/cancelOrder';
 import { FaEllipsisV } from 'react-icons/fa';
 import { Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
 
@@ -19,6 +20,17 @@ function OrderList({ orders, fetchOrders }) {
     } catch (error) {
       // Handle error
       console.error('Error confirming order:', error);
+    }
+  };
+
+  const handleCancelOrder = async (orderId, productId) => {
+    try { 
+      const response = await cancelOrder({ orderId, productId });
+      // Update state and UI based on response
+      fetchOrders();
+    } catch (error) {
+      // Handle error
+      console.error('Error cancelling order:', error);
     }
   };
 
@@ -67,6 +79,8 @@ function OrderList({ orders, fetchOrders }) {
         <div key={index} className="p-4 bg-white rounded-lg shadow-lg w-[1000px] lg:w-[100%] mb-5 lg:mb-5">
           <div className="flex justify-between">
             <div className="flex items-center gap-2">
+              {Order.status === "cancelled" && <span className="bg-[#FF7A7A66] text-[#FF0000] py-1 px-2 rounded-md font-bold">Cancelled</span>}
+              {Order.status === "unpaid" && <span className="bg-[#FF7A7A66] text-[#FF0000] py-1 px-2 rounded-md font-bold">Unpaid</span>}
               {Order.status === "waiting-for-payment" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting for Payment</span>}
               {Order.status === "waiting-for-confirmation" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting for Payment Confirmation</span>}
               {Order.status === "processed" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Order Processed</span>}
@@ -78,14 +92,18 @@ function OrderList({ orders, fetchOrders }) {
               <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handlePaymentModalOpen(paymentProofImage)}>
                 Payment Proof
               </Button>
-              <Menu>
+              {Order.status === "cancelled" || Order.status === "shipped" ? (
+                <></>
+              ) : (
+                <Menu>
                 <MenuButton className="focus:outline-none">
                   <FaEllipsisV className="text-xl" />
                 </MenuButton>
                 <MenuList>
-                  <MenuItem>Cancel Order</MenuItem>
+                  <MenuItem onClick={() => handleCancelOrder(Order.id, Product.id)}>Cancel Order</MenuItem>
                 </MenuList>
               </Menu>
+              )}
             </div>
           </div>
           <hr className="my-2" />
