@@ -80,8 +80,7 @@ function OrderList({ orders, fetchOrders }) {
           <div className="flex justify-between">
             <div className="flex items-center gap-2">
               {Order.status === "cancelled" && <span className="bg-[#FF7A7A66] text-[#FF0000] py-1 px-2 rounded-md font-bold">Cancelled</span>}
-              {Order.status === "unpaid" && <span className="bg-[#FF7A7A66] text-[#FF0000] py-1 px-2 rounded-md font-bold">Unpaid</span>}
-              {Order.status === "waiting-for-payment" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting for Payment</span>}
+              {Order.status === "unpaid" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting for Payment</span>}
               {Order.status === "waiting-for-confirmation" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting for Payment Confirmation</span>}
               {Order.status === "processed" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Order Processed</span>}
               {Order.status === "waiting-approval" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Waiting User Approval</span>}
