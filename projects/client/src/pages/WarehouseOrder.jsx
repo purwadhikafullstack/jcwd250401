@@ -15,7 +15,7 @@ import getWarehouseByAdmin from "../api/warehouse/getWarehouseByAdmin";
 import getSingleAdmin from "../api/users/getSingleAdmin";
 
 export const WarehouseOrder = () => {
-  const navList = ["All Order", "Pending", "Success", "Cancelled", "Failed"];
+  const navList = ["All Order", "Pending", "Success", "Cancelled"];
   const isWarehouseAdmin = useSelector((state) => state?.account?.isWarehouseAdmin);
   const adminData = useSelector((state) => state?.account?.adminProfile?.data?.profile);
   const [adminId, setAdminId] = useState(null);
@@ -305,7 +305,6 @@ export const WarehouseOrder = () => {
                     <div className="flex items-center gap-2">
                       {mutation.status === "pending" && <span className="bg-[#d3820066] text-[#d38200cb] py-1 px-2 rounded-md font-bold">Pending</span>}
                       {mutation.status === "success" && <span className="bg-[#7AFFC766] text-[#15c079cb] py-1 px-2 rounded-md font-bold">Success</span>}
-                      {mutation.status === "failed" && <span className="bg-[#92191966] text-[#921919cb] py-1 px-2 rounded-md font-bold">Failed</span>}
                       {mutation.status === "cancelled" && <span className="bg-[#92191966] text-[#921919cb] py-1 px-2 rounded-md font-bold">Cancelled</span>}
                       <p>
                         {mutation.createdAt.slice(0, 10)} / {mutation.Warehouse.name}

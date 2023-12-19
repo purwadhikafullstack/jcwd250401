@@ -2,12 +2,14 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalOverlay 
 import React from "react";
 import { toast } from "sonner";
 import { removeAddress } from "../slices/addressSlices";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import deleteAddress from "../api/Address/deleteAddress";
 import deleteAdmin from "../api/users/deleteAdmin";
+import { logoutAdmin } from "../slices/accountSlices";
 
 export const ConfirmModal = ({ isOpen, onClose, data, userId, deleteFor }) => {
+  const currentAdmin = useSelector((state) => state.account.adminProfile.data?.profile);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const handleDelete = async () => {
@@ -18,6 +20,11 @@ export const ConfirmModal = ({ isOpen, onClose, data, userId, deleteFor }) => {
         toast.success(response.message);
       } else if (deleteFor === "admin") {
         const response = await deleteAdmin({ userId });
+        console.log(response);
+        if (response.detail.email === currentAdmin.email && response.detail.username === currentAdmin.username) {
+          dispatch(logoutAdmin());
+          navigate("/adminlogin");
+        }
         toast.success(response.message);
       }
       onClose();
