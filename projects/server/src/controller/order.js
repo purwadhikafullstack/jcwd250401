@@ -148,7 +148,7 @@ exports.confirmShip = async (req, res) => {
       });
     }
 
-    order.status = "waiting-approval";
+    order.status = "on-delivery";
 
     await order.save();
     return res.status(200).json({
@@ -203,16 +203,16 @@ exports.confirmShipUser = async (req, res) => {
 
 exports.automaticConfirmShipping = async (req, res) => {
   try {
-    // Fetch orders with status 'waiting-approval'
+    // Fetch orders with status 'on-delivery'
     const orders = await Order.findAll({
       where: {
-        status: "waiting-approval",
+        status: "on-delivery",
       },
     });
 
-    // Check if there are no orders with status 'waiting-approval'
+    // Check if there are no orders with status 'on-delivery'
     if (!orders.length) {
-      return console.log("No orders with status 'waiting-approval' found");
+      return console.log("No orders with status 'on-delivery' found");
     }
 
     const now = Date.now();
@@ -236,7 +236,7 @@ exports.automaticConfirmShipping = async (req, res) => {
         // Ensure order is not undefined before updating
 
         if (order && order.update) {
-          await order.update({ status: "shipped" });
+          await order.update({ status: "delivered" });
         }
       })
     );
