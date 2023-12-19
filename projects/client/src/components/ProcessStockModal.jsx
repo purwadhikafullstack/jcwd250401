@@ -1,6 +1,6 @@
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalOverlay } from "@chakra-ui/react";
 import processStockOrder from "../api/mutation/processStockOrder";
-import {toast} from "sonner";
+import { toast } from "sonner";
 
 export const ProcessStockModal = ({ isOpen, onClose, data, action }) => {
   const handleProcessOrder = async () => {
@@ -27,7 +27,7 @@ export const ProcessStockModal = ({ isOpen, onClose, data, action }) => {
       <ModalOverlay bg="none" backdropFilter="auto" backdropBlur="2px" />
       <ModalContent>
         <ModalHeader>
-          <h2>{action} Confirmation</h2>
+          <h2>{action.charAt(0).toUpperCase() + action.slice(1)} Confirmation</h2>
         </ModalHeader>
 
         <ModalBody>

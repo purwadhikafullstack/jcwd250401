@@ -35,8 +35,8 @@ export const Address = () => {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [selectedProvince, setSelectedProvince] = useState("");
   const [selectedCityByProvince, setSelectedCityByProvince] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const defaultAddress = userAddressLists.find((address) => address.setAsDefault);
-  const provinceIdToName = provinceLists.filter((province) => province.province_id === selectedProvince)[0]?.province;
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -69,6 +69,7 @@ export const Address = () => {
     }),
     onSubmit: async (values) => {
       try {
+        setIsSubmitting(true);
         const response = await addNewAddress({
           userId,
           street: values.street,
@@ -100,6 +101,10 @@ export const Address = () => {
             }, 2000);
           }
         }
+      } finally {
+        setTimeout(() => {
+          setIsSubmitting(false);
+        }, 2000);
       }
     },
   });
@@ -460,12 +465,12 @@ export const Address = () => {
                               id="phoneNumber"
                               name="phoneNumber"
                               pattern="[0-9]*"
-                              inputMode="numeric" 
+                              inputMode="numeric"
                               placeholder="Enter your phone number"
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500"
                               {...formik.getFieldProps("phoneNumber")}
                               onChange={(e) => {
-                                const sanitizedValue = e.target.value.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+                                const sanitizedValue = e.target.value.replace(/[^0-9]/g, ""); // Remove non-numeric characters
                                 formik.setFieldValue("phoneNumber", sanitizedValue);
                               }}
                             />
@@ -474,7 +479,7 @@ export const Address = () => {
                         </div>
 
                         <div className="flex flex-row items-center mt-5">
-                          <button type="submit" className="w-[25%] sm:w-[35%] h-[7vh] border bg-[#40403F] hover:bg-[#555554] text-white rounded-md font-semibold mb-3">
+                          <button type="submit" disabled={isSubmitting} className="w-[25%] sm:w-[35%] h-[7vh] border bg-[#40403F] hover:bg-[#555554] text-white rounded-md font-semibold mb-3">
                             Register
                           </button>
                         </div>

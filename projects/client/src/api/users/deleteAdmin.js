@@ -1,6 +1,6 @@
 import api from "../../api";
 
-const deleteAdmin = async ({ userId } = {}) => {
+const deleteAdmin = async ({ userId }) => {
   try {
     const response = await api.admin.delete(`/api/users/admin/${userId}`);
     return response.data;

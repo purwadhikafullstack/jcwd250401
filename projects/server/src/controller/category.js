@@ -42,12 +42,11 @@ exports.createCategory = async (req, res) => {
     const category = await Category.findOne({
       where: {
         name: name.charAt(0).toUpperCase() + name.slice(1),
-        parentCategoryId,
       },
     });
 
     if (category) {
-      return res.status(403).json({
+      return res.status(400).json({
         ok: false,
         message: "Category already exists",
       });
