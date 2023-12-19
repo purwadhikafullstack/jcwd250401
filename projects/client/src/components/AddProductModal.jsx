@@ -158,7 +158,7 @@ function AddProductModal({ isOpen, isClose }) {
   useEffect(() => {
     const fetchSubCategories = async () => {
       try {
-        const response = await api.admin.get("/category/sub-categories", {
+        const response = await api.admin.get("/api/category/sub-categories", {
           params: {
             mainCategory: formik.values.productMainCategory,
           },

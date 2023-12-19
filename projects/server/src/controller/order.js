@@ -183,7 +183,7 @@ exports.confirmShipUser = async (req, res) => {
       });
     }
 
-    order.status = "delivered";
+    order.status = "on-delivery";
 
     await order.save();
 
@@ -1393,36 +1393,30 @@ exports.cancelUnpaidOrder = async (req, res) => {
 exports.cancelOrderUser = async (req, res) => {
   const t = await sequelize.transaction();
   const { orderId, productId } = req.body;
+  const { id: userId } = req.user;
 
   try {
-    const orderItem = await OrderItem.findOne({
-      where: { orderId, productId },
+    const order = await Order.findByPk(orderId, {
+      where: { userId },
       include: [
         {
-          model: Order,
+          model: OrderItem,
           include: [
             {
               model: Warehouse,
               include: [
-                {
-                  model: Mutation,
-                  where: { productId, status: "success" },
-                  order: [["createdAt", "DESC"]],
-                  limit: 1,
-                },
-                {
-                  model: WarehouseAddress,
-                  attributes: ["latitude", "longitude"],
-                },
+                { model: Mutation, where: { status: "success", productId }, order: [["createdAt", "DESC"]], limit: 1 },
+                { model: WarehouseAddress, attributes: ["latitude", "longitude"] },
               ],
-            },
+            }
           ],
-        },
+        }
       ],
       transaction: t,
     });
 
-    if (!orderItem) {
+
+    if (!order) {
       await t.rollback();
       return res.status(404).json({
         ok: false,
@@ -1431,52 +1425,50 @@ exports.cancelOrderUser = async (req, res) => {
       });
     }
 
-    if (orderItem.Order.status === "unpaid") {
-      // Update status to 'cancelled' for orders that are not yet processed
-      orderItem.Order.status = "cancelled";
-      await orderItem.Order.save({ transaction: t });
-    } else if (orderItem.Order.status === "processed") {
-      // Handle stock adjustment for orders that have been processed
-      const stockProductAtCurrentWarehouse = orderItem.Order.Warehouse.Mutations[0].stock;
-      const orderQuantity = orderItem.quantity;
+    for (const orderItem of order.OrderItems) {
+      if (orderItem.Order.status === "processed") {
+        // Handle stock adjustment for orders that have been processed
+        const stockProductAtCurrentWarehouse = orderItem.Order.Warehouse.Mutations[0].stock;
+        const orderQuantity = orderItem.quantity;
 
-      // Create mutation for reverting stock at source warehouse
-      const newMutationForSourceWarehouse = await Mutation.create(
-        {
-          productId,
-          warehouseId: orderItem.Order.Warehouse.id,
-          mutationQuantity: orderQuantity,
-          previousStock: stockProductAtCurrentWarehouse,
-          mutationType: "add", // Revert the stock subtraction
-          adminId: orderItem.Order.Warehouse.adminId,
-          stock: stockProductAtCurrentWarehouse + orderQuantity,
-          status: "success",
-          isManual: false,
-          description: "Order cancellation, stock added back due to order cancellation.",
-        },
-        { transaction: t }
-      );
+        // Create mutation for reverting stock at source warehouse
+        const newMutationForSourceWarehouse = await Mutation.create(
+          {
+            productId: orderItem.productId,
+            warehouseId: orderItem.Order.Warehouse.id,
+            mutationQuantity: orderQuantity,
+            previousStock: stockProductAtCurrentWarehouse,
+            mutationType: "add", // Revert the stock subtraction
+            adminId: orderItem.Order.Warehouse.adminId,
+            stock: stockProductAtCurrentWarehouse + orderQuantity,
+            status: "success",
+            isManual: false,
+            description: "Order cancellation, stock added back due to order cancellation.",
+          },
+          { transaction: t }
+        );
 
-      // Create a corresponding journal entry
-      await Journal.create(
-        {
-          mutationId: newMutationForSourceWarehouse.id,
-          productId,
-          warehouseId: orderItem.Order.Warehouse.id,
-          mutationQuantity: orderQuantity,
-          previousStock: stockProductAtCurrentWarehouse,
-          mutationType: "add",
-          adminId: orderItem.Order.Warehouse.adminId,
-          stock: stockProductAtCurrentWarehouse + orderQuantity,
-          status: "success",
-          isManual: false,
-          description: "Order cancellation, stock added back due to order cancellation.",
-        },
-        { transaction: t }
-      );
+        // Create a corresponding journal entry
+        await Journal.create(
+          {
+            mutationId: newMutationForSourceWarehouse.id,
+            productId: orderItem.productId,
+            warehouseId: orderItem.Order.Warehouse.id,
+            mutationQuantity: orderQuantity,
+            previousStock: stockProductAtCurrentWarehouse,
+            mutationType: "add",
+            adminId: orderItem.Order.Warehouse.adminId,
+            stock: stockProductAtCurrentWarehouse + orderQuantity,
+            status: "success",
+            isManual: false,
+            description: "Order cancellation, stock added back due to order cancellation.",
+          },
+          { transaction: t }
+        );
 
-      orderItem.Order.status = "cancelled";
-      await orderItem.Order.save({ transaction: t });
+        orderItem.Order.status = "cancelled";
+        await orderItem.Order.save({ transaction: t });
+      }
     }
 
     await t.commit();

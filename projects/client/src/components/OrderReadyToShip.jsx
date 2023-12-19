@@ -3,12 +3,24 @@ import { Button } from 'flowbite-react';
 import { useState, useEffect } from 'react';
 import PaymentModal from './PaymentModal';
 import confirmShip from '../api/order/confirmShip';
+import cancelUnpaidOrder from '../api/order/cancelUnpaidOrder';
 import { FaEllipsisV } from 'react-icons/fa';
 import { Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
 
 function OrderReadyToShip({ orders, fetchOrders }) { 
   const [paymentModalIsOpen, setPaymentModalIsOpen] = useState(false);
   const [paymentProof, setPaymentProof] = useState('');
+
+  const handleCancelUnpaidOrder = async (orderId) => {
+    try {
+      const response = await cancelUnpaidOrder({ orderId });
+      // Update state and UI based on response
+      fetchOrders();
+    } catch (error) {
+      // Handle error
+      console.error('Error rejecting payment:', error);
+    }
+  };
 
   const handlePaymentModalOpen = (paymentProof) => {
     setPaymentModalIsOpen(true);
@@ -129,7 +141,7 @@ function OrderReadyToShip({ orders, fetchOrders }) {
               <div className="flex justify-end gap-2">
                 {/* Action buttons here, if needed */}
                 <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
-                  <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm">
+                  <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleCancelUnpaidOrder(Order.id)}>
                     Reject Order
                   </Button>
                   <Button color="dark" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleConfirmShip(Order.id)}>
