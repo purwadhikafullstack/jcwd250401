@@ -622,6 +622,7 @@ exports.handleAdminLogin = async (req, res) => {
         username: account.username,
         email: account.email,
         isWarehouseAdmin: account.isWarehouseAdmin,
+        warehouse: account.Warehouse,
       },
     };
 

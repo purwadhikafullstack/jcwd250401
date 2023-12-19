@@ -14,9 +14,10 @@ import getSingleAdmin from "../api/users/getSingleAdmin";
 import getWarehouseByAdmin from "../api/warehouse/getWarehouseByAdmin";
 import OrderList from "../components/OrderList";
 import OrderReadyToShip from "../components/OrderReadyToShip";
+import OrderShipped from "../components/OrderShipped";
 
 function OrderCust() {
-  const navList = ["All Orders", "New Orders", "Ready to Ship", "On Delivery", "Completed", "Cancelled"];
+  const navList = ["All Orders", "New Orders", "Ready to Ship", "Completed", "Cancelled"];
   const months = [
     { name: "January", number: 1 },
     { name: "February", number: 2 },
@@ -202,8 +203,7 @@ function OrderCust() {
             {selectedComponent === "All Orders" && <OrderList orders={orders} fetchOrders={fetchOrders}/>}
             {selectedComponent === "New Orders"}
             {selectedComponent === "Ready to Ship" && <OrderReadyToShip orders={orders} fetchOrders={fetchOrders}/>}
-            {selectedComponent === "On Delivery"}
-            {selectedComponent === "Completed"}
+            {selectedComponent === "Completed" && <OrderShipped orders={orders} fetchOrders={fetchOrders}/>}
             {selectedComponent === "Cancelled"}
           </div>
           </div>

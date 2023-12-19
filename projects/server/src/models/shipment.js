@@ -11,7 +11,9 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       Shipment.belongsTo(models.Address, {  foreignKey: 'addressId' });
+      Shipment.belongsTo(models.Order, {  foreignKey: 'orderId' });
     }
+
   }
   Shipment.init({
     name: DataTypes.STRING,

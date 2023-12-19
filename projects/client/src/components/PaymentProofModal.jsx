@@ -11,7 +11,7 @@ import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseBu
 import getProfile from "../api/profile/getProfile";
 import uploadPayProof from "../api/order/uploadPayProof";
 
-export const PaymentProofModal = ({ orderId, isOpen, onClose }) => {
+export const PaymentProofModal = ({ orderId, paymentBy, totalPrice, isOpen, onClose }) => {
   const isLogin = useSelector((state) => state?.account?.isLogin);
   const userName = useSelector((state) => state?.account?.profile?.data?.profile?.username);
   const token = useSelector((state) => state?.account?.profile?.data?.token);
@@ -111,8 +111,23 @@ export const PaymentProofModal = ({ orderId, isOpen, onClose }) => {
       getUserData();
     }
   }, [userDataInformation]);
+
+  const handleCloseModal = () => {
+    onClose();
+    navigate("/account/my-order");
+  };
+
+  const formatToRupiah = (number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(number);
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered size={"lg"}>
+    <Modal isOpen={isOpen} onClose={handleCloseModal} isCentered size={"lg"}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Payment Confirmation</ModalHeader>
@@ -120,9 +135,32 @@ export const PaymentProofModal = ({ orderId, isOpen, onClose }) => {
         <form onSubmit={formik.handleSubmit}>
           <ModalBody>
             <div className="flex flex-col justify-center items-center">
-              <p className="text-center mb-5 font-bold text-lg">Please upload your payment proof</p>
+              <p className="text-center mb-5 font-semibold text-lg">Please upload your payment proof</p>
+              {paymentBy !== null && (
+                <div className="flex flex-col justify-center items-center gap-2">
+                  {paymentBy === "MANDIRI" && (
+                    <div className="flex flex-col items-center">
+                      <span className="font-bold"> Bank Mandiri 15900039222</span>
+                      <span>PT. RAINS INDONESIA Tbk.</span>
+                    </div>
+                  )}
+                  {paymentBy === "BCA" && (
+                    <div className="flex flex-col items-center">
+                      <span className="font-bold"> Bank Central Asia 122938888022</span>
+                      <span>PT. RAINS INDONESIA Tbk.</span>
+                    </div>
+                  )}
+                  {paymentBy === "BNI" && (
+                    <div className="flex flex-col items-center">
+                      <span className="font-bold"> Bank Negara Indonesia 128273777779</span>
+                      <span>PT. RAINS INDONESIA Tbk.</span>
+                    </div>
+                  )}
+                </div>
+              )}
+              <span className="font-bold"> {formatToRupiah(totalPrice)} </span>
               <div>
-                <div {...getRootProps()} className="h-[35vh] w-[65vw] sm:w-[25vw] border-2 border-gray-400 rounded-md cursor-pointer hover:border-gray-600">
+                <div {...getRootProps()} className=" mt-4 h-[35vh] w-[65vw] sm:w-[25vw] border-2 border-gray-400 rounded-md cursor-pointer hover:border-gray-600">
                   <input {...getInputProps()} name="paymentProofImage" />
                   {preview ? (
                     <div className="h-full w-full">
