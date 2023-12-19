@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import api from "../api";
 import { toast } from "sonner";
 import { BsTrash3Fill } from "react-icons/bs";
 import { FiEdit } from "react-icons/fi";
