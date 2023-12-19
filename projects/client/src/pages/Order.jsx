@@ -8,10 +8,14 @@ import { toast } from "sonner";
 import { PaymentProofModal } from "../components/PaymentProofModal";
 import getProfile from "../api/profile/getProfile";
 import getUserOrder from "../api/order/getUserOrder";
-import { Box, Button, Flex, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, IconButton, Text } from "@chakra-ui/react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { PiCamera, PiUploadSimple, PiUploadSimpleBold } from "react-icons/pi";
+import { Menu, MenuButton, MenuList, MenuItem, MenuItemOption, MenuGroup, MenuOptionGroup, MenuDivider } from "@chakra-ui/react";
+import { PiCamera, PiDotsThreeOutlineVerticalBold, PiDotsThreeOutlineVerticalFill, PiShoppingBag, PiUploadSimple, PiUploadSimpleBold } from "react-icons/pi";
+import CancelUnpaidOrder from "../components/CancelUnpaidOrder";
+import { FaShoppingBag } from "react-icons/fa";
+import ConfirmDelivered from "../components/ConfirmDelivered.jsx";
 
 export const Order = () => {
   let isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
@@ -32,6 +36,8 @@ export const Order = () => {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
   const [remainingTimes, setRemainingTimes] = useState({});
+  const [openCancelUnpaidOrderModal, setOpenCancelUnpaidOrderModal] = useState(false);
+  const [openConfirmDeliveredModal, setOpenConfirmDeliveredModal] = useState(false);
 
   useEffect(() => {
     const loadingTimeout = setTimeout(() => {
@@ -119,6 +125,16 @@ export const Order = () => {
     setSelectedPaymentProof(paymentBy);
     setSelectedTotalPrice(totalPrice);
     setOpenModalProof(true);
+  };
+
+  const handleOpenCancelUnpaidOrderModal = (orderId) => {
+    setSelectedOrder(orderId);
+    setOpenCancelUnpaidOrderModal(true);
+  };
+
+  const handleOpenConfirmDeliveredModal = (orderId) => {
+    setSelectedOrder(orderId);
+    setOpenConfirmDeliveredModal(true);
   };
 
   const getOrderLists = async () => {
@@ -369,26 +385,55 @@ export const Order = () => {
                     return (
                       <div key={index} className="border border-gray-200 rounded-md px-4 lg:px-4 py-4 lg:py-4 bg-gray-50">
                         <div className="flex justify-between items-center">
+                          <div className="flex space-x-2 items-center lg:items-start">
+                            <FaShoppingBag size="16px" />
+                            <span className="text-gray-900 lg:block hidden text-sm lg:text-md">
+                              {date}, {time}
+                            </span>
+                            <div className="lg:hidden flex flex-col">
+                              <span className="text-gray-900 text-sm lg:text-md">{date}</span>
+                              <span className="text-gray-900 text-sm lg:text-md">{time}</span>
+                            </div>
+                          </div>
                           <div className="flex space-x-4 items-center ">
-                            <span className="bg-gray-900 text-gray-100 px-4 py-1 rounded-md  text-sm lg:text-md">{getStatusLabel(orderItem.status)}</span>
                             <div className={`${remainingTime && remainingTime.hours < 0 ? "text-red-500" : ""}`}>
                               <span className="font-bold text-sm">
                                 {remainingTime ? `${formatTime(Math.max(remainingTime.hours, 0))}:${formatTime(Math.max(remainingTime.minutes, 0))}:${formatTime(Math.max(remainingTime.seconds, 0))}` : ""}
                               </span>
                             </div>
+                            <span className="bg-gray-900 text-gray-100 px-4 py-1 rounded-md  text-sm lg:text-md">{getStatusLabel(orderItem.status)}</span>
                             {orderItem.status === "unpaid" && (
                               <>
-                                {remainingTime && remainingTime.hours > 0 && (
-                                  <span onClick={() => handleOpenModalProof(orderItem.orderId, orderItem.paymentBy, orderItem.totalPrice)} className="hidden lg:block text-sm cursor-pointer font-semibold">
-                                    Upload payment proof
-                                  </span>
+                                {remainingTime && (
+                                  <>
+                                    <Menu>
+                                      <MenuButton as={IconButton} aria-label="Options" icon={<PiDotsThreeOutlineVerticalFill />} variant="ghost" />
+                                      <MenuList>
+                                        <MenuItem fontSize="sm" onClick={() => handleOpenModalProof(orderItem.orderId, orderItem.paymentBy, orderItem.totalPrice)}>
+                                          Upload payment proof
+                                        </MenuItem>
+                                        <MenuItem fontSize="sm" onClick={() => handleOpenCancelUnpaidOrderModal(orderItem.orderId)}>
+                                          Cancel order
+                                        </MenuItem>
+                                      </MenuList>
+                                    </Menu>
+                                  </>
                                 )}
                               </>
                             )}
+                            {orderItem.status === "on-delivery" && (
+                              <>
+                                <Menu>
+                                  <MenuButton as={IconButton} aria-label="Options" icon={<PiDotsThreeOutlineVerticalFill />} variant="ghost" />
+                                  <MenuList>
+                                    <MenuItem fontSize="sm" onClick={() => handleOpenConfirmDeliveredModal(orderItem.orderId)}>
+                                      Shipment Received
+                                    </MenuItem>
+                                  </MenuList>
+                                </Menu>
+                              </>
+                            )}
                           </div>
-                          <span className="text-gray-900 text-sm lg:text-md">
-                            {date}, {time}
-                          </span>
                         </div>
                         <div className={`mt-4 flex justify-between ${orderItem.status === "cancelled" ? "opacity-60" : ""}`}>
                           <div className="flex lg:flex-row flex-col justify-between w-full">
@@ -443,15 +488,6 @@ export const Order = () => {
                                 <span className="text-sm lg:text-xs">Shipment cost: {formatToRupiah(orderItem.Shipment.cost)} </span>
                                 <hr className="lg:mt-0 mt-2" />
                                 <span className="font-bold mt-1 lg:text-xs">Subtotal: {formatToRupiah(orderItem.totalPrice)} </span>
-                                {orderItem.status === "unpaid" && (
-                                  <div className="lg:hidden">
-                                    {remainingTime && remainingTime.hours > 0 && (
-                                      <Button mt={4} color="white" bgColor="gray.900" _hover={{ bgColor: "gray.700" }} size="xs" onClick={() => handleOpenModalProof(orderItem.orderId, orderItem.paymentBy, orderItem.totalPrice)}>
-                                        Upload payment proof
-                                      </Button>
-                                    )}
-                                  </div>
-                                )}
                               </div>
                             </div>
                           </div>
@@ -523,6 +559,8 @@ export const Order = () => {
         </div>
       </div>
       <PaymentProofModal isOpen={openModalProof} onClose={() => setOpenModalProof(false)} orderId={selectedOrder} paymentBy={selectedPaymentProof} totalPrice={selectedTotalPrice} />
+      <CancelUnpaidOrder isOpen={openCancelUnpaidOrderModal} onClose={() => setOpenCancelUnpaidOrderModal(false)} orderId={selectedOrder} onSuccess={getOrderLists} />
+      <ConfirmDelivered isOpen={openConfirmDeliveredModal} onClose={() => setOpenConfirmDeliveredModal(false)} orderId={selectedOrder} onSuccess={getOrderLists} />
     </>
   );
 };

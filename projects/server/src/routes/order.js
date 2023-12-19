@@ -13,12 +13,20 @@ router.post("/cost", authMiddleware.validateToken, orderController.getOrderCost)
 router.post("/", authMiddleware.validateToken, orderController.createOrder);
 router.patch("/confirm-payment", authMiddleware.validateToken, orderController.confirmPaymentProofUser);
 router.patch("/cancel-order", authMiddleware.validateToken, orderController.cancelOrderUser);
+router.patch("/cancel-unpaid-order", authMiddleware.validateToken, orderController.cancelUnpaidOrder);
 router.patch("/:id", authMiddleware.validateToken, orderController.confirmShip);
 router.patch("/user/:id", authMiddleware.validateToken, orderController.confirmShipUser);
 router.patch("/reject/:id", authMiddleware.validateToken, orderController.rejectPayment);
 router.get("/sales-report", authMiddleware.validateToken, orderController.getSalesReport);
 
-// Automatic confirmation of shipping testing 1 min interval
+
+
+
+
+
+
+
+
 
 // Schedule job to run every 1 day
 schedule.scheduleJob('*/1440 * * * *', async () => {
