@@ -10,15 +10,16 @@ function CancelUnpaidOrder({ isOpen, onClose, orderId, onSuccess }) {
       const response = await cancelUnpaidOrder({ orderId });
       onClose();
       onSuccess();
-      toast.success(response.data.message);
+      console.log(response);
+      toast.success(response.message);
     } catch (error) {
       if (error.response && error.response.status === 400) {
-        toast.error(error.response.data.message, {
-          description: error.response.data.detail,
+        toast.error(error.response.message, {
+          description: error.response.detail,
         });
       } else if (error.response && error.response.status === 500) {
-        toast.error(error.response.data.message, {
-          description: error.response.data.detail,
+        toast.error(error.response.message, {
+          description: error.response.detail,
         });
       } else if (error.request) {
         // Handle request errors

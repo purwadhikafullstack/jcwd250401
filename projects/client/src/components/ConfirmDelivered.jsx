@@ -11,7 +11,8 @@ function ConfirmDelivered({ isOpen, onClose, orderId, onSuccess }) {
       const response = await confirmShipUser({ orderId });
       onClose();
       onSuccess();
-      toast.success(response.data.message);
+      console.log(response);
+      toast.success(response.message);
     } catch (error) {
       if (error.response && error.response.status === 400) {
         toast.error(error.response.data.message, {
