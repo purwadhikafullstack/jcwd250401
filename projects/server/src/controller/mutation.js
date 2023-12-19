@@ -121,7 +121,14 @@ exports.summaryTotalStock = async (req, res) => {
         "warehouseId",
         [literal(`SUM(CASE WHEN mutationType = 'add' AND status = 'success' THEN mutationQuantity ELSE 0 END)`), "totalAddition"],
         [literal(`SUM(CASE WHEN mutationType = 'subtract' AND status = 'success' THEN mutationQuantity ELSE 0 END)`), "totalSubtraction"],
-        [literal("(SELECT stock FROM Mutations AS sub WHERE sub.productId = Mutation.productId AND sub.warehouseId = Mutation.warehouseId AND sub.status = 'success' ORDER BY sub.createdAt DESC LIMIT 1)"), "endingStock"],
+        [
+          literal(
+            `(SELECT stock FROM Mutations AS sub WHERE sub.productId = Mutation.productId AND sub.warehouseId = Mutation.warehouseId AND sub.status = 'success' AND ${
+              month ? "MONTH(sub.createdAt) = " + parseInt(month) : "MONTH(NOW())"
+            } ORDER BY sub.createdAt DESC LIMIT 1)`
+          ),
+          "endingStock",
+        ],
       ],
       where: {
         ...(warehouseId && {
@@ -150,7 +157,9 @@ exports.summaryTotalStock = async (req, res) => {
           SUM(CASE WHEN m.mutationType = 'add' AND m.status = 'success' THEN m.mutationQuantity ELSE 0 END) AS totalAddition,
           SUM(CASE WHEN m.mutationType = 'subtract' AND m.status = 'success' THEN m.mutationQuantity ELSE 0 END) AS totalSubtraction,
           -- Retrieve the latest stock for each product and warehouse
-          COALESCE((SELECT stock FROM Mutations AS sub WHERE sub.productId = m.productId AND sub.warehouseId = m.warehouseId AND sub.status = 'success' ORDER BY sub.createdAt DESC LIMIT 1), 0) AS endingStock
+          COALESCE((SELECT stock FROM Mutations AS sub WHERE sub.productId = m.productId AND sub.warehouseId = m.warehouseId AND sub.status = 'success' AND ${
+            month ? "MONTH(sub.createdAt) = " + parseInt(month) : "MONTH(NOW())"
+          } ORDER BY sub.createdAt DESC LIMIT 1), 0) AS endingStock
         FROM Mutations AS m
         -- Filter by warehouseId or month if provided
         WHERE m.status = 'success' 
@@ -421,7 +430,7 @@ exports.createManualStockMutation = async (req, res) => {
         stock: currentStockAtSourceWarehouse,
         status: "pending",
         isManual: true,
-        description: `Warehouse Admin mutation, ${sourceWarehouseName.name} -> ${destinationWarehouseName.name}`,
+        description: `Manual request stock, ${sourceWarehouseName.name} -> ${destinationWarehouseName.name}`,
         createdAt: date,
         updatedAt: date,
       },
@@ -599,7 +608,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
               stock: updatedStock,
               status: "success",
               isManual: true,
-              description: `Warehouse Admin mutation, Get new stock from ${sourceWarehouseName.name}`,
+              description: `Manual request stock, Get new stock from ${sourceWarehouseName.name}`,
             },
             { transaction: t }
           );
@@ -623,7 +632,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
               stock: updatedStock,
               status: "success",
               isManual: true,
-              description: `Warehouse Admin mutation, Get new stock from ${sourceWarehouseName.name}`,
+              description: `Manual request stock, Get new stock from ${sourceWarehouseName.name}`,
             },
             { transaction: t }
           );
@@ -648,7 +657,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
             stock: stockForDestinationWarehouse,
             status: "success",
             isManual: true,
-            description: `Warehouse Admin mutation, Get new stock from ${sourceWarehouseName.name}`,
+            description: `Manual request stock, Get new stock from ${sourceWarehouseName.name}`,
           });
 
           // update the latest status mutation journal
@@ -668,7 +677,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
             stock: stockForDestinationWarehouse,
             status: "success",
             isManual: true,
-            description: `Warehouse Admin mutation, Get new stock from ${sourceWarehouseName.name}`,
+            description: `Manual request stock, Get new stock from ${sourceWarehouseName.name}`,
           });
 
           await t.commit();

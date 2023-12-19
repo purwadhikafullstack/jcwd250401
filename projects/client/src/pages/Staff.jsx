@@ -204,8 +204,8 @@ export const Staff = () => {
                             <MenuList>
                               <MenuItem onClick={() => handleEditModal(admin)}>Edit</MenuItem>
                               {!admin.Warehouse?.adminId && <MenuItem onClick={() => handleDeleteModal(admin)}>Delete</MenuItem>}
-                              {admin.isWarehouseAdmin && <MenuItem onClick={() => handleAdminAssignmentModal(admin, "assign")}>Assign</MenuItem>}
-                              {admin.Warehouse?.adminId && <MenuItem onClick={() => handleAdminAssignmentModal(admin, "unassign")}>Unassign</MenuItem>}
+                              {admin?.isWarehouseAdmin && <MenuItem onClick={() => handleAdminAssignmentModal(admin, "assign")}>Assign</MenuItem>}
+                              {admin?.Warehouse?.adminId && <MenuItem onClick={() => handleAdminAssignmentModal(admin, "unassign")}>Unassign</MenuItem>}
                             </MenuList>
                           </Menu>
                         </Td>

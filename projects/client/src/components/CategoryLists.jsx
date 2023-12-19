@@ -13,6 +13,7 @@ export const CategoryLists = () => {
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [activeCategory, setActiveCategory] = useState(undefined);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [selectedMainCategory, setSelectedMainCategory] = useState(undefined);
@@ -44,10 +45,13 @@ export const CategoryLists = () => {
     }
   }, [categoryLists, page, size, selectedMainCategory]);
 
-  const handleSelectMainCategory = (category) => setSelectedMainCategory(category.id);
+  const handleSelectMainCategory = (category) => {
+    setSelectedMainCategory(category.id)
+    setActiveCategory(category.name);
+  };
   const handleOptionChange = (e) => {
-    if (e.target.value === "All") setSelectedMainCategory("All");
-    else setSelectedMainCategory(categories.find((category) => category.id === Number(e.target.value)));
+    if (e.target.value === "All") setSelectedMainCategory(undefined);
+    else setSelectedMainCategory(e.target.value);
   };
 
   const toggleDeleteModal = (category) => {
@@ -81,11 +85,11 @@ export const CategoryLists = () => {
           <div className="hidden md:flex gap-2 flex-wrap">
             {categories ? (
               <>
-                <div className="flex items-center justify-center bg-white w-[150px] h-[5vh] shadow-md rounded-md cursor-pointer hover:bg-gray-100" onClick={() => handleSelectMainCategory("All")}>
+                <div className={`flex items-center justify-center w-[150px] h-[5vh] shadow-md rounded-md cursor-pointer hover:bg-gray-100 ${activeCategory === undefined ? "bg-gray-100" : "bg-white"}`} onClick={() => handleSelectMainCategory("All")}>
                   <span className="text-lg font-bold text-gray-900 dark:text-white">All</span>
                 </div>
                 {categories.map((category, index) => (
-                  <div className="flex items-center justify-center bg-white w-[150px] h-[5vh] shadow-md rounded-md cursor-pointer hover:bg-gray-100" key={index} onClick={() => handleSelectMainCategory(category)}>
+                  <div className={`flex items-center justify-center w-[150px] h-[5vh] shadow-md rounded-md cursor-pointer hover:bg-gray-100 ${activeCategory === category.name ? "bg-gray-100" : "bg-white"}`} key={index} onClick={() => handleSelectMainCategory(category)}>
                     <span className="text-lg font-bold text-gray-900 dark:text-white">{category.name}</span>
                   </div>
                 ))}

@@ -171,6 +171,7 @@ exports.deleteAdmin = async (req, res) => {
     return res.status(200).json({
       ok: true,
       message: "Delete admin successfully",
+      detail: admin,
     });
   } catch (error) {
     console.error(error);

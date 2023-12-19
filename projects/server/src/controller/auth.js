@@ -526,7 +526,7 @@ exports.handleSendVerifyEmail = async (req, res) => {
 };
 
 exports.handleAdminRegister = async (req, res) => {
-  const { email, password, username = "admin", isWarehouseAdmin = false } = req.body;
+  const { email, password, isWarehouseAdmin = false } = req.body;
 
   try {
     existingAdmin = await Admin.findOne({
