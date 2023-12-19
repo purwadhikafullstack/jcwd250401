@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { NavPage } from "../components/NavPage";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { showLoginModal } from "../slices/authModalSlices";
 import api from "../api";
 import { toast } from "sonner";
@@ -38,21 +38,32 @@ export const Order = () => {
   const [remainingTimes, setRemainingTimes] = useState({});
   const [openCancelUnpaidOrderModal, setOpenCancelUnpaidOrderModal] = useState(false);
   const [openConfirmDeliveredModal, setOpenConfirmDeliveredModal] = useState(false);
+  const [expandedOrders, setExpandedOrders] = useState([]);
+
+  const toggleExpand = (index) => {
+    const newExpandedOrders = [...expandedOrders];
+    newExpandedOrders[index] = !newExpandedOrders[index];
+    setExpandedOrders(newExpandedOrders);
+  };
 
   useEffect(() => {
-    const loadingTimeout = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
+    const queryParams = new URLSearchParams(location.search);
+    const page = queryParams.get("page");
+    const status = queryParams.get("status");
+    const sort = queryParams.get("sort");
 
-    return () => clearTimeout(loadingTimeout); // Clear the timeout on component unmount
-  }, [page, sort, selectedStatus]);
+    if (page) {
+      setPage(parseInt(page));
+    }
 
-  useEffect(() => {
-    // Scroll to the top when the component is first rendered
-    window.scrollTo(0, 0);
-  }, []);
+    if (status) {
+      setSelectedStatus(status);
+    }
 
-  document.title = "RAINS - My Order";
+    if (sort) {
+      setSort(sort);
+    }
+  }, [location.search]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -67,17 +78,7 @@ export const Order = () => {
     });
   };
 
-  const [expandedOrders, setExpandedOrders] = useState([]);
-
-  const toggleExpand = (index) => {
-    const newExpandedOrders = [...expandedOrders];
-    newExpandedOrders[index] = !newExpandedOrders[index];
-    setExpandedOrders(newExpandedOrders);
-  };
-
   const handleStatusChange = (status) => {
-    setPage(1);
-
     const queryParams = new URLSearchParams(location.search);
     queryParams.set("status", status);
 
@@ -101,25 +102,24 @@ export const Order = () => {
     });
   };
 
+
   useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const page = queryParams.get("page");
-    const status = queryParams.get("status");
-    const sort = queryParams.get("sort");
+    setIsLoading(true);
+    const loadingTimeout = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
 
-    if (page) {
-      setPage(parseInt(page));
-    }
+    return () => clearTimeout(loadingTimeout); // Clear the timeout on component unmount
+  }, [selectedStatus, page, sort]);
 
-    if (status) {
-      setSelectedStatus(status);
-    }
+  useEffect(() => {
+    // Scroll to the top when the component is first rendered
+    window.scrollTo(0, 0);
+  }, []);
 
-    if (sort) {
-      setSort(sort);
-    }
-  }, [location.search]);
+  document.title = "RAINS - My Order";
 
+ 
   const handleOpenModalProof = (orderId, paymentBy, totalPrice) => {
     setSelectedOrder(orderId);
     setSelectedPaymentProof(paymentBy);
@@ -137,8 +137,10 @@ export const Order = () => {
     setOpenConfirmDeliveredModal(true);
   };
 
-  const getOrderLists = async () => {
+  const getOrderLists = useCallback(async () => {
     try {
+      if (!isLoggedIn) return;
+
       const response = await getUserOrder({
         status: selectedStatus,
         page,
@@ -147,8 +149,6 @@ export const Order = () => {
       });
       setOrderLists(response.detail);
       setTotalPages(response.pagination.totalPages);
-
-      console.log(response.detail);
     } catch (error) {
       if (error.response.status === 401 || error.response.status === 403) {
         toast.error(error.response.data.message);
@@ -162,13 +162,11 @@ export const Order = () => {
         setOrderLists([]);
       }
     }
-  };
+  }, [selectedStatus, page, sort]);
 
   useEffect(() => {
-    if (isLoggedIn) {
-      getOrderLists();
-    }
-  }, [selectedStatus, page, size, sort]);
+    getOrderLists();
+  }, [getOrderLists, selectedStatus, page, size, sort]);
 
   const formatToRupiah = (number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -401,7 +399,9 @@ export const Order = () => {
                                 {remainingTime ? `${formatTime(Math.max(remainingTime.hours, 0))}:${formatTime(Math.max(remainingTime.minutes, 0))}:${formatTime(Math.max(remainingTime.seconds, 0))}` : ""}
                               </span>
                             </div>
-                            <span className="bg-gray-900 text-gray-100 px-4 py-1 rounded-md  text-sm lg:text-md">{getStatusLabel(orderItem.status)}</span>
+                            <span className={`px-4 py-1 rounded-md text-sm lg:text-md ${orderItem.status === "cancelled" ? "bg-red-700" : "bg-gray-900"} ${orderItem.status === "delivered" ? "bg-green-500" : "bg-gray-900"} text-gray-100`}>
+                              {getStatusLabel(orderItem.status)}
+                            </span>
                             {orderItem.status === "unpaid" && (
                               <>
                                 {remainingTime && (
@@ -435,7 +435,7 @@ export const Order = () => {
                             )}
                           </div>
                         </div>
-                        <div className={`mt-4 flex justify-between ${orderItem.status === "cancelled" ? "opacity-60" : ""}`}>
+                        <div className={`mt-4 flex justify-between ${orderItem.status === "cancelled" ? "opacity-50" : ""}`}>
                           <div className="flex lg:flex-row flex-col justify-between w-full">
                             <div className="flex flex-col space-y-4 mb-4">
                               {orderItem.Products.slice(0, expandedOrders[index] ? orderItem.Products.length : 1).map((product, productIndex) => (
@@ -503,7 +503,7 @@ export const Order = () => {
                   </div>
                 )}
               </div>
-              {totalPages > 1 && (
+              {orderLists.length > 0 && totalPages > 1 && (
                 <Box display="flex" justifyContent="right" gap={2} mt={4} textAlign="right" mr={4}>
                   <Flex alignItems={"center"} gap={2}>
                     <Text mr={2} fontWeight={"bold"}>
