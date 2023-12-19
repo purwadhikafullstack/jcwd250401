@@ -183,14 +183,13 @@ exports.confirmShipUser = async (req, res) => {
       });
     }
 
-    order.status = "shipped";
+    order.status = "delivered";
 
     await order.save();
 
     return res.status(200).json({
       ok: true,
       message: "Shipping confirmed successfully",
-      
     });
   } catch (error) {
     console.error(error);
@@ -204,7 +203,7 @@ exports.confirmShipUser = async (req, res) => {
 
 exports.automaticConfirmShipping = async (req, res) => {
   try {
-    // Fetch orders with status 'waiting-approval' 
+    // Fetch orders with status 'waiting-approval'
     const orders = await Order.findAll({
       where: {
         status: "waiting-approval",
@@ -235,7 +234,7 @@ exports.automaticConfirmShipping = async (req, res) => {
     await Promise.all(
       ordersToConfirm.map(async (order) => {
         // Ensure order is not undefined before updating
-        
+
         if (order && order.update) {
           await order.update({ status: "shipped" });
         }
@@ -1355,6 +1354,41 @@ exports.getSalesReport = async (req, res) => {
   }
 };
 
+exports.cancelUnpaidOrder = async (req, res) => {
+  const { orderId } = req.body;
+  const { id: userId } = req.user;
+
+  try {
+    const order = await Order.findByPk(orderId, {
+      where: {
+        status: "unpaid",
+        userId,
+      },
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        ok: false,
+        message: "Order not found",
+      });
+    }
+
+    order.status = "cancelled";
+    await order.save();
+
+    return res.status(200).json({
+      ok: true,
+      message: "Order cancelled successfully",
+      detail: order,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+    });
+  }
+};
 
 exports.cancelOrderUser = async (req, res) => {
   const t = await sequelize.transaction();
@@ -1463,4 +1497,3 @@ exports.cancelOrderUser = async (req, res) => {
     });
   }
 };
-
