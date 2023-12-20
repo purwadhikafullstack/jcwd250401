@@ -7,6 +7,8 @@ import { EditCategoryModal } from "./EditCategoryModal";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import getCategories from "../api/categories/getCategories";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 
 export const CategoryLists = () => {
   const isWarehouseAdmin = useSelector((state) => state?.account?.isWarehouseAdmin);
@@ -19,6 +21,7 @@ export const CategoryLists = () => {
   const [selectedMainCategory, setSelectedMainCategory] = useState(undefined);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
   const categoryLists = useSelector((state) => state?.category?.categoryLists);
   const size = 5;
   const navigate = useNavigate();
@@ -28,6 +31,9 @@ export const CategoryLists = () => {
       const mainCategoryResponse = await getCategories({ minId: 1, maxId: 5 });
       const subCategoryResponse = await getCategories({ minId: 6, page, size, parentCategoryId: selectedMainCategory });
 
+      if (mainCategoryResponse.detail.ok) {
+        setIsLoading(false);
+      }
       setCategories(mainCategoryResponse.detail);
       setSubcategories(subCategoryResponse.detail);
       setHasMore(subCategoryResponse.detail?.length === size); // if the length of the response is equal to the size, then there are more data to be fetched
@@ -46,7 +52,7 @@ export const CategoryLists = () => {
   }, [categoryLists, page, size, selectedMainCategory]);
 
   const handleSelectMainCategory = (category) => {
-    setSelectedMainCategory(category.id)
+    setSelectedMainCategory(category.id);
     setActiveCategory(category.name);
   };
   const handleOptionChange = (e) => {
@@ -83,13 +89,20 @@ export const CategoryLists = () => {
 
           <h2 className="md:flex text-sm font-semibold text-gray-900 dark:text-white">Main Categories</h2>
           <div className="hidden md:flex gap-2 flex-wrap">
-            {categories ? (
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, index) => <Skeleton key={index} width={"150px"} height={"5vh"} className="shadow-md rounded-md" />)
+            ) : categories ? (
               <>
-                <div className={`flex items-center justify-center w-[150px] h-[5vh] shadow-md rounded-md cursor-pointer hover:bg-gray-100 ${activeCategory === undefined ? "bg-gray-100" : "bg-white"}`} onClick={() => handleSelectMainCategory("All")}>
+                <div
+                  className={`flex items-center justify-center w-[150px] h-[5vh] shadow-md rounded-md cursor-pointer hover:bg-gray-100 ${activeCategory === undefined ? "bg-gray-100" : "bg-white"}`}
+                  onClick={() => handleSelectMainCategory("All")}>
                   <span className="text-lg font-bold text-gray-900 dark:text-white">All</span>
                 </div>
                 {categories.map((category, index) => (
-                  <div className={`flex items-center justify-center w-[150px] h-[5vh] shadow-md rounded-md cursor-pointer hover:bg-gray-100 ${activeCategory === category.name ? "bg-gray-100" : "bg-white"}`} key={index} onClick={() => handleSelectMainCategory(category)}>
+                  <div
+                    className={`flex items-center justify-center w-[150px] h-[5vh] shadow-md rounded-md cursor-pointer hover:bg-gray-100 ${activeCategory === category.name ? "bg-gray-100" : "bg-white"}`}
+                    key={index}
+                    onClick={() => handleSelectMainCategory(category)}>
                     <span className="text-lg font-bold text-gray-900 dark:text-white">{category.name}</span>
                   </div>
                 ))}
