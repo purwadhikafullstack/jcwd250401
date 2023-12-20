@@ -2,7 +2,7 @@ import api from "../../api";
 
 const updateStock = async ({ productId, warehouseId, quantity, type }) => {
   try {
-    const response = await api.admin.post("/product/update-product-stock", {
+    const response = await api.admin.post("/api/product/update-product-stock", {
       productId,
       warehouseId,
       quantity,
