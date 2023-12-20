@@ -14,9 +14,14 @@ import getSuperAdmin from "../api/users/getSuperAdmin";
 export const RequestStockModal = ({ isOpen, onClose }) => {
   const isWarehouseAdmin = useSelector((state) => state?.account?.isWarehouseAdmin);
   const adminData = useSelector((state) => state?.account?.adminProfile?.data?.profile);
+  const currentUTCDateTime = new Date();
+  currentUTCDateTime.setHours(currentUTCDateTime.getHours() + 7);
+  const formattedDateTime = currentUTCDateTime.toISOString().split("T");
+  const currentDate = formattedDateTime[0];
+  const currentTime = formattedDateTime[1].substring(0, 8);
   const [warehouseList, setWarehouseList] = useState([]);
   const [productList, setProductList] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
+  const [selectedDate, setSelectedDate] = useState(`${currentDate}T${currentTime}`);
   const [selectedWarehouseIdOrigin, setSelectedWarehouseIdOrigin] = useState(null);
   const [selectedWarehouseNameOrigin, setSelectedWarehouseNameOrigin] = useState(null);
   const [selectedWarehouseIdDestination, setSelectedWarehouseIdDestination] = useState(null);
@@ -83,7 +88,7 @@ export const RequestStockModal = ({ isOpen, onClose }) => {
 
   const fetchProducts = async () => {
     try {
-      const response = await getProducts();
+      const response = await getProducts({ limit: 1000 });
       if (response.ok) {
         setProductList(response.details);
       }
@@ -156,14 +161,16 @@ export const RequestStockModal = ({ isOpen, onClose }) => {
                   <CalendarIcon color="gray.300" />
                 </InputLeftElement>
                 <Input
-                  type="date"
+                  type="datetime-local"
                   value={selectedDate}
                   onChange={(e) => {
-                    const date = new Date(e.target.value);
-                    const formatedDate = date.toISOString().split("T")[0];
-                    setSelectedDate(formatedDate);
+                    const dateTimeValue = e.target.value;
+                    const formattedDateTime = dateTimeValue.replace(/:00$/, "");
+                    console.log(formattedDateTime);
+                    setSelectedDate(formattedDateTime);
                   }}
                   min={new Date().toISOString().split("T")[0]}
+                  step="60" 
                 />
               </InputGroup>
             </Box>
@@ -201,8 +208,8 @@ export const RequestStockModal = ({ isOpen, onClose }) => {
                   }}>
                   {isWarehouseAdmin ? (
                     <option>{selectedWarehouseNameDestination}</option>
-                    ) : (
-                      <>
+                  ) : (
+                    <>
                       <option disabled>Select warehouse destination</option>
                       {warehouseList?.map((warehouse, index) => (
                         <option key={index} value={warehouse.name}>

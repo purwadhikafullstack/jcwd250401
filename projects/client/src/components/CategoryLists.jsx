@@ -7,8 +7,6 @@ import { EditCategoryModal } from "./EditCategoryModal";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import getCategories from "../api/categories/getCategories";
-import Skeleton from "react-loading-skeleton";
-import "react-loading-skeleton/dist/skeleton.css";
 
 export const CategoryLists = () => {
   const isWarehouseAdmin = useSelector((state) => state?.account?.isWarehouseAdmin);
@@ -31,9 +29,6 @@ export const CategoryLists = () => {
       const mainCategoryResponse = await getCategories({ minId: 1, maxId: 5 });
       const subCategoryResponse = await getCategories({ minId: 6, page, size, parentCategoryId: selectedMainCategory });
 
-      if (mainCategoryResponse.detail.ok) {
-        setIsLoading(false);
-      }
       setCategories(mainCategoryResponse.detail);
       setSubcategories(subCategoryResponse.detail);
       setHasMore(subCategoryResponse.detail?.length === size); // if the length of the response is equal to the size, then there are more data to be fetched
@@ -89,9 +84,7 @@ export const CategoryLists = () => {
 
           <h2 className="md:flex text-sm font-semibold text-gray-900 dark:text-white">Main Categories</h2>
           <div className="hidden md:flex gap-2 flex-wrap">
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, index) => <Skeleton key={index} width={"150px"} height={"5vh"} className="shadow-md rounded-md" />)
-            ) : categories ? (
+             {categories ? (
               <>
                 <div
                   className={`flex items-center justify-center w-[150px] h-[5vh] shadow-md rounded-md cursor-pointer hover:bg-gray-100 ${activeCategory === undefined ? "bg-gray-100" : "bg-white"}`}
