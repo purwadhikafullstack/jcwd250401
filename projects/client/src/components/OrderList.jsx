@@ -23,9 +23,9 @@ function OrderList({ orders, fetchOrders }) {
     }
   };
 
-  const handleCancelOrder = async (orderId, productId) => {
+  const handleCancelOrder = async (orderId) => {
     try { 
-      const response = await cancelOrder({ orderId, productId });
+      const response = await cancelOrder({ orderId });
       // Update state and UI based on response
       fetchOrders();
     } catch (error) {
@@ -99,7 +99,7 @@ function OrderList({ orders, fetchOrders }) {
                   <FaEllipsisV className="text-xl" />
                 </MenuButton>
                 <MenuList>
-                  <MenuItem onClick={() => handleCancelOrder(Order.id, Product.id)}>Cancel Order</MenuItem>
+                  <MenuItem onClick={() => handleCancelOrder(Order.id)}>Cancel Order</MenuItem>
                 </MenuList>
               </Menu>
               )}

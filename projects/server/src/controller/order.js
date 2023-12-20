@@ -1392,31 +1392,38 @@ exports.cancelUnpaidOrder = async (req, res) => {
 
 exports.cancelOrderUser = async (req, res) => {
   const t = await sequelize.transaction();
-  const { orderId, productId } = req.body;
-  const { id: userId } = req.user;
+  const { orderId } = req.body;
 
   try {
-    const order = await Order.findByPk(orderId, {
-      where: { userId },
+    // Retrieve all order items associated with the order
+    const orderItems = await OrderItem.findAll({
+      where: { orderId },
       include: [
         {
-          model: OrderItem,
+          model: Order,
           include: [
             {
               model: Warehouse,
               include: [
-                { model: Mutation, where: { status: "success", productId }, order: [["createdAt", "DESC"]], limit: 1 },
-                { model: WarehouseAddress, attributes: ["latitude", "longitude"] },
+                {
+                  model: Mutation,
+                  where: { status: "success" },
+                  order: [["createdAt", "DESC"]],
+                  limit: 1,
+                },
+                {
+                  model: WarehouseAddress,
+                  attributes: ["latitude", "longitude"],
+                },
               ],
-            }
+            },
           ],
-        }
+        },
       ],
       transaction: t,
     });
 
-
-    if (!order) {
+    if (!orderItems || orderItems.length === 0) {
       await t.rollback();
       return res.status(404).json({
         ok: false,
@@ -1425,16 +1432,20 @@ exports.cancelOrderUser = async (req, res) => {
       });
     }
 
-    for (const orderItem of order.OrderItems) {
-      if (orderItem.Order.status === "processed") {
-        // Handle stock adjustment for orders that have been processed
-        const stockProductAtCurrentWarehouse = orderItem.Order.Warehouse.Mutations[0].stock;
+    for (const orderItem of orderItems) {
+      if (orderItem.Order.status === "unpaid") {
+        orderItem.Order.status = "cancelled";
+        await orderItem.Order.save({ transaction: t });
+      } else if (orderItem.Order.status === "processed") {
+        // Handle stock adjustment for each product in the order
+        const productId = orderItem.productId;
+        const stockProductAtCurrentWarehouse = orderItem.Order.Warehouse.Mutations.find(m => m.productId === productId).stock;
         const orderQuantity = orderItem.quantity;
 
         // Create mutation for reverting stock at source warehouse
         const newMutationForSourceWarehouse = await Mutation.create(
           {
-            productId: orderItem.productId,
+            productId,
             warehouseId: orderItem.Order.Warehouse.id,
             mutationQuantity: orderQuantity,
             previousStock: stockProductAtCurrentWarehouse,
@@ -1452,7 +1463,7 @@ exports.cancelOrderUser = async (req, res) => {
         await Journal.create(
           {
             mutationId: newMutationForSourceWarehouse.id,
-            productId: orderItem.productId,
+            productId,
             warehouseId: orderItem.Order.Warehouse.id,
             mutationQuantity: orderQuantity,
             previousStock: stockProductAtCurrentWarehouse,
@@ -1476,8 +1487,8 @@ exports.cancelOrderUser = async (req, res) => {
       ok: true,
       message: "Order cancelled successfully",
       detail: {
-        orderItem,
-        statusUpdated: orderItem.Order.status,
+        orderItems,
+        statusUpdated: orderItems.map(item => ({ productId: item.productId, status: item.Order.status })),
       },
     });
   } catch (error) {

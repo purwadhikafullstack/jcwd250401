@@ -83,7 +83,7 @@ function OrderReadyToShip({ orders, fetchOrders }) {
                   <FaEllipsisV className="text-xl" />
                 </MenuButton>
                 <MenuList>
-                  <MenuItem onClick={() => handleConfirmShip(Order.id)}>Ship Order</MenuItem>
+                  <MenuItem onClick={() => handleCancelUnpaidOrder(Order.id)}>Cancel Order</MenuItem>
                 </MenuList>
               </Menu>
             </div>
