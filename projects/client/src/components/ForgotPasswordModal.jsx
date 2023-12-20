@@ -26,7 +26,7 @@ function ForgotPasswordModal({ isOpen, isClose, userType="user" }) {
       try {
         setIsSubmitting(true);
 
-        const endpoint = userType === "admin" ? "/auth/forgot-password-admin": "/auth/forgotpassword"
+        const endpoint = userType === "admin" ? "/api/auth/forgot-password-admin": "/api/auth/forgotpassword"
         const response = await api.post(endpoint, {
           email: values.email,
         });

@@ -118,7 +118,7 @@ function ProductList() {
 
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await api.admin.get("/category/child-categories");
+      const response = await api.admin.get("/api/category/child-categories");
       const categoryData = response.data.details;
       setCategories(categoryData);
     } catch (error) {

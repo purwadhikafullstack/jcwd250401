@@ -2,7 +2,7 @@ import api from "../../api";
 
 const confirmShip = async ({ orderId } = {}) => {
     try {
-        const response = await api.admin.patch(`/order/${orderId}`);
+        const response = await api.admin.patch(`/api/order/${orderId}`);
         return response.data;
     } catch (error) {
         console.error("Error in confirmShip:", error);

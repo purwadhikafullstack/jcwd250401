@@ -2,7 +2,7 @@ import api from "../../api";
 
 const cancelUnpaidOrder = async ({ orderId }) => {
   try {
-    const response = await api.patch("/order/cancel-unpaid-order", {
+    const response = await api.patch("/api/order/cancel-unpaid-order", {
       orderId,
     });
 

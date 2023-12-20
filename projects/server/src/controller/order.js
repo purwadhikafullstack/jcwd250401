@@ -148,7 +148,7 @@ exports.confirmShip = async (req, res) => {
       });
     }
 
-    order.status = "waiting-approval";
+    order.status = "on-delivery";
 
     await order.save();
     return res.status(200).json({
@@ -206,13 +206,13 @@ exports.automaticConfirmShipping = async (req, res) => {
     // Fetch orders with status 'waiting-approval'
     const orders = await Order.findAll({
       where: {
-        status: "waiting-approval",
+        status: "on-delivery",
       },
     });
 
     // Check if there are no orders with status 'waiting-approval'
     if (!orders.length) {
-      return console.log("No orders with status 'waiting-approval' found");
+      return console.log("No orders with status 'on-delivery' found");
     }
 
     const now = Date.now();
@@ -236,7 +236,7 @@ exports.automaticConfirmShipping = async (req, res) => {
         // Ensure order is not undefined before updating
 
         if (order && order.update) {
-          await order.update({ status: "shipped" });
+          await order.update({ status: "delivered" });
         }
       })
     );
@@ -947,7 +947,7 @@ exports.confirmPaymentProofUser = async (req, res) => {
       });
     }
 
-    orderItem.Order.status = "processed";
+    orderItem.Order.status = "ready-to-ship";
     await orderItem.Order.save({ transaction: t });
 
     const stockProductAtCurrentWarehouse = orderItem.Order.Warehouse.Mutations[0].stock;
@@ -980,7 +980,7 @@ exports.confirmPaymentProofUser = async (req, res) => {
       transaction: t,
     });
 
-    if (orderItem.Order.status === "processed") {
+    if (orderItem.Order.status === "ready-to-ship") {
       if (orderQuantity > stockProductAtCurrentWarehouse) {
         // insufficient stock
         const nearestWarehouse = findNearestWarehouse(warehouselatitude, warehouseLongitude, allWarehouses, orderQuantity);
@@ -1432,11 +1432,11 @@ exports.cancelOrderUser = async (req, res) => {
     }
 
     if (orderItem.Order.status === "unpaid") {
-      // Update status to 'cancelled' for orders that are not yet processed
+      // Update status to 'cancelled' for orders that are not yet ready-to-ship
       orderItem.Order.status = "cancelled";
       await orderItem.Order.save({ transaction: t });
-    } else if (orderItem.Order.status === "processed") {
-      // Handle stock adjustment for orders that have been processed
+    } else if (orderItem.Order.status === "ready-to-ship") {
+      // Handle stock adjustment for orders that have been ready-to-ship
       const stockProductAtCurrentWarehouse = orderItem.Order.Warehouse.Mutations[0].stock;
       const orderQuantity = orderItem.quantity;
 
