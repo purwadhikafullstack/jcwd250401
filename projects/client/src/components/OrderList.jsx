@@ -23,9 +23,9 @@ function OrderList({ orders, fetchOrders }) {
     }
   };
 
-  const handleCancelOrder = async (orderId) => {
+  const handleCancelOrder = async (orderId, productId) => {
     try { 
-      const response = await cancelOrder({ orderId });
+      const response = await cancelOrder({ orderId, productId });
       // Update state and UI based on response
       fetchOrders();
     } catch (error) {
@@ -160,7 +160,7 @@ function OrderList({ orders, fetchOrders }) {
               <hr className="my-2" />
               <div className="flex ml-2 mr-2">
                 <p className="text-lg font-bold">TOTAL</p>
-                <p className="text-lg font-bold ml-auto">{formatToRupiah(Order.totalPrice)}</p>
+                <p className="text-lg font-bold ml-auto">{formatToRupiah(Product.productPrice * quantity + Order.shipment.shipmentCost)}</p>
               </div>
               {Order.status === "waiting-for-confirmation" && (
                 <>
