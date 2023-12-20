@@ -154,7 +154,7 @@ function EditProductModal({ isOpen, isClose, data }) {
 
 
 
-        const response = await api.admin.put(`/product/${data.id}`, datas, {
+        const response = await api.admin.put(`/api/product/${data.id}`, datas, {
           headers: {
             "Content-Type": "multipart/form-data",
           },

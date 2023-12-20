@@ -41,7 +41,7 @@ function VerifyModal({ isOpen, isClose }) {
       startResendCooldown();
 
       // Send the resend request to your API
-      await api.post("/auth/sendverify", {
+      await api.post("/api/auth/sendverify", {
         email: email,
       });
 
@@ -72,7 +72,7 @@ function VerifyModal({ isOpen, isClose }) {
     onSubmit: async (values) => {
       try {
         setIsSubmitting(true);
-        const response = await api.get("/auth/verify", {
+        const response = await api.get("/api/auth/verify", {
           params: {
             verifyCode: values.verifyCode,
             email: email,

@@ -102,7 +102,6 @@ export const Order = () => {
     });
   };
 
-
   useEffect(() => {
     setIsLoading(true);
     const loadingTimeout = setTimeout(() => {
@@ -119,7 +118,6 @@ export const Order = () => {
 
   document.title = "RAINS - My Order";
 
- 
   const handleOpenModalProof = (orderId, paymentBy, totalPrice) => {
     setSelectedOrder(orderId);
     setSelectedPaymentProof(paymentBy);
@@ -399,15 +397,20 @@ export const Order = () => {
                                 {remainingTime ? `${formatTime(Math.max(remainingTime.hours, 0))}:${formatTime(Math.max(remainingTime.minutes, 0))}:${formatTime(Math.max(remainingTime.seconds, 0))}` : ""}
                               </span>
                             </div>
-                            <span className={`px-4 py-1 rounded-md text-sm lg:text-md ${orderItem.status === "cancelled" ? "bg-red-700" : "bg-gray-900"} ${orderItem.status === "delivered" ? "bg-green-500" : "bg-gray-900"} text-gray-100`}>
-                              {getStatusLabel(orderItem.status)}
-                            </span>
+                            {orderItem.status === "cancelled" && <span className="bg-[#FF7A7A66] text-[#FF0000]  px-2 py-1 text-sm rounded-md font-semibold">Cancelled</span>}
+                            {orderItem.status === "unpaid" && <span className="bg-[#DAD32F] text-[#A5A816]  px-2 py-1 text-sm rounded-md font-semibold">Unpaid</span>}
+                            {orderItem.status === "waiting-for-confirmation" && <span className="bg-[#16D6B333] text-[#16D6B3]  px-2 py-1 text-sm rounded-md font-semibold">Waiting for Confirmation</span>}
+                            {orderItem.status === "ready-to-ship" && <span className="bg-[#E697FF66] text-[#A155B9]  px-2 py-1 text-sm rounded-md font-semibold">Ready to Ship</span>}
+                            {orderItem.status === "on-delivery" && <span className="bg-[#7AFFC766] text-[#15c079cb]  px-2 py-1 text-sm rounded-md font-semibold">On Delivery</span>}
+                            {orderItem.status === "delivered" && <span className="bg-[#7AFFC766] text-[#15c079cb]  px-2 py-1 text-sm rounded-md font-semibold">Delivered</span>}
                             {orderItem.status === "unpaid" && (
                               <>
                                 {remainingTime && (
                                   <>
                                     <Menu>
-                                      <MenuButton as={IconButton} aria-label="Options" icon={<PiDotsThreeOutlineVerticalFill />} variant="ghost" />
+                                      <MenuButton className="focus:outline-none">
+                                        <PiDotsThreeOutlineVerticalBold />
+                                      </MenuButton>
                                       <MenuList>
                                         <MenuItem fontSize="sm" onClick={() => handleOpenModalProof(orderItem.orderId, orderItem.paymentBy, orderItem.totalPrice)}>
                                           Upload payment proof
@@ -424,7 +427,9 @@ export const Order = () => {
                             {orderItem.status === "on-delivery" && (
                               <>
                                 <Menu>
-                                  <MenuButton as={IconButton} aria-label="Options" icon={<PiDotsThreeOutlineVerticalFill />} variant="ghost" />
+                                  <MenuButton className="focus:outline-none">
+                                    <PiDotsThreeOutlineVerticalBold />
+                                  </MenuButton>
                                   <MenuList>
                                     <MenuItem fontSize="sm" onClick={() => handleOpenConfirmDeliveredModal(orderItem.orderId)}>
                                       Shipment Received

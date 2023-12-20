@@ -43,7 +43,7 @@ function SignUpModal({ isOpen, isClose }) {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      const response = await api.post("/auth/registergoogle", {
+      const response = await api.post("/api/auth/registergoogle", {
         email: user.email,
       });
 
@@ -91,7 +91,7 @@ function SignUpModal({ isOpen, isClose }) {
     onSubmit: async (values) => {
       try {
         setIsSubmitting(true);
-        const response = await api.post("/auth/register", {
+        const response = await api.post("/api/auth/register", {
           email: values.email,
         });
 

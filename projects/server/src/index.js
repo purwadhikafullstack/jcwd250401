@@ -23,16 +23,16 @@ const WarehouseRoutes = require("./routes/warehouse");
 const mutationRoutes = require("./routes/mutation");
 
 //Routing
-app.use("/auth", authRouter);
+app.use("/api/auth", authRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/address", addressRouter);
 app.use("/api/category", categoryRouter);
-app.use("/order", orderRouter);
-app.use("/product", productRouter);
+app.use("/api/order", orderRouter);
+app.use("/api/product", productRouter);
 app.use("/api/users", userRouter)
 app.use("/api/warehouse", WarehouseRoutes);
 app.use("/api/mutation", mutationRoutes);
-app.use("/cart", cartRouter);
+app.use("/api/cart", cartRouter);
 app.use("/public", express.static(__dirname + "/public"));
 
 //#region API ROUTES

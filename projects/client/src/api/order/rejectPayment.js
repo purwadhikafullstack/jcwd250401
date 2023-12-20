@@ -2,7 +2,7 @@ import api from "../../api";
 
 const rejectPayment = async ({ orderId } = {}) => {
     try {
-        const response = await api.admin.patch(`/order/reject/${orderId}`);
+        const response = await api.admin.patch(`/api/order/reject/${orderId}`);
         return response.data;
     } catch (error) {
         console.error("Error in rejectPayment:", error);
