@@ -46,7 +46,7 @@ function CreatePasswordModal({ isOpen, isClose }) {
       try {
         setIsSubmitting(true);
 
-        const response = await api.post("/auth/password", {
+        const response = await api.post("/api/auth/password", {
           email: email,
           password: values.password,
         });

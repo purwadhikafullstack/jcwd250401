@@ -10,7 +10,7 @@ function DeleteProductModal({ isOpen, isClose, data }) {
   const dispatch = useDispatch();
   const handleDelete = async () => {
     try {
-      const response = await api.admin.delete(`/product/${data.id}`);
+      const response = await api.admin.delete(`/api/product/${data.id}`);
       const responseData = response.data.details;
 
       dispatch(addProduct(responseData));

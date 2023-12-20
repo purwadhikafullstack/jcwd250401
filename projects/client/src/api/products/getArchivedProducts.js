@@ -3,7 +3,7 @@ import api from "../../api";
 const getArchivedProducts = async ({ page = 1, limit, sort, category, productName, filterBy } = {}) => {
   try {
     const url =
-      `/product/archived?page=${page}` +
+      `/api/product/archived?page=${page}` +
       (limit ? `&limit=${limit}` : "") +
       (sort ? `&sort=${sort}` : "") +
       (category ? `&category=${category}` : "") +

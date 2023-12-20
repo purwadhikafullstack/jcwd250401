@@ -3,7 +3,7 @@ import api from "../../api";
 const getShippingCost = async ({ origin, destination, weight } = {}) => {
     try {
         // Base URL
-        let url = `/order/cost`;
+        let url = `/api/order/cost`;
 
         // Array to hold query parameters
         const queryParams = [];

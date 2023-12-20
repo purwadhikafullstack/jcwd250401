@@ -947,7 +947,7 @@ exports.confirmPaymentProofUser = async (req, res) => {
       });
     }
 
-    orderItem.Order.status = "processed";
+    orderItem.Order.status = "ready-to-ship";
     await orderItem.Order.save({ transaction: t });
 
     const stockProductAtCurrentWarehouse = orderItem.Order.Warehouse.Mutations[0].stock;
@@ -980,7 +980,7 @@ exports.confirmPaymentProofUser = async (req, res) => {
       transaction: t,
     });
 
-    if (orderItem.Order.status === "processed") {
+    if (orderItem.Order.status === "ready-to-ship") {
       if (orderQuantity > stockProductAtCurrentWarehouse) {
         // insufficient stock
         const nearestWarehouse = findNearestWarehouse(warehouselatitude, warehouseLongitude, allWarehouses, orderQuantity);
@@ -1432,15 +1432,14 @@ exports.cancelOrderUser = async (req, res) => {
       });
     }
 
-    for (const orderItem of orderItems) {
-      if (orderItem.Order.status === "unpaid") {
-        orderItem.Order.status = "cancelled";
-        await orderItem.Order.save({ transaction: t });
-      } else if (orderItem.Order.status === "processed") {
-        // Handle stock adjustment for each product in the order
-        const productId = orderItem.productId;
-        const stockProductAtCurrentWarehouse = orderItem.Order.Warehouse.Mutations.find(m => m.productId === productId).stock;
-        const orderQuantity = orderItem.quantity;
+    if (orderItem.Order.status === "unpaid") {
+      // Update status to 'cancelled' for orders that are not yet ready-to-ship
+      orderItem.Order.status = "cancelled";
+      await orderItem.Order.save({ transaction: t });
+    } else if (orderItem.Order.status === "ready-to-ship") {
+      // Handle stock adjustment for orders that have been ready-to-ship
+      const stockProductAtCurrentWarehouse = orderItem.Order.Warehouse.Mutations[0].stock;
+      const orderQuantity = orderItem.quantity;
 
         // Create mutation for reverting stock at source warehouse
         const newMutationForSourceWarehouse = await Mutation.create(

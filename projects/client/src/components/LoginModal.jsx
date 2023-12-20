@@ -16,6 +16,8 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from "@chakra-ui/react";
 import { useNavigate, useLocation } from "react-router-dom";
+import userLogin from "../api/login/userLogin";
+import userLoginGoogle from "../api/login/userLoginGoogle";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBM35r6DuH1V6QUWcw-J8UkNarOEQ6Sg9w",
@@ -59,18 +61,18 @@ function LoginModal({ isOpen, isClose }) {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      const response = await api.post("/auth/google", {
+      const response = await userLoginGoogle({
         email: user.email,
         remember: true,
       });
-      const responseData = response.data;
+      
       setTimeout(() => {
         toast.success("Login success", {
           autoClose: 1000,
           onAutoClose: (t) => {
             dispatch(hideLoginModal());
             setIsSubmitting(false);
-            dispatch(login(responseData));
+            dispatch(login(response));
             navigate(location.pathname);
           },
         });
@@ -109,19 +111,19 @@ function LoginModal({ isOpen, isClose }) {
     onSubmit: async (values) => {
       try {
         setIsSubmitting(true);
-        const response = await api.post("/auth", {
+        const response = await userLogin({
           email: values.email,
           password: values.password,
           remember: values.remember || false,
         });
-        const responseData = response.data;
+        
         setTimeout(() => {
           toast.success("Login success", {
             autoClose: 1000,
             onAutoClose: (t) => {
               dispatch(hideLoginModal());
               setIsSubmitting(false);
-              dispatch(login(responseData));
+              dispatch(login(response));
               navigate(location.pathname);
             },
           });

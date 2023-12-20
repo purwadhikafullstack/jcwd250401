@@ -11,7 +11,7 @@ function ArchiveProductModal({ isOpen, isClose, data }) {
 
   const handleArchive = async () => {
     try {
-      const response = await api.admin.put(`/product/archive/${data.id}`);
+      const response = await api.admin.put(`/api/product/archive/${data.id}`);
       const responseData = response.data.details;
 
       dispatch(addProduct(responseData));

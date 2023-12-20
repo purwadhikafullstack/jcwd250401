@@ -20,7 +20,7 @@ import ConfirmDelivered from "../components/ConfirmDelivered.jsx";
 export const Order = () => {
   let isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
   const listsMenu = ["Profile", "Address Book", "My Order", "Change Password"];
-  const orderStatus = ["All", "Unpaid", "Waiting for Confirmation", "Processed", "On Delivery", "Delivered", "Cancelled"];
+  const orderStatus = ["All", "Unpaid", "Waiting for Confirmation", "Ready to Ship", "On Delivery", "Delivered", "Cancelled"];
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedPaymentProof, setSelectedPaymentProof] = useState(null);
@@ -102,7 +102,6 @@ export const Order = () => {
     });
   };
 
-
   useEffect(() => {
     setIsLoading(true);
     const loadingTimeout = setTimeout(() => {
@@ -119,7 +118,6 @@ export const Order = () => {
 
   document.title = "RAINS - My Order";
 
- 
   const handleOpenModalProof = (orderId, paymentBy, totalPrice) => {
     setSelectedOrder(orderId);
     setSelectedPaymentProof(paymentBy);
@@ -248,7 +246,7 @@ export const Order = () => {
 
                 <div className="flex justify-between">
                   <div className="w-[40vw] overflow-x-auto ">
-                    <div className="flex w-[55vw]">
+                    <div className="flex w-[58vw]">
                       {orderStatus.map((status, index) => {
                         const joinedStatus = status.toLowerCase().replace(/\s/g, "-");
                         const isSelected = selectedStatus === joinedStatus;
@@ -354,8 +352,8 @@ export const Order = () => {
                             </div>
                           </div>
                           <div className="hidden lg:flex flex-col">
-                            <div className="w-[50px] lg:w-[200px]">
-                              <Skeleton height={18} count={5} />
+                            <div className="w-[50px] lg:w-[220px]">
+                              <Skeleton height={18} count={7} />
                             </div>
                           </div>
                           <div className="flex lg:hidden flex-col">
@@ -399,15 +397,20 @@ export const Order = () => {
                                 {remainingTime ? `${formatTime(Math.max(remainingTime.hours, 0))}:${formatTime(Math.max(remainingTime.minutes, 0))}:${formatTime(Math.max(remainingTime.seconds, 0))}` : ""}
                               </span>
                             </div>
-                            <span className={`px-4 py-1 rounded-md text-sm lg:text-md ${orderItem.status === "cancelled" ? "bg-red-700" : "bg-gray-900"} ${orderItem.status === "delivered" ? "bg-green-500" : "bg-gray-900"} text-gray-100`}>
-                              {getStatusLabel(orderItem.status)}
-                            </span>
+                            {orderItem.status === "cancelled" && <span className="bg-[#FF7A7A66] text-[#FF0000]  px-6 py-1 text-sm rounded-md font-semibold">Cancelled</span>}
+                            {orderItem.status === "unpaid" && <span className="bg-[#DAD32F] text-[#A5A816]  px-6 py-1 text-sm rounded-md font-semibold">Unpaid</span>}
+                            {orderItem.status === "waiting-for-confirmation" && <span className="bg-[#16D6B333] text-[#16D6B3]  px-6 py-1 text-sm rounded-md font-semibold">Waiting for Confirmation</span>}
+                            {orderItem.status === "ready-to-ship" && <span className="bg-[#E697FF66] text-[#A155B9]  px-6 py-1 text-sm rounded-md font-semibold">Ready to Ship</span>}
+                            {orderItem.status === "on-delivery" && <span className="bg-[#165BAA] text-[#CAFFE9]  px-6 py-1 text-sm rounded-md font-semibold">On Delivery</span>}
+                            {orderItem.status === "delivered" && <span className="bg-[#7AFFC766] text-[#1DDD8D]  px-6 py-1 text-sm rounded-md font-semibold">Delivered</span>}
                             {orderItem.status === "unpaid" && (
                               <>
                                 {remainingTime && (
                                   <>
                                     <Menu>
-                                      <MenuButton as={IconButton} aria-label="Options" icon={<PiDotsThreeOutlineVerticalFill />} variant="ghost" />
+                                      <MenuButton className="focus:outline-none">
+                                        <PiDotsThreeOutlineVerticalBold />
+                                      </MenuButton>
                                       <MenuList>
                                         <MenuItem fontSize="sm" onClick={() => handleOpenModalProof(orderItem.orderId, orderItem.paymentBy, orderItem.totalPrice)}>
                                           Upload payment proof
@@ -424,7 +427,9 @@ export const Order = () => {
                             {orderItem.status === "on-delivery" && (
                               <>
                                 <Menu>
-                                  <MenuButton as={IconButton} aria-label="Options" icon={<PiDotsThreeOutlineVerticalFill />} variant="ghost" />
+                                  <MenuButton className="focus:outline-none">
+                                    <PiDotsThreeOutlineVerticalBold />
+                                  </MenuButton>
                                   <MenuList>
                                     <MenuItem fontSize="sm" onClick={() => handleOpenConfirmDeliveredModal(orderItem.orderId)}>
                                       Shipment Received
@@ -537,7 +542,7 @@ export const Order = () => {
                             borderRadius="lg"
                             onClick={() => handlePageChange(index + 2)}
                             variant={page === index + 2 ? "solid" : "solid"}
-                            bgColor={page === index + 2 ? "gray.900" : "gray.white"}
+                            bgColor={page === index + 2 ? "gray.900" : "white"}
                             textColor={page === index + 2 ? "white" : "gray.900"}
                             _hover={{ bgColor: "gray.900", textColor: "white" }}
                             mr="5px"
