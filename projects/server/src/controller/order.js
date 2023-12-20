@@ -203,14 +203,14 @@ exports.confirmShipUser = async (req, res) => {
 
 exports.automaticConfirmShipping = async (req, res) => {
   try {
-    // Fetch orders with status 'waiting-approval'
+    // Fetch orders with status 'on-delivery'
     const orders = await Order.findAll({
       where: {
         status: "on-delivery",
       },
     });
 
-    // Check if there are no orders with status 'waiting-approval'
+    // Check if there are no orders with status 'on-delivery'
     if (!orders.length) {
       return console.log("No orders with status 'on-delivery' found");
     }
@@ -249,146 +249,170 @@ exports.automaticConfirmShipping = async (req, res) => {
 // Get all order lists from all users
 exports.getAllOrderLists = async (req, res) => {
   try {
-    const { status = "all", page = 1, size = 10, sort = "createdAt", order = "DESC", warehouseId, month } = req.query;
+    const { status = "all", page = 1, size = 5, sort } = req.query;
     const limit = parseInt(size);
     const offset = (parseInt(page) - 1) * limit;
 
-    const filter = {
+    const orderFilter = {
+      attributes: ["id", "status", "totalPrice", "paymentBy", "paymentProofImage", "userId", "shipmentId", "warehouseId", "createdAt", "updatedAt"],
+      where: status !== "all" ? { status } : undefined,
       include: [
         {
-          model: Order,
-          attributes: ["id", "status", "paymentProofImage", "totalPrice", "userId", "warehouseId", "shipmentId", "createdAt", "updatedAt"],
-          where: status !== "all" ? { status } : undefined,
-        },
-        {
-          model: Product,
-          attributes: ["id", "name", "description", "price", "gender", "weight"],
+          model: OrderItem,
+          attributes: ["id", "quantity", "createdAt", "updatedAt"],
+          include: [
+            {
+              model: Product,
+              attributes: ["id", "name", "description", "price", "gender", "weight"],
+              include: [
+                {
+                  model: ProductImage,
+                  as: "productImages",
+                  attributes: ["id", "imageUrl"],
+                },
+              ],
+            },
+          ],
         },
       ],
-      where: {
-        "$Order.status$": status !== "all" ? status : { [Op.ne]: null },
-      },
-      limit: limit,
-      offset: offset,
     };
 
     if (sort) {
-      if (sort === "totalPrice") {
-        filter.order = [[{ model: Order, as: "Order" }, sort, order]];
-      } else {
-        filter.order = [[sort, order]];
+      if (sort === "price-asc") {
+        orderFilter.order = [["totalPrice", "ASC"]];
+      } else if (sort === "price-desc") {
+        orderFilter.order = [["totalPrice", "DESC"]];
+      } else if (sort === "date-desc") {
+        orderFilter.order = [["updatedAt", "DESC"]];
+      } else if (sort === "date-asc") {
+        orderFilter.order = [["updatedAt", "ASC"]];
       }
     }
 
-    if (warehouseId) {
-      filter.include[0].where = { warehouseId };
-    }
+    const orders = await Order.findAll({
+      ...orderFilter, // Order by updatedAt in descending order
+      limit,
+      offset,
+    });
 
-    if (month) {
-      const monthInt = parseInt(month);
-
-      filter.where = {
-        ...filter.where,
-        createdAt: {
-          [Op.and]: [{ [Op.gte]: new Date(new Date().getFullYear(), monthInt - 1, 1) }, { [Op.lte]: new Date(new Date().getFullYear(), monthInt, 0) }],
-        },
-      };
-    }
-
-    const orderLists = await OrderItem.findAll(filter);
-
-    if (orderLists.length === 0) {
+    if (orders.length === 0) {
       return res.status(404).json({
         ok: false,
         message: "No Data matches",
       });
     }
 
-    const orderListsWithImages = await Promise.all(
-      orderLists.map(async (orderItem) => {
+    // Use a Map for better grouping
+    let groupedOrdersMap = new Map();
+
+    const getShipmentDetails = async (shipmentId) => {
+      const shipment = await Shipment.findByPk(shipmentId, {
+        attributes: ["id", "addressId", "name", "cost"],
+      });
+
+      return shipment;
+    };
+
+    const getUserProfile = async (userId) => {
+      const user = await User.findByPk(userId, {
+        attributes: ["id", "username", "firstName", "lastName"],
+      });
+
+      return user;
+    };
+
+    const getAddressDetails = async (addressId) => {
+      const address = await Address.findByPk(addressId);
+      return address;
+    };
+
+    const getWarehouseDetails = async (warehouseId) => {
+      const warehouse = await Warehouse.findByPk(warehouseId, {
+        attributes: ["id", "name"],
+      });
+      return warehouse;
+    };
+
+    for (const order of orders) {
+      const orderId = order.id;
+
+      if (!groupedOrdersMap.has(orderId)) {
+        groupedOrdersMap.set(orderId, {
+          orderId,
+          paymentBy: order.paymentBy,
+          paymentProofImage: order.paymentProofImage,
+          totalPrice: order.totalPrice,
+          totalPriceBeforeCost: 0,
+          status: order.status,
+          createdAt: order.createdAt,
+          updatedAt: order.updatedAt,
+          totalQuantity: 0,
+          Products: [],
+          Shipment: await getShipmentDetails(order.shipmentId),
+          User: await getUserProfile(order.userId),
+          Address: await getAddressDetails((await getShipmentDetails(order.shipmentId)).addressId),
+          Warehouse: await getWarehouseDetails(order.warehouseId),
+        });
+      }
+
+      const existingOrder = groupedOrdersMap.get(orderId);
+
+      order.OrderItems.forEach((orderItem) => {
         const product = orderItem.Product;
+        const productImages = product.productImages.map((image) => ({
+          id: image.id,
+          imageUrl: image.imageUrl,
+        }));
 
-        const warehouse = await Warehouse.findOne({
-          where: { id: orderItem.Order.warehouseId },
-          attributes: ["id", "name"],
-        });
+        const existingProduct = existingOrder.Products.find((p) => p.productId === product.id);
 
-        const shipment = await Shipment.findOne({
-          where: { id: orderItem.Order.shipmentId },
-          attributes: ["id", "name", "cost", "addressId"],
-        });
+        if (!existingProduct) {
+          const productPriceBeforeCost = orderItem.quantity * product.price; // Calculate totalPriceBeforeCost
 
-        const address = await Address.findOne({
-          where: { id: shipment.addressId },
-          attributes: ["id", "firstName", "lastName", "phoneNumber", "street", "city", "province", "district", "subDistrict"],
-        });
-
-        const user = await User.findOne({
-          where: { id: orderItem.Order.userId },
-          attributes: ["id", "username", "firstName", "lastName"],
-        });
-
-        const productImages = await ProductImage.findAll({
-          where: { productId: product.id },
-          attributes: ["id", "imageUrl"],
-        });
-
-        return {
-          id: orderItem.id,
-          productId: product.id,
-          orderId: orderItem.Order.id,
-          quantity: orderItem.quantity,
-          createdAt: orderItem.createdAt,
-          updatedAt: orderItem.updatedAt,
-          paymentProofImage: orderItem.Order.paymentProofImage,
-          Order: {
-            id: orderItem.Order.id,
-            status: orderItem.Order.status,
-            totalPrice: orderItem.Order.totalPrice,
-            user: {
-              id: user.id,
-              username: user.username,
-              firstName: user.firstName,
-              lastName: user.lastName,
+          existingOrder.Products.push({
+            orderItemId: orderItem.id,
+            productId: product.id,
+            quantity: orderItem.quantity,
+            createdAt: orderItem.createdAt,
+            updatedAt: orderItem.updatedAt,
+            Product: {
+              id: product.id,
+              productName: product.name,
+              productPrice: product.price,
+              productGender: product.gender,
+              productImages: productImages,
             },
-            warehouse: {
-              id: warehouse.id,
-              warehouseName: warehouse.name,
-            },
-            shipment: {
-              id: shipment.id,
-              shipmentName: shipment.name,
-              shipmentCost: shipment.cost,
-              address: {
-                id: address.id,
-                firstName: address.firstName,
-                lastName: address.lastName,
-                phoneNumber: address.phoneNumber,
-                street: address.street,
-                city: address.city,
-                province: address.province,
-                district: address.district,
-                subDistrict: address.subDistrict,
-              },
-            },
-          },
-          Product: {
-            id: product.id,
-            productName: product.name,
-            productDescription: product.description,
-            productPrice: product.price,
-            productGender: product.gender,
-            productWeight: product.weight,
-            productImages: productImages,
-          },
-        };
-      })
-    );
+          });
+
+          existingOrder.totalPriceBeforeCost += productPriceBeforeCost; // Update totalPriceBeforeCost
+          existingOrder.totalQuantity += orderItem.quantity;
+        } else {
+          existingProduct.quantity += orderItem.quantity;
+          existingOrder.totalQuantity += orderItem.quantity;
+        }
+      });
+    }
+
+    // Convert the map values back to an array
+    let groupedOrderListsWithImages = Array.from(groupedOrdersMap.values());
+
+    const totalUniqueOrders = await Order.count({
+      where: orderFilter.where,
+    });
+
+    const totalPages = Math.ceil(totalUniqueOrders / limit);
+
+    const paginationInfo = {
+      totalRecords: totalUniqueOrders,
+      totalPages: totalPages,
+      currentPage: parseInt(page),
+    };
 
     return res.status(200).json({
       ok: true,
       message: "Get all order successfully",
-      detail: orderListsWithImages,
+      detail: Object.values(groupedOrderListsWithImages),
+      pagination: paginationInfo,
     });
   } catch (error) {
     return res.status(500).json({
@@ -398,7 +422,6 @@ exports.getAllOrderLists = async (req, res) => {
     });
   }
 };
-
 // create order
 
 const getProductStock = async (products) => {
@@ -903,7 +926,7 @@ exports.confirmPaymentProofUser = async (req, res) => {
   const { orderId, productId } = req.body;
 
   try {
-    const orderItem = await OrderItem.findOne({
+    const orderItem = await OrderItem.findAll({
       where: {
         orderId,
       },
@@ -1395,7 +1418,7 @@ exports.cancelOrderUser = async (req, res) => {
   const { orderId, productId } = req.body;
 
   try {
-    const orderItem = await OrderItem.findOne({
+    const orderItem = await OrderItem.findAll({
       where: { orderId, productId },
       include: [
         {
@@ -1431,20 +1454,21 @@ exports.cancelOrderUser = async (req, res) => {
       });
     }
 
-    if (orderItem.Order.status === "unpaid") {
-      // Update status to 'cancelled' for orders that are not yet ready-to-ship
-      orderItem.Order.status = "cancelled";
-      await orderItem.Order.save({ transaction: t });
-    } else if (orderItem.Order.status === "ready-to-ship") {
-      // Handle stock adjustment for orders that have been ready-to-ship
-      const stockProductAtCurrentWarehouse = orderItem.Order.Warehouse.Mutations[0].stock;
-      const orderQuantity = orderItem.quantity;
+    for (const item of orderItem) {
+    if (item.Order.status === "waiting-for-confirmation") {
+      // Update status to 'cancelled' for orders that are not yet processed
+      item.Order.status = "cancelled";
+      await item.Order.save({ transaction: t });
+    } else if (item.Order.status === "ready-to-ship") {
+      // Handle stock adjustment for orders that have been processed
+      const stockProductAtCurrentWarehouse = item.Order.Warehouse.Mutations[0].stock;
+      const orderQuantity = item.quantity;
 
       // Create mutation for reverting stock at source warehouse
       const newMutationForSourceWarehouse = await Mutation.create(
         {
           productId,
-          warehouseId: orderItem.Order.Warehouse.id,
+          warehouseId: item.Order.Warehouse.id,
           mutationQuantity: orderQuantity,
           previousStock: stockProductAtCurrentWarehouse,
           mutationType: "add", // Revert the stock subtraction
@@ -1462,11 +1486,11 @@ exports.cancelOrderUser = async (req, res) => {
         {
           mutationId: newMutationForSourceWarehouse.id,
           productId,
-          warehouseId: orderItem.Order.Warehouse.id,
+          warehouseId: item.Order.Warehouse.id,
           mutationQuantity: orderQuantity,
           previousStock: stockProductAtCurrentWarehouse,
           mutationType: "add",
-          adminId: orderItem.Order.Warehouse.adminId,
+          adminId: item.Order.Warehouse.adminId,
           stock: stockProductAtCurrentWarehouse + orderQuantity,
           status: "success",
           isManual: false,
@@ -1477,6 +1501,7 @@ exports.cancelOrderUser = async (req, res) => {
 
       orderItem.Order.status = "cancelled";
       await orderItem.Order.save({ transaction: t });
+    }
     }
 
     await t.commit();

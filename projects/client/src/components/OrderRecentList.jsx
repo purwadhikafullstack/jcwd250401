@@ -8,16 +8,9 @@ import cancelOrder from "../api/order/cancelOrder";
 import { FaEllipsisV } from "react-icons/fa";
 import { Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
 
-function OrderReadyToShip({ orders, fetchOrders }) {
+function OrderRecentList({ orders, fetchOrders }) {
   const [paymentModalIsOpen, setPaymentModalIsOpen] = useState(false);
   const [paymentProof, setPaymentProof] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const ordersPerPage = 5;  
-
-  const handleFetchOrders = (page) => {
-    setCurrentPage(page);
-    fetchOrders(page);
-  };
 
   const handleConfirmOrder = async (orderId, productId) => {
     try {
@@ -73,34 +66,16 @@ function OrderReadyToShip({ orders, fetchOrders }) {
   useEffect(() => {
     fetchOrders();
   }, []);
-  
-  // Calculate total pages
-  const totalOrders = orders.length;
-  const totalPages = Math.ceil(totalOrders / ordersPerPage);
-
-  // Get current orders
-  const indexOfLastOrder = currentPage * ordersPerPage;
-  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
-
-  // Function to change page
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-  useEffect(() => {
-    handleFetchOrders(currentPage);
-  }, [currentPage]);
-
+    
   return (
     <div className="container mx-auto px-4">
-      {currentOrders.filter(order => order.status === "ready-to-ship").length === 0 ? (
+      {orders.length === 0 ? (
         <div className="flex justify-center items-center h-96">
           <p className="text-2xl">You don't have any orders yet.</p>
         </div>
       ) : (
         <>
-          {currentOrders
-          .filter(order => order.status === "ready-to-ship").reverse()
-          .map(({ orderId, paymentBy, paymentProofImage, totalPrice, totalPriceBeforeCost, status, createdAt, totalQuantity, Products, Shipment, User, Address, Warehouse }, index) => (
+          {orders.reverse().map(({ orderId, paymentBy, paymentProofImage, totalPrice, totalPriceBeforeCost, status, createdAt, totalQuantity, Products, Shipment, User, Address, Warehouse, Pagination }, index) => (
             <div key={index} className="p-4 bg-white rounded-lg shadow-lg w-[1000px] lg:w-[100%] mb-5 lg:mb-5">
               <div className="flex justify-between">
                 <div className="flex items-center gap-2">
@@ -210,30 +185,9 @@ function OrderReadyToShip({ orders, fetchOrders }) {
           ))}
         </>
       )}
-      <div className="flex justify-between items-center px-8 mt-3 mb-2">
-        <div className="flex items-center gap-2">
-          <Button color="dark" onClick={() => paginate(1)} disabled={currentPage === 1} className="mr-2">
-            First
-          </Button>
-          <Button color="dark" onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} className="mr-2">
-            Previous
-          </Button>
-        </div>
-        <p className="mr-2">
-          Page {currentPage} of {totalPages}
-        </p>
-        <div className="flex items-center gap-2">
-          <Button color="dark" onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} className="mr-2">
-            Next
-          </Button>
-          <Button color="dark" onClick={() => paginate(totalPages)} disabled={currentPage === totalPages} className="mr-2">
-            Last
-          </Button>
-        </div>
-      </div>
       <PaymentModal isOpen={paymentModalIsOpen} onClose={handlePaymentModalClose} paymentProof={paymentProof} />
     </div>
   );
 }
 
-export default OrderReadyToShip;
+export default OrderRecentList;

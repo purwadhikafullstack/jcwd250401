@@ -11,6 +11,13 @@ import { Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
 function OrderList({ orders, fetchOrders }) {
   const [paymentModalIsOpen, setPaymentModalIsOpen] = useState(false);
   const [paymentProof, setPaymentProof] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ordersPerPage = 5;  
+
+  const handleFetchOrders = (page) => {
+    setCurrentPage(page);
+    fetchOrders(page);
+  };
 
   const handleConfirmOrder = async (orderId, productId) => {
     try {
@@ -24,7 +31,7 @@ function OrderList({ orders, fetchOrders }) {
   };
 
   const handleCancelOrder = async (orderId, productId) => {
-    try {
+    try { 
       const response = await cancelOrder({ orderId, productId });
       // Update state and UI based on response
       fetchOrders();
@@ -63,37 +70,50 @@ function OrderList({ orders, fetchOrders }) {
     }).format(price);
   };
 
+  // Calculate total pages
+  const totalOrders = orders.length;
+  const totalPages = Math.ceil(totalOrders / ordersPerPage);
+
+  // Get current orders
+  const indexOfLastOrder = currentPage * ordersPerPage;
+  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
+  const reverseOrders = orders.reverse()
+  const currentOrders = reverseOrders.slice(indexOfFirstOrder, indexOfLastOrder);
+
+  // Function to change page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    handleFetchOrders(currentPage);
+  }, [currentPage]);
 
   return (
     <div className="container mx-auto px-4">
-      {orders.length === 0 ? (
+      {currentOrders.length === 0 ? (
         <div className="flex justify-center items-center h-96">
           <p className="text-2xl">You don't have any orders yet.</p>
         </div>
       ) : (
         <>
-          {orders.map(({ Order, Product, quantity, createdAt, paymentProofImage }, index) => (
+          {currentOrders.map(({ orderId, paymentBy, paymentProofImage, totalPrice, totalPriceBeforeCost, status, createdAt, totalQuantity, Products, Shipment, User, Address, Warehouse, Pagination }, index) => (
             <div key={index} className="p-4 bg-white rounded-lg shadow-lg w-[1000px] lg:w-[100%] mb-5 lg:mb-5">
               <div className="flex justify-between">
                 <div className="flex items-center gap-2">
-                  {Order.status === "cancelled" && <span className="bg-[#FF7A7A66] text-[#FF0000]  px-6 py-2 rounded-md font-bold">Cancelled</span>}
-                  {Order.status === "unpaid" && <span className="bg-[#DAD32F] text-[#A5A816]  px-6 py-2 rounded-md font-bold">Unpaid</span>}
-                  {Order.status === "waiting-for-confirmation" && <span className="bg-[#16D6B333] text-[#16D6B3]  px-6 py-2 rounded-md font-bold">Waiting for Confirmation</span>}
-                  {Order.status === "ready-to-ship" && <span className="bg-[#E697FF66] text-[#A155B9]  px-6 py-2 rounded-md font-bold">Ready to Ship</span>}
-                  {Order.status === "on-delivery" && <span className="bg-[#165BAA] text-[#CAFFE9]  px-6 py-2 rounded-md font-bold">On Delivery</span>}
-                  {Order.status === "delivered" && <span className="bg-[#7AFFC766] text-[#1DDD8D]  px-6 py-2 rounded-md font-bold">Delivered</span>}
+                  {status === "cancelled" && <span className="bg-[#FF7A7A66] text-[#FF0000]  px-6 py-2 rounded-md font-bold">Cancelled</span>}
+                  {status === "unpaid" && <span className="bg-[#DAD32F] text-[#A5A816]  px-6 py-2 rounded-md font-bold">Unpaid</span>}
+                  {status === "waiting-for-confirmation" && <span className="bg-[#16D6B333] text-[#16D6B3]  px-6 py-2 rounded-md font-bold">Waiting for Confirmation</span>}
+                  {status === "ready-to-ship" && <span className="bg-[#E697FF66] text-[#A155B9]  px-6 py-2 rounded-md font-bold">Ready to Ship</span>}
+                  {status === "on-delivery" && <span className="bg-[#165BAA] text-[#CAFFE9]  px-6 py-2 rounded-md font-bold">On Delivery</span>}
+                  {status === "delivered" && <span className="bg-[#7AFFC766] text-[#1DDD8D]  px-6 py-2 rounded-md font-bold">Delivered</span>}
                   <p>
-                    ID {Order.id} / {new Date(createdAt).toLocaleDateString()} / {Order.warehouse.warehouseName}{" "}
+                    ID {orderId} / {new Date(createdAt).toLocaleDateString()} / {Warehouse.name}{" "}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handlePaymentModalOpen(paymentProofImage)}>
                     Payment Proof
                   </Button>
-                  {Order.status === "cancelled" || Order.status === "shipped" ? (
+                  {status === "cancelled" || status === "shipped" ? (
                     <></>
                   ) : (
                     <Menu>
@@ -101,7 +121,7 @@ function OrderList({ orders, fetchOrders }) {
                         <FaEllipsisV className="text-xl" />
                       </MenuButton>
                       <MenuList>
-                        <MenuItem onClick={() => handleCancelOrder(Order.id, Product.id)}>Cancel Order</MenuItem>
+                        <MenuItem onClick={() => handleCancelOrder(orderId, Products.id)}>Cancel Order</MenuItem>
                       </MenuList>
                     </Menu>
                   )}
@@ -109,50 +129,53 @@ function OrderList({ orders, fetchOrders }) {
               </div>
               <hr className="my-2" />
               <div className="flex mt-4 mb-4">
-                <img src={`http://localhost:8000/public/${Product.productImages[0].imageUrl}`} alt={Product.productName} className="w-20 h-20 object-cover" />
-                <div className="ml-2">
-                  <p className="text-sm font-bold">{Product.productName}</p>
-                  <p className="text-sm">{Product.productGender}</p>
-                  <p className="text-sm">
-                    {formatToRupiah(Product.productPrice)} x {quantity}
-                  </p>
+                <div className="Products">
+                  {Products.map(({ Product }, index) => (
+                    <div key={index} className="flex gap-2 mb-4">
+                      <img src={`http://localhost:8000/public/${Product.productImages[0].imageUrl}`} alt="" className="w-20 h-20 object-cover rounded-md" />
+                      <div className="ml-2">
+                        <p className="text-sm font-bold">{Product.productName}</p>
+                        <p className="text-sm">{formatToRupiah(Product.productPrice)}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
                 <div className="ml-10">
                   <div className="mb-5">
                     <p className="font-bold">Customer</p>
-                    {Order.user.firstName && Order.user.lastName ? (
+                    {User.firstName && User.lastName ? (
                       <p>
-                        {Order.user.firstName} {Order.user.lastName}
+                        {User.firstName} {User.lastName}
                       </p>
                     ) : (
-                      <p>{Order.user.username}</p>
+                      <p>{User.username}</p>
                     )}
                   </div>
                   <div className="mb-5">
                     <p className="font-bold">Total Checkout</p>
-                    <p>{quantity}</p>
+                    <p>{formatToRupiah(totalPriceBeforeCost)}</p>
                   </div>
                 </div>
                 <div className="ml-20">
                   <div className="mb-5">
                     <p className="font-bold">Sent From</p>
-                    <p>{Order.warehouse.warehouseName}</p>
+                    <p>{Warehouse.name}</p>
                   </div>
                   <div className="mb-5">
                     <p className="font-bold">Delivery Option</p>
-                    <p>{Order.shipment.shipmentName}</p>
-                    <p>{formatToRupiah(Order.shipment.shipmentCost)}</p>
+                    <p>{Shipment.name}</p>
+                    <p>{formatToRupiah(Shipment.cost)}</p>
                   </div>
                 </div>
                 <div className="ml-auto">
                   <div className="mb-5">
                     <p className="font-bold">Shipping Information</p>
-                    <p className="text-sm w-[25vw]">{`${Order.shipment.address.firstName} ${Order.shipment.address.lastName} (${Order.shipment.address.phoneNumber})`}</p>
+                    <p className="text-sm w-[25vw]">{`${Address.firstName} ${Address.lastName} (${Address.phoneNumber})`}</p>
                     <p className="text-sm w-[25vw]">
-                      {Order.shipment.address.street}, {Order.shipment.address.subDistrict}, {Order.shipment.address.district}
+                      {Address.street}, {Address.subDistrict}, {Address.district}
                     </p>
                     <p className="text-sm w-[25vw]">
-                      {Order.shipment.address.city}, {Order.shipment.address.province}
+                      {Address.city}, {Address.province}
                     </p>
                   </div>
                 </div>
@@ -160,18 +183,18 @@ function OrderList({ orders, fetchOrders }) {
               <hr className="my-2" />
               <div className="flex ml-2 mr-2">
                 <p className="text-lg font-bold">TOTAL</p>
-                <p className="text-lg font-bold ml-auto">{formatToRupiah(Order.totalPrice)}</p>
+                <p className="text-lg font-bold ml-auto">{formatToRupiah(totalPrice)}</p>
               </div>
-              {Order.status === "waiting-for-confirmation" && (
+              {status === "waiting-for-confirmation" && (
                 <>
                   <hr className="my-2" />
                   <div className="flex justify-end gap-2">
                     {/* Action buttons here, if needed */}
                     <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
-                      <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleRejectPayment(Order.id)}>
+                      <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleRejectPayment(orderId)}>
                         Reject Order
                       </Button>
-                      <Button color="dark" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleConfirmOrder(Order.id, Product.id)}>
+                      <Button color="dark" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleConfirmOrder(orderId, Products.Product.id)}>
                         Accept Order
                       </Button>
                     </div>
@@ -182,6 +205,27 @@ function OrderList({ orders, fetchOrders }) {
           ))}
         </>
       )}
+      <div className="flex justify-between items-center px-8 mt-3 mb-2">
+        <div className="flex items-center gap-2">
+          <Button color="dark" onClick={() => paginate(1)} disabled={currentPage === 1} className="mr-2">
+            First
+          </Button>
+          <Button color="dark" onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} className="mr-2">
+            Previous
+          </Button>
+        </div>
+        <p className="mr-2">
+          Page {currentPage} of {totalPages}
+        </p>
+        <div className="flex items-center gap-2">
+          <Button color="dark" onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} className="mr-2">
+            Next
+          </Button>
+          <Button color="dark" onClick={() => paginate(totalPages)} disabled={currentPage === totalPages} className="mr-2">
+            Last
+          </Button>
+        </div>
+      </div>
       <PaymentModal isOpen={paymentModalIsOpen} onClose={handlePaymentModalClose} paymentProof={paymentProof} />
     </div>
   );
