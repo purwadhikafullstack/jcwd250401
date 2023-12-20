@@ -14,6 +14,7 @@ exports.getAllWarehouses = async (req, res) => {
     }
     const warehouses = await Warehouse.findAll({
       where: whereClause,
+      attributes: ["id", "name", "owner", "location", "warehouseImage", "phoneNumber", "OpenHour", "CloseHour"],
       include: [
         {
           model: WarehouseAddress,
@@ -40,7 +41,7 @@ exports.getAllWarehouses = async (req, res) => {
 };
 
 exports.addWarehouse = async (req, res) => {
-  const { name, street, city, cityId, province, provinceId } = req.body;
+  const { name, street, city, cityId, province, provinceId, phoneNumber, OpenHour, CloseHour, owner } = req.body;
   const address = `${street}, ${city}, ${province}`;
 
   try {
@@ -68,6 +69,10 @@ exports.addWarehouse = async (req, res) => {
       name,
       location: address,
       warehouseImage,
+      phoneNumber,
+      OpenHour,
+      CloseHour,
+      owner,
     });
 
     // Create WarehouseAddress
@@ -109,6 +114,9 @@ exports.addWarehouse = async (req, res) => {
       data: {
         name: warehouse.name,
         location: warehouse.location,
+        phoneNumber: warehouse.phoneNumber,
+        OpenHour: warehouse.OpenHour,
+        CloseHour: warehouse.CloseHour,
         city_id: warehouseAddress.cityId,
         province_id: warehouseAddress.provinceId,
         coordinates: {
@@ -128,7 +136,7 @@ exports.addWarehouse = async (req, res) => {
 
 exports.updateWarehouse = async (req, res) => {
   const { id } = req.params;
-  const { name, street, city, cityId, province, provinceId } = req.body;
+  const { name, street, city, cityId, province, provinceId, phoneNumber, OpenHour, CloseHour } = req.body;
   const address = `${street}, ${city}, ${province}`;
 
   try {
@@ -157,6 +165,9 @@ exports.updateWarehouse = async (req, res) => {
         name,
         location: address,
         warehouseImage,
+        phoneNumber,
+        OpenHour,
+        CloseHour,
       },
       {
         where: {

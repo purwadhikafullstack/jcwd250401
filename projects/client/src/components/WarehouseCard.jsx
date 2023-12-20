@@ -58,15 +58,17 @@ const WarehouseCard = ({ warehouse, onSuccess }) => {
         </Text>
         <Flex align="center" mt={2} className="text-gray-600 text-sm">
           <FaUser className="mr-2" />
-          <Text>John Doe</Text>
+          {warehouse.owner}
         </Flex>
         <Flex align="center" mt={2} className="text-gray-600 text-sm">
           <FaPhone className="mr-2" />
-          <Text>021-12345678</Text>
+          {warehouse.phoneNumber}
         </Flex>
         <Flex align="center" mt={2} className="text-gray-600 text-sm">
           <FaClock className="mr-2" />
-          <Text>Operating Hours</Text>
+          <Text>
+            Operating Hours: {new Date(`1970-01-01T${warehouse.OpenHour}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(`1970-01-01T${warehouse.CloseHour}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </Text>
         </Flex>
         <Flex align="center" mt={2} className="text-gray-600 text-sm">
           <FaMapMarkerAlt className="mr-2" />

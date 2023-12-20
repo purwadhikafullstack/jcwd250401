@@ -47,6 +47,23 @@ exports.WarehouseValidationRules = [
             return true;
         }),
     
+    body('phoneNumber')
+        .notEmpty()
+        .withMessage('Phone number is required')
+        .isLength({ min: 3 })
+        .withMessage('Phone number must be at least 3 characters long'),
+    
+    body('OpenHour')
+        .notEmpty()
+        .withMessage('Open hour is required')
+        .isLength({ min: 5, max: 5})
+        .withMessage('Open hour \'HH:MM\' format'),
+
+    body('CloseHour')
+        .notEmpty()
+        .withMessage('Close hour is required')
+        .isLength({ min: 5, max: 5})
+        .withMessage('Close hour \'HH:MM\' format'),
 ];
 
 exports.applyWarehouseValidation = [(req, res, next) => {

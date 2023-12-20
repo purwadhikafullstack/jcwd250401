@@ -26,6 +26,10 @@ import { set } from 'lodash';
 
 const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
   const [name, setName] = useState('');
+  const [owner, setOwner] = useState('');
+  const [OpenHour, setOpenHour] = useState('');
+  const [CloseHour, setCloseHour] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [province, setProvince] = useState('');
   const [provinceId, setProvinceId] = useState(0);
   const [provinces, setProvinces] = useState([]);
@@ -100,6 +104,10 @@ const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
 
     const formData = new FormData();
     formData.append('name', name);
+    formData.append('owner', owner);
+    formData.append('OpenHour', OpenHour);
+    formData.append('CloseHour', CloseHour);
+    formData.append('phoneNumber', phoneNumber);
     formData.append('province', province);
     formData.append('provinceId', Number(provinceId));
     formData.append('city', city);
@@ -126,6 +134,10 @@ const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
         onSuccess(); // Call the onSuccess prop to refetch the warehouses
         // Reset form
         setName('');
+        setOwner('');
+        setOpenHour('');
+        setCloseHour('');
+        setPhoneNumber('');
         setProvince('');
         setProvinceId(0);
         setCity('');
@@ -170,10 +182,31 @@ const AddWarehouseModal = ({ isOpen, onClose, onSuccess }) => {
                 className="hidden"
               />
             </Box>
+            <VStack spacing="2" width="full" alignItems="flex-start">
+            <FormLabel>Warehouse Profile</FormLabel>
+            <HStack spacing="2" width="full">
             <FormControl id="warehouse-name">
-              <FormLabel>Warehouse Name</FormLabel>
-              <Input placeholder="Enter warehouse name" onChange={(e) => setName(e.target.value)} value={name} />
+              <Input placeholder="Warehouse name" onChange={(e) => setName(e.target.value)} value={name} />
             </FormControl>
+            <FormControl id="warehouse-owner">
+              <Input placeholder="Warehouse owner" onChange={(e) => setOwner(e.target.value)} value={owner} />
+            </FormControl>
+            </HStack>
+            <FormControl id='warehouse-phoneNumber'>
+              <Input placeholder="Warehouse phone number" onChange={(e) => setPhoneNumber(e.target.value)} value={phoneNumber} />
+            </FormControl>
+            </VStack>
+            <VStack spacing="2" width="full" alignItems="flex-start">
+              <FormLabel fontSize="1rem">Warehouse Operating Hour</FormLabel>
+              <HStack spacing="2" width="full">
+              <FormControl id="openHour" flex="1">
+                <Input placeholder="Open Hour" onChange={(e) => setOpenHour(e.target.value)} value={OpenHour} />
+              </FormControl>
+              <FormControl id="closeHour" flex="1">
+                <Input placeholder="Close Hour" onChange={(e) => setCloseHour(e.target.value)} value={CloseHour} />
+              </FormControl>
+              </HStack>
+            </VStack>
             <VStack spacing="2" width="full" alignItems="flex-start">
               <FormLabel htmlFor="location" fontSize="1rem">Warehouse Location</FormLabel>
               <HStack spacing="2" width="full">
