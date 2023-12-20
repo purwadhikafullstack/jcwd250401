@@ -8,7 +8,7 @@ const getProductsCountsUser = async ({
   isArchived = false,
 } = {}) => {
   try {
-    const url = `/product/user/?isArchived=${isArchived}` +
+    const url = `/api/product/user/?isArchived=${isArchived}` +
       (sort ? `&sort=${sort}` : '') +
       (category ? `&category=${category}` : '') +
       (search ? `&search=${search}` : '') +

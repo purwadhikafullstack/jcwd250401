@@ -3,7 +3,7 @@ import api from "../../api";
 const getAllOrder = async ({ status, page, size, sort, order, warehouseId, month } = {}) => {
     try {
         // Base URL
-        let url = `/order`;
+        let url = `/api/order`;
 
         // Array to hold query parameters
         const queryParams = [];

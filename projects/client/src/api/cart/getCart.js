@@ -2,7 +2,7 @@ import api from "../../api";
 
 const getCart = async ({ search } = {}) => {
   try {
-    const url = `/cart` + (search ? `&search=${search}` : "");
+    const url = `/api/cart` + (search ? `&search=${search}` : "");
 
     const response = await api.get(url);
     return response.data;
