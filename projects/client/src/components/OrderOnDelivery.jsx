@@ -8,7 +8,7 @@ import cancelOrder from "../api/order/cancelOrder";
 import { FaEllipsisV } from "react-icons/fa";
 import { Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
 
-function OrderReadyToShip({ orders, fetchOrders }) {
+function OrderOnDelivery({ orders, fetchOrders }) {
   const [paymentModalIsOpen, setPaymentModalIsOpen] = useState(false);
   const [paymentProof, setPaymentProof] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -70,10 +70,6 @@ function OrderReadyToShip({ orders, fetchOrders }) {
     }).format(price);
   };
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-  
   // Calculate total pages
   const totalOrders = orders.length;
   const totalPages = Math.ceil(totalOrders / ordersPerPage);
@@ -81,7 +77,8 @@ function OrderReadyToShip({ orders, fetchOrders }) {
   // Get current orders
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
+  const reverseOrders = orders.reverse()
+  const currentOrders = reverseOrders.slice(indexOfFirstOrder, indexOfLastOrder);
 
   // Function to change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -92,15 +89,14 @@ function OrderReadyToShip({ orders, fetchOrders }) {
 
   return (
     <div className="container mx-auto px-4">
-      {currentOrders.filter(order => order.status === "ready-to-ship").length === 0 ? (
+      {currentOrders.filter(order => order.status === "on-delivery").length === 0 ? (
         <div className="flex justify-center items-center h-96">
           <p className="text-2xl">You don't have any orders yet.</p>
         </div>
       ) : (
         <>
-          {currentOrders
-          .filter(order => order.status === "ready-to-ship").reverse()
-          .map(({ orderId, paymentBy, paymentProofImage, totalPrice, totalPriceBeforeCost, status, createdAt, totalQuantity, Products, Shipment, User, Address, Warehouse }, index) => (
+          {currentOrders.filter(order => order.status === "on-delivery")
+          .map(({ orderId, paymentBy, paymentProofImage, totalPrice, totalPriceBeforeCost, status, createdAt, totalQuantity, Products, Shipment, User, Address, Warehouse, Pagination }, index) => (
             <div key={index} className="p-4 bg-white rounded-lg shadow-lg w-[1000px] lg:w-[100%] mb-5 lg:mb-5">
               <div className="flex justify-between">
                 <div className="flex items-center gap-2">
@@ -236,4 +232,4 @@ function OrderReadyToShip({ orders, fetchOrders }) {
   );
 }
 
-export default OrderReadyToShip;
+export default OrderOnDelivery;

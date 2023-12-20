@@ -15,9 +15,12 @@ import getWarehouseByAdmin from "../api/warehouse/getWarehouseByAdmin";
 import OrderList from "../components/OrderList";
 import OrderReadyToShip from "../components/OrderReadyToShip";
 import OrderShipped from "../components/OrderShipped";
+import OrderRecentList from "../components/OrderRecentList";
+import OrderOnDelivery from "../components/OrderOnDelivery";
+import OrderCancelled from "../components/OrderCancelled";
 
 function OrderCust() {
-  const navList = ["All Orders", "New Orders", "Ready to Ship", "Completed", "Cancelled"];
+  const navList = ["All Orders", "New Orders", "Ready to Ship", "On Delivery", "Delivered", "Cancelled"];
   const months = [
     { name: "January", number: 1 },
     { name: "February", number: 2 },
@@ -32,7 +35,7 @@ function OrderCust() {
     { name: "November", number: 11 },
     { name: "December", number: 12 }
   ];
-  const [selectedComponent, setSelectedComponent] = useState("All Orders");
+  const [selectedComponent, setSelectedComponent] = useState("New Orders");
   const [warehouses, setWarehouses] = useState([]);
   const [warehouseList, setWarehouseList] = useState([]);
   const [warehouseId, setWarehouseId] = useState('');
@@ -201,10 +204,11 @@ function OrderCust() {
           </div>
           <div className="flex items-center mt-4">
             {selectedComponent === "All Orders" && <OrderList orders={orders} fetchOrders={fetchOrders}/>}
-            {selectedComponent === "New Orders"}
+            {selectedComponent === "New Orders" && <OrderRecentList orders={orders} fetchOrders={fetchOrders}/> }
             {selectedComponent === "Ready to Ship" && <OrderReadyToShip orders={orders} fetchOrders={fetchOrders}/>}
-            {selectedComponent === "Completed" && <OrderShipped orders={orders} fetchOrders={fetchOrders}/>}
-            {selectedComponent === "Cancelled"}
+            {selectedComponent === "On Delivery" && <OrderOnDelivery orders={orders} fetchOrders={fetchOrders}/>}
+            {selectedComponent === "Delivered" && <OrderShipped orders={orders} fetchOrders={fetchOrders}/>}
+            {selectedComponent === "Cancelled" && <OrderCancelled orders={orders} fetchOrders={fetchOrders}/>}
           </div>
           </div>
       </div>
