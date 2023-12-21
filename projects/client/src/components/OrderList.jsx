@@ -19,9 +19,9 @@ function OrderList({ orders, fetchOrders }) {
     fetchOrders(page);
   };
 
-  const handleConfirmOrder = async (orderId, productId) => {
+  const handleConfirmOrder = async (orderId, products) => {
     try {
-      const response = await confirmOrder({ orderId, productId });
+      const response = await confirmOrder({ orderId, products });
       // Update state and UI based on response
       fetchOrders();
     } catch (error) {
@@ -194,7 +194,7 @@ function OrderList({ orders, fetchOrders }) {
                       <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleRejectPayment(orderId)}>
                         Reject Order
                       </Button>
-                      <Button color="dark" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleConfirmOrder(orderId, Products.Product.id)}>
+                      <Button color="dark" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleConfirmOrder(orderId, Products)}>
                         Accept Order
                       </Button>
                     </div>
