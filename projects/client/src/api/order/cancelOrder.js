@@ -1,10 +1,10 @@
 import api from "../../api";
 
-const cancelOrder = async ({ orderId, productId }) => {
+const cancelOrder = async ({ orderId, products }) => {
     try {
-        const response = await api.patch("/api/order/cancel-order", {
+        const response = await api.admin.patch("/api/order/cancel-order", {
         orderId,
-        productId,
+        products,
         });
     
         return response.data;

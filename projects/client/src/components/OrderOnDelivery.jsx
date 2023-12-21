@@ -2,9 +2,6 @@ import React from "react";
 import { Button } from "flowbite-react";
 import { useState, useEffect } from "react";
 import PaymentModal from "./PaymentModal";
-import rejectPayment from "../api/order/rejectPayment";
-import confirmOrder from "../api/order/confirmOrder";
-import cancelOrder from "../api/order/cancelOrder";
 import { FaEllipsisV } from "react-icons/fa";
 import { Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
 
@@ -17,39 +14,6 @@ function OrderOnDelivery({ orders, fetchOrders }) {
   const handleFetchOrders = (page) => {
     setCurrentPage(page);
     fetchOrders(page);
-  };
-
-  const handleConfirmOrder = async (orderId, productId) => {
-    try {
-      const response = await confirmOrder({ orderId, productId });
-      // Update state and UI based on response
-      fetchOrders();
-    } catch (error) {
-      // Handle error
-      console.error("Error confirming order:", error);
-    }
-  };
-
-  const handleCancelOrder = async (orderId, productId) => {
-    try { 
-      const response = await cancelOrder({ orderId, productId });
-      // Update state and UI based on response
-      fetchOrders();
-    } catch (error) {
-      // Handle error
-      console.error("Error cancelling order:", error);
-    }
-  };
-
-  const handleRejectPayment = async (orderId) => {
-    try {
-      const response = await rejectPayment({ orderId });
-      // Update state and UI based on response
-      fetchOrders();
-    } catch (error) {
-      // Handle error
-      console.error("Error rejecting payment:", error);
-    }
   };
 
   const handlePaymentModalOpen = (paymentProof) => {
@@ -114,18 +78,6 @@ function OrderOnDelivery({ orders, fetchOrders }) {
                   <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handlePaymentModalOpen(paymentProofImage)}>
                     Payment Proof
                   </Button>
-                  {status === "cancelled" || status === "shipped" ? (
-                    <></>
-                  ) : (
-                    <Menu>
-                      <MenuButton className="focus:outline-none">
-                        <FaEllipsisV className="text-xl" />
-                      </MenuButton>
-                      <MenuList>
-                        <MenuItem onClick={() => handleCancelOrder(orderId, Products.id)}>Cancel Order</MenuItem>
-                      </MenuList>
-                    </Menu>
-                  )}
                 </div>
               </div>
               <hr className="my-2" />
@@ -186,22 +138,6 @@ function OrderOnDelivery({ orders, fetchOrders }) {
                 <p className="text-lg font-bold">TOTAL</p>
                 <p className="text-lg font-bold ml-auto">{formatToRupiah(totalPrice)}</p>
               </div>
-              {status === "waiting-for-confirmation" && (
-                <>
-                  <hr className="my-2" />
-                  <div className="flex justify-end gap-2">
-                    {/* Action buttons here, if needed */}
-                    <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
-                      <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleRejectPayment(orderId)}>
-                        Reject Order
-                      </Button>
-                      <Button color="dark" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleConfirmOrder(orderId, Products.Product.id)}>
-                        Accept Order
-                      </Button>
-                    </div>
-                  </div>
-                </>
-              )}
             </div>
           ))}
         </>

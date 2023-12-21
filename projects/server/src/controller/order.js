@@ -1422,24 +1422,23 @@ exports.cancelUnpaidOrder = async (req, res) => {
 
 exports.cancelOrderUser = async (req, res) => {
   const t = await sequelize.transaction();
-  const { orderId, productId } = req.body;
+  const { orderId, products } = req.body;
 
   try {
-    const orderItem = await OrderItem.findAll({
-      where: { orderId, productId },
+    const orderItem = await OrderItem.findOne({
+      where: {
+        orderId,
+      },
       include: [
         {
           model: Order,
+          where: {
+            status: "ready-to-ship",
+          },
           include: [
             {
               model: Warehouse,
               include: [
-                {
-                  model: Mutation,
-                  where: { productId, status: "success" },
-                  order: [["createdAt", "DESC"]],
-                  limit: 1,
-                },
                 {
                   model: WarehouseAddress,
                   attributes: ["latitude", "longitude"],
@@ -1457,71 +1456,86 @@ exports.cancelOrderUser = async (req, res) => {
       return res.status(404).json({
         ok: false,
         message: "Order not found",
-        detail: "Order not found with the given ID",
+        detail: "Order with status waiting-for-confirmation not found",
       });
     }
 
-    for (const item of orderItem) {
-      if (item.Order.status === "waiting-for-confirmation") {
-        // Update status to 'cancelled' for orders that are not yet processed
-        item.Order.status = "cancelled";
-        await item.Order.save({ transaction: t });
-      } else if (item.Order.status === "ready-to-ship") {
-        // Handle stock adjustment for orders that have been processed
-        const stockProductAtCurrentWarehouse = item.Order.Warehouse.Mutations[0].stock;
-        const orderQuantity = item.quantity;
+    orderItem.Order.status = "cancelled";
+    await orderItem.Order.save({ transaction: t });
 
-        // Create mutation for reverting stock at source warehouse
-        const newMutationForSourceWarehouse = await Mutation.create(
-          {
-            productId,
-            warehouseId: item.Order.Warehouse.id,
-            mutationQuantity: orderQuantity,
-            previousStock: stockProductAtCurrentWarehouse,
-            mutationType: "add", // Revert the stock subtraction
-            adminId: orderItem.Order.Warehouse.adminId,
-            stock: stockProductAtCurrentWarehouse + orderQuantity,
-            status: "success",
-            isManual: false,
-            description: "Order cancellation, stock added back due to order cancellation.",
-          },
-          { transaction: t }
-        );
+    const sourceWarehouseId = orderItem.Order.Warehouse.id;
+    const sourceWarehouseName = orderItem.Order.Warehouse.name;
+    const sourceWarehouseAdminId = orderItem.Order.Warehouse.adminId;
 
-        // Create a corresponding journal entry
-        await Journal.create(
-          {
-            mutationId: newMutationForSourceWarehouse.id,
-            productId,
-            warehouseId: item.Order.Warehouse.id,
-            mutationQuantity: orderQuantity,
-            previousStock: stockProductAtCurrentWarehouse,
-            mutationType: "add",
-            adminId: item.Order.Warehouse.adminId,
-            stock: stockProductAtCurrentWarehouse + orderQuantity,
-            status: "success",
-            isManual: false,
-            description: "Order cancellation, stock added back due to order cancellation.",
-          },
-          { transaction: t }
-        );
+    for (const product of products) {
+      const dataProductAtCurrentWarehouse = await Mutation.findAll({
+        where: {
+          productId: product.productId,
+          warehouseId: orderItem.Order.Warehouse.id,
+          status: "success",
+        },
+        order: [["createdAt", "DESC"]],
+        limit: 1,
+        transaction: t,
+      });
+      let stockProductAtCurrentWarehouse = dataProductAtCurrentWarehouse[0].stock;
+      console.log("stockProductAtCurrentWarehouse", stockProductAtCurrentWarehouse);
 
-        orderItem.Order.status = "cancelled";
-        await orderItem.Order.save({ transaction: t });
+      if (!stockProductAtCurrentWarehouse) {
+        stockProductAtCurrentWarehouse = 0;
+      }
+
+      const orderQuantity = product.quantity;
+
+      if (orderItem.Order.status === "cancelled") {
+          // Create mutation for update stock at source warehouse
+          const newMutationForSourceWarehouse = await Mutation.create(
+            {
+              productId: product.productId,
+              warehouseId: sourceWarehouseId,
+              destinationWarehouseId: sourceWarehouseId,
+              mutationQuantity: orderQuantity,
+              previousStock: stockProductAtCurrentWarehouse,
+              mutationType: "add",
+              adminId: sourceWarehouseAdminId,
+              stock: stockProductAtCurrentWarehouse + orderQuantity,
+              status: "success",
+              isManual: false,
+              description: `Order cancelled by user, stock updated at ${sourceWarehouseName}`,
+            },
+            { transaction: t }
+          );
+
+          await Journal.create(
+            {
+              mutationId: newMutationForSourceWarehouse.id,
+              productId: newMutationForSourceWarehouse.productId,
+              warehouseId: newMutationForSourceWarehouse.warehouseId,
+              destinationWarehouseId: newMutationForSourceWarehouse.destinationWarehouseId,
+              mutationQuantity: newMutationForSourceWarehouse.mutationQuantity,
+              previousStock: newMutationForSourceWarehouse.previousStock,
+              mutationType: newMutationForSourceWarehouse.mutationType,
+              adminId: newMutationForSourceWarehouse.adminId,
+              stock: newMutationForSourceWarehouse.stock,
+              status: newMutationForSourceWarehouse.status,
+              isManual: newMutationForSourceWarehouse.isManual,
+              description: newMutationForSourceWarehouse.description,
+            },
+            { transaction: t }
+          );
       }
     }
 
     await t.commit();
     return res.status(200).json({
       ok: true,
-      message: "Order cancelled successfully",
+      message: "Order cancelled",
       detail: {
         orderItem,
-        statusUpdated: orderItem.Order.status,
       },
     });
   } catch (error) {
-    console.error(error);
+    console.error(String(error));
     await t.rollback();
     return res.status(500).json({
       ok: false,
