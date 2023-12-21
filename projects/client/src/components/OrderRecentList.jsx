@@ -7,6 +7,7 @@ import confirmOrder from "../api/order/confirmOrder";
 import cancelOrder from "../api/order/cancelOrder";
 import { FaEllipsisV } from "react-icons/fa";
 import { Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
+import { toast } from "sonner";
 
 function OrderRecentList({ orders, fetchOrders }) {
   const [paymentModalIsOpen, setPaymentModalIsOpen] = useState(false);
@@ -19,6 +20,9 @@ function OrderRecentList({ orders, fetchOrders }) {
       fetchOrders();
     } catch (error) {
       // Handle error
+      if (error.response && (error.response.status === 404 || error.response.status === 500)) {
+        toast.error(error.response.data.message);
+      }
       console.error("Error confirming order:", error);
     }
   };
