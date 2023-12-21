@@ -9,12 +9,13 @@ import cancelUnpaidOrder from "../api/order/cancelUnpaidOrder";
 import confirmShipUser from "../api/order/confirmShipUser";
 import { FaEllipsisV } from "react-icons/fa";
 import { Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
+import { toast } from "sonner";
 
 function OrderList({ orders, fetchOrders }) {
   const [paymentModalIsOpen, setPaymentModalIsOpen] = useState(false);
   const [paymentProof, setPaymentProof] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const ordersPerPage = 5;  
+  const ordersPerPage = 5;
 
   const handleFetchOrders = (page) => {
     setCurrentPage(page);
@@ -39,6 +40,9 @@ function OrderList({ orders, fetchOrders }) {
       fetchOrders();
     } catch (error) {
       // Handle error
+      if (error.response && (error.response.status === 404 || error.response.status === 500)) {
+        toast.error(error.response.data.message);
+      }
       console.error("Error confirming order:", error);
     }
   };
@@ -90,7 +94,7 @@ function OrderList({ orders, fetchOrders }) {
   // Get current orders
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const reverseOrders = orders.reverse()
+  const reverseOrders = orders.reverse();
   const currentOrders = reverseOrders.slice(indexOfFirstOrder, indexOfLastOrder);
 
   // Function to change page
@@ -152,7 +156,9 @@ function OrderList({ orders, fetchOrders }) {
                       <img src={`http://localhost:8000/public/${Product.productImages[0].imageUrl}`} alt="" className="w-20 h-20 object-cover rounded-md" />
                       <div className="ml-2">
                         <p className="text-sm font-bold">{Product.productName}</p>
-                        <p className="text-sm">{formatToRupiah(Product.productPrice)} x {quantity}</p>
+                        <p className="text-sm">
+                          {formatToRupiah(Product.productPrice)} x {quantity}
+                        </p>
                       </div>
                     </div>
                   ))}
