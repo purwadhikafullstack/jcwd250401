@@ -254,7 +254,7 @@ exports.getAllOrderLists = async (req, res) => {
     const offset = (parseInt(page) - 1) * limit;
 
     const orderFilter = {
-      attributes: ["id", "status", "totalPrice", "paymentBy", "paymentProofImage", "userId", "shipmentId", "warehouseId", "createdAt", "updatedAt"],
+      attributes: ["id", "invoice", "status", "totalPrice", "paymentBy", "paymentProofImage", "userId", "shipmentId", "warehouseId", "createdAt", "updatedAt"],
       where: status !== "all" ? { status } : undefined,
       include: [
         {
@@ -339,6 +339,7 @@ exports.getAllOrderLists = async (req, res) => {
       if (!groupedOrdersMap.has(orderId)) {
         groupedOrdersMap.set(orderId, {
           orderId,
+          invoice: order.invoice,
           paymentBy: order.paymentBy,
           paymentProofImage: order.paymentProofImage,
           totalPrice: order.totalPrice,
@@ -569,6 +570,12 @@ exports.createOrder = async (req, res) => {
     // Update shipmentId in Order table
     await order.update({ shipmentId: shipment.id });
 
+    // Create invoice
+    const paymentCode = paymentBy === "MANDIRI" ? "100" : paymentBy === "BCA" ? "101" : "102";
+    const invoice = `INV-${paymentCode}${order.id}${order.userId}${order.warehouseId}${order.shipmentId}`
+
+    await order.update({ invoice });
+
     // Delete cart
     const cartIdsToDelete = productOnCart.map((item) => item.cartId);
 
@@ -602,7 +609,7 @@ exports.getOrderLists = async (req, res) => {
     const offset = (parseInt(page) - 1) * limit;
 
     const orderFilter = {
-      attributes: ["id", "status", "totalPrice", "paymentBy", "userId", "shipmentId", "warehouseId", "createdAt", "updatedAt"],
+      attributes: ["id", "invoice", "status", "totalPrice", "paymentBy", "userId", "shipmentId", "warehouseId", "createdAt", "updatedAt"],
       where: status !== "all" ? { status } : undefined,
       include: [
         {
@@ -683,6 +690,7 @@ exports.getOrderLists = async (req, res) => {
       if (!groupedOrdersMap.has(orderId)) {
         groupedOrdersMap.set(orderId, {
           orderId,
+          invoice: order.invoice,
           paymentBy: order.paymentBy,
           totalPrice: order.totalPrice,
           totalPriceBeforeCost: 0,

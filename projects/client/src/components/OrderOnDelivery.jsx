@@ -60,7 +60,7 @@ function OrderOnDelivery({ orders, fetchOrders }) {
       ) : (
         <>
           {currentOrders.filter(order => order.status === "on-delivery")
-          .map(({ orderId, paymentBy, paymentProofImage, totalPrice, totalPriceBeforeCost, status, createdAt, totalQuantity, Products, Shipment, User, Address, Warehouse, Pagination }, index) => (
+          .map(({ orderId, invoice, paymentProofImage, totalPrice, totalPriceBeforeCost, status, createdAt, totalQuantity, Products, Shipment, User, Address, Warehouse, Pagination }, index) => (
             <div key={index} className="p-4 bg-white rounded-lg shadow-lg w-[1000px] lg:w-[100%] mb-5 lg:mb-5">
               <div className="flex justify-between">
                 <div className="flex items-center gap-2">
@@ -71,7 +71,7 @@ function OrderOnDelivery({ orders, fetchOrders }) {
                   {status === "on-delivery" && <span className="bg-[#165BAA] text-[#CAFFE9]  px-6 py-2 rounded-md font-bold">On Delivery</span>}
                   {status === "delivered" && <span className="bg-[#7AFFC766] text-[#1DDD8D]  px-6 py-2 rounded-md font-bold">Delivered</span>}
                   <p>
-                    ID {orderId} / {new Date(createdAt).toLocaleDateString()} / {Warehouse.name}{" "}
+                    {invoice} / {new Date(createdAt).toLocaleDateString()} / {Warehouse.name}{" "}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
