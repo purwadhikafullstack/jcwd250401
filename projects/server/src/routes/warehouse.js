@@ -7,6 +7,7 @@ const authMiddleware = require("../middleware/auth");
 const { multerUpload } = require("../lib/multer");
 
 router.get("/", authMiddleware.validateToken, warehouseController.getAllWarehouses);
+router.get("/:id", authMiddleware.validateToken, warehouseController.getWarehouseById);
 
 router.post(
     "/", 
@@ -26,7 +27,7 @@ router.delete("/:id", authMiddleware.validateToken, warehouseController.deleteWa
 
 router.patch("/admin/:warehouseId", authMiddleware.validateToken, authMiddleware.checkRoleSuperAdmin, warehouseController.assignWarehouseAdmin);
 router.patch("/unassign-admin/:warehouseId", authMiddleware.validateToken, authMiddleware.checkRoleSuperAdmin, warehouseController.unassignWarehouseAdmin);
-router.get("/:adminId", authMiddleware.validateToken, warehouseController.getWarehouseByAdmin);
+router.get("/admin/:adminId", authMiddleware.validateToken, warehouseController.getWarehouseByAdmin);
 
 router.get("/user/nearest-warehouse", authMiddleware.validateToken, warehouseController.getNearestWarehouse);
 
