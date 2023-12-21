@@ -1,6 +1,6 @@
 import Sidebar from "../components/Sidebar";
 import Navigationadmin from "../components/Navigationadmin";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Flex, Input, InputGroup, InputLeftElement, Menu, MenuButton, MenuItem, MenuList, Table, TableContainer, Tbody, Td, Text, Th, Thead, Tr } from "@chakra-ui/react";
 import { ConfirmModal } from "../components/ConfirmModal";
@@ -11,7 +11,9 @@ import useDebounceValue from "../hooks/useDebounceValue";
 import { SearchIcon } from "@chakra-ui/icons";
 import { PiCaretDown } from "react-icons/pi";
 import { AdminAssignmentModal } from "../components/AdminAssignmentModal";
-import  getAdmin  from "../api/users/getAdmin";
+import getAdmin from "../api/users/getAdmin";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 
 export const Staff = () => {
   const isWarehouseAdminAcc = useSelector((state) => state?.account?.isWarehouseAdmin);
@@ -28,12 +30,13 @@ export const Staff = () => {
   const [order, setOrder] = useState("DESC");
   const [isWarehouseAdmin, setIsWarehouseAdmin] = useState(null);
   const [searchInput, setSearchInput] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const debouncedSearchInput = useDebounceValue(searchInput, 300);
   const navigate = useNavigate();
 
   const handleSearchInputChange = (e) => setSearchInput(e.target.value);
 
-  const fetchAdmins = useCallback( async () => {
+  const fetchAdmins = async () => {
     try {
       let isWarehouseAdminValue = isWarehouseAdmin;
 
@@ -48,8 +51,8 @@ export const Staff = () => {
         sort,
         order,
         search: debouncedSearchInput,
-        isWarehouseAdmin: isWarehouseAdminValue
-      })
+        isWarehouseAdmin: isWarehouseAdminValue,
+      });
 
       setAdmins(response.detail);
     } catch (error) {
@@ -64,8 +67,10 @@ export const Staff = () => {
         if (error.response.status === 403) navigate("/adminlogin");
         if (error.response.status === 401) navigate("/dashboard");
       }
+    } finally {
+      setIsLoading(false);
     }
-  },[page, size, sort, order, isWarehouseAdmin, debouncedSearchInput]);
+  };
 
   const handleDeleteModal = (data) => {
     setDeleteModal(true);
@@ -111,7 +116,7 @@ export const Staff = () => {
 
   useEffect(() => {
     fetchAdmins();
-  }, [fetchAdmins]);
+  }, [page, size, sort, order, isWarehouseAdmin, debouncedSearchInput]);
 
   return (
     <div className="flex flex-row justify-between h-screen">
@@ -126,7 +131,16 @@ export const Staff = () => {
             <InputLeftElement pointerEvents="none">
               <SearchIcon color="#40403F" />
             </InputLeftElement>
-            <Input type="text" placeholder="Search by username or email" value={searchInput} onChange={handleSearchInputChange} bgColor={"white"} borderColor={"#40403F"} w={{ base: "100%", md: "300px" }} _hover={{ borderColor: "#40403F" }} />
+            <Input
+              type="text"
+              placeholder="Search by username or email"
+              value={searchInput}
+              onChange={handleSearchInputChange}
+              bgColor={"white"}
+              borderColor={"#40403F"}
+              w={{ base: "100%", md: "300px" }}
+              _hover={{ borderColor: "#40403F" }}
+            />
           </InputGroup>
 
           <div className="flex flex-col gap-2">
@@ -153,7 +167,10 @@ export const Staff = () => {
               </select>
 
               {sort === "isWarehouseAdmin" && (
-                <select value={isWarehouseAdmin} onChange={(e) => setIsWarehouseAdmin(e.target.value)} className="bg-white text-[#40403F] border boder-[#40403F]-1 py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none w-full lg:w-auto">
+                <select
+                  value={isWarehouseAdmin}
+                  onChange={(e) => setIsWarehouseAdmin(e.target.value)}
+                  className="bg-white text-[#40403F] border boder-[#40403F]-1 py-2 px-4 rounded-md cursor-pointer focus:ring-0 focus:border-none w-full lg:w-auto">
                   <option value={""}>All Admin</option>
                   <option value={true}>Warehouse Admin</option>
                   <option value={false}>Super Admin</option>
@@ -162,7 +179,44 @@ export const Staff = () => {
             </div>
           </div>
         </div>
-        {admins.length > 0 ? (
+        {isLoading ? (
+          <div className="flex flex-col px-4 md:px-8 gap-2 min-h-[50vh] md:h-[58vh] overflow-y-auto scrollbar-hide">
+            <TableContainer>
+              <Table variant="striped" colorScheme="blackAlpha">
+                <Thead>
+                  <Tr>
+                    <Th>Username</Th>
+                    <Th>Email</Th>
+                    <Th>Role</Th>
+                    <Th>Warehouse</Th>
+                    {isWarehouseAdminAcc ? null : <Th>Action</Th>}
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <Tr key={index}>
+                      <Td>
+                        <Skeleton height="40px" width={100} />
+                      </Td>
+                      <Td>
+                        <Skeleton height="40px" width={100} />
+                      </Td>
+                      <Td>
+                        <Skeleton height="40px" width={100} />
+                      </Td>
+                      <Td>
+                        <Skeleton height="40px" width={100} />
+                      </Td>
+                      <Td>
+                        <Skeleton height="40px" width={100} />
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </TableContainer>
+          </div>
+        ) : admins.length > 0 ? (
           <div className="flex flex-col px-4 md:px-8 gap-2 min-h-[50vh] md:h-[58vh] overflow-y-auto scrollbar-hide">
             <TableContainer>
               <Table variant="striped" colorScheme="blackAlpha">

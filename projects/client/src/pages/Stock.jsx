@@ -12,6 +12,8 @@ import { useSelector } from "react-redux";
 import getWarehouseByAdmin from "../api/warehouse/getWarehouseByAdmin";
 import getSingleAdmin from "../api/users/getSingleAdmin";
 import { SummaryStock } from "../components/SummaryStock";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 
 export const Stock = () => {
   const isWarehouseAdmin = useSelector((state) => state?.account?.isWarehouseAdmin);
@@ -24,7 +26,7 @@ export const Stock = () => {
   const [warehouseList, setWarehouseList] = useState([]);
   const [warehouseId, setWarehouseId] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(null);
-  const [selectedMonthName, setSelectedMonthName] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const months = [
     {
@@ -117,6 +119,8 @@ export const Stock = () => {
         });
         navigate("/adminlogin");
       }
+    } finally {
+      setIsLoading(false);
     }
   }, [page, sort, order, warehouseId, selectedMonth, debouncedSearchInput]);
 
@@ -231,7 +235,52 @@ export const Stock = () => {
           </div>
         </div>
 
-        {mutations.length > 0 ? (
+        {isLoading ? (
+          <div className="flex flex-col px-4 md:px-8 min-h-[50vh] md:h-[67vh] overflow-y-auto scrollbar-hide w-full">
+            <Skeleton height="100px" />
+            <TableContainer bgColor={"white"} borderBottomRadius={"md"} overflowY={"auto"} h={"full"} mt={5}>
+              <Table variant="striped" colorScheme="blackAlpha">
+                <Thead>
+                  <Tr textColor={"#40403F"} fontWeight={"bold"}>
+                    <Th>ID</Th>
+                    <Th>Product</Th>
+                    <Th>Category</Th>
+                    <Th>Warehouse</Th>
+                    <Th>Date</Th>
+                    <Th>
+                      Mutation <br /> Type
+                    </Th>
+                    <Th>
+                      Previous <br /> Stock
+                    </Th>
+                    <Th>
+                      Inventory
+                      <br />
+                      Change
+                    </Th>
+                    <Th>
+                      Total <br /> Stock
+                    </Th>
+                    <Th>Status</Th>
+                    <Th>Description</Th>
+                  </Tr>
+                </Thead>
+
+                <Tbody>
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <Tr key={index}>
+                      {Array.from({ length: 11 }).map((_, index) => (
+                        <Td key={index}>
+                          <Skeleton height="40px" width="100%" />
+                        </Td>
+                      ))}
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </TableContainer>
+          </div>
+        ) : mutations.length > 0 ? (
           <>
             <div className="flex flex-col px-4 md:px-8 min-h-[50vh] md:h-[67vh] overflow-y-auto scrollbar-hide w-full">
               <SummaryStock selectedMonth={selectedMonth} warehouseId={warehouseId} />
@@ -254,7 +303,7 @@ export const Stock = () => {
               <TableContainer bgColor={"white"} borderBottomRadius={"md"} overflowY={"auto"} h={"full"}>
                 <Table variant="striped" colorScheme="blackAlpha">
                   <Thead>
-                    <Tr textColor={"#40403F"} fontWeight={"bold"} >
+                    <Tr textColor={"#40403F"} fontWeight={"bold"}>
                       <Th>ID</Th>
                       <Th>Product</Th>
                       <Th>Category</Th>

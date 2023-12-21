@@ -1,12 +1,14 @@
 import Sidebar from "../components/Sidebar";
 import Navigationadmin from "../components/Navigationadmin";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Image, Input, InputGroup, InputLeftElement, Table, TableContainer, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import useDebounceValue from "../hooks/useDebounceValue";
 import { SearchIcon } from "@chakra-ui/icons";
 import getCustomers from "../api/users/getCustomers";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 
 export const Customers = () => {
   const [customers, setCustomers] = useState([]);
@@ -17,17 +19,18 @@ export const Customers = () => {
   const [searchInput, setSearchInput] = useState("");
   const debouncedSearchInput = useDebounceValue(searchInput, 300);
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleSearchInputChange = (e) => setSearchInput(e.target.value);
-  const fetchCustomers = useCallback( async () => {
+  const fetchCustomers = async () => {
     try {
       const response = await getCustomers({
         page,
         size,
         sort,
         order,
-        search: debouncedSearchInput
-      })
+        search: debouncedSearchInput,
+      });
       setCustomers(response.detail);
     } catch (error) {
       if (error.response && error.response.status === 500) {
@@ -41,12 +44,14 @@ export const Customers = () => {
         if (error.response.status === 403) navigate("/adminlogin");
         if (error.response.status === 401) navigate("/dashboard");
       }
+    } finally {
+      setIsLoading(false);
     }
-  },[page, size, sort, order, debouncedSearchInput]);
-  
+  };
+
   useEffect(() => {
     fetchCustomers();
-  }, [fetchCustomers]);
+  }, [page, size, sort, order, debouncedSearchInput]);
   return (
     <div className="flex flex-row justify-between h-screen">
       <Sidebar />
@@ -60,7 +65,16 @@ export const Customers = () => {
             <InputLeftElement pointerEvents="none">
               <SearchIcon color="#40403F" />
             </InputLeftElement>
-            <Input type="text" placeholder="Search by username or email" value={searchInput} onChange={handleSearchInputChange} bgColor={"white"} borderColor={"#40403F"} w={{ base: "100%", md: "300px" }} _hover={{ borderColor: "#40403F" }} />
+            <Input
+              type="text"
+              placeholder="Search by username or email"
+              value={searchInput}
+              onChange={handleSearchInputChange}
+              bgColor={"white"}
+              borderColor={"#40403F"}
+              w={{ base: "100%", md: "300px" }}
+              _hover={{ borderColor: "#40403F" }}
+            />
           </InputGroup>
 
           <div className="flex gap-2">
@@ -81,7 +95,48 @@ export const Customers = () => {
             </select>
           </div>
         </div>
-        {customers.length > 0 ? (
+        {isLoading ? (
+          <div className="flex flex-col px-4 md:px-8 gap-2 min-h-[57vh] md:min-h-[65vh] overflow-y-auto scrollbar-hide">
+            <TableContainer>
+              <Table variant="striped" colorScheme="blackAlpha">
+                <Thead>
+                  <Tr>
+                    <Th>PhotoProfile</Th>
+                    <Th>Username</Th>
+                    <Th>First Name</Th>
+                    <Th>Last Name</Th>
+                    <Th>Email</Th>
+                    <Th>Sign up date</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <Tr key={index}>
+                      <Td>
+                      <Skeleton circle height={40} width={40} />
+                      </Td>
+                      <Td>
+                        <Skeleton height="40px" width={100} />
+                      </Td>
+                      <Td>
+                        <Skeleton height="40px" width={100} />
+                      </Td>
+                      <Td>
+                        <Skeleton height="40px" width={100} />
+                      </Td>
+                      <Td>
+                        <Skeleton height="40px" width={100} />
+                      </Td>
+                      <Td>
+                        <Skeleton height="40px" width={100} />
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </TableContainer>
+          </div>
+        ) : customers.length > 0 ? (
           <div className="flex flex-col px-4 md:px-8 gap-2 min-h-[57vh] md:min-h-[65vh] overflow-y-auto scrollbar-hide">
             <TableContainer>
               <Table variant="striped" colorScheme="blackAlpha">
