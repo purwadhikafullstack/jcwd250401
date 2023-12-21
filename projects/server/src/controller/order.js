@@ -968,7 +968,8 @@ exports.confirmPaymentProofUser = async (req, res) => {
         limit: 1,
         transaction: t,
       });
-      let stockProductAtCurrentWarehouse = dataProductAtCurrentWarehouse[0].stock;
+
+      let stockProductAtCurrentWarehouse = dataProductAtCurrentWarehouse[0]?.stock;
       console.log("stockProductAtCurrentWarehouse", stockProductAtCurrentWarehouse);
 
       if (!stockProductAtCurrentWarehouse) {
@@ -999,7 +1000,7 @@ exports.confirmPaymentProofUser = async (req, res) => {
 
       const orderQuantity = product.quantity;
       const requiredStock = orderQuantity - stockProductAtCurrentWarehouse;
-      console.log("orderQuantity",orderQuantity)
+      console.log("orderQuantity", orderQuantity);
 
       if (orderItem.Order.status === "ready-to-ship") {
         if (orderQuantity > stockProductAtCurrentWarehouse) {
@@ -1013,9 +1014,9 @@ exports.confirmPaymentProofUser = async (req, res) => {
               message: "Nearest warehouse with sufficient stock not found",
             });
           }
-          
-          // Create mutation for update stock at source warehouse
-          await updateSourceWarehouseStock(product.productId, sourceWarehouseId, nearestWarehouse.id, requiredStock, sourceWarehouseAdminId, t);
+
+          // Create mutation for update or add stock at source warehouse
+          const newStockAtSourceWarehouse = await updateSourceWarehouseStock(product.productId, sourceWarehouseId, nearestWarehouse.id, requiredStock, sourceWarehouseAdminId, t);
 
           // Create mutation for update stock at destination warehouse
           let currentDestinationWarehouseStock = nearestWarehouse.Mutations[0].stock;
@@ -1054,6 +1055,39 @@ exports.confirmPaymentProofUser = async (req, res) => {
             },
             { transaction: t }
           );
+
+          // create mutation for subtract stock at source warehouse
+          const newMutationForSourceWarehouse = await Mutation.create(
+            {
+              productId: product.productId,
+              warehouseId: sourceWarehouseId,
+              destinationWarehouseId: sourceWarehouseId,
+              mutationQuantity: orderQuantity,
+              previousStock: newStockAtSourceWarehouse.stock,
+              mutationType: "subtract",
+              adminId: sourceWarehouseAdminId,
+              stock: newStockAtSourceWarehouse.stock - orderQuantity,
+              status: "success",
+              isManual: false,
+              description: `Auto request, stock subtracted automatically for user order.`,
+            },
+            { transaction: t }
+          );
+
+          await Journal.create({
+            mutationId: newMutationForSourceWarehouse.id,
+            productId: newMutationForSourceWarehouse.productId,
+            warehouseId: newMutationForSourceWarehouse.warehouseId,
+            destinationWarehouseId: newMutationForSourceWarehouse.destinationWarehouseId,
+            mutationQuantity: newMutationForSourceWarehouse.mutationQuantity,
+            previousStock: newMutationForSourceWarehouse.previousStock,
+            mutationType: newMutationForSourceWarehouse.mutationType,
+            adminId: newMutationForSourceWarehouse.adminId,
+            stock: newMutationForSourceWarehouse.stock,
+            status: newMutationForSourceWarehouse.status,
+            isManual: newMutationForSourceWarehouse.isManual,
+            description: newMutationForSourceWarehouse.description,
+          });
         } else {
           // sufficient stock
           // Create mutation for update stock at source warehouse
@@ -1104,7 +1138,7 @@ exports.confirmPaymentProofUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error(String(error));
+    console.error(error);
     await t.rollback();
     return res.status(500).json({
       ok: false,
