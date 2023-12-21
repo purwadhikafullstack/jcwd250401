@@ -6,17 +6,13 @@ import { toast } from "sonner";
 import { addProduct } from "../slices/productSlices";
 import { useDispatch } from "react-redux";
 
-function DeleteCartItemModal({ isOpen, isClose, data, onSuccess }) {
+function DeleteWishlistItem({ isOpen, isClose, productId, onSuccess }) {
   const dispatch = useDispatch();
-
-  console.log(data);
 
   const handleDelete = async () => {
     try {
-      const response = await api.delete(`/api/cart/${data.productId}`);
+      const response = await api.delete(`/api/wishlist/${productId}`);
       const responseData = response.data.detail;
-
-      dispatch(addProduct(responseData));
       isClose();
       onSuccess(); 
       toast.success(response.data.message);
@@ -44,10 +40,10 @@ function DeleteCartItemModal({ isOpen, isClose, data, onSuccess }) {
       <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(1px)" />
       <ModalContent>
         <ModalHeader>
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Remove cart</h3>
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Remove wishlist</h3>
         </ModalHeader>
         <ModalBody>
-          <Text>Are you sure you want to delete this item on your cart?</Text>
+          <Text>Are you sure you want to delete this item on your wishlist?</Text>
         </ModalBody>
         <ModalFooter>
           <div className="flex gap-2">
@@ -65,4 +61,4 @@ function DeleteCartItemModal({ isOpen, isClose, data, onSuccess }) {
   );
 }
 
-export default DeleteCartItemModal;
+export default DeleteWishlistItem;

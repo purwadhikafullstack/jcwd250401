@@ -16,6 +16,8 @@ import AddToCartConfirmation from "./AddToCartConfirmation";
 import { addToCartItems } from "../slices/cartSlices";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import addToWishlist from "../api/Wishlist/addToWishlist";
+import AddToWishlistConfirmation from "./AddToWishlistConfirmation";
 
 function ProductCard() {
   const { gender, mainCategory, subCategory, productName } = useParams();
@@ -30,6 +32,7 @@ function ProductCard() {
   const dispatch = useDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConfirmationOpen, setConfirmationOpen] = useState(false);
+  const [isWishlistConfirmationOpen, setWishlistConfirmationOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -193,16 +196,36 @@ function ProductCard() {
     }
   };
 
-  const handleAddToWishlist = () => {
-    if (!isLoggedIn) {
-      toast.info("Please login first to perform this action", {
-        duration: 1700,
-        onAutoClose: (t) => {
-          dispatch(showLoginModal());
-        },
+  const handleAddToWishlist = async () => {
+    try {
+      // Check if the user is logged in
+      if (!isLoggedIn) {
+        // If not logged in, show login modal and stop further execution
+        toast.info("Please login first to perform this action", {
+          duration: 1700,
+          onAutoClose: (t) => {
+            // Await the dispatch before continuing
+            dispatch(showLoginModal());
+          },
+        });
+        return;
+      }
+
+      // If logged in, proceed with adding to cart
+      setIsSubmitting(true);
+
+      const response = await addToWishlist({
+        productId: selectedProduct[0].id,
       });
+      setWishlistConfirmationOpen(true);
+    } catch (error) {
+      // Handle errors
+      if (error?.response?.status === 500 || error?.response?.status === 400 || error?.response?.status === 403 || error?.response?.status === 401) {
+        toast.error(error.response.data.message, {
+          description: error.response.data.detail,
+        });
+      }
     }
-    console.log("add to wishlist");
   };
 
   useEffect(() => {
@@ -621,7 +644,7 @@ function ProductCard() {
           <span className="text-xl ">No product matches. </span>
         </div>
       )}
-
+      <AddToWishlistConfirmation isOpen={isWishlistConfirmationOpen} onClose={() => setWishlistConfirmationOpen(false)} />
       <AddToCartConfirmation isOpen={isConfirmationOpen} onClose={() => setConfirmationOpen(false)} quantity={quantity} price={selectedProduct[0]?.price} />
     </div>
   );

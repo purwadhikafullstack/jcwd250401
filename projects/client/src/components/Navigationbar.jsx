@@ -20,6 +20,7 @@ import { setCartItems } from "../slices/cartSlices";
 import api from "../api";
 import SearchModal from "./SearchModal";
 import { set } from "lodash";
+import WishlistModal from "./WishlistModal";
 
 function Navigationbar() {
   const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -43,6 +44,7 @@ function Navigationbar() {
   let isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
   const location = useLocation();
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isWishlistModalOpen, setIsWishlistModalOpen] = useState(false);
   const [carts, setCarts] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
@@ -187,6 +189,14 @@ function Navigationbar() {
 
   const closeSearchModal = () => {
     setIsSearchModalOpen(false);
+  };
+
+  const openWishlistModal = () => {
+    setIsWishlistModalOpen(true);
+  };
+
+  const closeWishlistModal = () => {
+    setIsWishlistModalOpen(false);
   };
 
   const openAuthModal = () => {
@@ -461,7 +471,7 @@ function Navigationbar() {
                 </p>
               </div>
             )}
-            <PiHeart className="text-xl cursor-pointer" />
+            <PiHeart className="text-xl cursor-pointer" onClick={openWishlistModal}/>
             <div style={{ position: "relative", display: "inline-block" }}>
               <PiShoppingCart className="text-xl cursor-pointer" onClick={() => navigate("/account/shopping-cart")} />
               {totalQuantity > 0 && ( // Conditionally render the circle if cartItem is greater than 0
@@ -602,6 +612,7 @@ function Navigationbar() {
       )}
       <AuthModal />
       <SearchModal isOpen={isSearchModalOpen} isClose={closeSearchModal} />
+      <WishlistModal isOpen={isWishlistModalOpen} isClose={closeWishlistModal} />
     </div>
   );
 }

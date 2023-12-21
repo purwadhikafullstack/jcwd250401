@@ -26,7 +26,7 @@ function SearchModal({ isOpen, isClose }) {
     try {
       const result = await getProductsUser({
         page: 1,
-        limit: 10,
+        limit: 100,
         search: search,
       });
       setProducts(result.details);
