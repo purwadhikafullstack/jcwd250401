@@ -58,21 +58,21 @@ const WarehouseCard = ({ warehouse, onSuccess }) => {
         </Text>
         <Flex align="center" mt={2} className="text-gray-600 text-sm">
           <FaUser className="mr-2" />
-          {warehouse.owner}
+          Owner: {warehouse.owner}
         </Flex>
         <Flex align="center" mt={2} className="text-gray-600 text-sm">
           <FaPhone className="mr-2" />
-          {warehouse.phoneNumber}
+          Phone Number: {warehouse.phoneNumber}
         </Flex>
         <Flex align="center" mt={2} className="text-gray-600 text-sm">
           <FaClock className="mr-2" />
           <Text>
-            Operating Hours: {new Date(`1970-01-01T${warehouse.OpenHour}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(`1970-01-01T${warehouse.CloseHour}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            Operating Hours: {new Date(`1970-01-01T${warehouse.OpenHour}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} - {new Date(`1970-01-01T${warehouse.CloseHour}Z`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}
           </Text>
         </Flex>
         <Flex align="center" mt={2} className="text-gray-600 text-sm">
           <FaMapMarkerAlt className="mr-2" />
-          <Text>{warehouse.WarehouseAddress.street}, {warehouse.WarehouseAddress.city}</Text>
+          <Text>Address: {warehouse.WarehouseAddress.street}, {warehouse.WarehouseAddress.city}</Text>
         </Flex>
         </VStack>
         {isWarehouseAdmin === false && (

@@ -19,9 +19,13 @@ module.exports = (sequelize, DataTypes) => {
   Warehouse.init({
     location: DataTypes.STRING,
     name: DataTypes.STRING,
+    owner: DataTypes.STRING,
     warehouseAddressId: DataTypes.INTEGER,
     adminId: DataTypes.INTEGER,
-    warehouseImage: DataTypes.STRING
+    warehouseImage: DataTypes.STRING,
+    phoneNumber: DataTypes.STRING,
+    OpenHour: DataTypes.TIME,
+    CloseHour: DataTypes.TIME,
   }, {
     sequelize,
     modelName: 'Warehouse',
