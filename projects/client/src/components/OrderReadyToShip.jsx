@@ -75,8 +75,12 @@ function OrderReadyToShip({ orders, fetchOrders }) {
   }, []);
   
   // Calculate total pages
-  const totalOrders = orders.length;
-  const totalPages = Math.ceil(totalOrders / ordersPerPage);
+  const totalOrders = orders.filter(order => order.status === "on-delivery").length;
+  let totalPages = Math.ceil(totalOrders / ordersPerPage);
+
+  if (totalOrders === 0) {
+    totalPages = 1;
+  }
 
   // Get current orders
   const indexOfLastOrder = currentPage * ordersPerPage;

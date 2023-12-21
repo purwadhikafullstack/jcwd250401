@@ -35,14 +35,17 @@ function OrderOnDelivery({ orders, fetchOrders }) {
   };
 
   // Calculate total pages
-  const totalOrders = orders.length;
-  const totalPages = Math.ceil(totalOrders / ordersPerPage);
+  const totalOrders = orders.filter(order => order.status === "on-delivery").length;
+  let totalPages = Math.ceil(totalOrders / ordersPerPage);
+
+  if (totalOrders === 0) {
+    totalPages = 1;
+  }
 
   // Get current orders
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const reverseOrders = orders.reverse()
-  const currentOrders = reverseOrders.slice(indexOfFirstOrder, indexOfLastOrder);
+  const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
 
   // Function to change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);

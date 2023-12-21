@@ -249,9 +249,7 @@ exports.automaticConfirmShipping = async (req, res) => {
 // Get all order lists from all users
 exports.getAllOrderLists = async (req, res) => {
   try {
-    const { status = "all", page = 1, size = 5, sort } = req.query;
-    const limit = parseInt(size);
-    const offset = (parseInt(page) - 1) * limit;
+    const { status = "all", sort } = req.query;
 
     const orderFilter = {
       attributes: ["id", "invoice", "status", "totalPrice", "paymentBy", "paymentProofImage", "userId", "shipmentId", "warehouseId", "createdAt", "updatedAt"],
@@ -277,22 +275,8 @@ exports.getAllOrderLists = async (req, res) => {
       ],
     };
 
-    if (sort) {
-      if (sort === "price-asc") {
-        orderFilter.order = [["totalPrice", "ASC"]];
-      } else if (sort === "price-desc") {
-        orderFilter.order = [["totalPrice", "DESC"]];
-      } else if (sort === "date-desc") {
-        orderFilter.order = [["updatedAt", "DESC"]];
-      } else if (sort === "date-asc") {
-        orderFilter.order = [["updatedAt", "ASC"]];
-      }
-    }
-
     const orders = await Order.findAll({
       ...orderFilter, // Order by updatedAt in descending order
-      limit,
-      offset,
     });
 
     if (orders.length === 0) {
@@ -397,23 +381,12 @@ exports.getAllOrderLists = async (req, res) => {
     // Convert the map values back to an array
     let groupedOrderListsWithImages = Array.from(groupedOrdersMap.values());
 
-    const totalUniqueOrders = await Order.count({
-      where: orderFilter.where,
-    });
-
-    const totalPages = Math.ceil(totalUniqueOrders / limit);
-
-    const paginationInfo = {
-      totalRecords: totalUniqueOrders,
-      totalPages: totalPages,
-      currentPage: parseInt(page),
-    };
+    groupedOrderListsWithImages.reverse();
 
     return res.status(200).json({
       ok: true,
       message: "Get all order successfully",
       detail: Object.values(groupedOrderListsWithImages),
-      pagination: paginationInfo,
     });
   } catch (error) {
     return res.status(500).json({
