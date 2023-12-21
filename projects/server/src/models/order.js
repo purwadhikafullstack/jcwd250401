@@ -28,6 +28,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   Order.init(
     {
+      invoice: DataTypes.STRING,
       totalPrice: DataTypes.INTEGER,
       paymentProofImage: DataTypes.STRING,
       paymentBy: DataTypes.ENUM("MANDIRI", "BCA", "BNI"),
