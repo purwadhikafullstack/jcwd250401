@@ -76,7 +76,7 @@ function OrderRecentList({ orders, fetchOrders }) {
         </div>
       ) : (
         <>
-          {orders.reverse().map(({ orderId, invoice, paymentProofImage, totalPrice, totalPriceBeforeCost, status, createdAt, totalQuantity, Products, Shipment, User, Address, Warehouse, Pagination }, index) => (
+          {orders.slice(0, 5).map(({ orderId, invoice, paymentProofImage, totalPrice, totalPriceBeforeCost, status, createdAt, totalQuantity, Products, Shipment, User, Address, Warehouse, Pagination }, index) => (
             <div key={index} className="p-4 bg-white rounded-lg shadow-lg w-[1000px] lg:w-[100%] mb-5 lg:mb-5">
               <div className="flex justify-between">
                 <div className="flex items-center gap-2">
