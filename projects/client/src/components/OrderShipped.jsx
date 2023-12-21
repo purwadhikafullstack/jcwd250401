@@ -112,12 +112,12 @@ function OrderShipped({ orders, fetchOrders }) {
               <hr className="my-2" />
               <div className="flex mt-4 mb-4">
                 <div className="Products">
-                  {Products.map(({ Product }, index) => (
+                {Products.map(({ Product, quantity }, index) => (
                     <div key={index} className="flex gap-2 mb-4">
                       <img src={`http://localhost:8000/public/${Product.productImages[0].imageUrl}`} alt="" className="w-20 h-20 object-cover rounded-md" />
                       <div className="ml-2">
                         <p className="text-sm font-bold">{Product.productName}</p>
-                        <p className="text-sm">{formatToRupiah(Product.productPrice)}</p>
+                        <p className="text-sm">{formatToRupiah(Product.productPrice)} x {quantity}</p>
                       </div>
                     </div>
                   ))}

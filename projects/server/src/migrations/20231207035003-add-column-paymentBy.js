@@ -13,3 +13,5 @@ module.exports = {
     await queryInterface.removeColumn("Orders", "paymentBy");
   },
 };
+
+

@@ -21,6 +21,8 @@ const userRouter = require("./routes/user");
 const cartRouter = require("./routes/cart");
 const WarehouseRoutes = require("./routes/warehouse");
 const mutationRoutes = require("./routes/mutation");
+const wishlistRoutes = require("./routes/wishlist");
+
 
 //Routing
 app.use("/api/auth", authRouter);
@@ -33,6 +35,7 @@ app.use("/api/users", userRouter)
 app.use("/api/warehouse", WarehouseRoutes);
 app.use("/api/mutation", mutationRoutes);
 app.use("/api/cart", cartRouter);
+app.use("/api/wishlist", wishlistRoutes);
 app.use("/public", express.static(__dirname + "/public"));
 
 //#region API ROUTES
