@@ -22,6 +22,7 @@ import {
 import { FiCamera } from 'react-icons/fi';
 import api from '../api'; 
 import { useRef } from 'react';
+import { set } from 'lodash';
 
 const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
   const [name, setName] = useState('');
@@ -43,6 +44,7 @@ const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
   const toast = useToast();
   const [imagePreview, setImagePreview] = useState(null);
   const fileInputRef = useRef(null);
+  const [initialWarehouseData, setInitialWarehouseData] = useState(null);
 
   const handlePhotoIconClick = () => {
     fileInputRef.current.click();
@@ -59,18 +61,62 @@ const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
   };
 
   useEffect(() => {
-    // Fetch provinces
-    api.admin.get('/api/address/province').then(response => {
+    // Fetch provinces and initial warehouse data
+    if (isOpen) {
+      api.admin.get('/api/address/province').then(response => {
+        if (response.data.ok) {
+          setProvinces(response.data.detail);
+        }
+      });
+
+      if (warehouseId) {
+        api.admin.get(`/api/warehouse/${warehouseId}`).then(response => {
+          if (response.data.ok) {
+            const warehouse = response.data.detail;
+            setInitialWarehouseData(warehouse); // Store the initial data
+            setName(warehouse.name);
+            setOwner(warehouse.owner);
+            setOpenHour(warehouse.OpenHour);
+            setCloseHour(warehouse.CloseHour);
+            setPhoneNumber(warehouse.phoneNumber);
+            setProvince(warehouse.WarehouseAddress.province);
+            setProvinceId(warehouse.WarehouseAddress.provinceId);
+            setSelectedProvince(warehouse.WarehouseAddress.province);
+            setCity(warehouse.WarehouseAddress.city);
+            setCityId(warehouse.WarehouseAddress.cityId);
+            setSelectedCity(warehouse.WarehouseAddress.city);
+            setStreet(warehouse.WarehouseAddress.street);
+            setImagePreview(warehouse.warehouseImage ? `http://localhost:8000/public/${warehouse.warehouseImage}` : null);
+            setWarehouseImage(warehouse.warehouseImage);
+          }
+        });
+      }
+    }
+  }, [isOpen, warehouseId]);
+
+  useEffect(() => {
+    if (initialWarehouseData && provinces.length > 0) {
+      setSelectedProvince(initialWarehouseData.WarehouseAddress.provinceId.toString());
+      fetchCities(initialWarehouseData.WarehouseAddress.provinceId);
+    }
+  }, [initialWarehouseData, provinces]);
+
+  const fetchCities = (provinceId) => {
+    api.admin.get(`/api/address/city/${provinceId}`).then(response => {
       if (response.data.ok) {
-        setProvinces(response.data.detail);
+        setCities(response.data.detail);
+        if (initialWarehouseData) {
+          setSelectedCity(initialWarehouseData.WarehouseAddress.cityId.toString());
+        }
       }
     });
-  }, []);
+  };
 
   const handleProvinceChange = (e) => {
     const selectedId = e.target.value;
     setSelectedProvince(selectedId);
     setProvinceId(selectedId);
+    fetchCities(selectedId);
     setCityId(0);
     setCities([]);
 

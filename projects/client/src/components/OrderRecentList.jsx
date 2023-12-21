@@ -5,6 +5,7 @@ import PaymentModal from "./PaymentModal";
 import rejectPayment from "../api/order/rejectPayment";
 import confirmOrder from "../api/order/confirmOrder";
 import cancelOrder from "../api/order/cancelOrder";
+import cancelUnpaidOrder from "../api/order/cancelUnpaidOrder";
 import { FaEllipsisV } from "react-icons/fa";
 import { Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
 import { toast } from "sonner";
@@ -27,9 +28,9 @@ function OrderRecentList({ orders, fetchOrders }) {
     }
   };
 
-  const handleCancelOrder = async (orderId, productId) => {
+  const handleCancelOrder = async (orderId, products) => {
     try { 
-      const response = await cancelOrder({ orderId, productId });
+      const response = await cancelOrder({ orderId, products });
       // Update state and UI based on response
       fetchOrders();
     } catch (error) {
@@ -97,7 +98,7 @@ function OrderRecentList({ orders, fetchOrders }) {
                   <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handlePaymentModalOpen(paymentProofImage)}>
                     Payment Proof
                   </Button>
-                  {status === "cancelled" || status === "shipped" ? (
+                  {status === "cancelled" || status === "delivered" || status === "on-delivery" ? (
                     <></>
                   ) : (
                     <Menu>
@@ -105,7 +106,11 @@ function OrderRecentList({ orders, fetchOrders }) {
                         <FaEllipsisV className="text-xl" />
                       </MenuButton>
                       <MenuList>
-                        <MenuItem onClick={() => handleCancelOrder(orderId, Products.id)}>Cancel Order</MenuItem>
+                        {status === "unpaid" || status === "waiting-for-confirmation" ? (
+                        <MenuItem onClick={() => cancelUnpaidOrder(orderId)}>Cancel Order</MenuItem>
+                          ) : (
+                        <MenuItem onClick={() => handleCancelOrder(orderId, Products)}>Cancel Order</MenuItem>
+                        )}
                       </MenuList>
                     </Menu>
                   )}
@@ -180,6 +185,19 @@ function OrderRecentList({ orders, fetchOrders }) {
                       </Button>
                       <Button color="dark" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleConfirmOrder(orderId, Products)}>
                         Accept Order
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
+              {status === "ready-to-ship" && (
+                <>
+                  <hr className="my-2" />
+                  <div className="flex justify-end gap-2">
+                    {/* Action buttons here, if needed */}
+                    <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
+                      <Button color="dark" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleConfirmOrder(orderId, Products)}>
+                        Ship Order
                       </Button>
                     </div>
                   </div>
