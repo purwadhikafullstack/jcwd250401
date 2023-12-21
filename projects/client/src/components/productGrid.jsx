@@ -332,8 +332,8 @@ function ProductGrid() {
           </SimpleGrid>
         ) : (
           <SimpleGrid columns={{ base: 2, lg: 4 }} spacing={{ base: 3, lg: 4 }} h={{ base: "68vh", lg: "63vh" }} borderRadius={{ base: "xl", lg: "md" }} overflowY="auto" className="scrollbar-hide">
-            {products.map((product) => (
-              <div className="flex flex-col items-center lg:justify-normal lg:items-start space-y-6 lg:space-y-10">
+            {products.map((product, index) => (
+              <div className="flex flex-col items-center lg:justify-normal lg:items-start space-y-6 lg:space-y-10" key={index}>
                 <Slider {...settings} className="w-[180px] h-[260px] lg:w-[230px] lg:h-[280px]">
                   {product.productImages.map((image, idx) => (
                     <div
@@ -348,7 +348,7 @@ function ProductGrid() {
                       }
                     >
                       {/* Product Image */}
-                      <img src={`http://localhost:8000/public/${image.imageUrl}`} loading="lazy" className="w-full h-full object-cover shadow-md rounded-lg lg:rounded-none" alt={`Product Image ${idx}`} />
+                      <img src={`http://localhost:8000/public/${image.imageUrl}`}  className="w-full h-full object-cover shadow-md rounded-lg lg:rounded-none" alt={`Product Image ${idx}`} />
 
                       {/* Overlay for Out of Stock */}
                       {product.totalStockAllWarehouses === 0 && (

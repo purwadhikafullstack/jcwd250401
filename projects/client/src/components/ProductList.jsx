@@ -574,7 +574,7 @@ function ProductList() {
                   SKU : {product.sku} ({product.gender}){" "}
                 </span>
               </div>
-              <div className="flex w-40 flex-col">
+              {/* <div className="flex w-40 flex-col">
                 <span className="font-bold">Statistic</span>
                 <div className="flex flex-row items-center gap-4">
                   <div className="flex flex-row items-center gap-1">
@@ -586,7 +586,7 @@ function ProductList() {
                     <PiShoppingBag /> {product.soldCount}{" "}
                   </div>
                 </div>
-              </div>
+              </div> */}
               <div className="flex flex-col w-48 ">
                 <span className="font-bold">Price</span>
                 <span>{formatToRupiah(product.price)}</span>
@@ -688,7 +688,7 @@ function ProductList() {
                   borderRadius="lg"
                   onClick={() => handlePageChange(index + 2)}
                   variant={currentPage === index + 2 ? "solid" : "solid"}
-                  bgColor={currentPage === index + 2 ? "gray.900" : "gray.white"}
+                  bgColor={currentPage === index + 2 ? "gray.900" : "white"}
                   textColor={currentPage === index + 2 ? "white" : "gray.900"}
                   _hover={{ bgColor: "gray.900", textColor: "white" }}
                   mr="5px"

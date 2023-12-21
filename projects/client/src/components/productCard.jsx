@@ -100,6 +100,18 @@ function ProductCard() {
     }
   };
 
+  const formatProductTitle = (productName) => {
+    const words = productName.split("-");
+    const formattedProductName = words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
+    return formattedProductName;
+  };
+
+  const formatGender = (gender) => {
+    return gender.charAt(0).toUpperCase() + gender.slice(1);
+  };
+
+  document.title = `RAINS - ${formatProductTitle(productName)} ${formatGender(gender)}`;
+
   const formatToRupiah = (number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
