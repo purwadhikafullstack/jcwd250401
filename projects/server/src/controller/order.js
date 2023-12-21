@@ -810,8 +810,9 @@ exports.automaticCancelUnpaidOrder = async (req, res) => {
 };
 
 // Function to find the nearest warehouse using Haversine formula
-function findNearestWarehouse(sourceLatitude, sourceLongitude, warehouses, requiredStock) {
+function findNearestWarehouse(sourceLatitude, sourceLongitude, warehouses, requiredStock, sourceWarehouseId) {
   const earthRadius = 6371; // Radius of the earth in km
+  console.log("I got triggered");
 
   // Helper function to convert degrees to radians
   function toRad(degrees) {
@@ -823,6 +824,11 @@ function findNearestWarehouse(sourceLatitude, sourceLongitude, warehouses, requi
   for (const warehouse of warehouses) {
     const { latitude, longitude } = warehouse.WarehouseAddress;
     const { stock } = warehouse.Mutations[0] || { stock: 0 };
+
+    // Skip the source warehouse
+    if (warehouse.id === sourceWarehouseId) {
+      continue;
+    }
 
     // Haversine formula (menentukan jarak antara dua titik pada permukaan bola)
     const dLat = toRad(latitude - sourceLatitude); // Calculate the difference in latitude in radians
@@ -982,6 +988,7 @@ exports.confirmPaymentProofUser = async (req, res) => {
         transaction: t,
       });
       let stockProductAtCurrentWarehouse = dataProductAtCurrentWarehouse[0].stock;
+      console.log("stockProductAtCurrentWarehouse", stockProductAtCurrentWarehouse);
 
       if (!stockProductAtCurrentWarehouse) {
         stockProductAtCurrentWarehouse = 0;
@@ -1011,11 +1018,12 @@ exports.confirmPaymentProofUser = async (req, res) => {
 
       const orderQuantity = product.quantity;
       const requiredStock = orderQuantity - stockProductAtCurrentWarehouse;
+      console.log("orderQuantity",orderQuantity)
 
       if (orderItem.Order.status === "ready-to-ship") {
         if (orderQuantity > stockProductAtCurrentWarehouse) {
           // insufficient stock
-          const nearestWarehouse = findNearestWarehouse(warehouselatitude, warehouseLongitude, allWarehouses, requiredStock);
+          const nearestWarehouse = findNearestWarehouse(warehouselatitude, warehouseLongitude, allWarehouses, requiredStock, sourceWarehouseId);
 
           if (!nearestWarehouse) {
             await t.rollback();
@@ -1024,9 +1032,9 @@ exports.confirmPaymentProofUser = async (req, res) => {
               message: "Nearest warehouse with sufficient stock not found",
             });
           }
-
+          
           // Create mutation for update stock at source warehouse
-          const newMutationForSourceWarehouse = await updateSourceWarehouseStock(product.productId, sourceWarehouseId, nearestWarehouse.id, requiredStock, sourceWarehouseAdminId, t);
+          await updateSourceWarehouseStock(product.productId, sourceWarehouseId, nearestWarehouse.id, requiredStock, sourceWarehouseAdminId, t);
 
           // Create mutation for update stock at destination warehouse
           let currentDestinationWarehouseStock = nearestWarehouse.Mutations[0].stock;
@@ -1065,16 +1073,6 @@ exports.confirmPaymentProofUser = async (req, res) => {
             },
             { transaction: t }
           );
-
-          await t.commit();
-          return res.status(200).json({
-            ok: true,
-            message: "Payment proof confirmed successfully",
-            detail: {
-              orderItem,
-              newMutationForSourceWarehouse,
-            },
-          });
         } else {
           // sufficient stock
           // Create mutation for update stock at source warehouse
@@ -1122,7 +1120,6 @@ exports.confirmPaymentProofUser = async (req, res) => {
       message: "Payment proof confirmed successfully",
       detail: {
         orderItem,
-        newMutationForSourceWarehouse,
       },
     });
   } catch (error) {
