@@ -878,7 +878,7 @@ async function updateSourceWarehouseStock(productId, warehouseId, destinationWar
       {
         productId,
         warehouseId,
-        destinationWarehouseId,
+        destinationWarehouseId: warehouseId,
         previousStock: sourceWarehouseStock,
         mutationQuantity: quantity,
         mutationType: "add",
@@ -898,7 +898,7 @@ async function updateSourceWarehouseStock(productId, warehouseId, destinationWar
         mutationId: mutation.id,
         productId,
         warehouseId,
-        destinationWarehouseId,
+        destinationWarehouseId: warehouseId,
         previousStock: sourceWarehouseStock,
         mutationQuantity: quantity,
         mutationType: "add",
@@ -923,10 +923,10 @@ async function updateSourceWarehouseStock(productId, warehouseId, destinationWar
 
 exports.confirmPaymentProofUser = async (req, res) => {
   const t = await sequelize.transaction();
-  const { orderId, productId } = req.body;
+  const { orderId, products } = req.body;
 
   try {
-    const orderItem = await OrderItem.findAll({
+    const orderItem = await OrderItem.findOne({
       where: {
         orderId,
       },
@@ -940,15 +940,6 @@ exports.confirmPaymentProofUser = async (req, res) => {
             {
               model: Warehouse,
               include: [
-                {
-                  model: Mutation,
-                  where: {
-                    status: "success",
-                    productId,
-                  },
-                  order: [["createdAt", "DESC"]],
-                  limit: 1,
-                },
                 {
                   model: WarehouseAddress,
                   attributes: ["latitude", "longitude"],
@@ -973,150 +964,169 @@ exports.confirmPaymentProofUser = async (req, res) => {
     orderItem.Order.status = "ready-to-ship";
     await orderItem.Order.save({ transaction: t });
 
-    const stockProductAtCurrentWarehouse = orderItem.Order.Warehouse.Mutations[0].stock;
     const warehouselatitude = orderItem.Order.Warehouse.WarehouseAddress.latitude;
     const warehouseLongitude = orderItem.Order.Warehouse.WarehouseAddress.longitude;
-    const orderQuantity = orderItem.quantity;
-    const requiredStock = orderQuantity - stockProductAtCurrentWarehouse;
-    const sourceWarehouseName = orderItem.Order.Warehouse.name;
     const sourceWarehouseId = orderItem.Order.Warehouse.id;
+    const sourceWarehouseName = orderItem.Order.Warehouse.name;
     const sourceWarehouseAdminId = orderItem.Order.Warehouse.adminId;
 
-    const allWarehouses = await Warehouse.findAll({
-      attributes: ["id", "name", "warehouseAddressId"],
-      include: [
-        {
-          model: WarehouseAddress,
-          attributes: ["street", "city", "province", "latitude", "longitude"],
-        },
-        {
-          model: Mutation,
-          attributes: ["id", "stock"],
-          where: {
-            status: "success",
-            productId,
-          },
-          order: [["createdAt", "DESC"]],
-          limit: 1,
-        },
-      ],
-      transaction: t,
-    });
-
-    if (orderItem.Order.status === "ready-to-ship") {
-      if (orderQuantity > stockProductAtCurrentWarehouse) {
-        // insufficient stock
-        const nearestWarehouse = findNearestWarehouse(warehouselatitude, warehouseLongitude, allWarehouses, orderQuantity);
-
-        if (!nearestWarehouse) {
-          await t.rollback();
-          return res.status(404).json({
-            ok: false,
-            message: "Nearest warehouse with sufficient stock not found",
-          });
-        }
-
-        // Create mutation for update stock at source warehouse
-        const newMutationForSourceWarehouse = await updateSourceWarehouseStock(productId, sourceWarehouseId, nearestWarehouse.id, requiredStock, sourceWarehouseAdminId);
-
-        // Create mutation for update stock at destination warehouse
-        let currentDestinationWarehouseStock = nearestWarehouse.Mutations[0].stock;
-
-        const newMutationForDestinationWarehouse = await Mutation.create(
-          {
-            productId,
-            warehouseId: nearestWarehouse.id,
-            destinationWarehouseId: nearestWarehouse.id,
-            mutationQuantity: requiredStock,
-            previousStock: currentDestinationWarehouseStock,
-            mutationType: "subtract",
-            adminId: sourceWarehouseAdminId,
-            stock: (currentDestinationWarehouseStock -= requiredStock),
-            status: "success",
-            isManual: false,
-            description: `Auto request, stock subtracted automatically to ${sourceWarehouseName} for user order.`,
-          },
-          { transaction: t }
-        );
-
-        await Journal.create(
-          {
-            productId,
-            warehouseId: nearestWarehouse.id,
-            destinationWarehouseId: nearestWarehouse.id,
-            mutationId: newMutationForDestinationWarehouse.id,
-            mutationQuantity: requiredStock,
-            previousStock: newMutationForDestinationWarehouse.previousStock,
-            mutationType: "subtract",
-            adminId: sourceWarehouseAdminId,
-            stock: newMutationForDestinationWarehouse.stock,
-            status: "success",
-            isManual: false,
-            description: `Auto request, stock subtracted automatically to ${sourceWarehouseName} for user order.`,
-          },
-          { transaction: t }
-        );
-
-        await t.commit();
-        return res.status(200).json({
-          ok: true,
-          message: "Payment proof confirmed successfully",
-          detail: {
-            orderItem,
-            newMutationForSourceWarehouse,
-          },
-        });
-      }
-      // sufficient stock
-      // Create mutation for update stock at source warehouse
-      const newMutationForSourceWarehouse = await Mutation.create(
-        {
-          productId,
-          warehouseId: sourceWarehouseId,
-          destinationWarehouseId: sourceWarehouseId,
-          mutationQuantity: orderQuantity,
-          previousStock: stockProductAtCurrentWarehouse,
-          mutationType: "subtract",
-          adminId: sourceWarehouseAdminId,
-          stock: stockProductAtCurrentWarehouse - orderQuantity,
+    for (const product of products) {
+      const dataProductAtCurrentWarehouse = await Mutation.findAll({
+        where: {
+          productId: product.productId,
+          warehouseId: orderItem.Order.Warehouse.id,
           status: "success",
-          isManual: false,
-          description: "Auto request, stock subtracted automatically for user order.",
         },
-        { transaction: t }
-      );
-
-      await Journal.create(
-        {
-          mutationId: newMutationForSourceWarehouse.id,
-          productId,
-          warehouseId: sourceWarehouseId,
-          destinationWarehouseId: sourceWarehouseId,
-          mutationId: newMutationForSourceWarehouse.id,
-          mutationQuantity: orderQuantity,
-          previousStock: stockProductAtCurrentWarehouse,
-          mutationType: "subtract",
-          adminId: sourceWarehouseAdminId,
-          stock: stockProductAtCurrentWarehouse - orderQuantity,
-          status: "success",
-          isManual: false,
-          description: "Auto request, stock subtracted automatically for user order.",
-        },
-        { transaction: t }
-      );
-
-      await t.commit();
-      return res.status(200).json({
-        ok: true,
-        message: "Payment proof confirmed successfully",
-        detail: {
-          orderItem,
-          newMutationForSourceWarehouse,
-        },
+        order: [["createdAt", "DESC"]],
+        limit: 1,
+        transaction: t,
       });
+      let stockProductAtCurrentWarehouse = dataProductAtCurrentWarehouse[0].stock;
+
+      if (!stockProductAtCurrentWarehouse) {
+        stockProductAtCurrentWarehouse = 0;
+      }
+
+      const allWarehouses = await Warehouse.findAll({
+        // to get all warehouses stock
+        attributes: ["id", "name", "warehouseAddressId"],
+        include: [
+          {
+            model: WarehouseAddress,
+            attributes: ["street", "city", "province", "latitude", "longitude"],
+          },
+          {
+            model: Mutation,
+            attributes: ["id", "stock"],
+            where: {
+              status: "success",
+              productId: product.productId,
+            },
+            order: [["createdAt", "DESC"]],
+            limit: 1,
+          },
+        ],
+        transaction: t,
+      });
+
+      const orderQuantity = product.quantity;
+      const requiredStock = orderQuantity - stockProductAtCurrentWarehouse;
+
+      if (orderItem.Order.status === "ready-to-ship") {
+        if (orderQuantity > stockProductAtCurrentWarehouse) {
+          // insufficient stock
+          const nearestWarehouse = findNearestWarehouse(warehouselatitude, warehouseLongitude, allWarehouses, requiredStock);
+
+          if (!nearestWarehouse) {
+            await t.rollback();
+            return res.status(404).json({
+              ok: false,
+              message: "Nearest warehouse with sufficient stock not found",
+            });
+          }
+
+          // Create mutation for update stock at source warehouse
+          const newMutationForSourceWarehouse = await updateSourceWarehouseStock(product.productId, sourceWarehouseId, nearestWarehouse.id, requiredStock, sourceWarehouseAdminId, t);
+
+          // Create mutation for update stock at destination warehouse
+          let currentDestinationWarehouseStock = nearestWarehouse.Mutations[0].stock;
+
+          const newMutationForDestinationWarehouse = await Mutation.create(
+            {
+              productId: product.productId,
+              warehouseId: nearestWarehouse.id,
+              destinationWarehouseId: sourceWarehouseId,
+              mutationQuantity: requiredStock,
+              previousStock: currentDestinationWarehouseStock,
+              mutationType: "subtract",
+              adminId: sourceWarehouseAdminId,
+              stock: currentDestinationWarehouseStock - requiredStock,
+              status: "success",
+              isManual: false,
+              description: `Auto request, stock subtracted automatically to ${sourceWarehouseName} for user order.`,
+            },
+            { transaction: t }
+          );
+
+          await Journal.create(
+            {
+              mutationId: newMutationForDestinationWarehouse.id,
+              productId: newMutationForDestinationWarehouse.productId,
+              warehouseId: newMutationForDestinationWarehouse.warehouseId,
+              destinationWarehouseId: newMutationForDestinationWarehouse.destinationWarehouseId,
+              mutationQuantity: newMutationForDestinationWarehouse.mutationQuantity,
+              previousStock: newMutationForDestinationWarehouse.previousStock,
+              mutationType: newMutationForDestinationWarehouse.mutationType,
+              adminId: newMutationForDestinationWarehouse.adminId,
+              stock: newMutationForDestinationWarehouse.stock,
+              status: newMutationForDestinationWarehouse.status,
+              isManual: newMutationForDestinationWarehouse.isManual,
+              description: newMutationForDestinationWarehouse.description,
+            },
+            { transaction: t }
+          );
+
+          await t.commit();
+          return res.status(200).json({
+            ok: true,
+            message: "Payment proof confirmed successfully",
+            detail: {
+              orderItem,
+              newMutationForSourceWarehouse,
+            },
+          });
+        } else {
+          // sufficient stock
+          // Create mutation for update stock at source warehouse
+          const newMutationForSourceWarehouse = await Mutation.create(
+            {
+              productId: product.productId,
+              warehouseId: sourceWarehouseId,
+              destinationWarehouseId: sourceWarehouseId,
+              mutationQuantity: orderQuantity,
+              previousStock: stockProductAtCurrentWarehouse,
+              mutationType: "subtract",
+              adminId: sourceWarehouseAdminId,
+              stock: stockProductAtCurrentWarehouse - orderQuantity,
+              status: "success",
+              isManual: false,
+              description: `Auto request, stock subtracted automatically for user order.`,
+            },
+            { transaction: t }
+          );
+
+          await Journal.create(
+            {
+              mutationId: newMutationForSourceWarehouse.id,
+              productId: newMutationForSourceWarehouse.productId,
+              warehouseId: newMutationForSourceWarehouse.warehouseId,
+              destinationWarehouseId: newMutationForSourceWarehouse.destinationWarehouseId,
+              mutationQuantity: newMutationForSourceWarehouse.mutationQuantity,
+              previousStock: newMutationForSourceWarehouse.previousStock,
+              mutationType: newMutationForSourceWarehouse.mutationType,
+              adminId: newMutationForSourceWarehouse.adminId,
+              stock: newMutationForSourceWarehouse.stock,
+              status: newMutationForSourceWarehouse.status,
+              isManual: newMutationForSourceWarehouse.isManual,
+              description: newMutationForSourceWarehouse.description,
+            },
+            { transaction: t }
+          );
+        }
+      }
     }
+
+    await t.commit();
+    return res.status(200).json({
+      ok: true,
+      message: "Payment proof confirmed successfully",
+      detail: {
+        orderItem,
+        newMutationForSourceWarehouse,
+      },
+    });
   } catch (error) {
-    console.error(error);
+    console.error(String(error));
     await t.rollback();
     return res.status(500).json({
       ok: false,
@@ -1455,53 +1465,53 @@ exports.cancelOrderUser = async (req, res) => {
     }
 
     for (const item of orderItem) {
-    if (item.Order.status === "waiting-for-confirmation") {
-      // Update status to 'cancelled' for orders that are not yet processed
-      item.Order.status = "cancelled";
-      await item.Order.save({ transaction: t });
-    } else if (item.Order.status === "ready-to-ship") {
-      // Handle stock adjustment for orders that have been processed
-      const stockProductAtCurrentWarehouse = item.Order.Warehouse.Mutations[0].stock;
-      const orderQuantity = item.quantity;
+      if (item.Order.status === "waiting-for-confirmation") {
+        // Update status to 'cancelled' for orders that are not yet processed
+        item.Order.status = "cancelled";
+        await item.Order.save({ transaction: t });
+      } else if (item.Order.status === "ready-to-ship") {
+        // Handle stock adjustment for orders that have been processed
+        const stockProductAtCurrentWarehouse = item.Order.Warehouse.Mutations[0].stock;
+        const orderQuantity = item.quantity;
 
-      // Create mutation for reverting stock at source warehouse
-      const newMutationForSourceWarehouse = await Mutation.create(
-        {
-          productId,
-          warehouseId: item.Order.Warehouse.id,
-          mutationQuantity: orderQuantity,
-          previousStock: stockProductAtCurrentWarehouse,
-          mutationType: "add", // Revert the stock subtraction
-          adminId: orderItem.Order.Warehouse.adminId,
-          stock: stockProductAtCurrentWarehouse + orderQuantity,
-          status: "success",
-          isManual: false,
-          description: "Order cancellation, stock added back due to order cancellation.",
-        },
-        { transaction: t }
-      );
+        // Create mutation for reverting stock at source warehouse
+        const newMutationForSourceWarehouse = await Mutation.create(
+          {
+            productId,
+            warehouseId: item.Order.Warehouse.id,
+            mutationQuantity: orderQuantity,
+            previousStock: stockProductAtCurrentWarehouse,
+            mutationType: "add", // Revert the stock subtraction
+            adminId: orderItem.Order.Warehouse.adminId,
+            stock: stockProductAtCurrentWarehouse + orderQuantity,
+            status: "success",
+            isManual: false,
+            description: "Order cancellation, stock added back due to order cancellation.",
+          },
+          { transaction: t }
+        );
 
-      // Create a corresponding journal entry
-      await Journal.create(
-        {
-          mutationId: newMutationForSourceWarehouse.id,
-          productId,
-          warehouseId: item.Order.Warehouse.id,
-          mutationQuantity: orderQuantity,
-          previousStock: stockProductAtCurrentWarehouse,
-          mutationType: "add",
-          adminId: item.Order.Warehouse.adminId,
-          stock: stockProductAtCurrentWarehouse + orderQuantity,
-          status: "success",
-          isManual: false,
-          description: "Order cancellation, stock added back due to order cancellation.",
-        },
-        { transaction: t }
-      );
+        // Create a corresponding journal entry
+        await Journal.create(
+          {
+            mutationId: newMutationForSourceWarehouse.id,
+            productId,
+            warehouseId: item.Order.Warehouse.id,
+            mutationQuantity: orderQuantity,
+            previousStock: stockProductAtCurrentWarehouse,
+            mutationType: "add",
+            adminId: item.Order.Warehouse.adminId,
+            stock: stockProductAtCurrentWarehouse + orderQuantity,
+            status: "success",
+            isManual: false,
+            description: "Order cancellation, stock added back due to order cancellation.",
+          },
+          { transaction: t }
+        );
 
-      orderItem.Order.status = "cancelled";
-      await orderItem.Order.save({ transaction: t });
-    }
+        orderItem.Order.status = "cancelled";
+        await orderItem.Order.save({ transaction: t });
+      }
     }
 
     await t.commit();
