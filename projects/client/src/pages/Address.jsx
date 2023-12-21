@@ -17,6 +17,8 @@ import getUserAddress from "../api/Address/getUserAddress";
 import addNewAddress from "../api/Address/addNewAddress";
 import getProvince from "../api/Address/getProvince";
 import getCity from "../api/Address/getCity";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 
 export const Address = () => {
   const isLogin = useSelector((state) => state?.account?.isLogin);
@@ -36,6 +38,7 @@ export const Address = () => {
   const [selectedProvince, setSelectedProvince] = useState("");
   const [selectedCityByProvince, setSelectedCityByProvince] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const defaultAddress = userAddressLists.find((address) => address.setAsDefault);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -173,6 +176,8 @@ export const Address = () => {
           }, 2000);
         }
       }
+    } finally {
+      setIsLoading(false);
     }
   }, [username]);
 
@@ -218,7 +223,11 @@ export const Address = () => {
 
           {isLogin ? (
             <>
-              {userAddressLists.length > 0 ? (
+              {isLoading ? (
+                <div className="w-[90vw] h-[70vh] lg:w-[53vw] lg:h-[70vh] rounded-lg shadow-md flex flex-col px-5 border overflow-y-auto">
+                  <Skeleton height={80} className="mt-5" count={5} />
+                </div>
+              ) : userAddressLists.length > 0 ? (
                 <div className="w-[90vw] h-[70vh] lg:w-[53vw] lg:h-[70vh] rounded-lg shadow-md flex flex-col px-5 border overflow-y-auto">
                   <h1 className="font-bold text-2xl mt-5">Address Book</h1>
                   <p className="text-sm text-gray-600 mt-2">
