@@ -10,6 +10,7 @@ import confirmShipUser from "../api/order/confirmShipUser";
 import { FaEllipsisV } from "react-icons/fa";
 import { Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
 import { toast } from "sonner";
+import confirmShip from "../api/order/confirmShip";
 
 function OrderList({ orders, fetchOrders }) {
   const [paymentModalIsOpen, setPaymentModalIsOpen] = useState(false);
@@ -24,7 +25,7 @@ function OrderList({ orders, fetchOrders }) {
 
   const handleConfirmShipOrder = async (orderId) => {
     try {
-      const response = await confirmShipUser({ orderId });
+      const response = await confirmShip({ orderId });
       // Update state and UI based on response
       fetchOrders();
     } catch (error) {
@@ -48,7 +49,7 @@ function OrderList({ orders, fetchOrders }) {
   };
 
   const handleCancelOrder = async (orderId, products) => {
-    try { 
+    try {
       const response = await cancelOrder({ orderId, products });
       // Update state and UI based on response
       fetchOrders();
@@ -94,7 +95,7 @@ function OrderList({ orders, fetchOrders }) {
   if (totalOrders === 0) {
     totalPages = 1;
   }
-  
+
   // Get current orders
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
@@ -142,9 +143,9 @@ function OrderList({ orders, fetchOrders }) {
                       </MenuButton>
                       <MenuList>
                         {status === "unpaid" || status === "waiting-for-confirmation" ? (
-                        <MenuItem onClick={() => cancelUnpaidOrder(orderId)}>Cancel Order</MenuItem>
-                          ) : (
-                        <MenuItem onClick={() => handleCancelOrder(orderId, Products)}>Cancel Order</MenuItem>
+                          <MenuItem onClick={() => cancelUnpaidOrder(orderId)}>Cancel Order</MenuItem>
+                        ) : (
+                          <MenuItem onClick={() => handleCancelOrder(orderId, Products)}>Cancel Order</MenuItem>
                         )}
                       </MenuList>
                     </Menu>
