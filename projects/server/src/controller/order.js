@@ -403,8 +403,8 @@ exports.getAllOrderLists = async (req, res) => {
     });
   }
 };
-// create order
 
+// create order
 const getProductStock = async (products) => {
   return await Promise.all(
     products.map(async (item) => {
@@ -552,7 +552,7 @@ exports.createOrder = async (req, res) => {
 
     // Create invoice
     const paymentCode = paymentBy === "MANDIRI" ? "100" : paymentBy === "BCA" ? "101" : "102";
-    const invoice = `INV-${paymentCode}${order.id}${order.userId}${order.warehouseId}${order.shipmentId}`
+    const invoice = `INV-${paymentCode}${order.id}${order.userId}${order.warehouseId}${order.shipmentId}`;
 
     await order.update({ invoice });
 
@@ -864,7 +864,7 @@ async function updateSourceWarehouseStock(productId, warehouseId, destinationWar
       transaction: t,
     });
 
-    let sourceWarehouseStock = findLatestMutationSourceWarehouse.stock || 0;
+    let sourceWarehouseStock = findLatestMutationSourceWarehouse ? findLatestMutationSourceWarehouse.stock : 0;
     let newStock = sourceWarehouseStock + quantity;
 
     // update the source warehouse stock by creating a new mutation
@@ -975,7 +975,8 @@ exports.confirmPaymentProofUser = async (req, res) => {
         limit: 1,
         transaction: t,
       });
-      let stockProductAtCurrentWarehouse = dataProductAtCurrentWarehouse[0].stock;
+
+      let stockProductAtCurrentWarehouse = dataProductAtCurrentWarehouse[0]?.stock;
       console.log("stockProductAtCurrentWarehouse", stockProductAtCurrentWarehouse);
 
       if (!stockProductAtCurrentWarehouse) {
@@ -1006,7 +1007,7 @@ exports.confirmPaymentProofUser = async (req, res) => {
 
       const orderQuantity = product.quantity;
       const requiredStock = orderQuantity - stockProductAtCurrentWarehouse;
-      console.log("orderQuantity",orderQuantity)
+      console.log("orderQuantity", orderQuantity);
 
       if (orderItem.Order.status === "ready-to-ship") {
         if (orderQuantity > stockProductAtCurrentWarehouse) {
@@ -1020,12 +1021,12 @@ exports.confirmPaymentProofUser = async (req, res) => {
               message: "Nearest warehouse with sufficient stock not found",
             });
           }
-          
-          // Create mutation for update stock at source warehouse
-          await updateSourceWarehouseStock(product.productId, sourceWarehouseId, nearestWarehouse.id, requiredStock, sourceWarehouseAdminId, t);
 
-          // Create mutation for update stock at destination warehouse
-          let currentDestinationWarehouseStock = nearestWarehouse.Mutations[0].stock;
+          let currentDestinationWarehouseStock = 0;
+
+          if (nearestWarehouse.Mutations && nearestWarehouse.Mutations.length > 0) {
+            currentDestinationWarehouseStock = nearestWarehouse.Mutations[0].stock || 0;
+          }
 
           const newMutationForDestinationWarehouse = await Mutation.create(
             {
@@ -1061,6 +1062,44 @@ exports.confirmPaymentProofUser = async (req, res) => {
             },
             { transaction: t }
           );
+
+          // Create mutation for update or add stock at source warehouse
+          const newStockAtSourceWarehouse = await updateSourceWarehouseStock(product.productId, sourceWarehouseId, nearestWarehouse.id, requiredStock, sourceWarehouseAdminId, t);
+
+          await new Promise((resolve) => setTimeout(resolve, 1200));
+
+          // create mutation for subtract stock at source warehouse
+          const newMutationForSourceWarehouse = await Mutation.create(
+            {
+              productId: product.productId,
+              warehouseId: sourceWarehouseId,
+              destinationWarehouseId: sourceWarehouseId,
+              mutationQuantity: orderQuantity,
+              previousStock: newStockAtSourceWarehouse.stock,
+              mutationType: "subtract",
+              adminId: sourceWarehouseAdminId,
+              stock: newStockAtSourceWarehouse.stock - orderQuantity,
+              status: "success",
+              isManual: false,
+              description: `Auto request, stock subtracted automatically for user order.`,
+            },
+            { transaction: t }
+          );
+
+          await Journal.create({
+            mutationId: newMutationForSourceWarehouse.id,
+            productId: newMutationForSourceWarehouse.productId,
+            warehouseId: newMutationForSourceWarehouse.warehouseId,
+            destinationWarehouseId: newMutationForSourceWarehouse.destinationWarehouseId,
+            mutationQuantity: newMutationForSourceWarehouse.mutationQuantity,
+            previousStock: newMutationForSourceWarehouse.previousStock,
+            mutationType: newMutationForSourceWarehouse.mutationType,
+            adminId: newMutationForSourceWarehouse.adminId,
+            stock: newMutationForSourceWarehouse.stock,
+            status: newMutationForSourceWarehouse.status,
+            isManual: newMutationForSourceWarehouse.isManual,
+            description: newMutationForSourceWarehouse.description,
+          });
         } else {
           // sufficient stock
           // Create mutation for update stock at source warehouse
@@ -1111,7 +1150,7 @@ exports.confirmPaymentProofUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error(String(error));
+    console.error(error);
     await t.rollback();
     return res.status(500).json({
       ok: false,
@@ -1476,41 +1515,41 @@ exports.cancelOrderUser = async (req, res) => {
       const orderQuantity = product.quantity;
 
       if (orderItem.Order.status === "cancelled") {
-          // Create mutation for update stock at source warehouse
-          const newMutationForSourceWarehouse = await Mutation.create(
-            {
-              productId: product.productId,
-              warehouseId: sourceWarehouseId,
-              destinationWarehouseId: sourceWarehouseId,
-              mutationQuantity: orderQuantity,
-              previousStock: stockProductAtCurrentWarehouse,
-              mutationType: "add",
-              adminId: sourceWarehouseAdminId,
-              stock: stockProductAtCurrentWarehouse + orderQuantity,
-              status: "success",
-              isManual: false,
-              description: `Order cancelled by user, stock updated at ${sourceWarehouseName}`,
-            },
-            { transaction: t }
-          );
+        // Create mutation for update stock at source warehouse
+        const newMutationForSourceWarehouse = await Mutation.create(
+          {
+            productId: product.productId,
+            warehouseId: sourceWarehouseId,
+            destinationWarehouseId: sourceWarehouseId,
+            mutationQuantity: orderQuantity,
+            previousStock: stockProductAtCurrentWarehouse,
+            mutationType: "add",
+            adminId: sourceWarehouseAdminId,
+            stock: stockProductAtCurrentWarehouse + orderQuantity,
+            status: "success",
+            isManual: false,
+            description: `Order cancelled by user, stock updated at ${sourceWarehouseName}`,
+          },
+          { transaction: t }
+        );
 
-          await Journal.create(
-            {
-              mutationId: newMutationForSourceWarehouse.id,
-              productId: newMutationForSourceWarehouse.productId,
-              warehouseId: newMutationForSourceWarehouse.warehouseId,
-              destinationWarehouseId: newMutationForSourceWarehouse.destinationWarehouseId,
-              mutationQuantity: newMutationForSourceWarehouse.mutationQuantity,
-              previousStock: newMutationForSourceWarehouse.previousStock,
-              mutationType: newMutationForSourceWarehouse.mutationType,
-              adminId: newMutationForSourceWarehouse.adminId,
-              stock: newMutationForSourceWarehouse.stock,
-              status: newMutationForSourceWarehouse.status,
-              isManual: newMutationForSourceWarehouse.isManual,
-              description: newMutationForSourceWarehouse.description,
-            },
-            { transaction: t }
-          );
+        await Journal.create(
+          {
+            mutationId: newMutationForSourceWarehouse.id,
+            productId: newMutationForSourceWarehouse.productId,
+            warehouseId: newMutationForSourceWarehouse.warehouseId,
+            destinationWarehouseId: newMutationForSourceWarehouse.destinationWarehouseId,
+            mutationQuantity: newMutationForSourceWarehouse.mutationQuantity,
+            previousStock: newMutationForSourceWarehouse.previousStock,
+            mutationType: newMutationForSourceWarehouse.mutationType,
+            adminId: newMutationForSourceWarehouse.adminId,
+            stock: newMutationForSourceWarehouse.stock,
+            status: newMutationForSourceWarehouse.status,
+            isManual: newMutationForSourceWarehouse.isManual,
+            description: newMutationForSourceWarehouse.description,
+          },
+          { transaction: t }
+        );
       }
     }
 

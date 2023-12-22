@@ -1,21 +1,16 @@
 import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, SimpleGrid } from "@chakra-ui/react";
 import { useCallback, useEffect, useState } from "react";
-import { PiEye, PiMagnifyingGlassBold, PiTrash } from "react-icons/pi";
+import { PiMagnifyingGlassBold, PiTrash } from "react-icons/pi";
 import { toast } from "sonner";
 import _debounce from "lodash/debounce";
-import getProductsUser from "../api/products/getProductsUser";
 import { Button } from "flowbite-react";
 import { Link, useNavigate } from "react-router-dom";
 import rains from "../assets/rains.png";
-import menexplore from "../assets/menjackets.jpg";
-import womenexplore from "../assets/womensearch.jpg";
-import unisexexplore from "../assets/unisexsearch.jpg";
 import getWishlist from "../api/Wishlist/getWishlist";
 import DeleteWishlistItem from "./DeleteWishlishItem";
 
 function WishlistModal({ isOpen, isClose }) {
   const [products, setProducts] = useState([]);
-  const [search, setSearch] = useState("");
   const navigate = useNavigate();
   const [openDeleteWishlistModal, setOpenDeleteWishlistModal] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(null);
@@ -25,8 +20,6 @@ function WishlistModal({ isOpen, isClose }) {
     try {
       const result = await getWishlist({});
       setProducts(result.detail.WishlistProducts);
-
-      console.log(result.detail.WishlistProducts);
     } catch (error) {
       if (error?.response?.status === 404) {
         setProducts([]);
@@ -87,9 +80,9 @@ function WishlistModal({ isOpen, isClose }) {
                 {products?.length === 0 && <span className="text-white text-2xl font-sans">No products on wishlist.</span>}
                 {products?.map((product) => (
                   <div key={product.id} className="flex flex-col justify-center items-center space-y-4">
-                    <div className="flex lg:flex-row flex-col items-center space-y-4 lg:space-y-0 lg:space-x-8 px-4 py-4 rounded-2xl  w-[40vw]">
-                      <div className="h-[140px] w-[140px] lg:h-[120px] lg:w-[120px] opacity-100 relative">
-                        {product.totalStockAllWarehouses !== 0 ? (
+                    <div className="flex lg:flex-row flex-col items-center space-y-4 lg:space-y-0 lg:space-x-8 px-8 py-4 rounded-2xl  w-[46vw]">
+                      <div className={`h-[140px] w-[140px] lg:h-[120px] lg:w-[120px] ${product.Product.totalStockAllWarehouses === 0 ? "opacity-60" : "opacity-100"} relative`}>
+                        {product.Product.totalStockAllWarehouses !== 0 ? (
                           <img src={`http://localhost:8000/public/${product.Product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl rounded-lg" loading="lazy" alt="Product Image" />
                         ) : (
                           <img
@@ -109,7 +102,7 @@ function WishlistModal({ isOpen, isClose }) {
                           </div>
                         )}
                       </div>
-                      <div className="flex flex-1 flex-col text-center lg:text-left">
+                      <div className={`flex flex-1 flex-col text-center lg:text-left ${product.Product.totalStockAllWarehouses === 0 ? "opacity-60" : ""}`}>
                         <span className="text-white lg:text-lg font-medium font-sans">
                           {product.Product.name} ({product.Product.gender})
                         </span>
@@ -153,9 +146,9 @@ function WishlistModal({ isOpen, isClose }) {
                 <SimpleGrid columns={2} spacing={4} className="h-screen">
                   {products?.map((product) => (
                     <div key={product.id} className="flex flex-col justify-center items-center space-y-4">
-                      <div className="flex lg:flex-row flex-col items-center space-y-4 h-[36vh] px-4 py-4 rounded-2xl bg-black opacity-80 w-[40vw]">
-                        <div className="h-[140px] w-[140px] lg:h-[100px] lg:w-[100px] relative">
-                          {product.totalStockAllWarehouses !== 0 ? (
+                      <div className="flex lg:flex-row flex-col items-center space-y-4 h-[36vh] px-4 py-4 rounded-2xl bg-black w-[40vw]">
+                        <div className={`h-[140px] w-[140px] lg:h-[100px] lg:w-[100px]  relative ${product.Product.totalStockAllWarehouses === 0 ? "opacity-60" : ""}`}>
+                          {product.Product.totalStockAllWarehouses !== 0 ? (
                             <img src={`http://localhost:8000/public/${product.Product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl rounded-lg" loading="lazy" alt="Product Image" />
                           ) : (
                             <img
@@ -175,7 +168,7 @@ function WishlistModal({ isOpen, isClose }) {
                             </div>
                           )}
                         </div>
-                        <div className="flex flex-1 flex-col text-center lg:text-left">
+                        <div className={`flex flex-1 flex-col text-center lg:text-left ${product.Product.totalStockAllWarehouses === 0 ? "opacity-60" : ""}`}>
                           <span className="text-white text-md font-medium font-sans">
                             {product.Product.name} ({product.Product.gender})
                           </span>

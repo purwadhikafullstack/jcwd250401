@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { BsCart, BsSearch } from "react-icons/bs";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { HiOutlineArrowRight } from "react-icons/hi";
-import { MdFavoriteBorder } from "react-icons/md";
 import { Button } from "flowbite-react";
 import rains from "../assets/rains.png";
 import AuthModal from "./AuthModal";
@@ -19,7 +17,6 @@ import getCart from "../api/cart/getCart";
 import { setCartItems } from "../slices/cartSlices";
 import api from "../api";
 import SearchModal from "./SearchModal";
-import { set } from "lodash";
 import WishlistModal from "./WishlistModal";
 
 function Navigationbar() {
@@ -139,7 +136,6 @@ function Navigationbar() {
 
   const fetchCarts = useCallback(async () => {
     try {
-      console.log("refetching...")
       const result = await getCart({});
       setCarts(result.detail.CartItems);
       // Calculate total price and quantity
@@ -223,7 +219,7 @@ function Navigationbar() {
         navigate(location.pathname);
       })
       .catch((error) => {
-        console.error("Error signing out:", error);
+        toast.error("Error signing out:", error);
       });
   };
 

@@ -1,5 +1,4 @@
 import React from "react";
-import Navigationbar from "./Navigationbar";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 
 export const NavPage = ({ pageName }) => {

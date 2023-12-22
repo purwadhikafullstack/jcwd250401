@@ -7,6 +7,8 @@ import { EditCategoryModal } from "./EditCategoryModal";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import getCategories from "../api/categories/getCategories";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 
 export const CategoryLists = () => {
   const isWarehouseAdmin = useSelector((state) => state?.account?.isWarehouseAdmin);
@@ -43,6 +45,10 @@ export const CategoryLists = () => {
         });
         navigate("/adminlogin");
       }
+    } finally {
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 1200)
     }
   }, [categoryLists, page, size, selectedMainCategory]);
 
@@ -84,7 +90,13 @@ export const CategoryLists = () => {
 
           <h2 className="md:flex text-sm font-semibold text-gray-900 dark:text-white">Main Categories</h2>
           <div className="hidden md:flex gap-2 flex-wrap">
-             {categories ? (
+            {isLoading ? (
+              Array.from({ length: 5 }, (_, index) => (
+                <div key={index} className={`w-[150px] h-[5vh] shadow-md rounded-md`}>
+                  <Skeleton height={"100%"} width={"100%"} />
+                </div>
+              ))
+            ) : categories ? (
               <>
                 <div
                   className={`flex items-center justify-center w-[150px] h-[5vh] shadow-md rounded-md cursor-pointer hover:bg-gray-100 ${activeCategory === undefined ? "bg-gray-100" : "bg-white"}`}
@@ -120,7 +132,13 @@ export const CategoryLists = () => {
 
           <h2 className="text-sm font-semibold text-gray-900 dark:text-white mt-2">Sub Categories</h2>
           <div className="h-auto w-full overflow-y-auto scrollbar-hide flex flex-col gap-2 py-2">
-            {subcategories ? (
+            {isLoading ? (
+              Array.from({ length: 5 }, (_, index) => (
+                <div key={index} className={`w-full h-[7vh] shadow-md rounded-md`}>
+                  <Skeleton height={"100%"} width={"100%"} />
+                </div>
+              ))
+            ) : subcategories ? (
               subcategories.map((category, index) => (
                 <div className="flex justify-between items-center px-8 py-2 bg-white w-full h-[7vh] shadow-md rounded-md" key={index}>
                   <span className="text-lg font-bold text-gray-900 dark:text-white hover:text-gray-700">{category.name}</span>

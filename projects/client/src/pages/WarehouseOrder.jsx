@@ -13,6 +13,8 @@ import useDebounceValue from "../hooks/useDebounceValue";
 import { ProcessStockModal } from "../components/ProcessStockModal";
 import getWarehouseByAdmin from "../api/warehouse/getWarehouseByAdmin";
 import getSingleAdmin from "../api/users/getSingleAdmin";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 
 export const WarehouseOrder = () => {
   const navList = ["All Order", "Pending", "Success", "Cancelled"];
@@ -35,6 +37,7 @@ export const WarehouseOrder = () => {
   const [sort, setSort] = useState(null);
   const [order, setOrder] = useState("");
   const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
   const months = [
     {
       id: 1,
@@ -178,6 +181,8 @@ export const WarehouseOrder = () => {
       } else if (error.response && error.response.status === 404) {
         setMutations([]);
       }
+    } finally {
+      setIsLoading(false);
     }
   }, [page, size, sort, order, warehouseId, destinationWarehouseId, debouncedSearchInput, selectedMonth, selectedStatus]);
 
@@ -297,8 +302,14 @@ export const WarehouseOrder = () => {
               </select>
             </div>
           </div>
-          <div className="flex flex-col gap-4 rounded-lg mt-4 h-[50vh] lg:h-[57vh] overflow-y-auto scrollbar-hide">
-            {mutations.length > 0 ? (
+          <div className="flex flex-col gap-4 rounded-lg mt-4 h-[42vh] lg:h-[57vh] overflow-y-auto scrollbar-hide">
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, index) => (
+                <div key={index} className="p-4 bg-white rounded-lg shadow-lg w-[1000px] lg:w-[100%] mb-5 lg:mb-0">
+                  <Skeleton height={100} width={100} />
+                </div>
+              ))
+            ) : mutations.length > 0 ? (
               mutations.map((mutation, index) => {
                 return (
                   <div key={index} className="p-4 bg-white rounded-lg shadow-lg w-[1000px] lg:w-[100%] mb-5 lg:mb-0">

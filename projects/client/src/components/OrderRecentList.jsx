@@ -9,6 +9,8 @@ import cancelUnpaidOrder from "../api/order/cancelUnpaidOrder";
 import ProductDetailModal from "./ProductDetailModal";
 import { FaEllipsisV } from "react-icons/fa";
 import { Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
+import { toast } from "sonner";
+import confirmShip from "../api/order/confirmShip";
 
 function OrderRecentList({ orders, fetchOrders }) {
   const [paymentModalIsOpen, setPaymentModalIsOpen] = useState(false);
@@ -32,12 +34,26 @@ function OrderRecentList({ orders, fetchOrders }) {
       fetchOrders();
     } catch (error) {
       // Handle error
+      if (error.response && (error.response.status === 404 || error.response.status === 500)) {
+        toast.error(error.response.data.message);
+      }
       console.error("Error confirming order:", error);
     }
   };
 
+  const handleConfirmShip = async (orderId) => {
+    try {
+      const response = await confirmShip({ orderId });
+      // Update state and UI based on response
+      fetchOrders();
+    } catch (error) {
+      // Handle error
+      console.error("Error confirming ship:", error);
+    }
+  };
+
   const handleCancelOrder = async (orderId, products) => {
-    try { 
+    try {
       const response = await cancelOrder({ orderId, products });
       // Update state and UI based on response
       fetchOrders();
@@ -79,7 +95,7 @@ function OrderRecentList({ orders, fetchOrders }) {
   useEffect(() => {
     fetchOrders();
   }, []);
-    
+
   return (
     <div className="container mx-auto px-4">
       {orders.length === 0 ? (
@@ -128,12 +144,14 @@ function OrderRecentList({ orders, fetchOrders }) {
               <hr className="my-2" />
               <div className="flex mt-4 mb-4">
                 <div className="Products">
-                {Products.map(({ Product, quantity }, index) => (
+                  {Products.map(({ Product, quantity }, index) => (
                     <div key={index} className="flex gap-2 mb-4">
                       <img src={`http://localhost:8000/public/${Product.productImages[0].imageUrl}`} alt="" className="w-20 h-20 object-cover rounded-md" />
                       <div className="ml-2">
                         <p className="text-sm font-bold">{Product.productName}</p>
-                        <p className="text-sm">{formatToRupiah(Product.productPrice)} x {quantity}</p>
+                        <p className="text-sm">
+                          {formatToRupiah(Product.productPrice)} x {quantity}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -205,7 +223,7 @@ function OrderRecentList({ orders, fetchOrders }) {
                   <div className="flex justify-end gap-2">
                     {/* Action buttons here, if needed */}
                     <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
-                      <Button color="dark" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleConfirmOrder(orderId, Products)}>
+                      <Button color="dark" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleConfirmShip(orderId)}>
                         Ship Order
                       </Button>
                     </div>

@@ -10,6 +10,8 @@ import confirmShipUser from "../api/order/confirmShipUser";
 import ProductDetailModal from "./ProductDetailModal";
 import { FaEllipsisV } from "react-icons/fa";
 import { Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
+import { toast } from "sonner";
+import confirmShip from "../api/order/confirmShip";
 
 function OrderList({ orders, fetchOrders }) {
   const [paymentModalIsOpen, setPaymentModalIsOpen] = useState(false);
@@ -35,7 +37,7 @@ function OrderList({ orders, fetchOrders }) {
 
   const handleConfirmShipOrder = async (orderId) => {
     try {
-      const response = await confirmShipUser({ orderId });
+      const response = await confirmShip({ orderId });
       // Update state and UI based on response
       fetchOrders();
     } catch (error) {
@@ -51,12 +53,15 @@ function OrderList({ orders, fetchOrders }) {
       fetchOrders();
     } catch (error) {
       // Handle error
+      if (error.response && (error.response.status === 404 || error.response.status === 500)) {
+        toast.error(error.response.data.message);
+      }
       console.error("Error confirming order:", error);
     }
   };
 
   const handleCancelOrder = async (orderId, products) => {
-    try { 
+    try {
       const response = await cancelOrder({ orderId, products });
       // Update state and UI based on response
       fetchOrders();
@@ -102,7 +107,7 @@ function OrderList({ orders, fetchOrders }) {
   if (totalOrders === 0) {
     totalPages = 1;
   }
-  
+
   // Get current orders
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
@@ -168,7 +173,9 @@ function OrderList({ orders, fetchOrders }) {
                       <img src={`http://localhost:8000/public/${Product.productImages[0].imageUrl}`} alt="" className="w-20 h-20 object-cover rounded-md" />
                       <div className="ml-2">
                         <p className="text-sm font-bold">{Product.productName}</p>
-                        <p className="text-sm">{formatToRupiah(Product.productPrice)} x {quantity}</p>
+                        <p className="text-sm">
+                          {formatToRupiah(Product.productPrice)} x {quantity}
+                        </p>
                       </div>
                     </div>
                   ))}

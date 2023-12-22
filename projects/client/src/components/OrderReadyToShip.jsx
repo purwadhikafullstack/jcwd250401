@@ -8,6 +8,7 @@ import cancelOrder from "../api/order/cancelOrder";
 import ProductDetailModal from "./ProductDetailModal";
 import { FaEllipsisV } from "react-icons/fa";
 import { Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
+import confirmShip from "../api/order/confirmShip";
 
 function OrderReadyToShip({ orders, fetchOrders }) {
   const [paymentModalIsOpen, setPaymentModalIsOpen] = useState(false);
@@ -33,7 +34,7 @@ function OrderReadyToShip({ orders, fetchOrders }) {
 
   const handleConfirmShip = async (orderId) => {
     try {
-      const response = await confirmShipUser({ orderId });
+      const response = await confirmShip({ orderId });
       // Update state and UI based on response
       fetchOrders();
     } catch (error) {

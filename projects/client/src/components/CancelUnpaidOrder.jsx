@@ -10,7 +10,6 @@ function CancelUnpaidOrder({ isOpen, onClose, orderId, onSuccess }) {
       const response = await cancelUnpaidOrder({ orderId });
       onClose();
       onSuccess();
-      console.log(response);
       toast.success(response.message);
     } catch (error) {
       if (error.response && error.response.status === 400) {
