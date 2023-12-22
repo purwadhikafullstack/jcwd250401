@@ -43,6 +43,7 @@ function AddProductModal({ isOpen, isClose }) {
       productMainCategory: "",
       productSubCategory: "",
       productDescription: "",
+      productWaterproofRating: "",
       weight: "",
       length: "",
       width: "",
@@ -252,6 +253,7 @@ function AddProductModal({ isOpen, isClose }) {
 
 
   const waterproofRating = [
+    { label: "W0 - Non waterproof", value: "W0 - Non waterproof"},
     { label: "W1 - Protection from light mositure", value: "W1 - Protection from light mositure" },
     { label: "W2 - Protection from intermittent light rain", value: "W2 - Protection from intermittent light rain" },
     { label: "W3 - Waterproof protection from light rain", value: "W3 -  Waterproof protection from light rain" },

@@ -412,7 +412,7 @@ function ArchivedProductList() {
                   SKU : {product.sku} ({product.gender}){" "}
                 </span>
               </div>
-              <div className="flex w-40 flex-col">
+              {/* <div className="flex w-40 flex-col">
                 <span className="font-bold">Statistic</span>
                 <div className="flex flex-row items-center gap-4">
                   <div className="flex flex-row items-center gap-1">
@@ -424,7 +424,7 @@ function ArchivedProductList() {
                     <PiShoppingBag /> {product.soldCount}{" "}
                   </div>
                 </div>
-              </div>
+              </div> */}
               <div className="flex flex-col w-48 ">
                 <span className="font-bold">Price</span>
                 <span>{formatToRupiah(product.price)}</span>

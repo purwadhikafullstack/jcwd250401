@@ -10,7 +10,7 @@ function UnarchiveProductModal({ isOpen, isClose, data }) {
   const dispatch = useDispatch();
   const handleUnarchive = async () => {
     try {
-      const response = await api.admin.put(`/product/unarchive/${data.id}`);
+      const response = await api.admin.put(`/api/product/unarchive/${data.id}`);
       const responseData = response.data.details;
 
       dispatch(addProduct(responseData));
