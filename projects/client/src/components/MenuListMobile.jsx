@@ -123,7 +123,7 @@ function MenuListMobile() {
   }, [fetchCategoriesBags, fetchCategoriesJackets, fetchCategoriesTops, fetchCategoriesBottom, fetchCategoriesAccessories]);
 
   return (
-    <div className="flex h-14 w-full overflow-y-auto items-center space-x-2 scrollbar-hide">
+    <div className="flex mt-4 h-14 w-full overflow-y-auto items-center space-x-2 scrollbar-hide">
       {categories.map((category, index) => {
         const joinedCategories = category.toLowerCase().replace(" ", "-");
         const finalCategory = joinedCategories === "bags" || joinedCategories === "accessories" ? `unisex/${joinedCategories}` : joinedCategories;
