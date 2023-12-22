@@ -2,7 +2,7 @@ import api from "../../api";
 
 const deleteProductStock = async ({ productId, warehouseId }) => {
   try {
-    const response = await api.admin.delete("/product/remove-product-stock", {
+    const response = await api.admin.delete("/api/product/remove-product-stock", {
       data: {
         productId,
         warehouseId,

@@ -62,7 +62,7 @@ function ResetPassword({ userType }) {
       try {
         setIsSubmitting(true);
 
-        const endpoint = userType === "admin" ? "/auth/reset-password-admin" : "/auth/resetpassword";
+        const endpoint = userType === "admin" ? "/api/auth/reset-password-admin" : "/api/auth/resetpassword";
         const response = await api.post(endpoint, {
           uniqueCode: searchParams.get("code"),
           password: values.password,
