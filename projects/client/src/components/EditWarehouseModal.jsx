@@ -45,26 +45,38 @@ const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
   const [imagePreview, setImagePreview] = useState(null);
   const fileInputRef = useRef(null);
   const [initialWarehouseData, setInitialWarehouseData] = useState(null);
+  const [initialImageURL, setInitialImageURL] = useState(null);
+
+  const resetState = () => {
+    setName('');
+    setOwner('');
+    setOpenHour('');
+    setCloseHour('');
+    setPhoneNumber('');
+    setProvince('');
+    setProvinces([]);
+    setProvinceId(0);
+    setSelectedProvince('');
+    setCity('');
+    setCities([]);
+    setCityId(0);
+    setSelectedCity('');
+    setStreet('');
+    setImagePreview(null);
+    setWarehouseImage(null);
+    setInitialWarehouseData(null);
+    setInitialImageURL(null);
+  };
 
   const handlePhotoIconClick = () => {
     fileInputRef.current.click();
   };
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const previewUrl = URL.createObjectURL(file);
-      setImagePreview(previewUrl); // Set the image preview URL state
-    }
-
-    setWarehouseImage(file);
-  };
-
   useEffect(() => {
     // Fetch provinces and initial warehouse data
-    if (isOpen) {
+    if (isOpen && warehouseId) {
       api.admin.get('/api/address/province').then(response => {
-        if (response.data.ok) {
+        if (response.data.ok && isOpen) {
           setProvinces(response.data.detail);
         }
       });
@@ -87,7 +99,7 @@ const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
             setSelectedCity(warehouse.WarehouseAddress.city);
             setStreet(warehouse.WarehouseAddress.street);
             setImagePreview(warehouse.warehouseImage ? `http://localhost:8000/public/${warehouse.warehouseImage}` : null);
-            setWarehouseImage(warehouse.warehouseImage);
+            setInitialImageURL(warehouse.warehouseImage ? `http://localhost:8000/public/${warehouse.warehouseImage}` : null);
           }
         });
       }
@@ -143,6 +155,15 @@ const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
     }
   };
 
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+      setWarehouseImage(file); // Set file object to warehouseImage
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -157,7 +178,9 @@ const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
     formData.append('city', city);
     formData.append('cityId', cityId);
     formData.append('street', street);
-    formData.append('warehouseImage', warehouseImage);
+    if (warehouseImage instanceof File) {
+      formData.append('warehouseImage', warehouseImage); // Append only if it's a File object
+    }
 
     try {
       const response = await api.admin.patch(`/api/warehouse/${warehouseId}`, formData, {
@@ -176,16 +199,6 @@ const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
         });
         onClose(); // Close the modal after successful submission
         onSuccess(); // Call the onSuccess prop to refetch the warehouses
-        // Reset form
-        setName('');
-        setOwner('');
-        setOpenHour('');
-        setCloseHour('');
-        setProvince('');
-        setCity('');
-        setStreet('');
-        setImagePreview(null);
-        setWarehouseImage(null);
       }
     } catch (error) {
       toast({
@@ -200,8 +213,14 @@ const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
     }
   };
 
+  const handleModalClose = () => {
+    // Reset form and state on modal close
+    resetState();
+    onClose();
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} isCentered size={{ base: 'xl', md: 'xl' }}>
+    <Modal isOpen={isOpen} onClose={handleModalClose} isCentered size={{ base: 'xl', md: 'xl' }}>
       <ModalOverlay />
       <ModalContent mx={{ base: '4', md: '12' }} my="auto" rounded="lg" overflow="hidden">
         <ModalHeader className="font-bold text-lg text-center">Edit Warehouse</ModalHeader>
@@ -209,8 +228,8 @@ const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
         <ModalBody className="p-4">
           <VStack spacing="4">
             <Box className="w-24 h-24 bg-gray-200 rounded flex items-center justify-center mx-auto" onClick={handlePhotoIconClick}>
-              {imagePreview ? (
-                <Image src={imagePreview} alt="Warehouse image" className="w-full h-full rounded" />
+              {imagePreview || initialImageURL ? (
+                <Image src={imagePreview || initialImageURL} alt="Warehouse image" className="w-full h-full rounded" />
               ) : (
                 <FiCamera className="h-12 w-12 text-gray-400" />
               )}

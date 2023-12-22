@@ -150,36 +150,35 @@ exports.updateWarehouse = async (req, res) => {
     const longitude = results[0].geometry.lng;
     const latitude = results[0].geometry.lat;
 
-    // Retrieve the uploaded image file, if available
-    let warehouseImage;
-    if (req.file) {
-      warehouseImage = req.file.filename; // The filename where the image is stored
-    } else {
-      // Handle the case where no image is uploaded (optional)
-      warehouseImage = "default-image-path"; // Or leave it undefined, based on your application logic
+    // Fetch the warehouse instance
+    let warehouse = await Warehouse.findOne({ where: { id } });
+
+    if (!warehouse) {
+      return res.status(404).json({ ok: false, message: "Warehouse not found." });
     }
 
-    // Update Warehouse with location and coordinates
-    const warehouse = await Warehouse.update(
-      {
-        name,
-        location: address,
-        warehouseImage,
-        phoneNumber,
-        OpenHour,
-        CloseHour,
-      },
-      {
-        where: {
-          id,
-        },
-      }
-    );
+    // Update properties
+    warehouse.name = name;
+    warehouse.location = address;
+    warehouse.phoneNumber = phoneNumber;
+    warehouse.OpenHour = OpenHour;
+    warehouse.CloseHour = CloseHour;
+
+    // Retrieve the uploaded image file, if available
+    if (req.file) {
+      warehouse.warehouseImage = req.file.filename; // Update the image
+    } else {
+      // Optional: handle the case where no image is uploaded
+      // warehouse.warehouseImage = "default-image-path"; // Or leave it unchanged
+    }
+
+    // Save the changes
+    await warehouse.save();
 
     // Update WarehouseAddress
     const warehouseAddress = await WarehouseAddress.update(
       {
-        warehouseId: warehouse.id,
+        warehouseId: id,
         street,
         city,
         cityId,
@@ -211,7 +210,7 @@ exports.updateWarehouse = async (req, res) => {
           latitude: warehouseAddress.latitude,
           longitude: warehouseAddress.longitude,
         },
-        warehouseImage,
+        warehouseImage: warehouse.warehouseImage,
       },
     });
   } catch (error) {
@@ -221,6 +220,7 @@ exports.updateWarehouse = async (req, res) => {
     });
   }
 };
+
 
 exports.deleteWarehouse = async (req, res) => {
   const { id } = req.params;
