@@ -53,7 +53,7 @@ function ProductDetailModal({ isOpen, onClose, Products }) {
                 </div>
                 <div className='mb-5'>
                 <p className='text-sm font-bold'>Product Size</p>
-                <p className='text-sm'>{Product.length} x {Product.width} x {Product.height} cm</p>
+                <p className='text-sm'>{Product.productLength} x {Product.productWidth} x {Product.productHeight} cm</p>
                 </div>
                 <div className='mb-5'>
                 <p className='text-sm font-bold'>Product Weight</p>
