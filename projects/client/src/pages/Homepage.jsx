@@ -43,7 +43,7 @@ export const Homepage = () => {
 
       {/* Mobile */}
       <div className="h-[95vh] w-full lg:hidden">
-        <Carousel indicators={false} style={{ borderRadius: 0 }} className="enabled:rounded-none">
+        <Carousel slideInterval={5000} indicators={false} style={{ borderRadius: 0 }} className="enabled:rounded-none">
           <div style={{ backgroundImage: `url(${exploremenpufferjacketsmobile})`, backgroundSize: "cover", height: "100vh" }} className="flex items-end px-10 py-44 background-image">
             <div className=" ml-4 w-[50vw] text-white text-xl font-sans font-light">
               <p className="bg-black bg-opacity-40 p-4">
@@ -115,7 +115,7 @@ export const Homepage = () => {
       {/* Desktop */}
       <div className="hidden lg:block h-[95vh] w-full">
         <div className="h-[95vh] w-full">
-          <Carousel indicators={false} style={{ borderRadius: 0 }} className="enabled:rounded-none">
+          <Carousel slideInterval={5000} indicators={false} style={{ borderRadius: 0 }} className="enabled:rounded-none">
             <div style={{ backgroundImage: `url(${exploremenpufferjackets})`, backgroundSize: "cover", height: "100vh" }} className="flex justify-between items-end px-20 py-24 background-image">
               <div className="w-[60vw] text-white text-xl font-sans font-light">
                 <p className="bg-black bg-opacity-40 p-4">
