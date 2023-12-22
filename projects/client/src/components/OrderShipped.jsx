@@ -5,6 +5,7 @@ import PaymentModal from "./PaymentModal";
 import rejectPayment from "../api/order/rejectPayment";
 import confirmOrder from "../api/order/confirmOrder";
 import cancelOrder from "../api/order/cancelOrder";
+import ProductDetailModal from "./ProductDetailModal";
 import { FaEllipsisV } from "react-icons/fa";
 import { Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
 
@@ -13,6 +14,17 @@ function OrderShipped({ orders, fetchOrders }) {
   const [paymentProof, setPaymentProof] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 5; 
+  const [productModalIsOpen, setProductModalIsOpen] = useState(false);
+  const [Products, setProducts] = useState([]);
+
+  const handleProductModalOpen = (products) => {
+    setProducts(products);
+    setProductModalIsOpen(true);
+  };
+
+  const handleProductModalClose = () => {
+    setProductModalIsOpen(false);
+  };
 
   const handleFetchOrders = (page) => {
     setCurrentPage(page);
@@ -118,18 +130,17 @@ function OrderShipped({ orders, fetchOrders }) {
                   <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handlePaymentModalOpen(paymentProofImage)}>
                     Payment Proof
                   </Button>
-                  {status === "cancelled" || status === "shipped" ? (
-                    <></>
-                  ) : (
                     <Menu>
                       <MenuButton className="focus:outline-none">
                         <FaEllipsisV className="text-xl" />
                       </MenuButton>
                       <MenuList>
-                        <MenuItem onClick={() => handleCancelOrder(orderId, Products.id)}>Cancel Order</MenuItem>
+                        <MenuItem onClick={() => handleProductModalOpen(Products)}>Products Details</MenuItem>
+                        {status !== "cancelled" && status !== "delivered" && status !== "on-delivery" && (
+                          <MenuItem onClick={() => handleCancelOrder(orderId, Products)}>Cancel Order</MenuItem>
+                        )}
                       </MenuList>
                     </Menu>
-                  )}
                 </div>
               </div>
               <hr className="my-2" />
@@ -232,6 +243,7 @@ function OrderShipped({ orders, fetchOrders }) {
         </div>
       </div>
       <PaymentModal isOpen={paymentModalIsOpen} onClose={handlePaymentModalClose} paymentProof={paymentProof} />
+      <ProductDetailModal isOpen={productModalIsOpen} onClose={handleProductModalClose} Products={Products} />
     </div>
   );
 }

@@ -261,7 +261,7 @@ exports.getAllOrderLists = async (req, res) => {
           include: [
             {
               model: Product,
-              attributes: ["id", "name", "description", "price", "gender", "weight"],
+              attributes: ["id", "name", "description", "price", "gender", "weight", "height", "width", "length", "material", "waterproofRating", "sku"],
               include: [
                 {
                   model: ProductImage,
@@ -344,7 +344,7 @@ exports.getAllOrderLists = async (req, res) => {
 
       order.OrderItems.forEach((orderItem) => {
         const product = orderItem.Product;
-        const productImages = product.productImages.map((image) => ({
+        const productImages = product.productImages.reverse().map((image) => ({
           id: image.id,
           imageUrl: image.imageUrl,
         }));
@@ -362,9 +362,16 @@ exports.getAllOrderLists = async (req, res) => {
             updatedAt: orderItem.updatedAt,
             Product: {
               id: product.id,
+              productSku: product.sku,
               productName: product.name,
               productPrice: product.price,
               productGender: product.gender,
+              productWeight: product.weight,
+              productHeight: product.height,
+              productWidth: product.width,
+              productLength: product.length,
+              productMaterial: product.material,
+              productWaterproofRating: product.waterproofRating,
               productImages: productImages,
             },
           });
