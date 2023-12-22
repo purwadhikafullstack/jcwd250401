@@ -179,6 +179,7 @@ function ProductList() {
     setSearchInput(e.target.value);
     const queryParams = new URLSearchParams(location.search);
     queryParams.set("search", e.target.value);
+    queryParams.set("page", "1");
 
     navigate({
       pathname: location.pathname,
@@ -205,6 +206,7 @@ function ProductList() {
 
     const queryParams = new URLSearchParams(location.search);
     queryParams.set("category", selectedCategory);
+    queryParams.set("page", "1"); // Set page parameter to 1
 
     navigate({
       pathname: location.pathname,
@@ -218,6 +220,7 @@ function ProductList() {
 
     const queryParams = new URLSearchParams(location.search);
     queryParams.set("sort", selectedSortValue);
+    queryParams.set("page", "1");
 
     navigate({
       pathname: location.pathname,
@@ -231,6 +234,7 @@ function ProductList() {
 
     const queryParams = new URLSearchParams(location.search);
     queryParams.set("gender", selectedFilterValue);
+    queryParams.set("page", "1");
 
     navigate({
       pathname: location.pathname,
@@ -244,6 +248,7 @@ function ProductList() {
 
     const queryParams = new URLSearchParams(location.search);
     queryParams.set("stock", selectedFilterStockValue);
+    queryParams.set("page", "1");
 
     navigate({
       pathname: location.pathname,

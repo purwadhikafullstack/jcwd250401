@@ -48,7 +48,15 @@ function ArchivedProductList() {
 
   const handleSearchInputChange = _debounce((e) => {
     setSearchInput(e.target.value);
-  }, 600); // 600 milliseconds debounce time (adjust as needed)
+    const queryParams = new URLSearchParams(location.search);
+    queryParams.set("search", e.target.value);
+    queryParams.set("page", "1");
+
+    navigate({
+      pathname: location.pathname,
+      search: queryParams.toString(),
+    });
+  }, 600);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -69,6 +77,7 @@ function ArchivedProductList() {
 
     const queryParams = new URLSearchParams(location.search);
     queryParams.set("category", selectedCategory);
+    queryParams.set("page", "1");
 
     navigate({
       pathname: location.pathname,
@@ -82,6 +91,7 @@ function ArchivedProductList() {
 
     const queryParams = new URLSearchParams(location.search);
     queryParams.set("sort", selectedSortValue);
+    queryParams.set("page", "1");
 
     navigate({
       pathname: location.pathname,
@@ -95,6 +105,7 @@ function ArchivedProductList() {
 
     const queryParams = new URLSearchParams(location.search);
     queryParams.set("gender", selectedFilterValue);
+    queryParams.set("page", "1");
 
     navigate({
       pathname: location.pathname,
@@ -162,7 +173,7 @@ function ArchivedProductList() {
 
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await api.admin.get("/category/child-categories");
+      const response = await api.admin.get("/api/category/child-categories");
       const categoryData = response.data.details;
       setCategories(categoryData);
     } catch (error) {
