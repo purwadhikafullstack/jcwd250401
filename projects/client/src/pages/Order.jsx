@@ -185,9 +185,9 @@ export const Order = () => {
     return status.replace(/-/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
-  const calculateTimeRemaining = (createdAt) => {
+  const calculateTimeRemaining = (updatedAt) => {
     const currentTime = new Date().getTime();
-    const updatedAtTime = new Date(createdAt).getTime();
+    const updatedAtTime = new Date(updatedAt).getTime();
     const timeDifference = updatedAtTime + 24 * 60 * 60 * 1000 - currentTime;
 
     const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -203,7 +203,7 @@ export const Order = () => {
       const updatedRemainingTimes = {};
       orderLists.forEach((orderItem) => {
         if (orderItem.status === "unpaid") {
-          updatedRemainingTimes[orderItem.orderId] = calculateTimeRemaining(orderItem.createdAt);
+          updatedRemainingTimes[orderItem.orderId] = calculateTimeRemaining(orderItem.updatedAt);
         }
       });
       setRemainingTimes(updatedRemainingTimes);
@@ -370,9 +370,9 @@ export const Order = () => {
                   ))
                 ) : orderLists.length > 0 ? (
                   orderLists.map((orderItem, index) => {
-                    const createdAt = new Date(orderItem.createdAt);
-                    const date = `${createdAt.getDate()} ${createdAt.toLocaleString("default", { month: "short" })} ${createdAt.getFullYear()}`;
-                    const time = createdAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+                    const updatedAt = new Date(orderItem.updatedAt);
+                    const date = `${updatedAt.getDate()} ${updatedAt.toLocaleString("default", { month: "short" })} ${updatedAt.getFullYear()}`;
+                    const time = updatedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
                     const remainingTime = remainingTimes[orderItem.orderId];
 

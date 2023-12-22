@@ -26,7 +26,7 @@ function SalesOverview() {
   useEffect(() => {
     const loadingTimeout = setTimeout(() => {
       setIsLoading(false);
-    }, 1500);
+    }, 3000);
 
     return () => clearTimeout(loadingTimeout); // Clear the timeout on component unmount
   }, []);
