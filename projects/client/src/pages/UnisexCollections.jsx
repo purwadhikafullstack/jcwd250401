@@ -36,7 +36,7 @@ function UnisexCollections() {
           </div>
           <div className="w-[50vw] flex justify-end">
             <Button className=" w-56 border border-gray-600" bg="white" color="light" size="md" as={Link} to={"/products/unisex/accessories"}>
-              <span className="font-sans font-medium text-md">Explore Bags</span>
+              <span className="font-sans font-medium text-md">Explore Accessories</span>
             </Button>
           </div>
         </div>

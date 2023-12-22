@@ -28,7 +28,7 @@ function Navigationbar() {
   const men = ["Jackets", "Tops", "Bottoms"];
   const women = ["Jackets", "Tops", "Bottoms"];
   const accounts = ["Profile", "Address Book", "My Order", "Change Password"];
-  const accountsDropdown = ["Profile", "Address Book", "My Order", "Change Password", "Search", "Favorites"];
+  const accountsDropdown = ["Profile", "Address Book", "My Order", "Change Password"];
   const dispatch = useDispatch();
   const auth = getAuth();
   const [userData, setUserData] = useState(null);
@@ -532,6 +532,27 @@ function Navigationbar() {
                     >
                       Shopping Cart {cart > 0 && <span className="text-sm font-bold">{cart}</span>}
                     </span>
+                    <span
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                      role="menuitem"
+                      onClick={() => {
+                        openWishlistModal();
+                        handleIconClick();
+                      }}
+                    >
+                      Wishlist
+                    </span>
+                    <span
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                      role="menuitem"
+                      onClick={() => {
+                        openSearchModal();
+                        handleIconClick();
+                      }}
+                    >
+                      Search
+                    </span>
+                    
                     <p
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                       role="menuitem"

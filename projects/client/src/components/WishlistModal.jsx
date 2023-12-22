@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import rains from "../assets/rains.png";
 import getWishlist from "../api/Wishlist/getWishlist";
 import DeleteWishlistItem from "./DeleteWishlishItem";
+import { set } from "lodash";
 
 function WishlistModal({ isOpen, isClose }) {
   const [products, setProducts] = useState([]);
@@ -15,6 +16,14 @@ function WishlistModal({ isOpen, isClose }) {
   const [openDeleteWishlistModal, setOpenDeleteWishlistModal] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [key, setKey] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+  }, [isOpen]);
 
   const fetchProduct = useCallback(async () => {
     try {
@@ -75,79 +84,19 @@ function WishlistModal({ isOpen, isClose }) {
               />
               <span className="text-white text-2xl font-semibold">My Wishlist </span>
             </div>
-            <div className="hidden lg:flex flex-col space-y-4 mt-10 h-[60vh] overflow-y-auto">
+            <div className="hidden lg:flex flex-col space-y-4 mt-10 h-[60vh] overflow-y-auto overflow-x-hidden">
               <div className="flex flex-col justify-center items-center space-y-4">
-                {products?.length === 0 && <span className="text-white text-2xl font-sans">No products on wishlist.</span>}
-                {products?.map((product) => (
-                  <div key={product.id} className="flex flex-col justify-center items-center space-y-4">
-                    <div className="flex lg:flex-row flex-col items-center space-y-4 lg:space-y-0 lg:space-x-8 px-8 py-4 rounded-2xl  w-[46vw]">
-                      <div className={`h-[140px] w-[140px] lg:h-[120px] lg:w-[120px] ${product.Product.totalStockAllWarehouses === 0 ? "opacity-60" : "opacity-100"} relative`}>
-                        {product.Product.totalStockAllWarehouses !== 0 ? (
-                          <img src={`http://localhost:8000/public/${product.Product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl rounded-lg" loading="lazy" alt="Product Image" />
-                        ) : (
-                          <img
-                            src={`http://localhost:8000/public/${product.Product.productImages[0].imageUrl}`}
-                            className="w-full h-full object-cover shadow-xl rounded-lg"
-                            alt="Product Image"
-                            loading="lazy"
-                            style={{ filter: "grayscale(100%)" }}
-                          />
-                        )}
-
-                        {product.Product.totalStockAllWarehouses === 0 && (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="bg-black bg-opacity-30 w-full flex justify-center text-white p-1">
-                              <span className="text-sm font-sans font-light">Out of Stock</span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      <div className={`flex flex-1 flex-col text-center lg:text-left ${product.Product.totalStockAllWarehouses === 0 ? "opacity-60" : ""}`}>
-                        <span className="text-white lg:text-lg font-medium font-sans">
-                          {product.Product.name} ({product.Product.gender})
-                        </span>
-                        <span className="text-white lg:text-lg font-medium font-sans">{formatToRupiah(product.Product.price)}</span>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button
-                          color="light"
-                          size="small"
-                          className="p-2 w-10 shadow-md"
-                          as={Link}
-                          to={`/products/${product.Product.gender.toLowerCase()}/${product.Product.Categories[0].name.replace(/\s+/g, "-").toLowerCase()}/${product.Product.Categories[1].name
-                            .replace(/\s+/g, "-")
-                            .toLowerCase()}/${product.Product.name.replace(/\s+/g, "-").toLowerCase()}`}
-                          onClick={handleClose}
-                        >
-                          <PiMagnifyingGlassBold size={20} color="black" />
-                        </Button>
-                        <Button
-                          color="light"
-                          size="small"
-                          className="p-2 w-10 shadow-md"
-                          onClick={() => {
-                            toggleDeleteModal(product.productId);
-                          }}
-                        >
-                          <PiTrash size={20} color="black" />
-                        </Button>
-                      </div>
-                    </div>
+                {isLoading ? (
+                  <div className="flex mt-32 justify-center items-center">
+                    <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-white"></div>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Mobile */}
-
-            <div className="lg:hidden flex justify-center space-y-4 mt-8 h-[76vh] overflow-y-auto scrollbar-hide">
-              <div className="flex justify-center space-y-4">
-                {products?.length === 0 && <span className="text-white text-2xl font-sans">No products on wishlist.</span>}
-                <SimpleGrid columns={2} spacing={4} className="h-screen">
-                  {products?.map((product) => (
+                ) : products?.length === 0 ? (
+                  <span className="text-white text-2xl font-sans">No products on wishlist.</span>
+                ) : (
+                  products?.map((product) => (
                     <div key={product.id} className="flex flex-col justify-center items-center space-y-4">
-                      <div className="flex lg:flex-row flex-col items-center space-y-4 h-[36vh] px-4 py-4 rounded-2xl bg-black w-[40vw]">
-                        <div className={`h-[140px] w-[140px] lg:h-[100px] lg:w-[100px]  relative ${product.Product.totalStockAllWarehouses === 0 ? "opacity-60" : ""}`}>
+                      <div className="flex lg:flex-row flex-col items-center space-y-4 lg:space-y-0 lg:space-x-8 px-8 py-4 rounded-2xl  w-[46vw]">
+                        <div className={`h-[140px] w-[140px] lg:h-[120px] lg:w-[120px] ${product.Product.totalStockAllWarehouses === 0 ? "opacity-60" : "opacity-100"} relative`}>
                           {product.Product.totalStockAllWarehouses !== 0 ? (
                             <img src={`http://localhost:8000/public/${product.Product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl rounded-lg" loading="lazy" alt="Product Image" />
                           ) : (
@@ -169,10 +118,10 @@ function WishlistModal({ isOpen, isClose }) {
                           )}
                         </div>
                         <div className={`flex flex-1 flex-col text-center lg:text-left ${product.Product.totalStockAllWarehouses === 0 ? "opacity-60" : ""}`}>
-                          <span className="text-white text-md font-medium font-sans">
+                          <span className="text-white lg:text-lg font-medium font-sans">
                             {product.Product.name} ({product.Product.gender})
                           </span>
-                          <span className="text-white text-md font-medium font-sans">{formatToRupiah(product.Product.price)}</span>
+                          <span className="text-white lg:text-lg font-medium font-sans">{formatToRupiah(product.Product.price)}</span>
                         </div>
                         <div className="flex space-x-2">
                           <Button
@@ -200,8 +149,79 @@ function WishlistModal({ isOpen, isClose }) {
                         </div>
                       </div>
                     </div>
-                  ))}
-                </SimpleGrid>
+                  ))
+                )}
+              </div>
+            </div>
+            {/* Mobile */}
+            <div className="lg:hidden flex justify-center space-y-4 mt-8 h-[76vh] overflow-y-auto scrollbar-hide">
+              <div className="flex justify-center space-y-4">
+                {isLoading ? (
+                  <div className="flex justify-center items-center">
+                    <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-white"></div>
+                  </div>
+                ) : products?.length === 0 ? (
+                  <span className="text-white text-2xl font-sans">No products on wishlist.</span>
+                ) : (
+                  <SimpleGrid columns={2} spacing={4} className="h-screen">
+                    {products?.map((product) => (
+                      <div key={product.id} className="flex flex-col justify-center items-center space-y-4">
+                        <div className="flex lg:flex-row flex-col items-center space-y-4 h-[36vh] px-4 py-4 rounded-2xl bg-black w-[40vw]">
+                          <div className={`h-[140px] w-[140px] lg:h-[100px] lg:w-[100px]  relative ${product.Product.totalStockAllWarehouses === 0 ? "opacity-60" : ""}`}>
+                            {product.Product.totalStockAllWarehouses !== 0 ? (
+                              <img src={`http://localhost:8000/public/${product.Product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl rounded-lg" loading="lazy" alt="Product Image" />
+                            ) : (
+                              <img
+                                src={`http://localhost:8000/public/${product.Product.productImages[0].imageUrl}`}
+                                className="w-full h-full object-cover shadow-xl rounded-lg"
+                                alt="Product Image"
+                                loading="lazy"
+                                style={{ filter: "grayscale(100%)" }}
+                              />
+                            )}
+                            {product.Product.totalStockAllWarehouses === 0 && (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="bg-black bg-opacity-30 w-full flex justify-center text-white p-1">
+                                  <span className="text-sm font-sans font-light">Out of Stock</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          <div className={`flex flex-1 flex-col text-center lg:text-left ${product.Product.totalStockAllWarehouses === 0 ? "opacity-60" : ""}`}>
+                            <span className="text-white text-md font-medium font-sans">
+                              {product.Product.name} ({product.Product.gender})
+                            </span>
+                            <span className="text-white text-md font-medium font-sans">{formatToRupiah(product.Product.price)}</span>
+                          </div>
+                          <div className="flex space-x-2">
+                            <Button
+                              color="light"
+                              size="small"
+                              className="p-2 w-10 shadow-md"
+                              as={Link}
+                              to={`/products/${product.Product.gender.toLowerCase()}/${product.Product.Categories[0].name.replace(/\s+/g, "-").toLowerCase()}/${product.Product.Categories[1].name
+                                .replace(/\s+/g, "-")
+                                .toLowerCase()}/${product.Product.name.replace(/\s+/g, "-").toLowerCase()}`}
+                              onClick={handleClose}
+                            >
+                              <PiMagnifyingGlassBold size={20} color="black" />
+                            </Button>
+                            <Button
+                              color="light"
+                              size="small"
+                              className="p-2 w-10 shadow-md"
+                              onClick={() => {
+                                toggleDeleteModal(product.productId);
+                              }}
+                            >
+                              <PiTrash size={20} color="black" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </SimpleGrid>
+                )}
               </div>
             </div>
           </div>
