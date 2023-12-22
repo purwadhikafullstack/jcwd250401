@@ -2,7 +2,7 @@ const { Product, ProductImage, ProductCategory, Category, Mutation, Warehouse, s
 const { Op } = require("sequelize");
 
 exports.handleAddProduct = async (req, res) => {
-  const { productName, productPrice, productDescription, productGender, productMainCategory, productSubCategory, productMaterial, productLining, productWaterproofRating, height, lenght, width, weight } = req.body;
+  const { productName, productPrice, productDescription, productGender, productMainCategory, productSubCategory, productMaterial, productLining, productWaterproofRating, height, length, width, weight } = req.body;
 
   try {
     const existingProduct = await Product.findOne({
@@ -39,7 +39,7 @@ exports.handleAddProduct = async (req, res) => {
       description: productDescription,
       gender: gender,
       height: height,
-      lenght: lenght,
+      length: length,
       width: width,
       weight: weight,
       material: productMaterial,
@@ -113,7 +113,7 @@ exports.handleAddProduct = async (req, res) => {
 };
 
 exports.handleUpdateProduct = async (req, res) => {
-  const { productName, productPrice, productDescription, productGender, productMainCategory, productSubCategory, productMaterial, productLining, productWaterproofRating, height, lenght, width, weight } = req.body;
+  const { productName, productPrice, productDescription, productGender, productMainCategory, productSubCategory, productMaterial, productLining, productWaterproofRating, height, length, width, weight } = req.body;
   const { productId } = req.params;
 
   try {
@@ -149,7 +149,7 @@ exports.handleUpdateProduct = async (req, res) => {
     existingProduct.description = productDescription;
     existingProduct.gender = productGender || "Unisex";
     existingProduct.height = height;
-    existingProduct.lenght = lenght;
+    existingProduct.length = length;
     existingProduct.width = width;
     existingProduct.weight = weight;
     existingProduct.material = productMaterial;
