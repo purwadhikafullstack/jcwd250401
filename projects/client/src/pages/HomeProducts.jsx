@@ -1,16 +1,15 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import React, { useEffect} from "react";
+import { useParams } from "react-router-dom";
 import ProductNavPage from "../components/ProductNavPage";
 import ProductGrid from "../components/productGrid";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "@chakra-ui/react";
-import getProductsUser from "../api/products/getProductsUser";
-import { toast } from "sonner";
+
+
 import ProductCard from "../components/productCard";
 import ProductsBreadcrumbs from "./../components/ProductsBreadcrumbs";
 import Footer from "../components/Footer";
 
 const HomeProducts = () => {
-  const { gender, mainCategory, subCategory, productName } = useParams();
+  const { productName } = useParams();
   document.title = "RAINS - Products";
 
   useEffect(() => {

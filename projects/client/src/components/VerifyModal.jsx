@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { FcGoogle } from "react-icons/fc";
 import { Button } from "flowbite-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import api from "../api";
 import { toast } from "sonner";
-import { setEmail } from "../slices/authModalSlices";
 import { useDispatch } from "react-redux";
-import { hideModal } from "../slices/authModalSlices";
 import { AiOutlineLoading } from "react-icons/ai";
 import { useSelector } from "react-redux";
 import { hideVerifyModal } from "../slices/authModalSlices";

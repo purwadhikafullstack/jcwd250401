@@ -131,7 +131,7 @@ function SearchModal({ isOpen, isClose }) {
                 {search !== "" && products.length === 0 && <span className="text-white text-2xl font-sans">No products found.</span>}
                 {products.map((product) => (
                   <div key={product.id} className="flex flex-col justify-center items-center space-y-4">
-                    <div className="flex lg:flex-row flex-col items-center space-y-4 lg:space-y-0 lg:space-x-8 px-4 py-4 rounded-2xl  w-[40vw]">
+                    <div className="flex lg:flex-row flex-col items-center space-y-4 lg:space-y-0 lg:space-x-8 px-8 py-4 rounded-2xl  w-[45vw]">
                       <div className="h-[140px] w-[140px] lg:h-[120px] lg:w-[120px] opacity-100 relative">
                         {product.totalStockAllWarehouses !== 0 ? (
                           <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl rounded-lg" loading="lazy" alt="Product Image" />

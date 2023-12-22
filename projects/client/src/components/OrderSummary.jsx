@@ -17,7 +17,6 @@ function OrderSummary({ shippingCost, onCartItem, onTotalPrice, onQuantityProduc
     try {
       const result = await getCart({});
       setCarts(result.detail.CartItems);
-      console.log(result.detail.CartItems)
       const cartItemsData = result.detail.CartItems
       .filter((cart) => cart.quantity > 0)
       .map((cart) => ({

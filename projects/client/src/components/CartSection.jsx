@@ -6,12 +6,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { showLoginModal } from "../slices/authModalSlices";
 import { NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper } from "@chakra-ui/react";
-import { Button } from "flowbite-react";
 import { PiTrash } from "react-icons/pi";
 import DeleteCartItemModal from "./DeleteCartItemModal";
 import CartSummary from "./CartSummary";
 import { setCartItems, updateCartItem } from "../slices/cartSlices";
-import { set } from "lodash";
+
 
 function CartSection() {
   const [carts, setCarts] = useState([]);

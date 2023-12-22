@@ -1,18 +1,15 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { useDispatch } from "react-redux";
-import { addProduct } from "../slices/productSlices";
 import api from "../api";
 import { useSelector } from "react-redux";
-import { PiCaretDown, PiEye, PiInfo, PiShoppingBag } from "react-icons/pi";
+import { PiCaretDown, PiInfo } from "react-icons/pi";
 import { Box, Button, Flex, Menu, MenuButton, MenuItem, MenuList, Text } from "@chakra-ui/react";
-import { setProductList } from "../slices/productSlices";
 import _debounce from "lodash/debounce";
 import UnarchiveProductModal from "./UnarchiveProductModal";
 import { toast } from "sonner";
 import { logoutAdmin } from "../slices/accountSlices";
 import { useLocation, useNavigate } from "react-router-dom";
-import getProducts from "../api/products/getProducts";
 import getArchivedProducts from "../api/products/getArchivedProducts";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -22,7 +19,6 @@ function ArchivedProductList() {
   const [sortCriteria, setSortCriteria] = useState("date-desc"); // Default sorting criteria that matches the backend;
   const [searchInput, setSearchInput] = useState(""); // Initialize with "All"
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [selectedWarehouse, setSelectedWarehouse] = useState("All Warehouse");
   const [selectedFilter, setSelectedFilter] = useState("All Genders");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -125,7 +121,7 @@ function ArchivedProductList() {
       });
       const totalData = result.pagination.totalData;
       const totalPages = Math.ceil(totalData / productsPerPage);
-      console.log(totalData, totalPages);
+
 
       setTotalData(totalData);
       setTotalPages(totalPages);
@@ -411,19 +407,6 @@ function ArchivedProductList() {
                 <span>
                   SKU : {product.sku} ({product.gender}){" "}
                 </span>
-              </div>
-              <div className="flex w-40 flex-col">
-                <span className="font-bold">Statistic</span>
-                <div className="flex flex-row items-center gap-4">
-                  <div className="flex flex-row items-center gap-1">
-                    {" "}
-                    <PiEye /> {product.viewCount}{" "}
-                  </div>
-                  <div className="flex flex-row items-center gap-1">
-                    {" "}
-                    <PiShoppingBag /> {product.soldCount}{" "}
-                  </div>
-                </div>
               </div>
               <div className="flex flex-col w-48 ">
                 <span className="font-bold">Price</span>

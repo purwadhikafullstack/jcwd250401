@@ -155,7 +155,6 @@ exports.handleUpdateProduct = async (req, res) => {
     existingProduct.material = productMaterial;
     existingProduct.lining = productLining;
     existingProduct.waterproofRating = productWaterproofRating;
-    
 
     // Save the updated product
     await existingProduct.save();
@@ -805,7 +804,11 @@ exports.handleGetAllProducts = async (req, res) => {
     // Include category filter
     if (category && category !== "All") {
       filter.include.push(
-        { model: ProductImage, as: "productImages" },
+        {
+          model: ProductImage,
+          as: "productImages",
+          order: [["id", "ASC"]],
+        },
         {
           model: Category,
           as: "Categories",
@@ -816,7 +819,11 @@ exports.handleGetAllProducts = async (req, res) => {
       );
     } else {
       filter.include.push(
-        { model: ProductImage, as: "productImages" },
+        {
+          model: ProductImage,
+          as: "productImages",
+          order: [["id", "ASC"]],
+        },
         {
           model: Category,
           as: "Categories",
@@ -932,7 +939,7 @@ const getMutationsForProduct = async (productId) => {
         where: {
           productId,
           warehouseId: warehouse.id,
-          status: 'success',
+          status: "success",
         },
         order: [["createdAt", "DESC"]],
         limit: 1,

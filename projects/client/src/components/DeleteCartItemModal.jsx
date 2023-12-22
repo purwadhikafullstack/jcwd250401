@@ -9,8 +9,6 @@ import { useDispatch } from "react-redux";
 function DeleteCartItemModal({ isOpen, isClose, data, onSuccess }) {
   const dispatch = useDispatch();
 
-  console.log(data);
-
   const handleDelete = async () => {
     try {
       const response = await api.delete(`/api/cart/${data.productId}`);

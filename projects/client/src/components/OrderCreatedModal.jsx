@@ -4,7 +4,6 @@ import { Button } from "flowbite-react";
 import { useNavigate } from "react-router-dom";
 import { deleteAllCartItem } from "../slices/cartSlices";
 import { useDispatch } from "react-redux";
-import { set } from "lodash";
 import { Checkmark } from "react-checkmark";
 import { PaymentProofModal } from "./PaymentProofModal";
 
