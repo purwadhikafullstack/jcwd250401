@@ -793,7 +793,6 @@ exports.automaticCancelUnpaidOrder = async (req, res) => {
 // Function to find the nearest warehouse using Haversine formula
 function findNearestWarehouse(sourceLatitude, sourceLongitude, warehouses, requiredStock, sourceWarehouseId) {
   const earthRadius = 6371; // Radius of the earth in km
-  console.log("I got triggered");
 
   // Helper function to convert degrees to radians
   function toRad(degrees) {
@@ -970,7 +969,6 @@ exports.confirmPaymentProofUser = async (req, res) => {
       });
 
       let stockProductAtCurrentWarehouse = dataProductAtCurrentWarehouse[0]?.stock;
-      console.log("stockProductAtCurrentWarehouse", stockProductAtCurrentWarehouse);
 
       if (!stockProductAtCurrentWarehouse) {
         stockProductAtCurrentWarehouse = 0;
@@ -1000,7 +998,6 @@ exports.confirmPaymentProofUser = async (req, res) => {
 
       const orderQuantity = product.quantity;
       const requiredStock = orderQuantity - stockProductAtCurrentWarehouse;
-      console.log("orderQuantity", orderQuantity);
 
       if (orderItem.Order.status === "ready-to-ship") {
         if (orderQuantity > stockProductAtCurrentWarehouse) {
@@ -1496,7 +1493,6 @@ exports.cancelOrderUser = async (req, res) => {
         transaction: t,
       });
       let stockProductAtCurrentWarehouse = dataProductAtCurrentWarehouse[0].stock;
-      console.log("stockProductAtCurrentWarehouse", stockProductAtCurrentWarehouse);
 
       if (!stockProductAtCurrentWarehouse) {
         stockProductAtCurrentWarehouse = 0;
