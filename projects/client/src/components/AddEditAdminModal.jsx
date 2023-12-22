@@ -144,7 +144,7 @@ export const AddEditAdminModal = ({ isOpen, onClose, data, modalFor }) => {
 
               <div className="flex gap-2">
                 <label htmlFor="role" className="min-w-[150px] md:min-w-[170px]">
-                  Role
+                  Role {modalFor === "Edit" && " (Optional)"}
                 </label>
                 <div className="w-full">
                   <select name="role" id="role" {...formik.getFieldProps("role")} className="border border-black rounded-md p-2 w-full cursor-pointer">
