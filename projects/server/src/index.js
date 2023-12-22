@@ -23,7 +23,6 @@ const WarehouseRoutes = require("./routes/warehouse");
 const mutationRoutes = require("./routes/mutation");
 const wishlistRoutes = require("./routes/wishlist");
 
-
 //Routing
 app.use("/api/auth", authRouter);
 app.use("/api/profile", profileRouter);
