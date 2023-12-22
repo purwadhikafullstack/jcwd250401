@@ -359,7 +359,7 @@ exports.getWarehouseById = async (req, res) => {
   try {
     const warehouse = await Warehouse.findOne({
       where: {
-        id,
+        adminId: id,
       },
       include: {
         model: WarehouseAddress,
