@@ -46,7 +46,7 @@ export const Homepage = () => {
         <Carousel slideInterval={5000} indicators={false} style={{ borderRadius: 0 }} className="enabled:rounded-none">
           <div style={{ backgroundImage: `url(${exploremenpufferjacketsmobile})`, backgroundSize: "cover", height: "100vh" }} className="flex items-end px-10 py-44 background-image">
             <div className=" ml-4 w-[50vw] text-white text-xl font-sans font-light">
-              <p className="bg-black bg-opacity-40 p-4">
+              <p className="bg-black text-md bg-opacity-40 p-4">
                 Explore a diverse collection of Men's Puffer Jackets that strike the perfect balance between style and practicality. RAINS Puffer Jackets are crafted with modern designs and high-quality materials, ensuring not only a
                 fashion-forward look but also providing excellent weather resistance.
               </p>
@@ -57,7 +57,7 @@ export const Homepage = () => {
           </div>
           <div style={{ backgroundImage: `url(${explorewomenpufferjacketsmobile})`, backgroundSize: "cover", height: "100vh" }} className="flex items-end px-10 py-44 background-image">
             <div className=" ml-4 w-[50vw] text-white text-xl font-sans font-light">
-              <p className="bg-black bg-opacity-40 p-4">
+              <p className="bg-black text-md bg-opacity-40 p-4">
                 Delve into a diverse collection of Women's Puffer Jackets, where style meets functionality seamlessly. RAINS presents jackets that marry fashion and comfort, boasting contemporary designs and top-tier materials. These puffer
                 jackets not only embody the latest trends but also offer resilience against a range of weather conditions.
               </p>
@@ -68,7 +68,7 @@ export const Homepage = () => {
           </div>
           <div style={{ backgroundImage: `url(${exploremenrainjacketsmobile})`, backgroundSize: "cover", height: "100vh" }} className="flex items-end px-10 py-44 background-image">
             <div className=" ml-4 w-[50vw] text-white text-xl font-sans font-light">
-              <p className="bg-black bg-opacity-40 p-4">
+              <p className="bg-black text-md bg-opacity-40 p-4">
                 Stay stylish in any storm with RAINS Men's Rain Jackets. Modern designs meet superior weather resistance, ensuring you stay dry and on-trend. Embrace urban fashion without compromising on protection - RAINS has you covered,
                 rain or shine.
               </p>
@@ -79,7 +79,7 @@ export const Homepage = () => {
           </div>
           <div style={{ backgroundImage: `url(${explorewomenrainjacketsmobile})`, backgroundSize: "cover", height: "100vh" }} className="flex items-end px-10 py-44 background-image">
             <div className=" ml-4 w-[50vw] text-white text-xl font-sans font-light">
-              <p className="bg-black bg-opacity-40 p-4">
+              <p className="bg-black text-md bg-opacity-40 p-4">
                 Embrace the rain in style with RAINS Women's Rain Jackets. Modern designs, premium materials, and weather resistance come together to keep you chic and dry. RAINS redefines rainy-day fashion, ensuring you make a statement,
                 rain or shine.
               </p>
@@ -90,7 +90,7 @@ export const Homepage = () => {
           </div>
           <div style={{ backgroundImage: `url(${explorebagsmobile})`, backgroundSize: "cover", height: "100vh" }} className="flex items-end px-10 py-44 background-image">
             <div className=" ml-4 w-[50vw] text-white text-xl font-sans font-light">
-              <p className="bg-black bg-opacity-40 p-4">
+              <p className="bg-black text-md bg-opacity-40 p-4">
                 Upgrade your style and stay ready with RAINS Bags. Modern design, reliable functionality from waterproof backpacks to sleek essentials. Redefine your everyday with RAINS, where fashion meets practicality seamlessly.
               </p>
               <Button className="px-10 border border-gray-600" bg="white" color="light" size="md" as={Link} to={"/products/unisex/bags"}>
@@ -100,9 +100,8 @@ export const Homepage = () => {
           </div>
           <div style={{ backgroundImage: `url(${exploreaccessoriesmobile})`, backgroundSize: "cover", height: "100vh" }} className="flex items-end px-10 py-44 background-image">
             <div className=" ml-4 w-[50vw] text-white text-xl font-sans font-light">
-              <p className="bg-black bg-opacity-40 p-4">
+              <p className="bg-black text-md bg-opacity-40 p-4">
                 Elevate your fashion game with the refined details of RAINS Accessories. Explore a curated selection of modern essentials, from trendsetting hats to versatile scarves, designed to effortlessly enhance your everyday style.
-                With RAINS, make a lasting impression as you blend contemporary flair with functional elegance in every accessory.
               </p>
               <Button className="px-10 border border-gray-600" bg="white" color="light" size="md" as={Link} to={"/products/unisex/accessories"}>
                 <span className="font-sans text-black font-medium text-md">Explore RAINS Accessories</span>
@@ -118,7 +117,7 @@ export const Homepage = () => {
           <Carousel slideInterval={5000} indicators={false} style={{ borderRadius: 0 }} className="enabled:rounded-none">
             <div style={{ backgroundImage: `url(${exploremenpufferjackets})`, backgroundSize: "cover", height: "100vh" }} className="flex justify-between items-end px-20 py-24 background-image">
               <div className="w-[60vw] text-white text-xl font-sans font-light">
-                <p className="bg-black bg-opacity-40 p-4">
+                <p className="bg-black text-md bg-opacity-40 p-4">
                   Explore a diverse collection of Men's Puffer Jackets that strike the perfect balance between style and practicality. RAINS Puffer Jackets are crafted with modern designs and high-quality materials, ensuring not only a
                   fashion-forward look but also providing excellent weather resistance.
                 </p>
@@ -129,7 +128,7 @@ export const Homepage = () => {
             </div>
             <div style={{ backgroundImage: `url(${explorewomenpufferjackets})`, backgroundSize: "cover", height: "100vh" }} className="flex justify-between items-end px-20 py-24 background-image">
               <div className="w-[60vw] text-white text-xl font-sans font-light">
-                <p className="bg-black bg-opacity-40 p-4">
+                <p className="bg-black text-md bg-opacity-40 p-4">
                   Delve into a diverse collection of Women's Puffer Jackets, where style meets functionality seamlessly. RAINS presents jackets that marry fashion and comfort, boasting contemporary designs and top-tier materials. These
                   puffer jackets not only embody the latest trends but also offer resilience against a range of weather conditions.
                 </p>
@@ -140,7 +139,7 @@ export const Homepage = () => {
             </div>
             <div style={{ backgroundImage: `url(${exploremenrainjackets})`, backgroundSize: "cover", height: "100vh" }} className="flex justify-between items-end px-20 py-24 background-image">
               <div className="w-[60vw] text-white text-xl font-sans font-light">
-                <p className="bg-black bg-opacity-40 p-4">
+                <p className="bg-black text-md bg-opacity-40 p-4">
                   Stay stylish in any storm with RAINS Men's Rain Jackets. Modern designs meet superior weather resistance, ensuring you stay dry and on-trend. Embrace urban fashion without compromising on protection - RAINS has you
                   covered, rain or shine.
                 </p>
@@ -151,7 +150,7 @@ export const Homepage = () => {
             </div>
             <div style={{ backgroundImage: `url(${explorewomenrainjackets})`, backgroundSize: "cover", height: "100vh" }} className="flex justify-between items-end px-20 py-24 background-image">
               <div className="w-[60vw] text-white text-xl font-sans font-light">
-                <p className="bg-black bg-opacity-40 p-4">
+                <p className="bg-black text-md bg-opacity-40 p-4">
                   Embrace the rain in style with RAINS Women's Rain Jackets. Modern designs, premium materials, and weather resistance come together to keep you chic and dry. RAINS redefines rainy-day fashion, ensuring you make a statement,
                   rain or shine.
                 </p>
@@ -162,7 +161,7 @@ export const Homepage = () => {
             </div>
             <div style={{ backgroundImage: `url(${explorebags})`, backgroundSize: "cover", height: "100vh" }} className="flex justify-between items-end px-20 py-24 background-image">
               <div className="w-[60vw] text-white text-xl font-sans font-light">
-                <p className="bg-black bg-opacity-40 p-4">
+                <p className="bg-black text-md bg-opacity-40 p-4">
                   Upgrade your style and stay ready with RAINS Bags. Modern design, reliable functionality from waterproof backpacks to sleek essentials. Redefine your everyday with RAINS, where fashion meets practicality seamlessly.
                 </p>
               </div>
@@ -172,7 +171,7 @@ export const Homepage = () => {
             </div>
             <div style={{ backgroundImage: `url(${exploreaccessories})`, backgroundSize: "cover", height: "100vh" }} className="flex justify-between items-end px-20 py-24 background-image">
               <div className="w-[60vw] text-white text-xl font-sans font-light">
-                <p className="bg-black bg-opacity-40 p-4">
+                <p className="bg-black text-md bg-opacity-40 p-4">
                   Explore a diverse collection of Men's Puffer Jackets that strike the perfect balance between style and practicality. RAINS Puffer Jackets are crafted with modern designs and high-quality materials, ensuring not only a
                   fashion-forward look but also providing excellent weather resistance.
                 </p>

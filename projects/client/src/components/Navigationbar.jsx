@@ -23,8 +23,7 @@ function Navigationbar() {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [dropdownSubcategory, setDropdownSubcategory] = useState(null);
   const [isDropdownTransitioning, setIsDropdownTransitioning] = useState(false);
-  const categories = ["NEW IN", "MEN", "WOMEN", "BAGS", "ACCESSORIES"];
-  const newIn = ["New Arrivals", "Best Sellers", "Rains Essentials"];
+  const categories = ["MEN", "WOMEN", "BAGS", "ACCESSORIES"];
   const men = ["Jackets", "Tops", "Bottoms"];
   const women = ["Jackets", "Tops", "Bottoms"];
   const accounts = ["Profile", "Address Book", "My Order", "Change Password"];
@@ -302,8 +301,6 @@ function Navigationbar() {
                       <div className="flex flex-col flex-wrap">
                         {(() => {
                           switch (category) {
-                            case "NEW IN":
-                              return newIn.map(renderSubcategory);
                             case "MEN":
                               return (
                                 <div className="flex space-x-16 ">
