@@ -1,13 +1,11 @@
-import React, { useState, useCallback, useEffect } from "react";
-import { Link, useLocation, useParams, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { AddAddressModal } from "./AddAddressModal";
-import { showLoginModal } from "../slices/authModalSlices";
 import getProfile from "../api/profile/getProfile";
 import getUserAddress from "../api/Address/getUserAddress";
-import getWarehouses from "../api/warehouse/getWarehouses";
 import getShippingCost from "../api/order/getShippingCost";
 import { toast } from "sonner";
-import { PiCheckBold, PiCheckFat, PiClipboard } from "react-icons/pi";
+import {PiCheckFat} from "react-icons/pi";
 import { useDispatch, useSelector } from "react-redux";
 import AddressListModal from "./UserAddressModal";
 import getNearestWarehouses from "../api/warehouse/getNearestWarehouse";

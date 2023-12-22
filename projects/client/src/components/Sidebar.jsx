@@ -1,14 +1,8 @@
 import React, { useState } from "react";
-import { FiSettings, FiHome, FiTrendingUp, FiChevronUp, FiChevronsDown, FiChevronDown } from "react-icons/fi";
-import { BiMessageSquareAdd, BiSolidFoodMenu } from "react-icons/bi";
-import { FaFileInvoiceDollar } from "react-icons/fa";
-import { PiChartLine, PiChartLineBold, PiHouse, PiHouseBold, PiPackage, PiPackageBold, PiReceipt, PiReceiptBold, PiUserRectangle, PiUserRectangleBold, PiUsersThree, PiUsersThreeBold, PiWarehouse, PiWarehouseBold } from "react-icons/pi";
+import { FiChevronUp, FiChevronDown } from "react-icons/fi";
+import { PiChartLine, PiHouse, PiPackage, PiReceipt, PiUserRectangle, PiUsersThree, PiWarehouse } from "react-icons/pi";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { MdFastfood } from "react-icons/md";
-import { logout } from "../slices/accountSlices";
-import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import { updatePhotoProfile } from "../slices/accountSlices";
 import rains from "../assets/rains.png";
 
 const menuList = [
@@ -173,11 +167,7 @@ const Sidebar = () => {
                     {item.subItems && activeMenu === index && (
                       <div className="">
                         {item.subItems.map((subItem, subIndex) => (
-                          <Link
-                            key={subIndex}
-                            to={subItem.link}
-                            className={`flex items-center justify-center text-white hover:text-black hover:bg-white px-2 py-2 rounded mb-2  ${segments === subItem.link ? "!text-black bg-white" : ""}`}
-                          >
+                          <Link key={subIndex} to={subItem.link} className={`flex items-center justify-center text-white hover:text-black hover:bg-white px-2 py-2 rounded mb-2  ${segments === subItem.link ? "!text-black bg-white" : ""}`}>
                             <div className="">{subItem.icon}</div>
                             <span className="text-xs">{subItem.name}</span>
                           </Link>

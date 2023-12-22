@@ -1,14 +1,11 @@
 import React, { useCallback, useState } from "react";
-import Navigationbar from "./Navigationbar";
 import { Link, useNavigate, useLocation, useParams } from "react-router-dom";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "@chakra-ui/react";
 import { useEffect } from "react";
 import api from "../api";
 import { toast } from "sonner";
-import { useDispatch, useSelector } from "react-redux";
+
 
 import getProductsCountsUser from "../api/products/getProductsCountsUser";
-import { Button } from "flowbite-react";
 
 const formatSubCategory = (subCategory) => {
   // Split the subCategory into words
@@ -54,7 +51,6 @@ export const ProductNavPage = () => {
       const response = await api.get(`/api/category/user/sub-categories?mainCategory=${mainCategory}`);
       const categoryData = response.data.detail;
       setCategories(categoryData);
-      console.log(categoryData);
     } catch (error) {
       if (error?.response?.status === 404) {
         setCategories([]);
@@ -67,8 +63,6 @@ export const ProductNavPage = () => {
     fetchCategories();
   }, [fetchProducts, fetchCategories]);
 
-  const location = useLocation();
-  const pathSegments = location.pathname.split("/").filter((segment) => segment !== "");
 
   return (
     <div className="space-y-0 lg:space-y-10 mt-2 lg:mt-8">

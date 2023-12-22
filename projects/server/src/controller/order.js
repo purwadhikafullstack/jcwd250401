@@ -396,8 +396,8 @@ exports.getAllOrderLists = async (req, res) => {
     });
   }
 };
-// create order
 
+// create order
 const getProductStock = async (products) => {
   return await Promise.all(
     products.map(async (item) => {
@@ -545,7 +545,7 @@ exports.createOrder = async (req, res) => {
 
     // Create invoice
     const paymentCode = paymentBy === "MANDIRI" ? "100" : paymentBy === "BCA" ? "101" : "102";
-    const invoice = `INV-${paymentCode}${order.id}${order.userId}${order.warehouseId}${order.shipmentId}`
+    const invoice = `INV-${paymentCode}${order.id}${order.userId}${order.warehouseId}${order.shipmentId}`;
 
     await order.update({ invoice });
 
@@ -857,7 +857,7 @@ async function updateSourceWarehouseStock(productId, warehouseId, destinationWar
       transaction: t,
     });
 
-    let sourceWarehouseStock = findLatestMutationSourceWarehouse.stock || 0;
+    let sourceWarehouseStock = findLatestMutationSourceWarehouse ? findLatestMutationSourceWarehouse.stock : 0;
     let newStock = sourceWarehouseStock + quantity;
 
     // update the source warehouse stock by creating a new mutation
@@ -1015,8 +1015,11 @@ exports.confirmPaymentProofUser = async (req, res) => {
             });
           }
 
-          // Create mutation for update stock at destination warehouse
-          let currentDestinationWarehouseStock = nearestWarehouse.Mutations[0].stock;
+          let currentDestinationWarehouseStock = 0;
+
+          if (nearestWarehouse.Mutations && nearestWarehouse.Mutations.length > 0) {
+            currentDestinationWarehouseStock = nearestWarehouse.Mutations[0].stock || 0;
+          }
 
           const newMutationForDestinationWarehouse = await Mutation.create(
             {

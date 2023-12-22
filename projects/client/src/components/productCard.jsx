@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import getProductsUser from "../api/products/getProductsUser";
-import { Divider, HStack, Input, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, SimpleGrid, Select } from "@chakra-ui/react";
+import { NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, SimpleGrid } from "@chakra-ui/react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -11,7 +11,6 @@ import { useDispatch } from "react-redux";
 import { showLoginModal } from "../slices/authModalSlices";
 import ZoomableImage from "./ZoomableImage";
 import addToCart from "../api/cart/addToCart";
-import { AiOutlineLoading } from "react-icons/ai";
 import AddToCartConfirmation from "./AddToCartConfirmation";
 import { addToCartItems } from "../slices/cartSlices";
 import Skeleton from "react-loading-skeleton";
@@ -21,7 +20,6 @@ import AddToWishlistConfirmation from "./AddToWishlistConfirmation";
 
 function ProductCard() {
   const { gender, mainCategory, subCategory, productName } = useParams();
-  const [showPopup, setShowPopup] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);

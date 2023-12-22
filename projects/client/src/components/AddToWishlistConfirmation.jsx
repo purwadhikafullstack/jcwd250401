@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Modal, ModalOverlay, ModalContent, ModalBody, Box, Text, Flex, Spinner, ModalCloseButton, ModalFooter, ModalHeader } from "@chakra-ui/react";
-import { AiOutlineCheckCircle } from "react-icons/ai";
 import { Button } from "flowbite-react";
 import { useNavigate } from "react-router-dom";
 import { Checkmark } from "react-checkmark";

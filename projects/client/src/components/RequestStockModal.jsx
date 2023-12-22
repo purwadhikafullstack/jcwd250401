@@ -129,7 +129,6 @@ export const RequestStockModal = ({ isOpen, onClose }) => {
       if (error.response && (error.response.status === 400 || error.response.status === 404)) {
         toast.error(error.response.data.message);
       } else if (error.response.status === 500) {
-        console.error(error);
         toast.error(error.response.data.detail);
       }
     }

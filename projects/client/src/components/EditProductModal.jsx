@@ -4,13 +4,11 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import api from "../api";
 import { toast } from "sonner";
-import { hideForgotPasswordModal, setEmail } from "../slices/authModalSlices";
 import { AiOutlineLoading } from "react-icons/ai";
 import { useDispatch } from "react-redux";
-
-import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Text } from "@chakra-ui/react";
+import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton} from "@chakra-ui/react";
 import { useDropzone } from "react-dropzone";
-import { PiImage, PiImageThin, PiWarningCircleBold } from "react-icons/pi";
+import { PiImageThin, PiWarningCircleBold } from "react-icons/pi";
 import { addProduct } from "../slices/productSlices";
 
 function EditProductModal({ isOpen, isClose, data }) {

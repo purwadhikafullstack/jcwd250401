@@ -72,7 +72,7 @@ function Navigationadmin() {
       dispatch(logoutAdmin());
       setDropdownVisible(false);
     } catch (error) {
-      console.error(error);
+      toast.error(error);
     }
   };
 
