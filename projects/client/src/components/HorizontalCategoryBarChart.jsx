@@ -1,7 +1,6 @@
 import React from "react";
 import { Bar } from "react-chartjs-2";
 import { Chart, Tooltip, LinearScale, CategoryScale, BarController, BarElement } from "chart.js";
-import { format } from "date-fns";
 
 Chart.register(Tooltip, LinearScale, CategoryScale, BarController, BarElement);
 

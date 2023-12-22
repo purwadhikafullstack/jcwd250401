@@ -1,16 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { useDispatch } from "react-redux";
-import { addProduct } from "../slices/productSlices";
 import api from "../api";
 import { useSelector } from "react-redux";
-import { PiCaretDown, PiEye, PiInfo, PiShoppingBag } from "react-icons/pi";
+import { PiCaretDown } from "react-icons/pi";
 import { Box, Button, Flex, Menu, MenuButton, MenuItem, MenuList, Text } from "@chakra-ui/react";
-import { setProductList } from "../slices/productSlices";
 import _debounce from "lodash/debounce";
-import { ChevronDownIcon } from "@chakra-ui/icons";
 import EditProductModal from "./EditProductModal";
-import { EditCategoryModal } from "./EditCategoryModal";
 import ArchiveProductModal from "./ArchiveProductModal";
 import DeleteProductModal from "./DeleteProductModal";
 import { logoutAdmin } from "../slices/accountSlices";
@@ -77,8 +73,6 @@ function ProductList() {
       });
       const totalData = result.pagination.totalData;
       const totalPages = Math.ceil(totalData / productsPerPage);
-      console.log(totalData, totalPages);
-
       setTotalData(totalData);
       setTotalPages(totalPages);
       setProducts(result.details);
@@ -574,19 +568,6 @@ function ProductList() {
                   SKU : {product.sku} ({product.gender}){" "}
                 </span>
               </div>
-              {/* <div className="flex w-40 flex-col">
-                <span className="font-bold">Statistic</span>
-                <div className="flex flex-row items-center gap-4">
-                  <div className="flex flex-row items-center gap-1">
-                    {" "}
-                    <PiEye /> {product.viewCount}{" "}
-                  </div>
-                  <div className="flex flex-row items-center gap-1">
-                    {" "}
-                    <PiShoppingBag /> {product.soldCount}{" "}
-                  </div>
-                </div>
-              </div> */}
               <div className="flex flex-col w-48 ">
                 <span className="font-bold">Price</span>
                 <span>{formatToRupiah(product.price)}</span>

@@ -1,21 +1,16 @@
 import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, SimpleGrid } from "@chakra-ui/react";
 import { useCallback, useEffect, useState } from "react";
-import { PiEye, PiMagnifyingGlassBold, PiTrash } from "react-icons/pi";
+import { PiMagnifyingGlassBold, PiTrash } from "react-icons/pi";
 import { toast } from "sonner";
 import _debounce from "lodash/debounce";
-import getProductsUser from "../api/products/getProductsUser";
 import { Button } from "flowbite-react";
 import { Link, useNavigate } from "react-router-dom";
 import rains from "../assets/rains.png";
-import menexplore from "../assets/menjackets.jpg";
-import womenexplore from "../assets/womensearch.jpg";
-import unisexexplore from "../assets/unisexsearch.jpg";
 import getWishlist from "../api/Wishlist/getWishlist";
 import DeleteWishlistItem from "./DeleteWishlishItem";
 
 function WishlistModal({ isOpen, isClose }) {
   const [products, setProducts] = useState([]);
-  const [search, setSearch] = useState("");
   const navigate = useNavigate();
   const [openDeleteWishlistModal, setOpenDeleteWishlistModal] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(null);
@@ -25,8 +20,6 @@ function WishlistModal({ isOpen, isClose }) {
     try {
       const result = await getWishlist({});
       setProducts(result.detail.WishlistProducts);
-
-      console.log(result.detail.WishlistProducts);
     } catch (error) {
       if (error?.response?.status === 404) {
         setProducts([]);

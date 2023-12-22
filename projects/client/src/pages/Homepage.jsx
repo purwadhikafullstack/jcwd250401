@@ -1,5 +1,4 @@
 import { Carousel } from "flowbite-react";
-import { BsFacebook, BsInstagram, BsTiktok } from "react-icons/bs";
 import img1 from "../assets/image-1.jpg";
 import img2 from "../assets/image-2.jpg";
 import img3 from "../assets/image-3.jpg";

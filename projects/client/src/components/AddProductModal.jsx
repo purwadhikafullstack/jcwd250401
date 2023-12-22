@@ -4,14 +4,10 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import api from "../api";
 import { toast } from "sonner";
-import { hideForgotPasswordModal, setEmail } from "../slices/authModalSlices";
 import { AiOutlineLoading } from "react-icons/ai";
 import { useDispatch } from "react-redux";
-import { showLoginModal } from "../slices/authModalSlices";
-import { showVerifyModal } from "../slices/authModalSlices";
-import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Text } from "@chakra-ui/react";
-import { useDropzone } from "react-dropzone";
-import { PiImage, PiImageThin, PiWarningCircleBold } from "react-icons/pi";
+import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton} from "@chakra-ui/react";
+import { PiImageThin, PiWarningCircleBold } from "react-icons/pi";
 import { addProduct } from "../slices/productSlices";
 
 function AddProductModal({ isOpen, isClose }) {
@@ -188,13 +184,13 @@ function AddProductModal({ isOpen, isClose }) {
 
       if (file) {
         if (!["image/jpeg", "image/jpg", "image/png"].includes(file.type)) {
-          console.error("Invalid file type. Please upload a JPEG or PNG file.");
+          toast.error("Invalid file type. Please upload a JPEG or PNG file.");
           return;
         }
 
         const maxSizeInBytes = 2 * 1024 * 1024; // 2MB
         if (file.size > maxSizeInBytes) {
-          console.error("File size exceeds the 2MB limit.");
+          toast.error("File size exceeds the 2MB limit.");
           return;
         }
 
@@ -227,7 +223,7 @@ function AddProductModal({ isOpen, isClose }) {
         // Reset the activeIndex after updating the preview image
         setActiveIndex(null);
       } else {
-        console.error("Invalid file dropped.");
+        toast.error("Invalid file dropped.");
       }
     }
   };

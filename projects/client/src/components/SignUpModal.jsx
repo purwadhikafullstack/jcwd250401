@@ -69,13 +69,20 @@ function SignUpModal({ isOpen, isClose }) {
             signOut(auth);
             localStorage.clear();
           }, 2000);
-        } else {
-          // Handle other HTTP errors
+        } else if (error.response.status === 401) {
+          setTimeout(() => {
+            toast.error("Invalid email address");
+            signOut(auth);
+            localStorage.clear();
+          }, 2000);
         }
       } else if (error.request) {
-        // Handle network errors (request was made but no response received)
-      } else {
-        // Handle other non-network, non-HTTP-related errors
+        // Handle request errors
+        setTimeout(() => {
+          toast.error("Network error, please try again later");
+          signOut(auth);
+          localStorage.clear();
+        }, 2000);
       }
     }
   };
@@ -112,8 +119,7 @@ function SignUpModal({ isOpen, isClose }) {
             toast.error("Email already exists");
             setIsSubmitting(false);
           }, 2000);
-        }
-        else if (error.request) {
+        } else if (error.request) {
           // Handle request errors
           setTimeout(() => {
             toast.error("Network error, please try again later");

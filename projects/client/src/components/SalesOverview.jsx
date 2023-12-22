@@ -8,6 +8,7 @@ import LineChart from "./LineChart";
 import HorizontalCategoryBarChart from "./HorizontalCategoryBarChart";
 import HorizontalProductBarChart from "./HorizontalProductBarChart";
 import { useSelector } from "react-redux";
+import { toast } from "sonner";
 
 function SalesOverview() {
   const [warehouses, setWarehouses] = useState([]);
@@ -35,7 +36,10 @@ function SalesOverview() {
       const result = await api.admin.get("/api/warehouse");
       setWarehouses(result.data.data);
     } catch (error) {
-      console.log(error);
+      setWarehouses([]);
+      toast.error(error.response.data.message, {
+        description: error.response.data.detail,
+      });
     }
   }, []);
 
@@ -49,6 +53,9 @@ function SalesOverview() {
       setSalesReports(result.detail);
     } catch (error) {
       setSalesReports([]);
+      toast.error(error.response.data.message, {
+        description: error.response.data.detail,
+      });
     }
   }, [selectedWarehouse, selectedMonth, selectedYear]);
 

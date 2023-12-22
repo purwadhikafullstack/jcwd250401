@@ -396,8 +396,8 @@ exports.getAllOrderLists = async (req, res) => {
     });
   }
 };
-// create order
 
+// create order
 const getProductStock = async (products) => {
   return await Promise.all(
     products.map(async (item) => {

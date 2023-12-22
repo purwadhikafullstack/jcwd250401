@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import api from "../api";
-import { useSelector } from "react-redux";
 import { debounce } from "lodash";
 import { Button } from "@chakra-ui/react";
 
@@ -27,7 +26,6 @@ function MenuListMobile() {
       const response = await api.get(`/api/category/user/sub-categories?mainCategory=Bags`);
       const categoryData = response.data.detail;
       setBagsSubCategory(categoryData);
-      console.log(categoryData);
     } catch (error) {
       if (error?.response?.status === 404) {
         setBagsSubCategory([]);

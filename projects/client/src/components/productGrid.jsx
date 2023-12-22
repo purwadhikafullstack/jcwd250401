@@ -87,7 +87,6 @@ function ProductGrid() {
       const response = await api.get(`/api/category/user/sub-categories?mainCategory=${mainCategory}`);
       const categoryData = response.data.detail;
       setCategoriesData(categoryData);
-      console.log(categoryData);
     } catch (error) {
       if (error?.response?.status === 404) {
         setCategoriesData([]);
