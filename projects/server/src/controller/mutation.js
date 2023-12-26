@@ -38,7 +38,7 @@ exports.getTotalStockByWarehouseProductId = async (req, res) => {
 
 exports.getAllMutations = async (req, res) => {
   try {
-    const { page = 1, size = 5, sort = "id", order = "DESC", search, warehouseId = null, month = null } = req.query;
+    const { page = 1, size = 5, sort = "id", order = "DESC", search, warehouseId = null, month = null, year = null } = req.query;
     const limit = parseInt(size);
     const offset = (parseInt(page) - 1) * limit;
 
@@ -53,14 +53,14 @@ exports.getAllMutations = async (req, res) => {
       whereCondition.warehouseId = warehouseId;
     }
 
-    if (month) {
+    if (month || year) {
       whereCondition.createdAt = {
         [Op.and]: [
           // Optional: Combine multiple conditions
-          // Filter by the current month
-          literal(`MONTH(createdAt) = ${parseInt(month)}`), // Required: Filter by the current month
-          literal(`YEAR(createdAt) = YEAR(NOW())`), // Optional: Filter by the current year
-        ],
+          // Filter by the current month and year
+          month && literal(`MONTH(createdAt) = ${parseInt(month)}`), // Optional: Filter by the current month
+          year && literal(`YEAR(createdAt) = ${parseInt(year)}`), // Optional: Filter by the current year
+        ].filter(Boolean), // Remove null and undefined values
       };
     }
     const mutations = await Mutation.findAll({
@@ -189,7 +189,7 @@ exports.summaryTotalStock = async (req, res) => {
 
 exports.getAllMutationsJournal = async (req, res) => {
   try {
-    const { page = 1, size = 5, sort = "id", order = "DESC", search, warehouseId = null, destinationWarehouseId = null, month = null, status } = req.query;
+    const { page = 1, size = 5, sort = "id", order = "DESC", search, warehouseId = null, destinationWarehouseId = null, month = null, year = null, status } = req.query;
     const limit = parseInt(size);
     const offset = (parseInt(page) - 1) * limit;
 
@@ -208,9 +208,14 @@ exports.getAllMutationsJournal = async (req, res) => {
       whereCondition.destinationWarehouseId = destinationWarehouseId;
     }
 
-    if (month) {
+    if (month || year) {
       whereCondition.createdAt = {
-        [Op.and]: [literal(`MONTH(createdAt) = ${parseInt(month)}`), literal(`YEAR(createdAt) = YEAR(NOW())`)],
+        [Op.and]: [
+          // Optional: Combine multiple conditions
+          // Filter by the current month and year
+          month && literal(`MONTH(createdAt) = ${parseInt(month)}`), // Optional: Filter by the current month
+          year && literal(`YEAR(createdAt) = ${parseInt(year)}`), // Optional: Filter by the current year
+        ].filter(Boolean), // Remove null and undefined values
       };
     }
 
