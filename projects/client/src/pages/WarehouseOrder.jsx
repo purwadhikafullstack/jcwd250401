@@ -38,6 +38,19 @@ export const WarehouseOrder = () => {
   const [order, setOrder] = useState("");
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedYear, setSelectedYear] = useState(null);
+
+  const generateYears = (startYear, endYear) => {
+    const years = [];
+    for (let i = startYear; i >= endYear; i--) {
+      years.push(i.toString());
+    }
+    return years;
+  };
+
+  const currentYear = new Date().getFullYear();
+  const yearsArray = generateYears(currentYear, currentYear - 4);
+
   const months = [
     {
       id: 1,
@@ -172,6 +185,7 @@ export const WarehouseOrder = () => {
         search: debouncedSearchInput,
         month: selectedMonth,
         status: selectedStatusValue,
+        year: selectedYear,
       });
       setMutations(response.detail.data);
     } catch (error) {
@@ -184,7 +198,7 @@ export const WarehouseOrder = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [page, size, sort, order, warehouseId, destinationWarehouseId, debouncedSearchInput, selectedMonth, selectedStatus]);
+  }, [page, size, sort, order, warehouseId, destinationWarehouseId, debouncedSearchInput, selectedMonth, selectedYear, selectedStatus]);
 
   useEffect(() => {
     fetchWarehouses();
@@ -256,6 +270,18 @@ export const WarehouseOrder = () => {
                 {months.map((month, index) => (
                   <option key={index} value={month.id}>
                     {month.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+                className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#40403F] focus:border-[#40403F] block w-full p-2.5 cursor-pointer">
+                <option value={""}>Year</option>
+                {yearsArray.map((year, index) => (
+                  <option key={index} value={year}>
+                    {year}
                   </option>
                 ))}
               </select>
