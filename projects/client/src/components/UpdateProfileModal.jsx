@@ -134,7 +134,7 @@ export const UpdateProfileModal = ({ isOpen, onClose }) => {
       } finally {
         setTimeout(() => {
           setIsSubmitting(false);
-        }, 8000);
+        }, 4000);
       }
     },
   });

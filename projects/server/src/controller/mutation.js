@@ -265,6 +265,7 @@ exports.getAllMutationsJournal = async (req, res) => {
 
     // add source and destination warehouse names to each mutation
     const mutationsJournalWithNames = await Promise.all(
+      // Promise.all is used to wait for all promises to resolve
       mutationsJournal.map(async (mutation) => {
         const sourceWarehouse = await Warehouse.findOne({
           where: {

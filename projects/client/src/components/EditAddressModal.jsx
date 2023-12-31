@@ -270,7 +270,7 @@ export const EditAddressModal = ({ isOpen, onClose, addressData, userId, cityLis
                   <label htmlFor="setAsDefault" className="text-md text-gray-600 w-[35%] font-semibold cursor-pointer">
                     Set as default address
                   </label>
-                  {formik.values.setAsDefault ? <AiFillCheckCircle className="text-green-500 text-2xl" /> : <input type="checkbox" id="setAsDefault" name="setAsDefault" className="w-6 h-6" {...formik.getFieldProps("setAsDefault")} />}
+                  {formik.values.setAsDefault ? <AiFillCheckCircle className="text-green-500 text-2xl" onClick={()=> formik.setFieldValue("setAsDefault", false)} /> : <input type="checkbox" id="setAsDefault" name="setAsDefault" className="w-6 h-6" {...formik.getFieldProps("setAsDefault")} />}
                 </div>
 
                 <div className="flex flex-row items-center mt-5">
