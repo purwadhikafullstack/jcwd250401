@@ -352,6 +352,7 @@ export const WarehouseOrder = () => {
                       <img src={`http://localhost:8000/public/${mutation.Product.productImages[0].imageUrl}`} alt={mutation.Product.name} className="w-20 h-20 object-cover" />
                       <div className="ml-2">
                         <p className="text-sm font-bold">{mutation.Product.name}</p>
+                        <p className="text-sm">Product ID: {mutation.productId}</p>
                       </div>
                       <div className="ml-10">
                         <div>
