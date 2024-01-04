@@ -668,6 +668,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
 
           // update the latest status mutation journal
           updatedMutationJournal.status = "success";
+          updatedMutationJournal.stock = mutation.stock;
           await updatedMutationJournal.save({ transaction: t });
 
           // create a new mutation journal at destination warehouse
