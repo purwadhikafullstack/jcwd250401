@@ -104,20 +104,31 @@ exports.updateAdmin = async (req, res) => {
       });
     }
 
-    // Check if email or username already exists except the current admin
-    if (email !== admin.email || username !== admin.username || isWarehouseAdmin !== admin.isWarehouseAdmin) {
-      const existingAdmin = await Admin.findOne({ where: { [Op.and]: [{ email }, { username }, { isWarehouseAdmin }] } });
-      if (existingAdmin) {
+    // Check if email already exists for other admins, only if the email is being updated
+    if (email !== admin.email) {
+      const existingAdminWithEmail = await Admin.findOne({ where: { email } });
+      if (existingAdminWithEmail && existingAdminWithEmail.id !== id) {
         return res.status(400).json({
           ok: false,
-          message: "Admin with this email or username at this role already exists",
+          message: "Admin with this email already exists",
+        });
+      }
+    }
+
+    // Check if username already exists for other admins, only if the username is being updated
+    if (username !== admin.username) {
+      const existingAdminWithUsername = await Admin.findOne({ where: { username } });
+      if (existingAdminWithUsername && existingAdminWithUsername.id !== id) {
+        return res.status(400).json({
+          ok: false,
+          message: "Admin with this username already exists",
         });
       }
     }
     admin.email = email;
     admin.username = username;
+    admin.isWarehouseAdmin = isWarehouseAdmin ? isWarehouseAdmin : admin.isWarehouseAdmin;
 
-    isWarehouseAdmin ? (admin.isWarehouseAdmin = isWarehouseAdmin) : admin.isWarehouseAdmin;
     if (password !== undefined && password !== null && password !== "") {
       const hashPassword = await bcrypt.hash(password, salt);
       admin.password = hashPassword;

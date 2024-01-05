@@ -27,7 +27,7 @@ export const AddEditAdminModal = ({ isOpen, onClose, data, modalFor }) => {
     validationSchema: yup.object({
       username: yup.string().required("Please enter your username"),
       email: yup.string().required("Please enter your email"),
-      role: modalFor === "Create" && yup.string().required("Please select a role") ,
+      role: modalFor === "Create" && yup.string().required("Please select a role"),
       password: modalFor === "Create" ? yup.string().required("Please enter your password") : yup.string(),
       confirmPassword:
         modalFor === "Create"
@@ -46,7 +46,7 @@ export const AddEditAdminModal = ({ isOpen, onClose, data, modalFor }) => {
             email: values.email,
             password: values.password,
             isWarehouseAdmin: values.role,
-            token: token
+            token: token,
           });
           if (response.ok) {
             toast.success("Update admin success");
@@ -142,19 +142,23 @@ export const AddEditAdminModal = ({ isOpen, onClose, data, modalFor }) => {
                 </div>
               )}
 
-              <div className="flex gap-2">
-                <label htmlFor="role" className="min-w-[150px] md:min-w-[170px]">
-                  Role {modalFor === "Edit" && " (Optional)"}
-                </label>
-                <div className="w-full">
-                  <select name="role" id="role" {...formik.getFieldProps("role")} className="border border-black rounded-md p-2 w-full cursor-pointer">
-                    <option value={modalFor === "Edit" ? data?.isWarehouseAdmin : ""} disabled defaultChecked>Select Role</option>
-                    <option value={1}>Warehouse Admin</option>
-                    <option value={0}>Super Admin</option>
-                  </select>
-                  {formik.touched.role && formik.errors.role && <p className="text-red-500">{formik.errors.role}</p>}
+              {data?.Warehouse === null && (
+                <div className="flex gap-2">
+                  <label htmlFor="role" className="min-w-[150px] md:min-w-[170px]">
+                    Role {modalFor === "Edit" && " (Optional)"}
+                  </label>
+                  <div className="w-full">
+                    <select name="role" id="role" {...formik.getFieldProps("role")} className="border border-black rounded-md p-2 w-full cursor-pointer">
+                      <option value={modalFor === "Edit" ? data?.isWarehouseAdmin : ""} disabled defaultChecked>
+                        Select Role
+                      </option>
+                      <option value={1}>Warehouse Admin</option>
+                      <option value={0}>Super Admin</option>
+                    </select>
+                    {formik.touched.role && formik.errors.role && <p className="text-red-500">{formik.errors.role}</p>}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </ModalBody>
           <ModalFooter>
