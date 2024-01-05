@@ -41,7 +41,7 @@ function MenCollections() {
         </div>
         <div className="flex justify-between items-end px-10 py-36 parallax menbottom">
           <div className="w-[50vw] ">
-            <Button className=" w-56 border border-gray-600" bg="white" color="light" size="md" as={Link} to={"/products/men/bottoms"}>
+            <Button className=" w-56 border border-gray-600" bg="white" color="light" size="md" as={Link} to={"/products/men/bottom"}>
               <span className="font-sans font-medium text-md">Explore Men's Bottoms</span>
             </Button>
           </div>
