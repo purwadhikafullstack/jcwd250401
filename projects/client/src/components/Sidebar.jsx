@@ -1,16 +1,11 @@
 import React, { useState } from "react";
 import { FiChevronUp, FiChevronDown } from "react-icons/fi";
-import { PiChartLine, PiHouse, PiPackage, PiReceipt, PiUserRectangle, PiUsersThree, PiWarehouse } from "react-icons/pi";
+import { PiChartLine, PiPackage, PiReceipt, PiUserRectangle, PiUsersThree, PiWarehouse } from "react-icons/pi";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import rains from "../assets/rains.png";
 
 const menuList = [
-  {
-    name: "Dashboard",
-    icon: <PiHouse size={24} />,
-    link: "/dashboard",
-  },
   {
     name: "Products",
     icon: <PiPackage size={24} />,

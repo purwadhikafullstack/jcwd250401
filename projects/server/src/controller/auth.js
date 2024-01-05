@@ -526,7 +526,7 @@ exports.handleSendVerifyEmail = async (req, res) => {
 };
 
 exports.handleAdminRegister = async (req, res) => {
-  const { email, password, isWarehouseAdmin = false } = req.body;
+  const { username, email, password, isWarehouseAdmin = false } = req.body;
 
   try {
     existingAdmin = await Admin.findOne({
@@ -542,16 +542,16 @@ exports.handleAdminRegister = async (req, res) => {
     }
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
-    const username = email.split("@")[0];
+    const usernameAdmin = username ? username : email.split("@")[0];
     const admin = await Admin.create({
-      username,
+      username: usernameAdmin,
       email,
       password: hashPassword,
       isWarehouseAdmin,
     });
 
     const response = {
-      username,
+      username: admin.username,
       email: admin.email,
       isWarehouseAdmin: admin.isWarehouseAdmin,
     };

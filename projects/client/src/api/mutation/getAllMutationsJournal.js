@@ -1,6 +1,6 @@
 import api from "../../api";
 
-const getAllMutationsJournal = async ({ page = 1, size, sort, order, search, warehouseId, destinationWarehouseId, month, status }) => {
+const getAllMutationsJournal = async ({ page = 1, size, sort, order, search, warehouseId, destinationWarehouseId, month, year, status }) => {
   try {
     const url =
       `/api/mutation/journal?page=${page}` +
@@ -11,6 +11,7 @@ const getAllMutationsJournal = async ({ page = 1, size, sort, order, search, war
       (warehouseId ? `&warehouseId=${warehouseId}` : "") +
       (destinationWarehouseId ? `&destinationWarehouseId=${destinationWarehouseId}` : "") +
       (month ? `&month=${month}` : "") +
+      (year ? `&year=${year}` : "") +
       (status ? `&status=${status}` : "");
 
     const response = await api.admin.get(url);

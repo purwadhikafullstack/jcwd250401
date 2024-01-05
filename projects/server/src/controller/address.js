@@ -15,7 +15,7 @@ exports.handleGetProvince = async (req, res) => {
     if (status.code === 400) {
       return res.status(400).json({
         ok: false,
-        msg: "Bad request",
+        message: "Bad request",
         detail: status.description,
       });
     }
@@ -47,7 +47,7 @@ exports.handleGetCityByProvinceId = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       ok: false,
-      msg: "Internal server error",
+      message: "Internal server error",
       detail: String(error),
     });
   }
@@ -65,7 +65,7 @@ exports.handleGetCity = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       ok: false,
-      msg: "Internal server error",
+      message: "Internal server error",
       detail: error,
     });
   }
@@ -73,14 +73,13 @@ exports.handleGetCity = async (req, res) => {
 
 exports.handleAddNewAddress = async (req, res) => {
   const { userId } = req.params;
-  let { firstName, lastName, street, province, provinceId, city, cityId, district, subDistrict, phoneNumber, setAsDefault } = req.body;
+  let { firstName, lastName, street, province, provinceId, city, cityId, district, subDistrict, phoneNumber, setAsDefault = false } = req.body;
 
   firstName = firstName;
   lastName = lastName;
   street = street.toString();
   province = province;
   city = city;
-  setAsDefault = false;
 
   try {
     const user = await User.findOne({ where: { id: userId } });
@@ -130,7 +129,7 @@ exports.handleAddNewAddress = async (req, res) => {
         phoneNumber,
       });
 
-      if (setAsDefault) {
+      if (setAsDefault) { // to make sure only one address is set as default
         await Address.update({ setAsDefault: false }, { where: { userId, id: { [Op.ne]: saveAddAddress.id } } });
       }
 

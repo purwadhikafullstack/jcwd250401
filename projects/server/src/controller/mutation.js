@@ -38,7 +38,7 @@ exports.getTotalStockByWarehouseProductId = async (req, res) => {
 
 exports.getAllMutations = async (req, res) => {
   try {
-    const { page = 1, size = 5, sort = "id", order = "DESC", search, warehouseId = null, month = null } = req.query;
+    const { page = 1, size = 5, sort = "id", order = "DESC", search, warehouseId = null, month = null, year = null } = req.query;
     const limit = parseInt(size);
     const offset = (parseInt(page) - 1) * limit;
 
@@ -53,14 +53,14 @@ exports.getAllMutations = async (req, res) => {
       whereCondition.warehouseId = warehouseId;
     }
 
-    if (month) {
+    if (month || year) {
       whereCondition.createdAt = {
         [Op.and]: [
           // Optional: Combine multiple conditions
-          // Filter by the current month
-          literal(`MONTH(createdAt) = ${parseInt(month)}`), // Required: Filter by the current month
-          literal(`YEAR(createdAt) = YEAR(NOW())`), // Optional: Filter by the current year
-        ],
+          // Filter by the current month and year
+          month && literal(`MONTH(createdAt) = ${parseInt(month)}`), // Optional: Filter by the current month
+          year && literal(`YEAR(createdAt) = ${parseInt(year)}`), // Optional: Filter by the current year
+        ].filter(Boolean), // Remove null and undefined values
       };
     }
     const mutations = await Mutation.findAll({
@@ -112,7 +112,7 @@ exports.getAllMutations = async (req, res) => {
 
 exports.summaryTotalStock = async (req, res) => {
   try {
-    const { warehouseId = null, month = null } = req.query;
+    const { warehouseId = null, month = null, year = null } = req.query;
 
     // Get the latest successful mutations for each product
     const summary = await Mutation.findAll({
@@ -125,7 +125,7 @@ exports.summaryTotalStock = async (req, res) => {
           literal(
             `(SELECT stock FROM Mutations AS sub WHERE sub.productId = Mutation.productId AND sub.warehouseId = Mutation.warehouseId AND sub.status = 'success' AND ${
               month ? "MONTH(sub.createdAt) = " + parseInt(month) : "MONTH(NOW())"
-            } ORDER BY sub.createdAt DESC LIMIT 1)`
+            } AND ${year ? "YEAR(sub.createdAt) = " + parseInt(year) : "YEAR(NOW())"} ORDER BY sub.createdAt DESC LIMIT 1)`
           ),
           "endingStock",
         ],
@@ -137,6 +137,9 @@ exports.summaryTotalStock = async (req, res) => {
         status: "success",
         ...(month && {
           createdAt: literal(`MONTH(createdAt) = ${parseInt(month)}`),
+        }),
+        ...(year && {
+          createdAt: literal(`YEAR(createdAt) = ${parseInt(year)}`),
         }),
       },
       group: ["productId", "warehouseId"],
@@ -159,11 +162,12 @@ exports.summaryTotalStock = async (req, res) => {
           -- Retrieve the latest stock for each product and warehouse
           COALESCE((SELECT stock FROM Mutations AS sub WHERE sub.productId = m.productId AND sub.warehouseId = m.warehouseId AND sub.status = 'success' AND ${
             month ? "MONTH(sub.createdAt) = " + parseInt(month) : "MONTH(NOW())"
-          } ORDER BY sub.createdAt DESC LIMIT 1), 0) AS endingStock
+          } AND ${year ? "YEAR(sub.createdAt) = " + parseInt(year) : "YEAR(NOW())"} ORDER BY sub.createdAt DESC LIMIT 1), 0) AS endingStock
         FROM Mutations AS m
         -- Filter by warehouseId or month if provided
         WHERE m.status = 'success' 
         AND ${month ? `MONTH(m.createdAt) = ${parseInt(month)}` : "MONTH(NOW())"} 
+        AND ${year ? `YEAR(m.createdAt) = ${parseInt(year)}` : "YEAR(NOW())"}
         ${warehouseId ? `AND m.warehouseId = ${warehouseId}` : ""}
         GROUP BY m.productId, m.warehouseId
       ) AS subquery`,
@@ -189,7 +193,7 @@ exports.summaryTotalStock = async (req, res) => {
 
 exports.getAllMutationsJournal = async (req, res) => {
   try {
-    const { page = 1, size = 5, sort = "id", order = "DESC", search, warehouseId = null, destinationWarehouseId = null, month = null, status } = req.query;
+    const { page = 1, size = 5, sort = "id", order = "DESC", search, warehouseId = null, destinationWarehouseId = null, month = null, year = null, status } = req.query;
     const limit = parseInt(size);
     const offset = (parseInt(page) - 1) * limit;
 
@@ -208,9 +212,14 @@ exports.getAllMutationsJournal = async (req, res) => {
       whereCondition.destinationWarehouseId = destinationWarehouseId;
     }
 
-    if (month) {
+    if (month || year) {
       whereCondition.createdAt = {
-        [Op.and]: [literal(`MONTH(createdAt) = ${parseInt(month)}`), literal(`YEAR(createdAt) = YEAR(NOW())`)],
+        [Op.and]: [
+          // Optional: Combine multiple conditions
+          // Filter by the current month and year
+          month && literal(`MONTH(createdAt) = ${parseInt(month)}`), // Optional: Filter by the current month
+          year && literal(`YEAR(createdAt) = ${parseInt(year)}`), // Optional: Filter by the current year
+        ].filter(Boolean), // Remove null and undefined values
       };
     }
 
@@ -260,6 +269,7 @@ exports.getAllMutationsJournal = async (req, res) => {
 
     // add source and destination warehouse names to each mutation
     const mutationsJournalWithNames = await Promise.all(
+      // Promise.all is used to wait for all promises to resolve
       mutationsJournal.map(async (mutation) => {
         const sourceWarehouse = await Warehouse.findOne({
           where: {
@@ -662,6 +672,7 @@ exports.processStockMutationByWarehouse = async (req, res) => {
 
           // update the latest status mutation journal
           updatedMutationJournal.status = "success";
+          updatedMutationJournal.stock = mutation.stock;
           await updatedMutationJournal.save({ transaction: t });
 
           // create a new mutation journal at destination warehouse

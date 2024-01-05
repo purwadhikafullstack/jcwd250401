@@ -27,6 +27,18 @@ export const Stock = () => {
   const [warehouseId, setWarehouseId] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedYear, setSelectedYear] = useState(null);
+
+  const generateYears = (startYear, endYear) => {
+    const years = [];
+    for (let i = startYear; i >= endYear; i--) {
+      years.push(i.toString());
+    }
+    return years;
+  };
+
+  const currentYear = new Date().getFullYear();
+  const yearsArray = generateYears(currentYear, currentYear - 4);
 
   const months = [
     {
@@ -104,6 +116,7 @@ export const Stock = () => {
         search: debouncedSearchInput,
         warehouseId: warehouseIdValue,
         month: selectedMonthValue,
+        year: selectedYear,
       });
 
       setMutations(response.detail);
@@ -122,7 +135,7 @@ export const Stock = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [page, sort, order, warehouseId, selectedMonth, debouncedSearchInput]);
+  }, [page, sort, order, warehouseId, selectedMonth, selectedYear, debouncedSearchInput]);
 
   const fetchWarehouse = useCallback(async () => {
     try {
@@ -232,6 +245,18 @@ export const Stock = () => {
                 </option>
               ))}
             </select>
+
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#40403F] focus:border-[#40403F] block w-full p-2.5 cursor-pointer">
+              <option value={""}>Year</option>
+              {yearsArray.map((year, index) => (
+                <option key={index} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -283,7 +308,7 @@ export const Stock = () => {
         ) : mutations.length > 0 ? (
           <>
             <div className="flex flex-col px-4 md:px-8 min-h-[50vh] md:h-[67vh] overflow-y-auto scrollbar-hide w-full">
-              <SummaryStock selectedMonth={selectedMonth} warehouseId={warehouseId} />
+              <SummaryStock selectedMonth={selectedMonth} warehouseId={warehouseId} selectedYear={selectedYear} />
               <Box display={"flex"} justifyContent={"space-between"} alignItems={"center"} py={3} px={5} bgColor={"white"} borderTopRadius={"md"}>
                 <Heading size="md">Stock History</Heading>
 

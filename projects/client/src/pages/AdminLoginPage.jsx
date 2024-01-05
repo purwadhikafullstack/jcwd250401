@@ -52,7 +52,7 @@ function AdminLoginPage() {
             onAutoClose: (t) => {
               setIsSubmitting(false);
               dispatch(loginAdmin(response));
-              navigate("/dashboard");
+              navigate("/dashboard/products");
             },
           });
         }, 600);

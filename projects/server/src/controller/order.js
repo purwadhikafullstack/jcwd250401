@@ -1022,7 +1022,7 @@ exports.confirmPaymentProofUser = async (req, res) => {
           let currentDestinationWarehouseStock = 0;
 
           if (nearestWarehouse.Mutations && nearestWarehouse.Mutations.length > 0) {
-            currentDestinationWarehouseStock = nearestWarehouse.Mutations[0].stock || 0;
+            currentDestinationWarehouseStock = nearestWarehouse.Mutations[0].stock ? nearestWarehouse.Mutations[0].stock : 0;
           }
 
           const newMutationForDestinationWarehouse = await Mutation.create(
@@ -1060,12 +1060,13 @@ exports.confirmPaymentProofUser = async (req, res) => {
             { transaction: t }
           );
 
-          // Create mutation for update or add stock at source warehouse
+          // Create mutation and journal for update or add stock at source warehouse
           const newStockAtSourceWarehouse = await updateSourceWarehouseStock(product.productId, sourceWarehouseId, nearestWarehouse.id, requiredStock, sourceWarehouseAdminId, t);
 
+          // delay for 1.2 second in order to avoid race condition
           await new Promise((resolve) => setTimeout(resolve, 1200));
 
-          // create mutation for subtract stock at source warehouse
+          // create mutation again for subtract stock at source warehouse
           const newMutationForSourceWarehouse = await Mutation.create(
             {
               productId: product.productId,
