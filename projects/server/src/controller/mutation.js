@@ -441,8 +441,8 @@ exports.createManualStockMutation = async (req, res) => {
         status: "pending",
         isManual: true,
         description: `Manual request stock, ${sourceWarehouseName.name} -> ${destinationWarehouseName.name}`,
-        createdAt: date,
-        updatedAt: date,
+        createdAt: sequelize.literal(`CONCAT('${date}', ' ', CURRENT_TIME())`),
+        updatedAt: sequelize.literal(`CONCAT('${date}', ' ', CURRENT_TIME()) ON UPDATE CURRENT_TIMESTAMP`),        
       },
       { transaction: t }
     );
