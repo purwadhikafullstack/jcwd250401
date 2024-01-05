@@ -551,7 +551,7 @@ exports.handleAdminRegister = async (req, res) => {
     });
 
     const response = {
-      username,
+      username: admin.username,
       email: admin.email,
       isWarehouseAdmin: admin.isWarehouseAdmin,
     };
