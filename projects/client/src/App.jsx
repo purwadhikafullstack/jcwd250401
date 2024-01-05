@@ -30,7 +30,6 @@ import SalesReport from "./pages/SalesReport";
 const adminPaths = [
   "/adminlogin",
   "/reset-password-admin",
-  "/dashboard",
   "/dashboard/products",
   "/dashboard/customers",
   "/dashboard/staff",
