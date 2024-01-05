@@ -160,16 +160,12 @@ export const RequestStockModal = ({ isOpen, onClose }) => {
                   <CalendarIcon color="gray.300" />
                 </InputLeftElement>
                 <Input
-                  type="datetime-local"
+                  type="date"
                   value={selectedDate}
                   onChange={(e) => {
-                    const dateTimeValue = e.target.value;
-                    const formattedDateTime = dateTimeValue.replace(/:00$/, "");
-                    console.log(formattedDateTime);
-                    setSelectedDate(formattedDateTime);
+                    setSelectedDate(e.target.value);
                   }}
                   min={new Date().toISOString().split("T")[0]}
-                  step="60" 
                 />
               </InputGroup>
             </Box>
