@@ -87,8 +87,6 @@ function Navigationadmin() {
     <div className="flex justify-between items-center px-4 py-4 h-20 w-full">
       <div className="text-2xl font-bold font-sagoe ml-4">{formattedCurrentPage}</div>
       <div className="hidden gap-4 lg:flex items-center mr-6">
-        <PiMagnifyingGlass className="text-2xl cursor-pointer" />
-        <PiBell className="text-2xl cursor-pointer" />
         {userData?.map((data) => (
           <div key={data.id} className="flex items-center gap-4">
             <img src={data.photoProfile ? `http://localhost:8000/public/${data.photoProfile}` : "https://via.placeholder.com/150"} alt="Profile" className="w-6 h-6 rounded-full cursor-pointer" onClick={handleIconClick} />
