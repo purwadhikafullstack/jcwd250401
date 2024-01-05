@@ -112,7 +112,7 @@ exports.getAllMutations = async (req, res) => {
 
 exports.summaryTotalStock = async (req, res) => {
   try {
-    const { warehouseId = null, month = null } = req.query;
+    const { warehouseId = null, month = null, year = null } = req.query;
 
     // Get the latest successful mutations for each product
     const summary = await Mutation.findAll({
@@ -125,7 +125,7 @@ exports.summaryTotalStock = async (req, res) => {
           literal(
             `(SELECT stock FROM Mutations AS sub WHERE sub.productId = Mutation.productId AND sub.warehouseId = Mutation.warehouseId AND sub.status = 'success' AND ${
               month ? "MONTH(sub.createdAt) = " + parseInt(month) : "MONTH(NOW())"
-            } ORDER BY sub.createdAt DESC LIMIT 1)`
+            } AND ${year ? "YEAR(sub.createdAt) = " + parseInt(year) : "YEAR(NOW())"} ORDER BY sub.createdAt DESC LIMIT 1)`
           ),
           "endingStock",
         ],
@@ -137,6 +137,9 @@ exports.summaryTotalStock = async (req, res) => {
         status: "success",
         ...(month && {
           createdAt: literal(`MONTH(createdAt) = ${parseInt(month)}`),
+        }),
+        ...(year && {
+          createdAt: literal(`YEAR(createdAt) = ${parseInt(year)}`),
         }),
       },
       group: ["productId", "warehouseId"],
@@ -159,11 +162,12 @@ exports.summaryTotalStock = async (req, res) => {
           -- Retrieve the latest stock for each product and warehouse
           COALESCE((SELECT stock FROM Mutations AS sub WHERE sub.productId = m.productId AND sub.warehouseId = m.warehouseId AND sub.status = 'success' AND ${
             month ? "MONTH(sub.createdAt) = " + parseInt(month) : "MONTH(NOW())"
-          } ORDER BY sub.createdAt DESC LIMIT 1), 0) AS endingStock
+          } AND ${year ? "YEAR(sub.createdAt) = " + parseInt(year) : "YEAR(NOW())"} ORDER BY sub.createdAt DESC LIMIT 1), 0) AS endingStock
         FROM Mutations AS m
         -- Filter by warehouseId or month if provided
         WHERE m.status = 'success' 
         AND ${month ? `MONTH(m.createdAt) = ${parseInt(month)}` : "MONTH(NOW())"} 
+        AND ${year ? `YEAR(m.createdAt) = ${parseInt(year)}` : "YEAR(NOW())"}
         ${warehouseId ? `AND m.warehouseId = ${warehouseId}` : ""}
         GROUP BY m.productId, m.warehouseId
       ) AS subquery`,

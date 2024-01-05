@@ -308,7 +308,7 @@ export const Stock = () => {
         ) : mutations.length > 0 ? (
           <>
             <div className="flex flex-col px-4 md:px-8 min-h-[50vh] md:h-[67vh] overflow-y-auto scrollbar-hide w-full">
-              <SummaryStock selectedMonth={selectedMonth} warehouseId={warehouseId} />
+              <SummaryStock selectedMonth={selectedMonth} warehouseId={warehouseId} selectedYear={selectedYear} />
               <Box display={"flex"} justifyContent={"space-between"} alignItems={"center"} py={3} px={5} bgColor={"white"} borderTopRadius={"md"}>
                 <Heading size="md">Stock History</Heading>
 
