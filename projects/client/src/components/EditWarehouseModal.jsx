@@ -24,6 +24,53 @@ import api from '../api';
 import { useRef } from 'react';
 import { set } from 'lodash';
 
+const TimePicker = ({ value, onChange }) => {
+  const hours = Array.from({ length: 12 }, (_, i) => i + 1);
+  const minutes = Array.from({ length: 60 }, (_, i) => (i < 10 ? `0${i}` : i));
+  const periods = ['AM', 'PM'];
+
+  // Convert 12-hour format to 24-hour format for onChange
+  const to24HourFormat = (hour, minute, period) => {
+    hour = parseInt(hour, 10);
+    if (period === 'PM' && hour !== 12) {
+      hour = hour + 12;
+    } else if (period === 'AM' && hour === 12) {
+      hour = 0;
+    }
+    return `${hour < 10 ? `0${hour}` : hour}:${minute}`;
+  };
+
+  // Extract hour, minute, and period from the 24-hour format value
+  const [hour24, minute] = value.split(':');
+  const period = parseInt(hour24, 10) >= 12 ? 'PM' : 'AM';
+  const hour12 = parseInt(hour24, 10) % 12 === 0 ? 12 : parseInt(hour24, 10) % 12;
+
+  const handleTimeChange = (hour, minute, period) => {
+    const time24HourFormat = to24HourFormat(hour, minute, period);
+    onChange(time24HourFormat);
+  };
+
+  return (
+    <HStack>
+      <Select value={hour12} onChange={(e) => handleTimeChange(e.target.value, minute, period)}>
+        {hours.map((hour) => (
+          <option key={hour} value={hour}>{hour}</option>
+        ))}
+      </Select>
+      <Select value={minute} onChange={(e) => handleTimeChange(hour12, e.target.value, period)}>
+        {minutes.map((minute) => (
+          <option key={minute} value={minute}>{minute}</option>
+        ))}
+      </Select>
+      <Select value={period} onChange={(e) => handleTimeChange(hour12, minute, e.target.value)}>
+        {periods.map((period) => (
+          <option key={period} value={period}>{period}</option>
+        ))}
+      </Select>
+    </HStack>
+  );
+};
+
 const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
   const [name, setName] = useState('');
   const [owner, setOwner] = useState('');
@@ -218,6 +265,11 @@ const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
     resetState();
     onClose();
   };
+  
+  useEffect(() => {
+    if (!OpenHour) setOpenHour('00:00'); // Set default open hour in 24-hour format
+    if (!CloseHour) setCloseHour('12:00'); // Set default close hour in 24-hour format
+  }, []);
 
   return (
     <Modal isOpen={isOpen} onClose={handleModalClose} isCentered size={{ base: 'xl', md: 'xl' }}>
@@ -257,12 +309,13 @@ const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
             <VStack spacing="2" width="full" alignItems="flex-start">
               <FormLabel fontSize="1rem">Warehouse Operating Hour</FormLabel>
               <HStack spacing="2" width="full">
-              <FormControl id="openHour" flex="1">
-                <Input placeholder="Open Hour" onChange={(e) => setOpenHour(e.target.value)} value={OpenHour} />
-              </FormControl>
-              <FormControl id="closeHour" flex="1">
-                <Input placeholder="Close Hour" onChange={(e) => setCloseHour(e.target.value)} value={CloseHour} />
-              </FormControl>
+                <FormControl id="openHour" flex="1">
+                  <TimePicker value={OpenHour} onChange={setOpenHour} />
+                </FormControl>
+                <p> - </p>
+                <FormControl id="closeHour" flex="1">
+                  <TimePicker value={CloseHour} onChange={setCloseHour} />
+                </FormControl>
               </HStack>
             </VStack>
             <VStack spacing="2" width="full" alignItems="flex-start">
