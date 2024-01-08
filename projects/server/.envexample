@@ -1,0 +1,12 @@
+DB_USER=
+DB_PASS=
+DB_BASE=
+DB_HOST=
+JWT_SECRET_KEY=
+RAJAONGKIR_APIKEY=
+OPENCAGE_APIKEY=
+
+# SMTP
+
+SMTP_USER=rainscustomerservice@gmail.com
+SMTP_PASS="pzbi uagl ncrs kcko"
