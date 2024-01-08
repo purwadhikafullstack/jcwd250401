@@ -31,17 +31,6 @@ function OrderCancelled({ orders, fetchOrders }) {
     fetchOrders(page);
   };
 
-  const handleConfirmOrder = async (orderId, productId) => {
-    try {
-      const response = await confirmOrder({ orderId, productId });
-      // Update state and UI based on response
-      fetchOrders();
-    } catch (error) {
-      // Handle error
-      console.error("Error confirming order:", error);
-    }
-  };
-
   const handleCancelOrder = async (orderId, productId) => {
     try { 
       const response = await cancelOrder({ orderId, productId });
@@ -50,17 +39,6 @@ function OrderCancelled({ orders, fetchOrders }) {
     } catch (error) {
       // Handle error
       console.error("Error cancelling order:", error);
-    }
-  };
-
-  const handleRejectPayment = async (orderId) => {
-    try {
-      const response = await rejectPayment({ orderId });
-      // Update state and UI based on response
-      fetchOrders();
-    } catch (error) {
-      // Handle error
-      console.error("Error rejecting payment:", error);
     }
   };
 
@@ -103,7 +81,7 @@ function OrderCancelled({ orders, fetchOrders }) {
   }, [currentPage]);
 
   return (
-    <div className="container mx-auto px-4">
+    <div className="container mx-auto">
       {currentOrders.filter(order => order.status === "cancelled").length === 0 ? (
         <div className="flex justify-center items-center h-96">
           <p className="text-2xl">You don't have any orders yet.</p>
@@ -112,7 +90,7 @@ function OrderCancelled({ orders, fetchOrders }) {
         <>
           {currentOrders.filter(order => order.status === "cancelled")
           .map(({ orderId, invoice, paymentProofImage, totalPrice, totalPriceBeforeCost, status, createdAt, totalQuantity, Products, Shipment, User, Address, Warehouse, Pagination }, index) => (
-            <div key={index} className="p-4 bg-white rounded-lg shadow-lg w-[1000px] lg:w-[100%] mb-5 lg:mb-5">
+            <div key={index} className="p-4 bg-white rounded-lg shadow-lg w-[1000px] lg:w-[100%] mb-5 lg:mb-5 overflow-auto">
               <div className="flex justify-between">
                 <div className="flex items-center gap-2">
                   {status === "cancelled" && <span className="bg-[#FF7A7A66] text-[#FF0000]  px-6 py-2 rounded-md font-bold">Cancelled</span>}
@@ -126,7 +104,7 @@ function OrderCancelled({ orders, fetchOrders }) {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handlePaymentModalOpen(paymentProofImage)}>
+                  <Button color="light" size="small" className="p-2 w-52 shadow-sm" onClick={() => handlePaymentModalOpen(paymentProofImage)}>
                     Payment Proof
                   </Button>
                     <Menu>
@@ -200,22 +178,6 @@ function OrderCancelled({ orders, fetchOrders }) {
                 <p className="text-lg font-bold">TOTAL</p>
                 <p className="text-lg font-bold ml-auto">{formatToRupiah(totalPrice)}</p>
               </div>
-              {status === "waiting-for-confirmation" && (
-                <>
-                  <hr className="my-2" />
-                  <div className="flex justify-end gap-2">
-                    {/* Action buttons here, if needed */}
-                    <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
-                      <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleRejectPayment(orderId)}>
-                        Reject Order
-                      </Button>
-                      <Button color="dark" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleConfirmOrder(orderId, Products.Product.id)}>
-                        Accept Order
-                      </Button>
-                    </div>
-                  </div>
-                </>
-              )}
             </div>
           ))}
         </>

@@ -18,6 +18,8 @@ import OrderShipped from "../components/OrderShipped";
 import OrderRecentList from "../components/OrderRecentList";
 import OrderOnDelivery from "../components/OrderOnDelivery";
 import OrderCancelled from "../components/OrderCancelled";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 
 function OrderCust() {
   const navList = ["All Orders", "New Orders", "Ready to Ship", "On Delivery", "Delivered", "Cancelled"];
@@ -43,6 +45,7 @@ function OrderCust() {
   const [selectedMonth, setSelectedMonth] = useState('');
   const [orders, setOrders] = useState([]);
   const [pillWidth, setPillWidth] = useState(0); // State to store the width of the pill
+  const [isLoading, setIsLoading] = useState(true);
   const handleSelectComponent = (nav) => setSelectedComponent(nav);
   const navRefs = useRef([]); // Refs to store references to each navigation item
   const navigate = useNavigate();
@@ -68,6 +71,9 @@ function OrderCust() {
           setOrders([]); // Set orders to an empty array for 404 errors
         }
         // Handle other errors as needed
+      })
+      .finally(() => {
+        setIsLoading(false);  
       });
   };  
 
@@ -136,6 +142,15 @@ function OrderCust() {
     }
   }, [selectedComponent]);
 
+  useEffect(() => {
+    const loadingTimeout = setTimeout(() => {
+      setIsLoading(false);
+    }
+    , 3000);
+
+    return () => clearTimeout(loadingTimeout);
+  }, []);
+
   return (
     <div className="flex flex-row justify-between h-screen">
       <Sidebar />
@@ -144,8 +159,8 @@ function OrderCust() {
           <Navigationadmin />
         </div>
         <div className="flex flex-col mt-16 py-8 px-4 md:p-8">
-          <div className="flex flex-row justify-end items-center gap-4 w-[80vw] md:w-[100%] ">
-            <select value={selectedWarehouseId} onChange={handleWarehouseChange} className="bg-white text-[#40403F] py-2 px-10 rounded-md cursor-pointer focus:ring-0 focus:border-none">
+          <div className="flex lg:flex-row lg:justify-end flex-col mt-1 lg:space-x-4 space-y-2 lg:space-y-0">
+            <select value={selectedWarehouseId} onChange={handleWarehouseChange} className="rounded-md shadow-md border-none lg:w-[220px] focus:border-none">
               {isWarehouseAdmin ? (
                 <>
                   <option value={selectedWarehouseId} defaultChecked>
@@ -166,7 +181,7 @@ function OrderCust() {
               )}
             </select>
 
-            <select value={selectedMonth} onChange={handleMonthChange} className="bg-white text-[#40403F] py-2 px-12 rounded-md cursor-pointer focus:ring-0 focus:border-none">
+            <select value={selectedMonth} onChange={handleMonthChange} className="rounded-md shadow-md border-none lg:w-[220px] focus:border-none">
               <option value={""} defaultChecked>
                 All Months
               </option>
@@ -202,9 +217,23 @@ function OrderCust() {
               </select>
             </div>
           </div>
-          <div className="flex items-center mt-4">
+          <div className="flex flex-col mt-4">
+            {isLoading && (
+              Array.from({ length: 5 }).map((_, index) => (
+                <div key={index} className="p-4 bg-white rounded-lg shadow-lg w-[100%] mb-5">
+                  <Skeleton height={100} width={100} />
+                </div>
+              ))
+            )}
+            {!isLoading && orders.length === 0 && (
+              <div className="flex justify-center items-center h-96">
+                <p className="text-2xl">You don't have any orders yet.</p>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center overflow-auto">
             {selectedComponent === "All Orders" && <OrderList orders={orders} fetchOrders={fetchOrders}/>}
-            {selectedComponent === "New Orders" && <OrderRecentList orders={orders} fetchOrders={fetchOrders}/> }
+            {selectedComponent === "New Orders" && <OrderRecentList orders={orders} fetchOrders={fetchOrders}/>}
             {selectedComponent === "Ready to Ship" && <OrderReadyToShip orders={orders} fetchOrders={fetchOrders}/>}
             {selectedComponent === "On Delivery" && <OrderOnDelivery orders={orders} fetchOrders={fetchOrders}/>}
             {selectedComponent === "Delivered" && <OrderShipped orders={orders} fetchOrders={fetchOrders}/>}

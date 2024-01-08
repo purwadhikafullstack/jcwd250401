@@ -67,7 +67,7 @@ function OrderOnDelivery({ orders, fetchOrders }) {
   }, [currentPage]);
 
   return (
-    <div className="container mx-auto px-4">
+    <div className="container mx-auto">
       {currentOrders.filter(order => order.status === "on-delivery").length === 0 ? (
         <div className="flex justify-center items-center h-96">
           <p className="text-2xl">You don't have any orders yet.</p>
@@ -76,7 +76,7 @@ function OrderOnDelivery({ orders, fetchOrders }) {
         <>
           {currentOrders.filter(order => order.status === "on-delivery")
           .map(({ orderId, invoice, paymentProofImage, totalPrice, totalPriceBeforeCost, status, createdAt, totalQuantity, Products, Shipment, User, Address, Warehouse, Pagination }, index) => (
-            <div key={index} className="p-4 bg-white rounded-lg shadow-lg w-[1000px] lg:w-[100%] mb-5 lg:mb-5">
+            <div key={index} className="p-4 bg-white rounded-lg shadow-lg w-[1000px] lg:w-[100%] mb-5 lg:mb-5 overflow-auto">
               <div className="flex justify-between">
                 <div className="flex items-center gap-2">
                   {status === "cancelled" && <span className="bg-[#FF7A7A66] text-[#FF0000]  px-6 py-2 rounded-md font-bold">Cancelled</span>}
@@ -90,7 +90,7 @@ function OrderOnDelivery({ orders, fetchOrders }) {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handlePaymentModalOpen(paymentProofImage)}>
+                  <Button color="light" size="small" className="p-2 w-52 shadow-sm" onClick={() => handlePaymentModalOpen(paymentProofImage)}>
                     Payment Proof
                   </Button>
                     <Menu>
@@ -175,7 +175,7 @@ function OrderOnDelivery({ orders, fetchOrders }) {
           </Button>
         </div>
         <p className="mr-2">
-          Page {currentPage} of {totalPages}
+          {currentPage}
         </p>
         <div className="flex items-center gap-2">
           <Button color="dark" onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} className="mr-2">
