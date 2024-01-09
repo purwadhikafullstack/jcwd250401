@@ -359,6 +359,42 @@ exports.getWarehouseById = async (req, res) => {
   try {
     const warehouse = await Warehouse.findOne({
       where: {
+        adminId: id,
+      },
+      include: {
+        model: WarehouseAddress,
+        attributes: ["street", "city", "cityId", "province", "provinceId", "longitude", "latitude"],
+      },
+    });
+
+    if (!warehouse) {
+      return res.status(404).json({
+        ok: false,
+        message: "Warehouse not found",
+      });
+    }
+
+    return res.status(200).json({
+      ok: true,
+      message: "Get warehouse successfully",
+      detail: warehouse,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      ok: false,
+      message: "Internal server error",
+      detail: String(error),
+    });
+  }
+};
+
+exports.getWarehouseByWarehouseId = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const warehouse = await Warehouse.findOne({
+      where: {
         id: id,
       },
       include: {
