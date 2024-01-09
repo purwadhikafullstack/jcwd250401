@@ -20,7 +20,7 @@ export const AddEditAdminModal = ({ isOpen, onClose, data, modalFor }) => {
     initialValues: {
       username: modalFor === "Create" ? "" : data?.username,
       email: modalFor === "Create" ? "" : data?.email,
-      role: modalFor === "Create" ? "" : data?.isWarehouseAdmin,
+      role: modalFor === "Create" ? false : data?.isWarehouseAdmin,
       password: modalFor === "Create" ? "" : undefined,
       confirmPassword: "",
     },

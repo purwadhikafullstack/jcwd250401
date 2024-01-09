@@ -11,9 +11,7 @@ function MenuListMobile() {
   const newIn = ["New Arrivals", "Best Sellers", "Rains Essentials"];
   const men = ["Jackets", "Tops", "Bottoms"];
   const women = ["Jackets", "Tops", "Bottoms"];
-  const bags = ["Shop all bags", "New arrivals"];
   const [bagsSubCategory, setBagsSubCategory] = useState([]);
-  const accessories = ["Shop all accessories", "New arrivals"];
   const [accessoriesSubCategory, setAccessoriesSubCategory] = useState([]);
   const [jacketsSubCategory, setJacketsSubCategory] = useState([]);
   const [topsSubCategory, setTopsSubCategory] = useState([]);
@@ -258,11 +256,12 @@ function MenuListMobile() {
                         case "BAGS":
                           return (
                             <div className="flex justify-center">
-                              <div className="mr-16 font-bold font-sagoe">{bags.map(renderSubcategory)}</div>
-                              <div className="flex flex-col">
+                              <div className="mr-16 font-bold font-sagoe">
                                 <Link to={`/products/unisex/bags`}>
                                   <p className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm font-bold">All Bags</p>
                                 </Link>
+                              </div>
+                              <div className="flex flex-col">
                                 {bagsSubCategory.map((subCategory) => {
                                   const joinedSubcategory = subCategory.name.toLowerCase().replace(/\s/g, "-");
                                   return (
@@ -277,11 +276,12 @@ function MenuListMobile() {
                         case "ACCESSORIES":
                           return (
                             <div className="flex justify-center">
-                              <div className="mr-16 font-bold font-sagoe">{accessories.map(renderSubcategory)}</div>
-                              <div className="flex flex-col">
+                              <div className="mr-16 font-bold font-sagoe">
                                 <Link to={`/products/unisex/accessories`}>
                                   <p className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm font-bold">All Accessories</p>
                                 </Link>
+                              </div>
+                              <div className="flex flex-col">
                                 {accessoriesSubCategory.map((subCategory) => {
                                   const joinedSubcategory = subCategory.name.toLowerCase().replace(/\s/g, "-");
                                   return (

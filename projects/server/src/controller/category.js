@@ -130,11 +130,23 @@ exports.editCategory = async (req, res) => {
       },
     });
 
-    if (existingCategory && existingCategory.id !== id) {
-      return res.status(403).json({
-        ok: false,
-        message: "Category with the same name already exists",
+    // Check if the name is provided and different from the existing name
+    if (name && name !== category.name) {
+      const existingCategory = await Category.findOne({
+        where: {
+          name: name.charAt(0).toUpperCase() + name.slice(1),
+        },
       });
+
+      if (existingCategory && existingCategory.id !== id) {
+        return res.status(403).json({
+          ok: false,
+          message: "Category with the same name already exists",
+        });
+      }
+
+      name = name.charAt(0).toUpperCase() + name.slice(1);
+      category.name = name;
     }
 
     name = name.charAt(0).toUpperCase() + name.slice(1);

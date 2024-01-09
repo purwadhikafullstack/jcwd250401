@@ -44,9 +44,7 @@ function Navigationbar() {
   const [carts, setCarts] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
-  const bags = ["Shop all bags", "New arrivals"];
   const [bagsSubCategory, setBagsSubCategory] = useState([]);
-  const accessories = ["Shop all accessories", "New arrivals"];
   const [accessoriesSubCategory, setAccessoriesSubCategory] = useState([]);
   const [jacketsSubCategory, setJacketsSubCategory] = useState([]);
   const [topsSubCategory, setTopsSubCategory] = useState([]);
@@ -54,7 +52,6 @@ function Navigationbar() {
   const cart = useSelector((state) => state.cart.items);
   const [activeCategory, setActiveCategory] = useState(null);
   const hoverTimeoutRef = useRef(null);
-
 
   const handleMouseEnter = (category) => {
     hoverTimeoutRef.current = setTimeout(() => {
@@ -73,7 +70,6 @@ function Navigationbar() {
       const response = await api.get(`/api/category/user/sub-categories?mainCategory=Bags`);
       const categoryData = response.data.detail;
       setBagsSubCategory(categoryData);
-      
     } catch (error) {
       if (error?.response?.status === 404) {
         setBagsSubCategory([]);
@@ -86,7 +82,6 @@ function Navigationbar() {
       const response = await api.get(`/api/category/user/sub-categories?mainCategory=Jackets`);
       const categoryData = response.data.detail;
       setJacketsSubCategory(categoryData);
-      
     } catch (error) {
       if (error?.response?.status === 404) {
         setJacketsSubCategory([]);
@@ -99,7 +94,6 @@ function Navigationbar() {
       const response = await api.get(`/api/category/user/sub-categories?mainCategory=Tops`);
       const categoryData = response.data.detail;
       setTopsSubCategory(categoryData);
-      
     } catch (error) {
       if (error?.response?.status === 404) {
         setTopsSubCategory([]);
@@ -112,7 +106,6 @@ function Navigationbar() {
       const response = await api.get(`/api/category/user/sub-categories?mainCategory=Bottom`);
       const categoryData = response.data.detail;
       setBottomSubCategory(categoryData);
-      
     } catch (error) {
       if (error?.response?.status === 404) {
         setBottomSubCategory([]);
@@ -125,7 +118,6 @@ function Navigationbar() {
       const response = await api.get(`/api/category/user/sub-categories?mainCategory=Accessories`);
       const categoryData = response.data.detail;
       setAccessoriesSubCategory(categoryData);
-      
     } catch (error) {
       if (error?.response?.status === 404) {
         setAccessoriesSubCategory([]);
@@ -176,7 +168,6 @@ function Navigationbar() {
     setTotalPrice(total);
     setTotalQuantity(quantity);
   };
-
 
   const openSearchModal = () => {
     setIsSearchModalOpen(true);
@@ -394,11 +385,12 @@ function Navigationbar() {
                             case "BAGS":
                               return (
                                 <div className="flex justify-center">
-                                  <div className="mr-16 font-bold font-sagoe">{bags.map(renderSubcategory)}</div>
-                                  <div className="flex flex-col">
+                                  <div className="mr-16 font-bold font-sagoe">
                                     <Link to={`/products/unisex/bags`}>
                                       <p className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm font-bold">All Bags</p>
                                     </Link>
+                                  </div>
+                                  <div className="flex flex-col">
                                     {bagsSubCategory.map((subCategory) => {
                                       const joinedSubcategory = subCategory.name.toLowerCase().replace(/\s/g, "-");
                                       return (
@@ -413,11 +405,12 @@ function Navigationbar() {
                             case "ACCESSORIES":
                               return (
                                 <div className="flex justify-center">
-                                  <div className="mr-16 font-bold font-sagoe">{accessories.map(renderSubcategory)}</div>
-                                  <div className="flex flex-col">
+                                  <div className="mr-16 font-bold font-sagoe">
                                     <Link to={`/products/unisex/accessories`}>
                                       <p className="text-gray-700 hover:bg-gray-100 block px-4 py-2 text-sm font-bold">All Accessories</p>
                                     </Link>
+                                  </div>
+                                  <div className="flex flex-col">
                                     {accessoriesSubCategory.map((subCategory) => {
                                       const joinedSubcategory = subCategory.name.toLowerCase().replace(/\s/g, "-");
                                       return (
@@ -464,7 +457,7 @@ function Navigationbar() {
                 </p>
               </div>
             )}
-            <PiHeart className="text-xl cursor-pointer" onClick={openWishlistModal}/>
+            <PiHeart className="text-xl cursor-pointer" onClick={openWishlistModal} />
             <div style={{ position: "relative", display: "inline-block" }}>
               <PiShoppingCart className="text-xl cursor-pointer" onClick={() => navigate("/account/shopping-cart")} />
               {totalQuantity > 0 && ( // Conditionally render the circle if cartItem is greater than 0
@@ -549,7 +542,7 @@ function Navigationbar() {
                     >
                       Search
                     </span>
-                    
+
                     <p
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                       role="menuitem"
