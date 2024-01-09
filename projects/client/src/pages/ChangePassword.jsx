@@ -5,9 +5,7 @@ import * as yup from "yup";
 import { useEffect, useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
-import api from "../api";
 import { toast } from "sonner";
-import ForgotPasswordModal from "../components/ForgotPasswordModal";
 import { showLoginModal } from "../slices/authModalSlices";
 import getProfile from "../api/profile/getProfile";
 import updatePassword from "../api/profile/updatePassword";
@@ -19,14 +17,12 @@ export const ChangePassword = () => {
 
   const listsMenu = ["Profile", "Address Book", "My Order", "Change Password"];
   const [showPassword, setShowPassword] = useState(false);
-  const [openModal, setOpenModal] = useState(false);
   const [userData, setUserData] = useState(null);
   const userRegistByGoogle = userData?.registBy === "google" ? true : false;
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const handleShowPassword = () => setShowPassword(!showPassword);
-  const handleModalOpen = () => setOpenModal(true);
 
   const formik = useFormik({
     initialValues: {
@@ -137,9 +133,6 @@ export const ChangePassword = () => {
                       {showPassword ? <FaEyeSlash /> : <FaEye />}
                     </span>
                     <p className="text-sm text-gray-500 mt-2"> Password must be at least 8 characters, and contain letters, numbers, and symbol.</p>
-                    <p className="text-sm text-black font-bold hover:underline cursor-pointer" onClick={handleModalOpen}>
-                      Forgot your password?
-                    </p>
                     {formik.touched.currentPassword && formik.errors.currentPassword ? <p className="text-sm text-red-500">{formik.errors.currentPassword}</p> : null}
                   </div>
                 </div>
@@ -199,7 +192,6 @@ export const ChangePassword = () => {
           </div>
         </div>
       </div>
-      <ForgotPasswordModal isOpen={openModal} isClose={() => setOpenModal(false)} />
     </>
   );
 };
