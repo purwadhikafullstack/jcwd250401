@@ -12,7 +12,7 @@ import { showLoginModal } from "../slices/authModalSlices";
 import { showVerifyModal } from "../slices/authModalSlices";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from "@chakra-ui/react";
 
-function ForgotPasswordModal({ isOpen, isClose, userType="user" }) {
+function ForgotPasswordModal({ isOpen, isClose, userType = "user" }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const dispatch = useDispatch();
   const formik = useFormik({
@@ -26,31 +26,27 @@ function ForgotPasswordModal({ isOpen, isClose, userType="user" }) {
       try {
         setIsSubmitting(true);
 
-        const endpoint = userType === "admin" ? "/api/auth/forgot-password-admin": "/api/auth/forgotpassword"
+        const endpoint = userType === "admin" ? "/api/auth/forgot-password-admin" : "/api/auth/forgotpassword";
         const response = await api.post(endpoint, {
           email: values.email,
         });
-
-     
-          setTimeout(() => {
-            toast.success("Reset password link has been send to your email", {
-              autoClose: 1000,
-              onAutoClose: (t) => {
-                dispatch(hideForgotPasswordModal());
-                setIsSubmitting(false);
-              },
-            });
-          }, 1000);
-        
+        setTimeout(() => {
+          toast.success("Reset password link has been send to your email", {
+            autoClose: 1000,
+            onAutoClose: (t) => {
+              dispatch(hideForgotPasswordModal());
+              setIsSubmitting(false);
+            },
+          });
+        }, 1000);
       } catch (error) {
         if (error.response) {
           if (error.response.status === 400) {
             setTimeout(() => {
               toast.error("Invalid email");
               setIsSubmitting(false);
-            }, 2000);
-          }
-          if (error.response.status === 403) {
+            }, 1000);
+          } else if (error.response.status === 403) {
             setTimeout(() => {
               setIsSubmitting(false);
               toast.error("This account has linked with google services, please login with google", {
@@ -62,8 +58,7 @@ function ForgotPasswordModal({ isOpen, isClose, userType="user" }) {
               });
             }, 1000);
             // Handle other HTTP errors
-          }
-          if (error.response.status === 405) {
+          } else if (error.response.status === 405) {
             setTimeout(() => {
               api.post("/auth/sendverify", {
                 email: values.email,
@@ -78,16 +73,14 @@ function ForgotPasswordModal({ isOpen, isClose, userType="user" }) {
                 },
               });
             }, 1000);
-            // Handle other HTTP errors
           }
-        }
-        if (error.request) {
+        } else if (error.request) {
           // Handle request errors
           setTimeout(() => {
             toast.error("Network error, please try again later");
             setIsSubmitting(false);
-          }, 2000);
-        } 
+          }, 1000);
+        }
       } finally {
         // Add a 1-second delay before closing the modal
         setTimeout(() => {
