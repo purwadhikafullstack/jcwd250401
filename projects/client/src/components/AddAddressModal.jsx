@@ -230,7 +230,7 @@ export const AddAddressModal = ({ isOpen, onClose, onSuccess }) => {
                   </label>
 
                   <div className="w-[55%] sm:w-[65%]">
-                    <select name="city" id="city" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500 cursor-pointer" {...formik.getFieldProps("city")} onChange={handleCityChange}>
+                    <select name="city" id="city" className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-gray-500 cursor-pointer" {...formik.getFieldProps("city")} onChange={handleCityChange} disabled={!selectedProvince}>
                       <option value="" disabled>
                         Select a City
                       </option>
