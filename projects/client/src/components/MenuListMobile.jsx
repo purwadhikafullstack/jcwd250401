@@ -7,8 +7,7 @@ import { Button } from "@chakra-ui/react";
 function MenuListMobile() {
   const [dropdownSubcategory, setDropdownSubcategory] = useState(null);
   const [isDropdownTransitioning, setIsDropdownTransitioning] = useState(false);
-  const categories = ["NEW", "MEN", "WOMEN", "BAGS", "ACCESSORIES"];
-  const newIn = ["New Arrivals", "Best Sellers", "Rains Essentials"];
+  const categories = ["MEN", "WOMEN", "BAGS", "ACCESSORIES"];
   const men = ["Jackets", "Tops", "Bottoms"];
   const women = ["Jackets", "Tops", "Bottoms"];
   const [bagsSubCategory, setBagsSubCategory] = useState([]);
@@ -161,8 +160,6 @@ function MenuListMobile() {
                   <div className="flex flex-col flex-wrap">
                     {(() => {
                       switch (category) {
-                        case "NEW IN":
-                          return newIn.map(renderSubcategory);
                         case "MEN":
                           return (
                             <div className="flex ">
