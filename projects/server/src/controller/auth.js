@@ -529,6 +529,13 @@ exports.handleAdminRegister = async (req, res) => {
   const { username, email, password, isWarehouseAdmin = false } = req.body;
 
   try {
+
+    if (!username || !email || !password) {
+      return res.status(400).send({
+        message: "All fields are required",
+      });
+    }
+    
     existingAdmin = await Admin.findOne({
       where: {
         email,
