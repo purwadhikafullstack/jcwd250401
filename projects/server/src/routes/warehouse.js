@@ -8,6 +8,7 @@ const { multerUpload } = require("../lib/multer");
 
 router.get("/", authMiddleware.validateToken, warehouseController.getAllWarehouses);
 router.get("/:id", authMiddleware.validateToken, warehouseController.getWarehouseById);
+router.get("/w/:id", authMiddleware.validateToken, warehouseController.getWarehouseByWarehouseId);
 
 router.post(
     "/", 
