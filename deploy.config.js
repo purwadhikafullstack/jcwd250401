@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: "JCWD-2504-01", // Format JCWD-{batchcode}-{groupnumber}
+      name: "JCWD-2504-01", // Format JCWD-{batchcode}-{groupnumber} note
       script: "./projects/server/src/index.js",
       env: {
         NODE_ENV: "production",
