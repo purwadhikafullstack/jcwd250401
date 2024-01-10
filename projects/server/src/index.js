@@ -2,9 +2,11 @@ const express = require("express");
 const path = require("path");
 const PORT = 8000;
 const cors = require("cors");
+const { join } = require("path");
 require("dotenv").config({
   path: __dirname + "/../.env",
 });
+
 
 const app = express();
 app.use(cors());
@@ -38,6 +40,14 @@ app.use("/api/wishlist", wishlistRoutes);
 app.use("/public", express.static(__dirname + "/public"));
 
 //#region API ROUTES
+
+const clientPath = "../../client/build";
+app.use(express.static(join(__dirname, clientPath)));
+
+// Serve the HTML page
+app.get("*", (req, res) => {
+  res.sendFile(join(__dirname, clientPath, "index.html"));
+});
 
 // ===========================
 // NOTE : Add your routes here
