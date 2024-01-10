@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseURL = "http://localhost:8000/";
+const baseURL = "https://jcwd250402.purwadhikabootcamp.com/api";
 
 // Interceptor for regular use requests
 const regularInterceptor = (config) => {
