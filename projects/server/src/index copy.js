@@ -66,7 +66,7 @@ app.use((err, req, res) => {
 //   }
 // });
 
-//#endregion
+// #endregion
 
 // //#region CLIENT
 const clientPath = "../../client/build";

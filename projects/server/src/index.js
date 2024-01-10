@@ -61,6 +61,25 @@ app.use((err, req, res) => {
   });
 });
 
+app.use((req, res, next) => {
+  if (req.path.includes("/api/")) {
+    res.status(404).send("Not found !");
+  } else {
+    next();
+  }
+});
+
+// error
+app.use((err, req, res, next) => {
+  if (req.path.includes("/api/")) {
+    console.error("Error : ", err.stack);
+    res.status(500).send("Error !");
+  } else {
+    next();
+  }
+});
+
+
 //#region API ROUTES
 
 const clientPath = "../../client/build";
