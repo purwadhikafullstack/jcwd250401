@@ -129,7 +129,7 @@ const EditWarehouseModal = ({ isOpen, onClose, onSuccess, warehouseId }) => {
       });
 
       if (warehouseId) {
-        api.admin.get(`/api/warehouse/${warehouseId}`).then(response => {
+        api.admin.get(`/api/warehouse/w/${warehouseId}`).then(response => {
           if (response.data.ok) {
             const warehouse = response.data.detail;
             setInitialWarehouseData(warehouse); // Store the initial data
