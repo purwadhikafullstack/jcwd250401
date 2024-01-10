@@ -80,7 +80,7 @@ app.use((err, req, res, next) => {
 });
 
 
-//#region API ROUTES
+//region API ROUTES
 
 const clientPath = "../../client/build";
 app.use(express.static(join(__dirname, clientPath)));
