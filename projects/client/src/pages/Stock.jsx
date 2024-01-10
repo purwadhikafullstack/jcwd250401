@@ -28,6 +28,7 @@ export const Stock = () => {
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState(null);
+  console.log(mutations);
 
   const generateYears = (startYear, endYear) => {
     const years = [];
@@ -357,23 +358,23 @@ export const Stock = () => {
                       <Tr key={index}>
                         <Td>{mutation.productId}</Td>
                         <Td display={"flex"} gap={2} alignItems={"center"}>
-                          <Image src={`http://localhost:8000/public/${mutation.Product.productImages[0].imageUrl}`} alt={mutation.Product.name} width={50} height={50} />
-                          {mutation.Product.name}
+                          <Image src={`http://localhost:8000/public/${mutation?.Product?.productImages[0]?.imageUrl}` ? `http://localhost:8000/public/${mutation?.Product?.productImages[0]?.imageUrl}` : "https://via.placeholder.com/50"} alt={mutation?.Product?.name} width={50} height={50} />
+                          {mutation.Product?.name}
                         </Td>
-                        <Td>{mutation.Product.Categories[0].name}</Td>
-                        <Td>{mutation.Warehouse.name}</Td>
-                        <Td>{mutation.createdAt.slice(0, 10)}</Td>
-                        <Td>{mutation.mutationType}</Td>
-                        <Td>{mutation.previousStock}</Td>
+                        <Td>{mutation?.Product?.Categories[0]?.name ? mutation.Product?.Categories[0]?.name : "-"}</Td>
+                        <Td>{mutation?.Warehouse?.name ? mutation.Warehouse?.name : "-"}</Td>
+                        <Td>{mutation?.createdAt.slice(0, 10) ? mutation.createdAt.slice(0, 10) : "-"}</Td>
+                        <Td>{mutation?.mutationType ? mutation.mutationType : "-"}</Td>
+                        <Td>{mutation?.previousStock}</Td>
                         <Td color={mutation.status === "processing" || mutation.status === "pending" ? "orange" : mutation.status === "cancelled" || mutation.status === "failed" ? "red" : "green"}>
-                          {mutation.mutationType === "add" ? "+" : "-"}
-                          {mutation.mutationQuantity}
+                          {mutation?.mutationType === "add" ? "+" : "-"}
+                          {mutation?.mutationQuantity}
                         </Td>
                         <Td color={mutation.status === "processing" || mutation.status === "pending" ? "orange" : mutation.status === "cancelled" || mutation.status === "failed" ? "red" : "green"}>{mutation.stock}</Td>
                         <Td color={mutation.status === "processing" || mutation.status === "pending" ? "orange" : mutation.status === "cancelled" || mutation.status === "failed" ? "red" : "green"}>
                           {mutation?.status ? mutation.status : "-"}
                         </Td>
-                        <Td>{mutation.description}</Td>
+                        <Td>{mutation?.description}</Td>
                       </Tr>
                     ))}
                   </Tbody>
