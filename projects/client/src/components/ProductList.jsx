@@ -553,17 +553,17 @@ function ProductList() {
               <div className="w-full flex justify-center lg:hidden">
                 <div className="h-[200px] w-[200px] lg:h-[100px] lg:w-[100px]">
                   {product.totalStockAllWarehouses !== 0 ? (
-                    <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" />
+                    <img src={`http://localhost:8000/public/${product.productImages[0]?.imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" />
                   ) : (
-                    <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" style={{ filter: "grayscale(100%)" }} />
+                    <img src={`http://localhost:8000/public/${product.productImages[0]?.imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" style={{ filter: "grayscale(100%)" }} />
                   )}
                 </div>
               </div>
               <div className="hidden lg:block h-[100px] w-[100px]">
                 {product.totalStockAllWarehouses !== 0 ? (
-                  <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" />
+                  <img src={`http://localhost:8000/public/${product.productImages[0]?.imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" />
                 ) : (
-                  <img src={`http://localhost:8000/public/${product.productImages[0].imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" style={{ filter: "grayscale(100%)" }} />
+                  <img src={`http://localhost:8000/public/${product.productImages[0]?.imageUrl}`} className="w-full h-full object-cover shadow-xl" alt="Product Image" style={{ filter: "grayscale(100%)" }} />
                 )}
               </div>
 
