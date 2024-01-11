@@ -103,7 +103,7 @@ function OrderShipped({ orders, fetchOrders }) {
   }, [currentPage]);
 
   return (
-    <div className="container mx-auto px-4">
+    <div className="container mx-auto">
       {orders.filter(order => order.status === "delivered").length === 0 ? (
         <div className="flex justify-center items-center h-96">
           <p className="text-2xl">You don't have any orders yet.</p>
@@ -113,7 +113,7 @@ function OrderShipped({ orders, fetchOrders }) {
           {orders
           .filter(order => order.status === "delivered")
           .map(({ orderId, invoice, paymentProofImage, totalPrice, totalPriceBeforeCost, status, createdAt, totalQuantity, Products, Shipment, User, Address, Warehouse }, index) => (
-            <div key={index} className="p-4 bg-white rounded-lg shadow-lg w-[1000px] lg:w-[100%] mb-5 lg:mb-5">
+            <div key={index} className="p-4 bg-white rounded-lg shadow-lg w-[1000px] lg:w-[100%] mb-5 lg:mb-5 overflow-auto">
               <div className="flex justify-between">
                 <div className="flex items-center gap-2">
                   {status === "cancelled" && <span className="bg-[#FF7A7A66] text-[#FF0000]  px-6 py-2 rounded-md font-bold">Cancelled</span>}
@@ -127,7 +127,7 @@ function OrderShipped({ orders, fetchOrders }) {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handlePaymentModalOpen(paymentProofImage)}>
+                  <Button color="light" size="small" className="p-2 w-52 shadow-sm" onClick={() => handlePaymentModalOpen(paymentProofImage)}>
                     Payment Proof
                   </Button>
                     <Menu>
@@ -206,11 +206,11 @@ function OrderShipped({ orders, fetchOrders }) {
                   <hr className="my-2" />
                   <div className="flex justify-end gap-2">
                     {/* Action buttons here, if needed */}
-                    <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
-                      <Button color="light" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleRejectPayment(orderId)}>
+                    <div className="flex flex-row items-center space-y-0 space-x-4">
+                      <Button color="light" size="small" className="p-2 w-52 shadow-sm" onClick={() => handleRejectPayment(orderId)}>
                         Reject Order
                       </Button>
-                      <Button color="dark" size="small" className="md:p-2 w-full md:w-52 shadow-sm" onClick={() => handleConfirmOrder(orderId, Products.Product.id)}>
+                      <Button color="dark" size="small" className="p-2 w-52 shadow-sm" onClick={() => handleConfirmOrder(orderId, Products.Product.id)}>
                         Accept Order
                       </Button>
                     </div>

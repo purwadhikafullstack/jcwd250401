@@ -6,10 +6,13 @@ import AddWarehouseModal from "../components/AddWarehouseModal"; // Import the A
 import WarehouseCard from "../components/WarehouseCard"; // Import the WarehouseCard component
 import api from '../api'; // Replace with your actual API module
 import { useSelector } from "react-redux";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 
 function Warehouse() {
   const [warehouses, setWarehouses] = useState([]); // State to store the warehouses
   const [isAddModalOpen, setIsAddModalOpen] = useState(false); // State to manage AddWarehouseModal visibility
+  const [loading, setLoading] = useState(true);
 
   const isWarehouseAdmin = useSelector((state) => state?.account?.isWarehouseAdmin);
 
@@ -19,11 +22,21 @@ function Warehouse() {
       setWarehouses(result.data.data);
     } catch (error) {
       console.log(error)
+    } finally {
+      setLoading(false)
     }
   };
 
   useEffect(() => {
     fetchWarehouse();
+  }, []);
+  
+  useEffect(() => {
+    const loadingTimeout = setTimeout(() => {
+      setLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(loadingTimeout);
   }, []);
 
   // Handler to open the AddWarehouseModal
@@ -50,6 +63,17 @@ function Warehouse() {
           </div>
           {/* Scrollable area for Warehouse Cards */}
           <div className="mt-4 space-y-4 overflow-y-auto scrollbar-hide">
+            {loading && (
+              Array.from({ length: 10 }).map((_, index) => (
+                <div className="bg-white shadow-md mb-4 p-4 rounded-lg flex flex-col md:flex-row">
+                  <Skeleton height={200} width={200} />
+                  <div className="p-4 flex flex-col justify-between">
+                    <Skeleton height={20} width={100} />
+                    <Skeleton count={4} height={20} />
+                  </div>
+                </div>
+              ))
+            )}
             {warehouses.length === 0 && (
               <div className="flex flex-col items-center justify-center h-full">
                 <p className="text-gray-600 text-lg">No warehouses found.</p>
