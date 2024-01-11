@@ -1,6 +1,6 @@
 const express = require("express");
 const path = require("path");
-const PORT = 8000;
+const PORT = 5401;
 const cors = require("cors");
 const { join } = require("path");
 require("dotenv").config({
